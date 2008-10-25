@@ -102,5 +102,5 @@ Tambien puedes contactarnos a por nuestro blog: http://YuppFramework.blogspot.co
 {{{
 Pablo Pazos
 Project Leader
-[http://www.SimpleWebPortal.net www.SimpleWebPortal.net]
+www.SimpleWebPortal.net
 }}}
