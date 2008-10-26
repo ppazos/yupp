@@ -6,7 +6,7 @@ Version 0.1.5 del Yupp Framework PHP
 
 =Incluye los siguientes componentes:=
 
-  * version 0.4 del YORM (Yupp Object Relational Mapping)
+  * version 0.5 del YORM (Yupp Object Relational Mapping)
   * version 0.1.4 del YMVC (Yupp Model View Controller)
 
 
