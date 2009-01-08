@@ -1,13 +1,123 @@
-#summary One-sentence summary of this page.
+#labels notas,version,liberacion
+=Notas de la version:=
 
-= Introduction =
-
-Add your content here.
+Version 0.1.6 del Yupp Framework PHP
 
 
-= Details =
+=Incluye los siguientes componentes:=
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+  * version 0.6 del YORM (Yupp Object Relational Mapping)
+  * version 0.1.5 del YMVC (Yupp Model View Controller)
+
+
+=Requisitos:=
+
+  * Version de PHP: 5.2.x (nosotros utilizamos 5.2.3)
+  * Motor de bases de datos: MySQL 5.x o superior (nosotros utilizamos 5.0.41)
+  * Tener el modulo de Apache MOD_REWRITE instalado y activado.
+
+
+=Cambios con respecto a la versión anterior:=
+
+  # Se agregaron tipos para los atributos hasMany, ahora se pueden
+    generar con tipos  LIST, COLECTION o SET. Con LIST, los elementos
+    en la colección se mantienen ordenados, esto se logra almacenando
+    un nuevo atributo "ORD" que guarda el lugar del elemento en la lista.
+    COLECTION es el comportamiento por defecto, no concerva orden y
+    se permiten repetidos. SET es una colección donde no se permiten
+    elementos repetidos. Estamos pensando en agregar el tipo ORDERED_SET
+    donde no se permitan repetidos y se concerve el orden (se comporta
+    como SET y como LIST).
+  # Se agregó una pantalla de administración en donde:
+    # Permite generar las tablas para el modelo de datos existente
+      (de todos los componentes).
+    # Permite ejecutar el script de bootstrap de cada componente
+      (este script es donde se inicializan los datos que el componente
+      necesita en la base de datos).
+    # Permite ingresar a los controladores existentes (igual que en v0.1.5)
+    # Permite ver estadísticas de líneas de código del framework,
+      totales y por clase.
+  # Se realizaron pruebas con "custom validators" que son validadores
+   de datos o restricciones que se pueden poner sobre los atributos
+   de las clases del modelo de datos, y que pueden ser creadas por
+   el usuario y no están ya implementadas en Yupp. En el archivo
+   "blog.model.Usuario.class.php" se agregó la declaración de una clase
+   "EmailsStartsWithName", la cual es una restricción agregada por el
+   usuario para validar que el atributo"email" empiece con el nombre
+   del usuario, que está en el atributo "nombre". De la misma forma
+   se puede crear cualquier otro "custom validator". Agregaremos una
+   guía de esto a la documentación: http://www.simplewebportal.net/yupp_framework_php_doc/
+
+
+=Que contiene esta liberación?=
+
+Contiene los componentes mencionados antes, el YORM y el YMVC.
+
+Esta liberación contiene un ejemplo de un sistema de Blog sencillo donde
+se pueden crear entradas y comentarios, mostrando el funcionamiento básico
+del framework, con funcionalidades como:
+
+  * Definicion de modelo persistente
+  * Crear modelo
+  * Modificar modelo
+  * Obtener modelo
+  * Definicion de controladores
+  * Definicion de vistas
+  * Uso de helpers basicos
+  * Validacion automatica de informacion
+
+
+=Para correr el ejemplo=
+
+  * Debes tener un servidor Apache con soporte para PHP corriendo.
+  * Debes tener PHP 5.2.x o superior.
+  * Debes tener MySQL 5.x o superior instalado y corriendo.
+
+Descomprime el contenido de la liberacion que descargaste desde http://www.SimpleWebPortal.net 
+en un directorio de tu servidor Apache, accesible desde un browser, 
+por ejemplo /www o /public_html.
+
+
+==Configuracion de la base de datos y creacion de la base:==
+
+  * Para configurar los datos de conexion a la base de datos MySQL se debe
+  editar la informacion presente en el archivo:
+  "/core/config/core.config.YuppConfig.class.php",
+  modificando el campo $dev_datasource, estableciendo los valores correctos
+  para cada clave de dicho array: url, user, pass y database.
+  Y se debe crear la base de datos con el nombre que hayas configurado en
+  "/core/config/core.config.YuppConfig.class.php" en el campo "database".
+
+
+==Acceder al ejemplo:==
+
+  Accede al directorio donde se descomprimió Yupp Framework PHP desde un
+  browser, aparecerá una página con links, esos links ejecutan las acciones
+  por defecto de los controladores existentes, el único controlador que
+  tiene utilidad por el momento es "EntradaBlog" que es de donde se permite
+  crear entradas para el blog.
+
+
+==Generacion de las tablas:==
+
+  Desde la pantalla de administración que aparece al instalar Yupp y accederlo
+  mediante un navegador web, existe una sección llamada "Información del modelo",
+  ahí se listan todas las clases presentes en el modelo de datos de todos los 
+  componentes instalados (con esta liberación el único componente instalado es
+  el de "blog"). En esta sección hay un link "Generar tablas", que al hacerle clic
+  ejecutará la generación de todas las tablas necesarias en la base de datos
+  configurada previamente.
+
+  Si tienes algún problema o alguna pregunta, no dudes en comunicarte con nosotros:
+     http://groups.google.com/group/yuppframeworkphp
+
+
+==CONTACTO:==
+Cualquier duda o sugerencia, envianos un mail desde http://www.SimpleWebPortal.net > contacto.
+Tambien puedes contactarnos a por nuestro blog: http://YuppFramework.blogspot.com.
+
+{{{
+Pablo Pazos
+Project Leader
+www.SimpleWebPortal.net
+}}}
