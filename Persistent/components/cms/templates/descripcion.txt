@@ -1,0 +1,14 @@
+Este es el directorio de templates del CMS.
+
+Cada template indica:
+
+ 1. Opciones de creacion de una pagina:
+ 
+    - Cuando se crea una pagina, se elije que template sigue.
+    - Los templates son archivos .INI con forma clave=dato.
+    - Cada template indica:
+      - Que zonas se crean en la pagina y con que datos (nombre, posicion, tamanio, etc)
+      - Esos datos se copian en la zona (aunque no seria necesario copiarlos, 
+        solo decir a que template pertenece y ahi estan los datos!, es mas, el 
+        template podria pasar a ser una clase de dominio que se podria editar 
+        visualmente)
