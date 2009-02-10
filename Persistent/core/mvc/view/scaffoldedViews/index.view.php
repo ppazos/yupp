@@ -10,7 +10,6 @@ $m = Model::getInstance();
    <body>
       <h1>Index</h1>
 
-   
       <h2>Seleccion del modo de ejecucion</h2>
       <?php echo h('mode_chooser'); ?><hr/>
 
@@ -94,14 +93,17 @@ $m = Model::getInstance();
          $suffix = "Controller.class.php";
       
          while (false !== ($component = $dir->read())) :
-            if ($component !== "." && $component !== ".." && $component !== "core") :
-               //echo $component . "<br/>";
+
+            if (!String::startsWith( $component, ".") && $component !== "core") :
+            
+               echo "<h3>$component:</h3>";
+               
                $component_dir  = dir("./components/".$component."/controllers");
                
                echo "<ul>";
                while (false !== ($controller = $component_dir->read())) :
-                  if ($controller !== "." && $controller !== "..") :
-                  
+                  //if ($controller !== "." && $controller !== "..") :
+                  if ( !String::startsWith( $controller, ".") ) : // No quiero los archivos que empiezan con "."
                      $prefix = "components.".$component.".controllers.";
                      
                      $controller = substr($controller, strlen($prefix), -strlen($suffix));
