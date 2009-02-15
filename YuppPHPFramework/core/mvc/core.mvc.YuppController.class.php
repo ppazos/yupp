@@ -89,6 +89,12 @@ class YuppController {
     	 return ViewCommand::display( $view, $params, $this->flash );
     }
     
+    /**
+     * redirect( $params )
+     * Redirige el flujo de ejecucion de una accion de un controller a una accion del mismo o de otro controller.
+     * 
+     * @param $params mapa de parametros en la forma nombre=>valor. Un elemento especial es "params", que es a su vez un mapa de parametros para el request que se lanza.
+     */
     public function redirect( $params ) // FIXME: puedo crearlo sin pasarle los params['params'], xq es un atributo mio.
     {
        $ctx = YuppContext::getInstance();
