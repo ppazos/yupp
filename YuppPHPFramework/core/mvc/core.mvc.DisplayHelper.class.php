@@ -36,21 +36,18 @@ class DisplayHelper {
     	 if ($po->hasErrors())
        {
           echo "<ul>";
-       }
-       foreach ( $po->getErrors() as $attr => $errors )
-       {
-          echo "<li>";
-          echo $attr;
-          echo "<ul>";
-          foreach ( $errors as $error )
+          foreach ( $po->getErrors() as $attr => $errors )
           {
-             echo "<li>" . $error . "</li>";
+             echo "<li>";
+             echo $attr;
+             echo "<ul>";
+             foreach ( $errors as $error )
+             {
+                echo "<li>" . $error . "</li>";
+             }
+             echo "</ul>";
+             echo "</li>";
           }
-          echo "</ul>";
-          echo "</li>";
-       }
-       if ($po->hasErrors())
-       {
           echo "</ul>";
        }
     }
