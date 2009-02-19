@@ -201,7 +201,8 @@ function $func {
           //
           //$url = $_base_dir ."/components/". $component ."/views/". $controller;
           $url = "./components/". $component ."/views/". $controller;
-       }
+          
+       } // template
 
        
        $params_url = "";
@@ -213,7 +214,36 @@ function $func {
        //echo "URL: " . $url;
           
        include($url . "/" . $params['name'] . ".template.php");
+    }
+ 
+    
+    /**
+     * @param params array de argumentos:
+     *   component: nombre del componente donde se encuentra la imagen.
+     *   src: path de la imagen a partir del directorio del imagenes del componente (si viene "component")
+     *        o desde el directorio /images, incluye el nombre de la imagen. Es obligatorio.
+     *   w: ancho de la imagen en pixels.
+     *   h: alto de la imagen en pixels.
+     *   text: texto alternativo a la imagen.
+     *   
+     */
+    public static function img( $params )
+    {
+       global $_base_dir;
        
+       if ( !array_key_exists('src', $params) ) throw new Exception( __FILE__ . "(".__LINE__.") : parametro 'src' es obligatorio y no esta presente.");
+       
+       // Busca la ubicacion en un componente particular
+       if ( $params['component'] !== NULL ) 
+          $res = '<img src="'. $_base_dir .'/components/'. $params['component'] .'/images/'. $params['src'] .'"';
+       else // Ubicacion por defecto de todos los javascripts de todos los modulos
+          $res = '<img src="'. $_base_dir .'/images/'. $params['src'] .'"';
+       
+       if ( $params['w'] !== NULL )    $res .= ' width="'.  $params['w'] .'"';
+       if ( $params['h'] !== NULL )    $res .= ' height="'. $params['h'] .'"';
+       if ( $params['text'] !== NULL ) $res .= ' alt="'.    $params['text'] .'"';
+       
+       return $res . "/>";
     }
     
     
@@ -223,7 +253,7 @@ function $func {
        
        // Busca la ubicacion en un componente particular
        if ( $params['component'] !== NULL ) 
-          $res = '<script type="text/javascript" src="' . $_base_dir . '/components/' . $params['component'] . '/javascript/' . $params['name'] . '.js"></script>';
+          $res = '<script type="text/javascript" src="'. $_base_dir .'/components/'. $params['component'] .'/javascript/'. $params['name'] .'.js"></script>';
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
           $res = '<script type="text/javascript" src="' . $_base_dir . '/js/' . $params['name'] . '.js"></script>';
        
@@ -234,7 +264,10 @@ function $func {
     {
        global $_base_dir;
        
-       $res = '<link type="text/css" rel="stylesheet" href="' . $_base_dir . '/css/' . $params['name'] . '.css"/>';
+       if ( $params['component'] !== NULL ) 
+          $res = '<link type="text/css" rel="stylesheet" href="'. $_base_dir .'/components/'. $params['component'] .'/css/'. $params['name'] .'.css" />';
+       else
+          $res = '<link type="text/css" rel="stylesheet" href="'. $_base_dir .'/css/'. $params['name'] .'.css" />';
        
        return $res;
     }
