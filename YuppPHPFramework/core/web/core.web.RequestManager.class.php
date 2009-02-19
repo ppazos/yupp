@@ -35,6 +35,8 @@ class RequestManager {
          $mapping = new Mapping( $filter->getPath() ); // Toma la ruta y extrae el nombre del componente, controller y accion. (no hay chequeos, pueden no existir!)
          $lr = $mapping->getLogicalRoute();
          
+         
+         //Logger::struct( $filter->getPath() );
 //         Logger::struct($lr, "LOGICAL ROUTE 1");
          
          // Verifica salida del router y setea valores que no vienen seteados.
@@ -66,9 +68,6 @@ class RequestManager {
          }
          
          
-         //echo "<h1>ACTION: ". $lr['action'] ."</h1>";
-         
-         
          // *******************************************************************************
          // FIXME: puedo tener componente, controlador y accion, pero pueden ser nombres
          // errados, es decir, que no existen, por ejemplo si en la url le paso /x/y/z.
@@ -85,11 +84,11 @@ class RequestManager {
          $controllerPath      = "components/".$lr['component']."/controllers/".$controllerFileName;
          if ( !file_exists($componentPath) )
          {
-            throw new Exception("ERROR: rounting.componentDoesntExists value: " . $lr['component']);
+            throw new Exception("ERROR: routing.componentDoesntExists value: " . $lr['component']);
          }
          else if (!file_exists($controllerPath))
          {
-        	   throw new Exception("ERROR: rounting.controllerDoesntExists value: " . $lr['controller']);
+        	   throw new Exception("ERROR: routing.controllerDoesntExists value: " . $lr['controller']);
          }
          // Aca deberia chekear si la clase $lr['controller'] . "Controller" tiene le metodo $lr['action'] . "Action".
          // Esto igual salta en el executer cuando intenta llamar al metodo, y salta si no existe.
@@ -111,6 +110,8 @@ class RequestManager {
         $ctx->update();
         /// ACTUALIZAR CONTEXTO ///
         
+        
+        //Logger::struct( $filter->getParams(), "FILTER->getParams" );
         
         $executer = new Executer( $filter->getParams() );
         $command = $executer->execute();
@@ -148,8 +149,7 @@ class RequestManager {
               $pagePath = "components/".$lr['component']."/views/".$command->viewName().".view.php";
               //$pagePath = "components/".$lr['component']."/views/".$lr['controller']."/".$command->viewName().".view.php";
               // components/blog/views/usuario//usuario/login.view.php
-              
-              
+
               
               //Logger::show( "LogicalRouteController: " . $lr['controller'], "h1" );
               //Logger::show( "CommandViewName: " . $command->viewName(), "h1" );
