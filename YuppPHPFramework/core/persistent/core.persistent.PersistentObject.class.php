@@ -677,7 +677,7 @@ class PersistentObject {
    
    public function hasErrors()
    {
-   	return count($this->errors) == 0;
+   	return ($this->errors !== NULL) && (count($this->errors) == 0);
    }
 
    // Utilizada por PersistentManager para crear tablas intermedias para las asociaciones *..*
