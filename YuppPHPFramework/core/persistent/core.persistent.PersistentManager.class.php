@@ -1145,12 +1145,12 @@ class PersistentManager {
       // ==========================================================================
       // Desde v0.1.6: soporte para tipos de hasMany
       // Si es de tipo lista, debe donsiderar el orden.
+      
       if ( $obj->getHasManyType($hmattr) === PersistentObject::HASMANY_LIST )
       {
       	$q->addOrder("ref", "ord", "ASC"); // Orden ascendente por atributo ORD de la tabla intermedia.
       }
       
-
       $data = $dal->query( $q->evaluate() ); // Trae todos los objetos linkeados... (solo sus atributos simples)
 
       // FIN QUERY...
