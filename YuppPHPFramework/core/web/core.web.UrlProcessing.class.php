@@ -28,69 +28,71 @@ class UrlProcessing {
     function __construct( $url )
     {
        $this->url = $url; // SE ESPERA QUE EMPIECE CON '/', ver urlMatch. (esto es asi como lo devuelve $_SERVER['REQUEST_URI'])
-       preg_match($this->urlMatch, $url, $this->matches);
+ //      preg_match($this->urlMatch, $url, $this->matches);
+       
+       $this->matches = explode("/", $url);
+       // OJO, el ultimo lugar puede tener params que estan en la URL: 
+       // /YuppPHPFramework/portal/page/display/mi_pagina_bbb/sdfda/asdf?asdfa=sdf&gg=ee
 
-//echo "<pre>";
-//print_r( $this->matches );
-//echo "</pre>";
+echo "<pre>";
+print_r( $url );
+print_r( $this->matches );
+echo "</pre>";
 
        // ------------------------------------------------------------------------------
        // procesado de args de url (get) o tambien de post y files.
        // url: http://localhost:8081/Persistent/test/UrlProcessing.php/aaa/bbb/ccc
-       if ( strlen( $_SERVER['QUERY_STRING'] ) == 0 )
-       {
-          // Si termina con / se lo saco.
-          if ( $this->matches[4][strlen($this->matches[4])-1] == '/' ) $this->matches[4] = substr($this->matches[4], 0, -1);
 
-          $_params = explode("/", $this->matches[4]); // matches[4] = par1/par2/par3
-          $paramBaseName = "_param_";
-          $i = 1;
-          foreach ($_params as $value)
+       // Si termina con / se lo saco.
+       if ( $this->matches[4][strlen($this->matches[4])-1] == '/' ) $this->matches[4] = substr($this->matches[4], 0, -1);
+
+       $_params = explode("/", $this->matches[4]); // matches[4] = par1/par2/par3
+       $paramBaseName = "_param_";
+       $i = 1;
+       foreach ($_params as $value)
+       {
+          $this->params[$paramBaseName.$i] = $value;
+          $i++;
+       }
+
+       // ME PARECE QUE ESTO SE DEBERIA EJECUTAR AUN SI SE PASAN PARAMS POR LA URL...
+
+       // si caigo aca, tengo los params en $_GET
+       if ( sizeof($_GET) > 0)
+       {
+          foreach ($_GET as $key => $value)
           {
-             $this->params[$paramBaseName.$i] = $value;
-             $i++;
+             $this->params[$key] = $value;
           }
        }
-       else // url: http://localhost:8081/Persistent/test/UrlProcessing.php?aaa=123&bbb=345&ccc=456 o vienen por post o file.
+
+       if ( sizeof($_POST) > 0)
        {
-          // ME PARECE QUE ESTO SE DEBERIA EJECUTAR AUN SI SE PASAN PARAMS POR LA URL...
-
-          // si caigo aca, tengo los params en $_GET
-          if ( sizeof($_GET) > 0)
+          foreach ($_POST as $key => $value)
           {
-             foreach ($_GET as $key => $value)
-             {
-                $this->params[$key] = $value;
-             }
-          }
-
-          if ( sizeof($_POST) > 0)
-          {
-             foreach ($_POST as $key => $value)
-             {
-                $this->params[$key] = $value;
-             }
-          }
-
-          if ( sizeof($_FILES) > 0)
-          {
-             foreach ($_FILES as $key => $value)
-             {
-                $this->params[$key] = $value;
-             }
+             $this->params[$key] = $value;
           }
        }
+
+       if ( sizeof($_FILES) > 0)
+       {
+          foreach ($_FILES as $key => $value)
+          {
+             $this->params[$key] = $value;
+          }
+       }
+       
        // ------------------------------------------------------------------------------
     }
 
     function component()
     {
-       return $this->matches[1];
+       return $this->matches[2];
     }
 
     function controller()
     {
-    	 return $this->matches[2];
+    	 return $this->matches[3];
     }
 
     function action()
@@ -103,45 +105,5 @@ class UrlProcessing {
        return $this->params;
     }
 
-    // OJO SE AGREGO EL COMPONENT  A LA URL !!!!
-
-    // Que obtengo llamando al test de esta clase con urls que pasan los params de distinta forma.
-    /*
-     * http://localhost:8081/Persistent/test/user/create?name=pepe&age=23&height=180
-     (
-       [urlMatch:private] => /\/([^\/]*)\/([^\/\?]*)[\/\?](.*)/i
-       [url:private] => /user/create?name=pepe&age=23&height=180
-       [matches:private] => Array
-           (
-               [0] => /user/create?name=pepe&age=23&height=180
-               [1] => user
-               [2] => create
-               [3] => name=pepe&age=23&height=180
-           )
-   )
-     *
-     */
-
-     /*
-      * http://localhost:8081/Persistent/test/user/create/pepe/23/180
-   (
-       [urlMatch:private] => /\/([^\/]*)\/([^\/\?]*)[\/\?](.*)/i
-       [url:private] => /user/create/pepe/23/180
-       [matches:private] => Array
-           (
-               [0] => /user/create/pepe/23/180
-               [1] => user
-               [2] => create
-               [3] => pepe/23/180    // el que recibe los parametros debe saber que son por como los recibe,
-                                     // ya que fue el mismo modulo quien creo la url, es decir, si para acceder
-                                     // a algo el link se hace de determinada forma, cuando ejecuto la accion para
-                                     // mostrar eso, espera que el link tenga esa forma y procesa los params segun vienen.
-                                     // Como lo que necesito es un map (el caos general) le voy a poner nombres generados
-                                     // a los params que vengan en la url, y estos nombres seran conocidos por las acciones,
-                                     // por ejemplo: _param_1, _param_2, etc, esto prohibe el uso de estas palabras como
-                                     // nombres de parametros!!!!
-           )
-   )
-      */
 }
 ?>
