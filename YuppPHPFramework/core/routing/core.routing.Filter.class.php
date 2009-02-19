@@ -10,14 +10,31 @@
  * 
  * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
  * 
- * @todo Cambiarle el nombre a RequestFilter par aevitar confusion con ControllerFilter.
+ * @todo Cambiarle el nombre a RequestFilter para evitar confusion con ControllerFilter.
  */
 class Filter {
 
     private $parsedUrl = "";
+    private $urlParams;
 
-    function Filter( $url ) {
+    function Filter( $url )
+    {
     	$this->parsedUrl = parse_url($url); // Puede dar falso o tirar error! url seria $_SERVER['REQUEST_URI']
+      
+      $preUrlParams = explode("/", $this->parsedUrl['path']);
+      // El lugar 0 no tiene nada porque $url comienza en /
+      // El lugar 1 es el directorio donde esta instalado yupp, o sea baseDir
+      // 2 component
+      // 3 controller
+      // 4 action (si hay)
+      // 5 ... params.
+      
+      for ($i=1; $i<count($preUrlParams)-4; $i++)
+      {
+         $this->urlParams["_param_".$i] = $preUrlParams[$i+4];
+      }
+      
+      //Logger::struct( $this->urlParams, __FILE__ . " " . __LINE__ );
     }
     
     public function getPath() { return $this->parsedUrl['path']; }
@@ -42,7 +59,16 @@ class Filter {
     
     public function getParams()
     {
-    	 return array_merge( $_POST, $_GET);
+       // FIXME: falta procesar FILES (similar a POST y GET pero tiene los archivos submiteados).
+       
+       $tempArr = array();
+       if ($this->urlParams !== NULL && count($this->urlParams)>0) // Merge de POST, GET y urlParams.
+       {
+          $tempArr = array_merge( $this->urlParams, $_GET);
+          return array_merge( $_POST, $tempArr);
+       }
+       
+    	 return array_merge( $_POST, $_GET ); // Solo merge de POST y GET.
     }
     
     public function getGetParams()
