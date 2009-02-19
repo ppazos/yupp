@@ -97,12 +97,12 @@ class Query
 	{
 		// TODO: CHEK ALIAS existe? => necesidad de agregar FROM antes.
       
-      $count = new stdClass(); // Objeto anonimo.
-      $count->attr = $attr;
-      $count->alias = $alias;
-      $count->dir = $dir;
+      $order = new stdClass(); // Objeto anonimo.
+      $order->attr = $attr;
+      $order->alias = $alias;
+      $order->dir = $dir;
       
-      $this->count[] = $count;
+      $this->order[] = $order;
 
       return $this;
 	}
