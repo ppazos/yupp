@@ -72,6 +72,11 @@ abstract class Condition {
       return CompareCondition::createARV( $alias, $attr, $refValue, CompareCondition::EQUALS );
    }
    
+   public static function NEQ( $alias, $attr, $refValue )
+   {
+      return CompareCondition::createARV( $alias, $attr, $refValue, CompareCondition::NOTEQUALS );
+   }
+   
    public static function EQA( $alias, $attr, $alias2, $attr2 )
    {
       return CompareCondition::createAA( $alias, $attr, $alias2, $attr2, CompareCondition::EQUALS );
