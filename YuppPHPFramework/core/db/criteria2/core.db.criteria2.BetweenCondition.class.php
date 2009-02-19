@@ -1,6 +1,6 @@
 <?php
 
-// TODO todo!!!!!!!!
+// FIXME: el nombre de la clase no es del todo correcto.
 
 class BetweenCondition extends Condition {
 
