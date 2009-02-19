@@ -31,10 +31,7 @@ class FileNames {
 
     public static function getClassFilename( $package, $clazz )
     {
-      //echo gettype($package);
-      //echo gettype( (($package !== NULL || $package !=="")? $package . '.' : "") );
-      //echo "AAAAA: " . (($package !== NULL && $package !=="")? $package . '.' : "") . "<br />";
-      // Si no me viene package, igual tiro el nombre bien.
+       // Si no me viene package, igual tiro el nombre bien.
     	  return (($package !== NULL && $package !=="")? $package . '.' : "") . $clazz . '.class.php';
     }
 
