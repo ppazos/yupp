@@ -14,17 +14,17 @@
  * @link ... (PHPDoc)
  */
 
-YuppLoader::load( "core.db.criteria2", Condition );
+YuppLoader::load( "core.db.criteria2", "Condition" );
 
-YuppLoader::load( "core.db.criteria2", ComplexCondition );
-YuppLoader::load( "core.db.criteria2", CompareCondition );
-YuppLoader::load( "core.db.criteria2", BinaryInfixCondition );
-YuppLoader::load( "core.db.criteria2", UnaryPrefixCondition );
-YuppLoader::load( "core.db.criteria2", Condition );
+YuppLoader::load( "core.db.criteria2", "ComplexCondition" );
+YuppLoader::load( "core.db.criteria2", "CompareCondition" );
+YuppLoader::load( "core.db.criteria2", "BinaryInfixCondition" );
+YuppLoader::load( "core.db.criteria2", "UnaryPrefixCondition" );
+YuppLoader::load( "core.db.criteria2", "Condition" );
 
-YuppLoader::load( "core.db.criteria2", Query );
-YuppLoader::load( "core.utils",       Callback );
-YuppLoader::load( "core.persistent",  ArtifactHolder );
+YuppLoader::load( "core.db.criteria2", "Query" );
+YuppLoader::load( "core.utils",       "Callback" );
+YuppLoader::load( "core.persistent",  "ArtifactHolder" );
 
 YuppLoader::load( "core.persistent", "MultipleTableInheritanceSupport" );
 
@@ -53,9 +53,9 @@ TODOs GRANDEs
 
 */
 
-YuppLoader::loadInterface( "core.persistent", POLoader );
-YuppLoader::load( "core.persistent", LazyLoadStrategy );
-YuppLoader::load( "core.persistent", CascadeLoadStrategy );
+YuppLoader::loadInterface( "core.persistent", "POLoader" );
+YuppLoader::load( "core.persistent", "LazyLoadStrategy" );
+YuppLoader::load( "core.persistent", "CascadeLoadStrategy" );
 
 
 /**
