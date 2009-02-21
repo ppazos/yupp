@@ -1,5 +1,5 @@
 <?php
-YuppLoader :: load("blog.model", Entrada); // Si no esta me tira error de que no encuentra Entrada cuando hago un YuppLoader.loadModel.
+YuppLoader :: load("blog.model", "Entrada"); // Si no esta me tira error de que no encuentra Entrada cuando hago un YuppLoader.loadModel.
 
 class EntradaBlog extends Entrada
 {
@@ -20,7 +20,7 @@ class EntradaBlog extends Entrada
       // Titulo por defecto
 		//$this->setTitulo("ingrese un titulo...");
 
-		$this->addHasMany("comentarios", Comentario, PersistentObject::HASMANY_LIST);
+		$this->addHasMany("comentarios", 'Comentario', PersistentObject::HASMANY_LIST);
 
 		// Nueva forma de definir constraints
 		$this->addConstraints("titulo", array (

@@ -10,7 +10,7 @@ class Entrada extends PersistentObject
 
 		$this->setFecha(date("Y-m-d H:i:s")); // Ya con formato de MySQL!
 
-		$this->addHasOne("usuario", Usuario); // Usuario que hizo la entrada		
+		$this->addHasOne("usuario", "Usuario"); // Usuario que hizo la entrada		
 
 		$this->addConstraints("texto", array (
 			Constraint :: minLength(10),

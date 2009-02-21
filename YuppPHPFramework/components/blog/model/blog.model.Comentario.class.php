@@ -1,12 +1,12 @@
 <?php
 
-YuppLoader::load( "blog.model", Entrada ); // Si no esta me tira error de que no encuentra Entrada cuando hago un YuppLoader.loadModel.
+YuppLoader::load( "blog.model", "Entrada" ); // Si no esta me tira error de que no encuentra Entrada cuando hago un YuppLoader.loadModel.
 
 class Comentario extends Entrada {
 
     function __construct( $args = array(), $isSimpleInstance = false )
     {
-       $this->addHasOne("entrada", EntradaBlog); // Si fuera Entrada podria tener comentarios a los comnetarios.
+       $this->addHasOne("entrada", 'EntradaBlog'); // Si fuera Entrada podria tener comentarios a los comnetarios.
 
        $this->addConstraints( "entrada", array( Constraint::nullable(false) ) );
 

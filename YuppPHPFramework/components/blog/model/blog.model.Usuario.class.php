@@ -11,8 +11,8 @@ class Usuario extends PersistentObject
 		$this->addAttribute("edad", Datatypes :: INT_NUMBER);
 		$this->addAttribute("fechaNacimiento", Datatypes :: DATE);
 
-		$this->addHasMany("comentarios", Comentario);
-		$this->addHasMany("entradas", EntradaBlog);
+		$this->addHasMany("comentarios", 'Comentario');
+		$this->addHasMany("entradas", 'EntradaBlog');
 
 		$this->constraints = array (
 			"nombre" => array (
