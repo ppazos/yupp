@@ -1,6 +1,6 @@
 <?php
 
-YuppLoader::load("core.layout", LayoutManager);
+YuppLoader::load("core.layout", "LayoutManager");
 
 /*
  * Implementa el proceso y control de generacion de paginas a partir del request.
@@ -79,7 +79,7 @@ class RequestManager {
          // *******************************************************************************
          $componentPath = "components/".$lr['component'];
          
-         $controllerClassName = String::firstToLower($lr['controller']) . "Controller";
+         $controllerClassName = String::firstToUpper($lr['controller']) . "Controller";
          $controllerFileName  = "components.".$lr['component'].".controllers.".$controllerClassName.".class.php";
          $controllerPath      = "components/".$lr['component']."/controllers/".$controllerFileName;
          if ( !file_exists($componentPath) )
