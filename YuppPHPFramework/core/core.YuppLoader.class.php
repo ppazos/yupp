@@ -98,10 +98,9 @@ class YuppLoader {
    private function _getLoadedModelClasses()
    {
       $res = array();
-      $packageNames = new PackageNames();
       foreach( $this->loadedClasses as $fileInfo )
       {
-      	if ( $packageNames->isModelPackage( $fileInfo['package'] ) )
+      	if ( PackageNames::isModelPackage( $fileInfo['package'] ) )
          {
          	$res[] = $fileInfo['class'];
          }
@@ -245,10 +244,9 @@ class YuppLoader {
 		// el que sabe la ruta es PackageNames ...
 		//
 		$path = ".";
-		$packs = new PackageNames();
-		if ($packs->isModelPackage($package))
+		if (PackageNames::isModelPackage($package))
 		{
-         $component = $packs->getModelPackageComponent( $package );
+         $component = PackageNames::getModelPackageComponent( $package );
          
 //			echo "<br/>ES MODEL PACKAGE!!! $package, $clazz, compo: $component<br/>";
 			//$path = $packs->getModelPackagePath(); // FIXME: ahora el modelo depende del componente.
@@ -393,12 +391,11 @@ class YuppLoader {
 		$filename = $fn->getClassFilename($package, $clazz);
 
 		$path = ".";
-		$packs = new PackageNames();
-		if ($packs->isModelPackage($package))
+		if (PackageNames::isModelPackage($package))
 		{
 			//echo "ES MODEL PACKAGE!!!<br/>";
 			//$path = $packs->getModelPackagePath();
-         $path = YuppConventions::getModelPath( getModelPackageComponent( $package ) );
+         $path = YuppConventions::getModelPath( PackageNames::getModelPackageComponent( $package ) );
 		}
 		else // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
 			{
@@ -420,12 +417,11 @@ class YuppLoader {
 		foreach ($cl->loadedClasses as $classInfo)
 		{
 			$package = $classInfo['package'];
-			//$incPath = $package . "/" . $classInfo['filename']; // Comun
 			$path = ".";
-			$packs = new PackageNames();
-			if ($packs->isModelPackage($package))
+         
+			if (PackageNames::isModelPackage($package))
 			{
-				$path = YuppConventions::getModelPath($packs->getModelPackageComponent( $package ));
+				$path = YuppConventions::getModelPath(PackageNames::getModelPackageComponent( $package ));
 			}
 			else // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
 				{

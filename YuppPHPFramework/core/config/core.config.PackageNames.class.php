@@ -1,49 +1,30 @@
 <?php
 
-// Tal vez tendria que mergear esta clase con FileNames...
+// TODO: Tal vez tendria que mergear esta clase con FileNames...
 
 class PackageNames {
 
-    // TODO: que los campos sean constantes y las funciones estaticas.
-
     //private $modelPackageRegExp = "/(.*)\.model\.(.*)\.class\.php$/i";
-    private $modelFileRegExp = "/(((.*)\.)?model)\.(.*)\.class\.php$/i";
-    private $modelPackageGroup = 1;
-    private $modelClassGroup = 4;
+    const MODEL_FILE_REGEXP    = '/(((.*)\.)?model)\.(.*)\.class\.php$/i';
+    const MODEL_PACKAGE_GROUP  = 1; // No se utiliza!
+    const MODEL_CLASS_GROUP    = 4;
 
-    private $modelPackageRegExp = "/(((.*)\.)?model)$/i";
+    // Solo se usa localmente
+    const MODEL_PACKAGE_REGEXP = '/(((.*)\.)?model)$/i';
 
-    //private $modelPackagePath = "./model"; // ruta fisica al paquete a partir de la raiz del sistema.
 
-    public function PackageNames() {
-    }
-
-    public function getModelFileRegExp()
+    public static function isModelPackage( $package )
     {
-        return $this->modelFileRegExp;
-    }
-
-    public function getModelPackageRegExp()
-    {
-    	  return $this->modelPackageRegExp;
-    }
-
-    public function isModelPackage( $package )
-    {
-    	  return preg_match($this->modelPackageRegExp, $package);
+    	  return preg_match(self::MODEL_PACKAGE_REGEXP, $package);
     }
     
     // Para sacar el componente del package de un modelo.
     // PRE: isModelPackage( $package )
-    public function getModelPackageComponent( $package )
+    public static function getModelPackageComponent( $package )
     {
-    	  preg_match($this->modelPackageRegExp, $package, $matches);
+    	  preg_match(self::MODEL_PACKAGE_REGEXP, $package, $matches);
         return $matches[3];
     }
-
-    public function getModelPackageGroup() { return $this->modelPackageGroup; }
-    public function getModelClassGroup()   { return $this->modelClassGroup; }
-
 
 //    public function getModelPackagePath( $component )
 //    {
@@ -54,7 +35,7 @@ class PackageNames {
    /**
     * getComponentNames
     * Devuelve una lista de los nombres de los componentes 
-    * existentes en la instalacion de Yupp.
+    * existentes en la instalacion de Yupp (lee el filesystem).
     */
    public static function getComponentNames()
    {

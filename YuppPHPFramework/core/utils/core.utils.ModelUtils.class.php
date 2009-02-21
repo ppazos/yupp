@@ -27,14 +27,13 @@ class ModelUtils {
     public static function &getModelClasses()
     {
     	  // el directorio del modelo es fijo, pero lo tengo que sacar de una configuracion, no hardcoded aca.
-        $packNames = new PackageNames();
         $components = $packNames->getComponentNames();
         
         $classNames = array();
         foreach ( $components as $component )
         {
             $model_path = YuppConventions::getModelPath( $component );
-            $_classNames = FileSystem::getFileNames($model_path, $packNames->getModelFileRegExp(), array( $packNames->getModelClassGroup() )); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
+            $_classNames = FileSystem::getFileNames($model_path, PackageNames::MODEL_FILE_REGEXP, array( PackageNames::MODEL_CLASS_GROUP )); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
             $classNames = array_merge($classNames, $_classNames);
         }
         
@@ -47,7 +46,7 @@ class ModelUtils {
 
         // TODO: LA REGEXP DEL PAQUETE DE MODELO ME LO DEBERIA DAR UNA CLASE RESPONSABLE DE SABER CUALES SON LAS REGEXPS DE LOS PAQUETES DESTACADOS Y DADO UNA RUTA DE PAQUETES SABER DE QUE TIPO ES (modulos, core, modelo, vistas, acciones, etc.)
 
-//        $classNames = FileSystem::getFileNames($model_path, $packNames->getModelFileRegExp(), array( $packNames->getModelClassGroup() )); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
+//        $classNames = FileSystem::getFileNames($model_path, PackageNames::MODEL_FILE_REGEXP, array( PackageNames::MODEL_CLASS_GROUP )); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
 
 
         //$classNames = FileSystem::getFileNames($model_path, "/(.*)\.model\.(.*)\.class\.php$/i", array(2)); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
