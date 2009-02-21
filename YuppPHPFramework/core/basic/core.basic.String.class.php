@@ -28,6 +28,15 @@ class String {
       return lcfirst($str);
    }
    
+   public static function firstToUpper( $str )
+   {
+      if(false === function_exists('ucfirst')) // Podria no existir la funcion, segun la doc.
+      {
+         return strtoupper( substr($str, 0, 1) ) . substr($str, 1);
+      }
+      return ucfirst($str);
+   }
+   
    function toUnderscore($string)
    {
      //return preg_replace("/[A-Z ]/", "/[a-z_]/", $string);
