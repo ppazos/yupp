@@ -54,7 +54,7 @@ class YuppConventions {
    {
       $ins = $instance_or_class;
       if ( !is_object($ins) ) $ins = new $instance_or_class(array(), true); // Si no es instancia, es clase, creo una instancia de esa clase.
-      if ( !is_a($ins, PersistentObject) ) throw new Exception("La instancia debe ser de PO y es " . gettype($ins));
+      if ( !is_a($ins, 'PersistentObject') ) throw new Exception("La instancia debe ser de PO y es " . gettype($ins));
       
       // FIXME: en pila de lados tengo que crear una instancia para poder llamar a este metodo, 
       // porque no mejor hacer que pueda recibir tambien el nombre de la clase, y en ese caso, 
@@ -75,7 +75,7 @@ class YuppConventions {
       else
       {
       	$superclaseNivel1 = $ins->getClass();
-         while ( ($parent = get_parent_class($superclaseNivel1)) !== PersistentObject )
+         while ( ($parent = get_parent_class($superclaseNivel1)) !== 'PersistentObject' )
          {
          	$superclaseNivel1 = $parent;
          }
