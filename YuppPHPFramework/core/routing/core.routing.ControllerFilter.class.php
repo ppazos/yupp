@@ -6,7 +6,7 @@
  */
 class ControllerFilter {
 
-    private $before_filters = array( SecurityFilter );
+    private $before_filters = array( "SecurityFilter" ); // FIXME: esto se esta verificando? se verifica para todos los componentes? (se hizo para el blog).
     private $after_filters  = array();
 
     function __construct()
@@ -36,11 +36,11 @@ class ControllerFilter {
           	 $res = $filterInstance->apply( $controller, $action );
              if ( $res !== true )
              {
-                if ( $res === NULL || get_class($res) !== ViewCommand ) throw new Exception("El filtro $filterClass no está retornando un tipo válido en apply.");
+                if ( $res === NULL || get_class($res) !== 'ViewCommand' ) throw new Exception("El filtro $filterClass no está retornando un tipo válido en apply.");
                
                 // TODO: verificar que no hayan ocurrido errores, por ejemplo que no se retorne ViewCommand, 
                 // por ejemplo se podria retornar null por que el usuario se olvido de hacer un retorno valido.
-             	 if ( get_class($res) === ViewCommand )
+             	 if ( get_class($res) === 'ViewCommand' )
                 {
                 	 return $res; // Hace redirect o llama derecho a una accion de un controller.
                 }
@@ -67,7 +67,7 @@ class ControllerFilter {
              {
                 // TODO: verificar que no hayan ocurrido errores, por ejemplo que no se retorne ViewCommand, 
                 // por ejemplo se podria retornar null por que el usuario se olvido de hacer un retorno valido.
-                if ( get_class($res) === ViewCommand )
+                if ( get_class($res) === 'ViewCommand' )
                 {
                    return $res; // Hace redirect o llama derecho a una accion de un controller.
                 }

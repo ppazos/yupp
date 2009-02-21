@@ -172,7 +172,7 @@ class Executer {
               
               $command = ViewCommand::display( $view, $model_or_command, $controllerInstance->getFlash() );
            }
-           else if ( get_class( $model_or_command ) === ViewCommand ) // Es comando
+           else if ( get_class( $model_or_command ) === 'ViewCommand' ) // Es comando (FIXME: no es lo mismo que instanceof?)
            {
               $command = $model_or_command;
            }

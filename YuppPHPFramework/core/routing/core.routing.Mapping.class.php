@@ -6,7 +6,7 @@
  */
 class Mapping {
 
-   private $mappings = array( BlogMapping, DefaultMapping ); // TODO: BlogMapping deberia registrarse desde el componente blog.
+   private $mappings = array( "BlogMapping", "DefaultMapping" ); // TODO: BlogMapping deberia registrarse desde el componente blog.
    private $relative_logic_url; // algo como: blog/entradaBlog/show
    private $field_list;
    
@@ -62,8 +62,11 @@ class DefaultMapping {
    public function getLogicalRoute( & $field_list )
    {
    	return array('component'  => $field_list[0], 
-                   'controller' => $field_list[1], 
-                   'action'     => $field_list[2]);
+                   'controller' => (!array_key_exists(1, $field_list)) ? NULL : $field_list[1],  // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 1 not defined. 
+                   'action'     => (!array_key_exists(2, $field_list)) ? NULL : $field_list[2]); // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 2 not defined.
+   
+                  // 'controller' => (array_key_exists(1, $field_list)) ? NULL : $field_list[1],  // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 1 not defined. 
+                  // 'action'     => (array_key_exists(2, $field_list)) ? NULL : $field_list[2]); // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 2 not defined.
    }
 }
 
