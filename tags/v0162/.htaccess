@@ -1,0 +1,20 @@
+##  Can be commented out if causes errors, see notes above.
+Options +FollowSymLinks
+
+#
+#  mod_rewrite in use
+
+RewriteEngine On
+
+# Controller/Action/pars
+#RewriteRule ([^\/]*)/([^\/]*)(/(.*))? UrlProcessing.php?controller=$1&action=$2&params=$4 // no importa que le pase los params, los agarro desde adentro.
+#RewriteRule ([^\/]*)/([^\/]*)/([^\/]*)(/(.*))? UrlProcessing.php
+
+# Si es un archivo fisico, dejarlo pasar.
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Todo va al punto de entrada
+RewriteRule (.*) index.php
+
+
+# TODO: Manejo de errores 404, 300, etc...
