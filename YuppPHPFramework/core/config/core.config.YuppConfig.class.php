@@ -74,7 +74,7 @@ class YuppConfig {
    /** 
     * Modo en el que se ejecuta la aplicacion al accederla. 
     * Cuando se instala la aplicacion en produccio debe modificarse el valor a MODE_PROD. */
-   private $currentMode = self::MODE_PROD; //self::MODE_DEV;
+   private $currentMode = self::MODE_DEV;
    
    /**
     * Indica que accion ejecutar por defecto al ingresar a la aplicacion en el modo actual.
