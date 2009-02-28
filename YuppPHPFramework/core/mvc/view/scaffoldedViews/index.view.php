@@ -23,6 +23,7 @@ $m = Model::getInstance();
       para los componentes del sistema.<br/>
       <ul>
          <?php foreach ($m->get('components') as $component): ?>
+           <?php if (!String::startsWith($component, ".")) : ?>
             <li>
                <?php echo $component; ?>
                <?php if (file_exists("components/$component/components.$component.bootstrap.script.php")): ?>
@@ -33,7 +34,7 @@ $m = Model::getInstance();
                  (no existe script de bootstrap)
                <?php endif; ?>
             </li>
-            
+            <?php endif; ?>
          <?php endforeach; ?>
       </ul>
       <hr/>
@@ -94,7 +95,7 @@ $m = Model::getInstance();
       
          while (false !== ($component = $dir->read())) :
 
-            if (!String::startsWith( $component, ".") && $component !== "core") :
+            if (!String::startsWith($component, ".") && $component !== "core") :
             
                echo "<h3>$component:</h3>";
                
