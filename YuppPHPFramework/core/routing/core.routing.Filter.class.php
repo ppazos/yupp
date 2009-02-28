@@ -37,6 +37,16 @@ class Filter {
       //Logger::struct( $this->urlParams, __FILE__ . " " . __LINE__ );
     }
     
+    /**
+     * Agrega parametros por nombre bajo demanda, no es necesario que sean pasados por get o post, 
+     * pero luego de procesados son tomados como cualquier parametro.
+     */
+    public function addCustomParams( $paramArray )
+    {
+       foreach ( $paramArray as $name => $value )
+          $this->urlParams[$name] = $value;
+    }
+    
     public function getPath() { return $this->parsedUrl['path']; }
     public function getQuery() { return $this->parsedUrl['query']; }
     public function getAnchor() { return $this->parsedUrl['fragment']; }
