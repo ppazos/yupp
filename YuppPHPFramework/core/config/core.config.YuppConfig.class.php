@@ -71,6 +71,39 @@ class YuppConfig {
    const MODE_PROD = "production";
    const MODE_TEST = "testing";
    
+   /** 
+    * Modo en el que se ejecuta la aplicacion al accederla. 
+    * Cuando se instala la aplicacion en produccio debe modificarse el valor a MODE_PROD. */
+   private $currentMode = self::MODE_PROD; //self::MODE_DEV;
+   
+   /**
+    * Indica que accion ejecutar por defecto al ingresar a la aplicacion en el modo actual.
+    */
+   private $modeDefaultMapping = array(
+                                   self::MODE_DEV => // Si se desea acceder al administrador de Yupp no se deben modificar los valores.
+                                     array(
+                                      'component'  => 'core',
+                                      'controller' => 'core',
+                                      'action'     => 'index',
+                                      'params'     => array()
+                                     ),
+                                   self::MODE_PROD => // Modificar los valores al poner la aplucacion en produccion.
+                                     array(
+                                      'component'  => 'portal',
+                                      'controller' => 'page',
+                                      'action'     => 'display',
+                                      'params'     => array('_param_1'=>'index')
+                                     ),
+                                   self::MODE_TEST => // Todavia no utilizado.
+                                     array(
+                                      'component'  => 'core',
+                                      'controller' => 'core',
+                                      'action'     => 'index',
+                                      'params'     => array()
+                                     )
+                                 );
+   
+   
    public function getAvailableModes()
    {
       return array( self::MODE_DEV, self::MODE_PROD, self::MODE_TEST );
@@ -101,6 +134,19 @@ class YuppConfig {
    public function getDatabaseType()
    {
    	return $this->database_type;
+   }
+   
+   public function getCurrentMode()
+   {
+   	return $this->currentMode;
+   }
+   
+   /**
+    * Retorna el mapping (array de component, controller y accion) para el modo actual.
+    */
+   public function getModeDefaultMapping()
+   {
+   	return $this->modeDefaultMapping[ $this->currentMode ];
    }
    
 }
