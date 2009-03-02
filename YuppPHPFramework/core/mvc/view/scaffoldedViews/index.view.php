@@ -111,7 +111,7 @@ $m = Model::getInstance();
                      //$logic_controller = strtolower( substr($controller, 0, 1) ) . substr($controller, 1, strlen($controller));
                      $logic_controller = String::firstToLower( $controller );
 
-                     echo '<li>[ <a href="'.Helpers::url( array("component"=>$component, "controller"=>$logic_controller) ).'">'. $controller .'</a> ]</li>';
+                     echo '<li>[ <a href="'.Helpers::url( array("component"=>$component, "controller"=>$logic_controller, "action"=>"index") ).'">'. $controller .'</a> ]</li>';
                      
                      /*
                      $ctx = YuppContext::getInstance();
