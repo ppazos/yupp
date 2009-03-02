@@ -38,8 +38,10 @@ class Helpers {
         else
            $controller = $ctx->getController();
         
-        
-        $action = $paramsMap['action'];     // Obligatorio, si no, no se que hacer, o voy a la accion por defecto.
+        if ( array_key_exists('action', $paramsMap) ) // Si no me lo pasan, tengo que tirar una except. (es obligatorio)
+           $action = $paramsMap['action']; 
+        else
+           throw new Exception("El parametro 'action' es obligatorio y no esta presente. " . __FILE__ . " " . __LINE__);
 
         // Saco los que ya use...
         $paramsMap['component']  = NULL;
