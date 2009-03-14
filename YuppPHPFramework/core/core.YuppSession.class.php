@@ -17,7 +17,8 @@ class YuppSession {
       //print_r( $_SESSION[ $key ] );
    }
 
-   public static function &get( $key )
+   //public static function &get( $key )
+   public static function get( $key ) // Da problemas con el & si retorna NULL (no quiero la referencia al objeto en session, porque en realidad obtengo la referencia a su desserializacion).
    {
       if ( !isset($_SESSION[$key]) )
       {
