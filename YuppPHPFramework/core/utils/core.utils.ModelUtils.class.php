@@ -117,7 +117,7 @@ class ModelUtils {
     {
         $res = array();
         $parent = get_parent_class( $clazz ); // tiene solo un parent...
-        while ( $parent != NULL && $parent != "" && $parent != PersistentObject )
+        while ( $parent != NULL && $parent != "" && $parent !== 'PersistentObject' )
         {
             //$res[] = $parent; // agrega al final
             array_unshift( $res, $parent ); // agrega al principio, asi sale la superclase de todos en el primer lugar. (*)
