@@ -48,24 +48,27 @@ class Helpers {
         $paramsMap['controller'] = NULL;
         $paramsMap['action']     = NULL;
         
+        $params = array_filter($paramsMap); // Saca nulls // ['params']; // opcional, es un mapa.
         
-        //if ( array_key_exists('params', $paramsMap) )
-        //{
-           $params     = array_filter($paramsMap); // Saca nulls // ['params']; // opcional, es un mapa.
-           
-           //Logger::struct( $params, "Helpers.url" );
-           
-           // debe ser un array!
-           $params_url = "";
-           foreach ($params as $key => $value) // FIXME: hay una funcion de PHP que ya hace esto...
-           {
-              // armo: key=val&key=val&...=val
-              $params_url .= $key ."=". $value ."&";
-           }
-           $params_url = substr($params_url, 0, -1);
-        //}
+        // debe ser un array!
+        $params_url = "";
+        $params_in_url = array();
+        foreach ($params as $key => $value) // FIXME: hay una funcion de PHP que ya hace esto...
+        {
+           // armo: key=val&key=val&...=val
+           // FIXME: php tiene una funcion para hacr esto.
+           if ( String::startsWith($key, "_param_") ) $params_in_url[ substr($key, 7) ] = $value; // agrega los _param_x en orden.
+           else $params_url .= $key ."=". $value ."&";
+        }
+        $params_url = substr($params_url, 0, -1);
 
-        return $_base_dir ."/". $component ."/". $controller ."/". $action . ((strcmp($params_url,"") != 0)? ("?". $params_url) : "");
+        $params_in_url_str = "";
+        foreach ($params_in_url as $value) // FIXME: hay una funcion de PHP que ya hace esto...
+        {
+           $params_in_url_str .= "/" . $value;
+        }
+
+        return $_base_dir ."/". $component ."/". $controller ."/". $action . $params_in_url_str . ((strcmp($params_url,"") != 0)? ("?". $params_url) : "");
     }
 
     /**
@@ -241,9 +244,9 @@ function $func {
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
           $res = '<img src="'. $_base_dir .'/images/'. $params['src'] .'"';
        
-       if ( $params['w'] !== NULL )    $res .= ' width="'.  $params['w'] .'"';
-       if ( $params['h'] !== NULL )    $res .= ' height="'. $params['h'] .'"';
-       if ( $params['text'] !== NULL ) $res .= ' alt="'.    $params['text'] .'"';
+       if ( isset($params['w']) )    $res .= ' width="'.  $params['w'] .'"';
+       if ( isset($params['h']) )    $res .= ' height="'. $params['h'] .'"';
+       if ( isset($params['text']) ) $res .= ' alt="'.    $params['text'] .'"';
        
        return $res . "/>";
     }
