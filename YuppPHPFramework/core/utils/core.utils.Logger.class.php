@@ -7,14 +7,13 @@ class Logger {
    //       importancia del modulo.
 
    private $active = true;
-
    private static $instance = NULL;
-   
-   
+
    // Para guardar arbol de logs =======
    
    // Matrix cant. llamadas / nivel
    private $buffer = array();
+   private $currentIndex = 0;
    
    const LEVEL_KEY_PO  = "persistent_object";  // Index 0
    const LEVEL_KEY_PM  = "persistent_manager"; // Index 1
@@ -45,7 +44,7 @@ class Logger {
    {
       // TODO: ver como acomodar la customData.
 
-      if ( $this->buffer[$this->currentIndex] === NULL )
+      if ( !array_key_exists($this->currentIndex, $this->buffer) || $this->buffer[$this->currentIndex] === NULL )
          $this->buffer[$this->currentIndex] = array(); // un lugar para cada posible indice.
          
       $this->buffer[$this->currentIndex][$index] = $message;
@@ -194,7 +193,8 @@ class Logger {
 
    public function artholder_log($msg)
    {
-      if ($this->active)
+      $log = self::getInstance();
+      if ($log->active)
       {
          echo '<div style="background: #fa0; border: 1px solid #000; color: #000;">';
          echo $msg;
