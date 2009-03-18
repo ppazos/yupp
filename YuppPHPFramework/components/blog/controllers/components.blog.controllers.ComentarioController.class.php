@@ -7,7 +7,11 @@ class ComentarioController extends YuppController {
      */
     public function indexAction()
     {
-       return $this->listAction();
+       $loguedUser = YuppSession::get("user"); // Lo pone en session en el login.
+       if ($loguedUser !== NULL)
+          return $this->listAction();
+       else
+          return $this->redirect(array('controller'=>'usuario', 'action'=>'login'));
     }
 
     /**
@@ -16,7 +20,7 @@ class ComentarioController extends YuppController {
     public function listAction()
     {
        // paginacion
-       if ( !$this->params['max'] )
+       if ( !array_key_exists('max', $this->params) )
        {
           $this->params['max'] = 5;
           $this->params['offset'] = 0;
@@ -88,7 +92,7 @@ class ComentarioController extends YuppController {
 
        // View create, que es como edit pero la accion de salvar vuelve aqui.
 
-       if ($this->params['doit']) // create
+       if (array_key_exists('doit',$this->params)) // create
        {
           // Setear entrada que se esta comentando.
           $entrada = EntradaBlog::get( $this->params['id'] );

@@ -11,7 +11,7 @@ class EntradaBlogController extends YuppController {
        if ($loguedUser !== NULL)
           return $this->listAction();
        else
-          return $this->loginAction();
+          return $this->redirect(array('controller'=>'usuario', 'action'=>'login'));
     }
 
     /**
@@ -20,7 +20,7 @@ class EntradaBlogController extends YuppController {
     public function listAction()
     {
        // paginacion
-       if ( !$this->params['max'] )
+       if ( !array_key_exists('max',$this->params) )
        {
           $this->params['max'] = 5;
           $this->params['offset'] = 0;
@@ -114,7 +114,7 @@ class EntradaBlogController extends YuppController {
        $obj = new EntradaBlog(); // Crea instancia para mostrar en la web los valores por defecto para los atributos que los tengan.
 
        // View create, que es como edit pero la accion de salvar vuelve aqui.
-       if ($this->params['doit']) // create
+       if (array_key_exists('doit',$this->params)) // create
        {
           $obj->setProperties( $this->params );
           if ( !$obj->save() ) // Con validacion de datos!

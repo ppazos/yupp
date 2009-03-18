@@ -17,7 +17,7 @@ class UsuarioController extends YuppController {
    public function listAction()
    {
       // paginacion
-      if (!$this->params['max'])
+      if (!array_key_exists('max', $this->params))
       {
          $this->params['max'] = 10;
          $this->params['offset'] = 0;
@@ -59,7 +59,7 @@ class UsuarioController extends YuppController {
     */
    public function fillNameAction( &$flow )
    {
-   	if ( $this->params['doit'] )
+   	if ( array_key_exists('doit', $this->params) )
       {
          if ( $this->params['name'] === "" ) // TODO: validacion automatica desde las constraints de Usuario
          {
@@ -80,7 +80,7 @@ class UsuarioController extends YuppController {
     */
    public function fillUserAndPassAction( &$flow )
    {
-      if ( $this->params['doit'] )
+      if ( array_key_exists('doit', $this->params) )
       {
          if ( $this->params['email'] === "" || $this->params['pass'] === "" ) // TODO: validacion automatica desde las constraints de Usuario
          {
@@ -129,16 +129,16 @@ class UsuarioController extends YuppController {
     public function loginAction()
     {
        // OBS: si retorno NULL o modelo, desde la accion index, se intenta mostrar la vista index.view.php.
-       if ( $this->params['doit'] )
+       if ( array_key_exists( 'doit', $this->params) )
        {
-          if (!$this->params['email'] || !$this->params['clave'])
+          if (!array_key_exists('email',$this->params) || !array_key_exists('clave', $this->params))
           {
           	 $this->flash['message'] = "Por favor ingrese email y clave";
              return $this->render("/usuario/login", &$this->params);
           }
           
           // Login
-       	 $tableName = YuppConventions::tableName( Usuario ); // Se le pasa la clase, para saber la tabla donde se guardan sus instancias.
+       	 $tableName = YuppConventions::tableName( 'Usuario' ); // Se le pasa la clase, para saber la tabla donde se guardan sus instancias.
           $condition = Condition::_AND()
                           ->add( Condition::EQ($tableName, "email", $this->params['email']) )
                           ->add( Condition::EQ($tableName, "clave", $this->params['clave']) );
