@@ -1,16 +1,24 @@
 <?php
 
+// FIXME: cambiar "*" por una constante ALL_CONTROLLERS, y si es para acciones ALL_ACTIONS (p.e. con un '+')
+
 /**
  * 
  * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
  */
-class ControllerFilter {
+class ControllerFilter2 {
 
-    private $before_filters = array( "PortalSecurityFilter", "BlogSecurityFilter" ); // FIXME: esto se esta verificando? se verifica para todos los componentes? (se hizo para el blog).
-    private $after_filters  = array();
+    /**
+     * Arrays de filtros, en before_filters son clases que implementan IControllerBeforeFilter,
+     * y en after_filters clases que implementan IControllerAfterFilter.
+     */ 
+    private $before_filters;
+    private $after_filters;
 
-    function __construct()
+    function __construct( $before_filters, $after_filters )
     {
+        $this->before_filters = $before_filters;
+        $this->after_filters  = $after_filters;
     }
     
 //    public static function registerBeforeFilter( IControllerFilter $filterClass )
@@ -96,8 +104,8 @@ class ControllerFilter {
        	 throw new Exception("filterInstance debe ser IControllerBeforeFilter o IControllerAfterFilter y es " . get_class($filterInstance));
        }
       
-       $controllers = $filterInstance->getControllersFilter();
-       $actions     = $filterInstance->getActionsFilter();
+       $filters    = $filterInstance->getAllFilters();
+       $exceptions = $filterInstance->getAllExceptions();
        
        //echo "applies: " . get_class($filterInstance) . " $component $controller $action <br/>";
        //echo "CONTROLLERS: $controllers<br/>";
@@ -105,26 +113,36 @@ class ControllerFilter {
        
        // TODO: verificar que el controllers y el actions tienen alguno de los formatos definidos, si no, tirar except.
        
-       if ( $controllers === "$component.*")
+       if ( $filters === "*")
        {
-         if ($actions === "*") return true;
-         if (is_array($actions) && in_array($action, $actions)) return true;
-         return ($actions === $action); // caso que actions es un string
+         // chekeo solo excepciones
+         if (array_key_exists($controller, $exceptions)) // si hay una excepcion para el controller
+         {
+            if ($exceptions[$controller] === "*") return false; // Excepcion para todas las acciones
+            else if ( in_array( $action, $exceptions[$controller] ) ) return false; // Excepcion para una accion
+         }
+         return true; // El filtro aplica.
        }
        
-       if ( is_array($controllers) && array_key_exists($component, $controllers) && in_array($controller, $controllers[$component]) )
+       if ( is_array($filters) && array_key_exists($controller, $filters) ) // si filters es un array y tiene un filtro para el controller
        {
-         if ($actions === "*") return true;
-         if (is_array($actions) && in_array($action, $actions)) return true;
-         return ($actions === $action); // caso que actions es un string
-       }
-       
-       // Espero este formato de string: componente.controller
-       if ( $controllers === $component.'.'.$controller ) // Caso en que controllers es un string, el nombre del controller al que se aplica
-       {
-         if ($actions === "*") return true;
-         if (is_array($actions) && in_array($action, $actions)) return true;
-         return ($actions === $action); // caso que actions es un string
+         if ($filters[$controller] === "*") // si es para todas las acciones del controller
+         {
+            // solo verifico excepciones
+            if (array_key_exists($controller, $exceptions)) // si hay una excepcion para el controller
+            {
+               // NO TIENE SENTIDO QUE PONGA UN FILTRO PARA TODAS LAS ACCIONES Y UNA EXCEPCION PARA TODAS LAS ACCIONES. TODO: DEBERIA TIRRAR UN ERROR S ISE HICIERA ESTO.
+               //if ($exceptions[$controller] === "*") return false; // Excepcion para todas las acciones
+               //else 
+               if ( in_array( $action, $exceptions[$controller] ) ) return false; // Excepcion para una accion
+            }
+            return true; // Aplica el filtro.
+         }
+         else if (is_array($filters) && in_array($action, $filters[$controller]) ) // TODO: Si llega aca y is_array($filters) da false, hay que tirar un error
+         {
+            return true; // No tiene sentido poner un filtro para una accion determinada y luego poner excepciones para esa accion o para todas las acciones del controller TODO: si pasa esto deberia tirar un warning o error.
+         }
+         return false; // si es un array y no aplicaron los criterios de busqueda, no aplica el filtro.
        }
        
        // Si llega aca el chekeo de controller no dio true, por otro lado  puede ser error de tipos, para eso deberia dividir el if del controller en 2
@@ -133,15 +151,23 @@ class ControllerFilter {
        // Si llega aca hay algo mal con la definicion de controllers...
        //throw new Exception("Valor dado para controllers es incorrecto para el filtro " . get_class($filterInstance) . ", tiene valor '$controllers'");
     }
-}
+} // ControllerFilter2
 
+interface IComponentControllerFilters {
+   
+   /**
+    * Devuelve un array con todos los filtros configurados en el ComponentControllerFilters del modulo.
+    */
+   public static function getBeforeFilters();
+   public static function getAfterFilters();
+}
 
 // Se usa para chekear el tipo de los filters
 interface IControllerBeforeFilter {
 	
    // Pueden ser: un array, un nombre de un controller o una action, "*" que es "para todos".
-   public function getControllersFilter();
-   public function getActionsFilter();
+   public function getAllFilters();
+   public function getAllExceptions();
    
    /**
     * Debe retornar true si pasa o un ViewCommand si no pasa, o sea redireccionar o ejecutar una accion de un cotroller o hacer render de un string...
@@ -163,6 +189,7 @@ interface IControllerAfterFilter {
    public function apply($component, $controller, $action, ViewCommand $command);
 }
 
+/*
 // FIXME: las acciones deben ser de los controllers, no son sueltas.
 // FIXME: deberia estar declarada en otro archivo
 // Extiende controller para tener render y redirect!
@@ -175,9 +202,9 @@ class BlogSecurityFilter extends YuppController implements IControllerBeforeFilt
    public function getControllersFilter() { return $this->controllers; }
    public function getActionsFilter()     { return $this->actions; }
    
-   /**
+   / **
     * Debe retornar true si pasa o un ViewCommand si no pasa, o sea redireccionar o ejecutar una accion de un cotroller o hacer render de un string...
-    */
+    * /
    public function apply($component, $controller, $action)
    {
    	// CUSTOM ACTION!
@@ -189,33 +216,6 @@ class BlogSecurityFilter extends YuppController implements IControllerBeforeFilt
       return $this->redirect( array("component"=>"blog", "controller" => "usuario", "action" => "login") );
    }
 }
-
-/**
- * Seguridad para el componente PORTAL.
- */
-class PortalSecurityFilter extends YuppController implements IControllerBeforeFilter {
-   
-   // Pueden ser: un array (component=>controller), un nombre de un 'component.controller' o una action, "component.*" que es "para todos".
-   private $controllers = "portal.*"; // Lista de controllers a los que se aplica este filter.
-   private $actions = "*"; // Lista de acciones a los que se aplica el filter
-   
-   public function getControllersFilter() { return $this->controllers; }
-   public function getActionsFilter()     { return $this->actions; }
-   
-   /**
-    * Debe retornar true si pasa o un ViewCommand si no pasa, o sea redireccionar o ejecutar una accion de un cotroller o hacer render de un string...
-    */
-   public function apply($component, $controller, $action)
-   {
-      // CUSTOM ACTION!
-      $u = YuppSession::get("user"); // Lo pone en session en el login.
-      if ($u !== NULL) return true;
-      
-      return $this->redirect( array("component"  => "portal",
-                                    "controller" => "page",
-                                    "action"     => "display",
-                                    "params"     => array("_param_1"=>"login")) );
-   }
-}
+*/
 
 ?>
