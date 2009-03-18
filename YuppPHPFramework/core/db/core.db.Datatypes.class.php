@@ -21,17 +21,17 @@ class Datatypes {
 
    public static function isText( $type )
    {
-      return ($type == Datatypes::TEXT);
+      return ($type == self::TEXT);
    }
 
    public static function isNumber( $type )
    {
-      return ($type == Datatypes::INT_NUMBER || $type == Datatypes::LONG_NUMBER || $type == Datatypes::FLOAT_NUMBER || $type == Datatypes::BOOLEAN);
+      return ($type == self::INT_NUMBER || $type == self::LONG_NUMBER || $type == self::FLOAT_NUMBER || $type == self::BOOLEAN);
    }
 
    public static function isDateTime( $type )
    {
-      return ($type == Datatypes::DATE || $type == Datatypes::TIME || $type == Datatypes::DATETIME);
+      return ($type == self::DATE || $type == self::TIME || $type == self::DATETIME);
    }
 
 

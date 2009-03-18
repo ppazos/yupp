@@ -201,7 +201,7 @@ class DatabaseSQLite {
 
    // Tipos posibles de atributos
    // Tipos de atributos disponibles (se deberian mapear segun cada DBMS...)
-   public function getTextType( $swpType, $maxLength = null )
+   public function getTextType( $swpType, $maxLength = NULL )
    {
       //Logger::getInstance()->log("DatabaseMySQL::getTextType");
 
@@ -256,7 +256,7 @@ class DatabaseSQLite {
          {
             foreach ( $constraints as $constraint )
             {
-               if ( get_class($constraint) === MaxLengthConstraint )
+               if ( get_class($constraint) === 'MaxLengthConstraint' )
                {
                   $maxLengthConstraint = $constraint;
                   break; // rompe for

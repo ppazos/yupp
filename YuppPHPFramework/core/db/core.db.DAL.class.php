@@ -59,10 +59,10 @@ class DAL {
    private $db;
 
    // TODO: POR AHORA LOS DATOS PARA ACCEDER A LA BD SE CONFIGURAR AQUI...
-   private $url; // = "localhost";
-   private $user; // = "root";
-   private $pass; // = "";
-   private $database; // = "carlitos";
+   private $url;
+   private $user;
+   private $pass;
+   private $database;
 
    private static $instance = NULL;
 
@@ -206,8 +206,13 @@ class DAL {
       foreach ( $pks as $pk )
       {
          // $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
+                  
+         // =============================================================================================================
+         // FIXME: arreglo rapido porque no hay constraints para id, ver el sig. FIXME en PersistentManager en linea 2203
+         //    FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
+         $constraintsOrNull = (isset($constraints[$pk['name']])) ? $constraints[$pk['name']] : NULL;
       	$q_pks .= $pk['name'] . " " . 
-                   $this->db->getDBType($pk['type'], $constraints[$pk['name']] ) . " " .
+                   $this->db->getDBType($pk['type'], $constraintsOrNull ) . " " .
                    ((array_key_exists('default', $pk)) ? "DEFAULT " . $pk['default'] : '') . // si hay default lo pone 
                    " PRIMARY KEY, "; // TODO!
       }
@@ -220,8 +225,13 @@ class DAL {
       foreach ( $cols as $col )
       {
          // $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
+  
+         // =============================================================================================================
+         // FIXME: arreglo rapido porque no hay constraints para id, ver el sig. FIXME en PersistentManager en linea 2203
+         //    FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
+         $constraintsOrNull = (isset($constraints[$col['name']])) ? $constraints[$col['name']] : NULL;
          $q_cols .= $col['name'] . " " . 
-                    $this->db->getDBType($col['type'], $constraints[$col['name']] ) . " " .
+                    $this->db->getDBType($col['type'], $constraintsOrNull ) . " " .
                     ((array_key_exists('default', $col)) ? "DEFAULT " . $col['default'] : '') . // si hay default lo pone 
                     ((array_key_exists('nullable', $col) && $col['nullable']) ? " NULL" : " NOT NULL") . // Si la clave nullable esta y si el ooleano en nullable es true, pone NULL.
                     ", ";
@@ -384,7 +394,7 @@ class DAL {
           if ( Datatypes::isText( $type ) )
           {
              $maxLength = NULL; // TODO: Falta ver si tengo restricciones de maxlength!!!
-             $maxLengthConstraint = $obj->getConstraintOfClass( $attr, MaxLengthConstraint );
+             $maxLengthConstraint = $obj->getConstraintOfClass( $attr, 'MaxLengthConstraint' );
 
              if ($maxLengthConstraint !== NULL) $maxLength = $maxLengthConstraint->getValue();
              
@@ -900,7 +910,7 @@ class DAL {
          // Setea los atributos super_id_XXX
          foreach ( $pinss as &$partialInstance )
          {
-            if (get_parent_class($partialInstance) !== PersistentObject) // Setear super_id_SuperClass para cada instancia parcial menos para la clase de nivel 1.
+            if (get_parent_class($partialInstance) !== 'PersistentObject') // Setear super_id_SuperClass para cada instancia parcial menos para la clase de nivel 1.
             {
                foreach ( $mtids as $sclass => $id )
                {
