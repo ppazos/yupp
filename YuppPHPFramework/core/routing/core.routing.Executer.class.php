@@ -13,10 +13,14 @@ class Executer {
        $this->params = $params;
     }
     
-    public function execute()
+    /**
+     * @param componentControllerFiltersInstance instancia de ComponentControllerFilters, puede ser NULL.
+     */
+    public function execute( $componentControllerFiltersInstance )
     {
         // TODO: se le podria pasar el context como parametro porque en el llamador ya lo tengo, ahorro tener que pedirlo aca.
         $ctx = YuppContext::getInstance();
+        $component  = $ctx->getComponent();
         $controller = $ctx->getController();
         $action     = $ctx->getAction();
         
@@ -26,10 +30,12 @@ class Executer {
         
         // ===================================================
         // Before y After filters para acciones de controllers
-        $filters = new ControllerFilter();
+        $beforeFilters = ($componentControllerFiltersInstance !== NULL)? $componentControllerFiltersInstance->getBeforeFilters() : array();
+        $afterFilters  = ($componentControllerFiltersInstance !== NULL)? $componentControllerFiltersInstance->getAfterFilters()  : array();
+        $filters = new ControllerFilter2( $beforeFilters, $afterFilters ); // TODO: cambiar nombre a YuppControllerFilter.
         
         // Ejecucion de los before filters, true si pasan o un ViewCommand si no.
-        $bf_res = $filters->before_filter($controller, $action, &$this->params);
+        $bf_res = $filters->before_filter($component, $controller, $action, &$this->params);
         
         // ===================================================
       
@@ -89,7 +95,6 @@ class Executer {
                  $flowActionName = $flow->getCurrentState()->getName() . "Action";
                  $flowExecutionResult = $controllerInstance->{$flowActionName}( &$flow ); // Esta es ya la accion de pasar al otro estado.??? deberia ser en el move...
            
-                 
                  // $flowExecutionResult puede ser "move", NULL o un codigo de error.
                  if ( $flowExecutionResult === NULL )
                  {
@@ -156,6 +161,10 @@ class Executer {
 //              echo $e->getTraceAsString();
 //              exit();
 //           }
+
+           // ======================================================================================
+           // PROCESA COMANDO (resultado de before_filters o de ejecucion del controlador)
+           // ======================================================================================
            
            // Puede haber retornado solo modelo, un comando o nada.
            if ( is_array($model_or_command) ) // Es solo modelo
@@ -196,7 +205,7 @@ class Executer {
            // ===================================================
            // after filters
            // Ejecucion de los after filters, true si pasan o un ViewCommand si no.
-           $af_res = $filters->after_filter($controller, $action, &$this->params, $command);
+           $af_res = $filters->after_filter($component, $controller, $action, &$this->params, $command);
            
            if ( $af_res !== true )
            {
