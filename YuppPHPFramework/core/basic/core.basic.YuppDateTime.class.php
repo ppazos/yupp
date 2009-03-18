@@ -4,6 +4,17 @@ class YuppDateTime
    const MySQL_DATETIME_FORMAT  = "Y-m-d H:i:s";
    const MySQL_DATE_FORMAT      = "Y-m-d";
    const MySQL_TIME_FORMAT      = "H:i:s";
+   
+   public static function dateParts( $date )
+   {
+      // FIXME: match con MySQL_DATE_FORMAT
+      $arr = explode( "-", $date );
+      $arr['year']  = (int)$arr[0];
+      $arr['month'] = (int)$arr[1];
+      $arr['day']   = (int)$arr[2];
+      
+      return $arr;
+   }
 
 	public static function timeToMySQLDate($timestamp)
 	{
