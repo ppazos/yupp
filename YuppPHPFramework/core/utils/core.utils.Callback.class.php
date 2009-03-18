@@ -39,15 +39,15 @@ class Callback {
 
     public function set( $obj, $method, $parList )
     {
-        $this->callback[OBJ_KEY] = $obj;
+        $this->callback[self::OBJ_KEY] = $obj;
         // TODO: podria verificar que el objeto no es null
         // TODO: podria verificar que el metodo existe en el objeto
-        $this->callback[METHOD_KEY] = $method;
+        $this->callback[self::METHOD_KEY] = $method;
 
         // TODO: parList debe ser un array
         foreach ( $parList as $i => $param )
         {
-            $this->callback[PARAM_PREFIX_KEY . $i] = $param; // las keys son par0, par1, par2...
+            $this->callback[self::PARAM_PREFIX_KEY . $i] = $param; // las keys son par0, par1, par2...
         }
     }
 
@@ -59,17 +59,17 @@ class Callback {
     public function getParam( $i )
     {
         // TODO: Chekear indices
-        return $this->callback[ PARAM_PREFIX_KEY . $i ];
+        return $this->callback[ self::PARAM_PREFIX_KEY . $i ];
     }
 
     public function getObject()
     {
-        return $this->callback[ OBJ_KEY ];
+        return $this->callback[ self::OBJ_KEY ];
     }
 
     public function getMethod()
     {
-        return $this->callback[ METHOD_KEY ];
+        return $this->callback[ self::METHOD_KEY ];
     }
 
     //
@@ -122,7 +122,7 @@ class Callback {
 
     public function __toString()
     {
-        return get_class($this) . " obj: " . get_class($this->callback[OBJ_KEY]) . " method: " . $this->callback[METHOD_KEY];
+        return get_class($this) . " obj: " . get_class($this->callback[self::OBJ_KEY]) . " method: " . $this->callback[self::METHOD_KEY];
     }
 }
 
