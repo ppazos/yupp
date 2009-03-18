@@ -153,7 +153,7 @@ class PersistentManager {
          $assocObj = $child->aGet($hoBidirChildAttr);
 
          // Si hay objeto, si esta cargado, y si coincide el id.
-         if ($assocObj && $assocObj != PersistentObject::NOT_LOADED_ASSOC && $assocObj->getId() == $owner->getId() )
+         if ($assocObj && $assocObj !== PersistentObject::NOT_LOADED_ASSOC && $assocObj->getId() === $owner->getId() )
          {
             $relType = ObjectReference::TYPE_BIDIR;
          }
@@ -324,7 +324,7 @@ class PersistentManager {
          foreach ( $sassoc as $attrName => $assocObj )
          {
             // ojo el objeto debe estar cargado (se verifica eso)
-            if ( $assocObj != PersistentObject::NOT_LOADED_ASSOC )
+            if ( $assocObj !== PersistentObject::NOT_LOADED_ASSOC )
             {
                // Si se detecta un loop en el salvado del modelo,
                if ( $assocObj->isLoopMarked( $sessId ) )
@@ -2102,7 +2102,7 @@ class PersistentManager {
       Logger::getInstance()->pm_log("PersistentManager::generateAll");
       
    	// Todas las clases del primer nivel del modelo.
-      $A = ModelUtils::getSubclassesOf( PersistentObject );
+      $A = ModelUtils::getSubclassesOf( 'PersistentObject' );
 
       // Se utiliza luego para generar FKs.
       $generatedPOs = array();
@@ -2165,7 +2165,7 @@ class PersistentManager {
             }
             
             $parent_class = get_parent_class($c_ins);
-            if ( $parent_class !== PersistentObject ) // Si la instancia no es de primer nivel
+            if ( $parent_class !== 'PersistentObject' ) // Si la instancia no es de primer nivel
             {
             	//$c_ins->addAttribute("super_id", Datatypes::INT_NUMBER); // No va mas este atrib.
                
@@ -2173,8 +2173,7 @@ class PersistentManager {
                $suc_ins = new $parent_class();
                $c_ins = PersistentObject::less($c_ins, $suc_ins); // Saco los atributos de la superclase
             }
-            
-            
+
             // FKs
             // Inyecto FKs de las subclases a las superclases (solo a la principal, no a las subclases de ella que se mapean en la misma tabla y son superclases mias)
             // Ejemplo, si -> es "hereda de" y (wt) es que tiene definido "withTable": F->E(wt)->D->C(wt)->B->A,
@@ -2185,7 +2184,7 @@ class PersistentManager {
             
             // Recorro la estructura para arriba, hasta el PO
 
-            while ( $parent_class !== PersistentObject )
+            while ( $parent_class !== 'PersistentObject' )
             {
             	if ( array_key_exists($parent_class, $struct) ) // Si es una clase principal
                {
@@ -2200,6 +2199,8 @@ class PersistentManager {
             }
             // /Inyecto FKs
             
+            
+            // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
             $this->generate( $c_ins );
             
             
@@ -2511,6 +2512,8 @@ class PersistentManager {
 
 } // PersistentManager
 
+
+// FIXME: mover a basic.String.
 class SWPString {
 
   // 1. Necesito una estrategia de nombrado que pueda ser invertida sin ambiguedad (nombre atributo -> cnombre valido de columna -> nombre atributo)

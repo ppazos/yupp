@@ -102,8 +102,6 @@ class PersistentObject {
     */
    public function updateSuperIds()
    {
-      //Logger::struct( $this->multipleTableIds, "PO.updateSuperIds (". $this->getClass() .")" );
-      
       foreach ( $this->multipleTableIds as $class => $id )
    	{
          $attr = YuppConventions::superclassRefName( $class ); // super_id_SuperClase
@@ -126,6 +124,10 @@ class PersistentObject {
       }
    }
    
+   /**
+    * Devuelve los atributos inyectados para referenciar instancias parciales de superclases,
+    * que son atributos de la forma: super_id_UnaClase, super_id_OtraClase, etc.
+    */
    public function getMTIAttributes()
    {
       $res = array();
@@ -141,13 +143,22 @@ class PersistentObject {
    
 
    /**
-    * Agrega una lista de restricciones a un atributo.
+    * Agrega una lista de restricciones a un atributo de la clase, 
+    * para cuando se asigne un valor al atributo, verificar que el valor es correcto.
     */
    public function addConstraints( $attr, $constraints )
    {
-      // TODO: chek, el atributo existe.
-      // TODO: chek, constraints debe ser 1) un array de 2) restricciones validas.
-      // Si ya hay constraints, no las redefine.
+      // Check 1: el atributo existe.
+      if (!$this->hasAttribute($attr)) throw new Exception("Se intenta definir una restriccion para un atributo que no existe ($attr) " . __FILE__ . " " . __LINE__);
+      
+      // Check 2: constraints debe ser un array.
+      if (!is_array($constraints)) throw new Exception("El parametro 'constraints' debe ser un array " . __FILE__ . " " . __LINE__);
+      
+      
+      // TODO: CHECK 3: constraints debe ser un array de restricciones validas.
+      
+      
+      // Si ya hay constraints para ese atributo, no las redefine.
       // Deberia chekear por tipo de cosntraint tmb? asi puedo definir constraints para 
       // distintos atributos en distintas clases en la jerarquia de herencia?
    	if ( !array_key_exists($attr, $this->constraints) )
@@ -156,8 +167,11 @@ class PersistentObject {
       }
    }
 
-   // ==================================================
-   // Seteo de atributos ===============================
+   /**
+    * Agrega un atributo a la clase. Es utilizado en la definicion del 
+    * modelo para saber que columnas crear en las tablas donde se guardan 
+    * las instancias del modelo.
+    */
    public function addAttribute( $name, $type )
    {
    	$this->attributeTypes[$name] = $type;
@@ -171,17 +185,24 @@ class PersistentObject {
    	if ( array_key_exists($attr, $this->attributeTypes) )
       {
          unset( $this->attributeTypes[$attr] ); // forma de remover un valor de un array...
-         //$this->attributeTypes[$attr] = NULL;
-         //$this->attributeTypes = array_filter( $this->attributeTypes ); // saco nulls (que forma fea de PHP de remover elementos de un array)
       }
    }
+   
+   /**
+    * Agrega un atributo de relacion hasOne a la clase, se utiliza para crear una relacion
+    * desde esta clase con un elemento de otra clase.
+    * 
+    * @param String name nombre del atributo hasOne
+    * @param String clazz nombre de la clase que se quiere asociar
+    */
    public function addHasOne( $name, $clazz )
    {
       $this->hasOne[$name] = $clazz;
    }
    
    /**
-    * Agrega un atributo hasMany a la instancia de la clase persistente.
+    * Agrega un atributo hasMany a la instancia de la clase persistente. Se utiliza para crear
+    * una relacion desde esta clase a varios elementos de otra clase.
     * 
     * @param String name nombre del atributo hasmany
     * @param String class clase de los elementos contenidos en la coleccion de elementos
@@ -193,17 +214,18 @@ class PersistentObject {
       $this->hasManyType[$name] = $type;
    }
    
-   
+   /**
+    * Devuelve el tipo de la relacion hasMany de nombre attr. El tipo puede ser LIST, COLECTION o SET.
+    * 
+    * @param String attr nombre del atributo hasMany
+    */
    public function getHasManyType( $attr )
    {
-   	if ($this->hasMany[$attr] === NULL) throw new Exception("La clase no tiene un atributo hasMany con nombre '$attr' " . __FILE__ . " " . __LINE__);
+   	if ( $this->hasMany[$attr] === NULL) throw new Exception("La clase no tiene un atributo hasMany con nombre '$attr' " . __FILE__ . " " . __LINE__);
 
       return $this->hasManyType[$attr];
    }
    
-   // /Seteo de atributos ==============================
-   // ==================================================
-
    // ====================================================
    // Para saber cuando se salvo el objeto.
    protected $sessId = NULL;
@@ -252,7 +274,7 @@ class PersistentObject {
 
       foreach ( $this->afterSave as $cb )
       {
-      	 $cb->execute();
+      	$cb->execute();
          Logger::getInstance()->po_log($cb->__toString());
       }
 
@@ -286,9 +308,6 @@ class PersistentObject {
     */
    public function __construct( $args = array(), $isSimpleInstance = false )
    {
-      //Logger::getInstance()->log("PersistenObject::construct");
-
-
       // Este atributo lo inyecto aunque la instancia sea simple, porque se utiliza en el YuppConventions::tableName.
       // 5: Nombre de la clase, para soporte de herencia.
       $this->attributeTypes[ "class" ]  = Datatypes::TEXT; // Los tipos de los deleted son boolean.
@@ -307,7 +326,7 @@ class PersistentObject {
       {
          foreach ( $this->hasOne as $attr => $type )
          {
-            if ( is_subclass_of($type, PersistentObject) ) // FIXME: Perooo, todos los hasOne son subclases de PO...
+            if ( is_subclass_of($type, 'PersistentObject') ) // FIXME: Perooo, todos los hasOne son subclases de PO...
             {
                $newAttrName = DatabaseNormalization::simpleAssoc( $attr ); // Atributo email_id inyectado!
 
@@ -333,9 +352,8 @@ class PersistentObject {
       {
          foreach ( $this->hasMany as $attr => $type )
          {
-            if ( is_subclass_of($type, PersistentObject) ) // FIXME: Perooo, todos los hasMany son subclases de PO...
+            if ( is_subclass_of($type, 'PersistentObject') ) // FIXME: Perooo, todos los hasMany son subclases de PO...
             {
-               //$this->attributeValues[ $attr ] = array(); // Si hay un array no se si es que el array se cargo y es vacio o si es que todavia no se cargo
                $this->attributeValues[ $attr ] = self::NOT_LOADED_ASSOC; // TODO: OJO! puede haber operaciones ahora que piensan que esto es un array y no consideran en NOT LOADED...
             }
             // Else: podria ver como manejar listas de objetos simples como enteros y strings.
@@ -356,12 +374,10 @@ class PersistentObject {
 
 
 
-       
       // super_id_XXX
       $superclasses = ModelUtils::getAllAncestorsOf( $this->attributeValues[ "class" ] );
        
       //Logger::struct( $superclasses );
-       
       //Logger::getInstance()->log( "--------------------- table this( ". $this->getClass() ." )  " . YuppConventions::tableName( $this ) . " ----------------------" );
        
       /*
@@ -370,7 +386,6 @@ class PersistentObject {
        * No deberia generar super_id_A1 y super_id_C1 porque son los mismos ids que super_id_A y super_id_C 
        * respectivamente, porque A y A1, C y C1 se mapean cada par a la misma tabla.
        */
-      
       
       /*
       echo $this->attributeValues[ "class" ] . "<hr/>";
@@ -419,23 +434,6 @@ class PersistentObject {
       	$this->attributeTypes [ $attr_scid ] = Datatypes::INT_NUMBER; // Los tipos de los ids son int.
          $this->attributeValues[ $attr_scid ] = NULL;
       }
-     
-      /*
-         while ( $parent_class !== PersistentObject )
-         {
-            if ( array_key_exists($parent_class, $struct) ) // Si es una clase principal
-            {
-               // FIXME: el nombre del atributo deberia se parte de las convenciones o de DB NORMALIZATION!
-               $c_ins->addAttribute( YuppConventions::superclassRefName($parent_class), // super_id_nomclase
-                                     Datatypes::INT_NUMBER );
-                                     
-               Logger::getInstance()->log( "Inyecta super_id a: " . $parent_class );
-            }
-            
-            $parent_class = get_parent_class($parent_class); // Le puedo pasar instancias o nombres de clases!
-         }
-         // /Inyecto FKs
-      */
        
 
       // Me fijo si en args viene algun valor de atributo
@@ -452,13 +450,7 @@ class PersistentObject {
              $this->attributeValues[$attr] = $value;
           }
       }
-
-
-
-//      echo "<h1><pre>PO CONSTRUCT<br/>";
-//      print_r( $this->constraints );
-//      echo "</pre></h1>";
-   }
+   } // construct
 
 
    // Consulta sobre el tipo de atributo: inyectado/no inyectado
@@ -481,7 +473,7 @@ class PersistentObject {
       if (!$type) return false; // Ni siquiera le pase un attributo valido...
 
       // TODO (T#6): Esto es una verificacion de correctitud del modelo creado... no se si va aca... deberia ser algo previo, por ejemplo hacerse cuando se instala un componente.
-      if ( is_subclass_of($type, PersistentObject) )
+      if ( is_subclass_of($type, 'PersistentObject') )
       {
          // Chek 1: Fijarsse si es una lsita persistente (todavia no hecho), return false.
          // else
@@ -492,11 +484,10 @@ class PersistentObject {
 
 
    /**
-   Setea los valores de los "atributos simples" de la clase cuyos nombres aparecen en el mapping.
-
-   Los valores que no sean de campos de la clase son ignorados.
-
-   @param Map params  mapping nombre campo / valor.
+    * Setea los valores de los "atributos simples" de la clase cuyos nombres aparecen en el mapping.
+    * Los valores que no sean de campos de la clase son ignorados.
+    * 
+    * @param Map params  mapping nombre campo / valor.
    */
    public function setProperties( $params )
    {
@@ -536,95 +527,6 @@ class PersistentObject {
    	$this->withTable = $tableName;
    }
 
-
-/* Ahora se usa aGet
-   // TODO: Al setear un objeto de hasOne deberia setear el "email_id" (que podria ser null o un entero)...
-   // Devuelve valores de atributos, mas estructurado que OO, pero es para uso interno desde DAL por ejemplo.
-   public function getAttributeValue( $attr ) // Cambie el nombre de get xq se choca con el get que quiero poner de wrapper del PM.
-   {
-      // Si es un atributo de referencia de aosciacion hasOne (como email_id), me fijo en el id del elemento! me fijo si tengo "email" en hasOne.
-      // $refAttrName = DatabaseNormalization::simpleAssoc( $attr );
-//      Logger::getInstance()->error( "Pido attr getAttributeValue(): " . $attr);
-
-//      echo "<h1>getAttributeValue getAssocRoleName: $attr</h1>";
-//      $attr = self::getAssocRoleName( $attr ); // Podria tener codificador el nombre de la asociacion.
-//      echo "<h1>getAttributeValue getAssocRoleName: $attr</h1>";
-
-      // CHECK 1: El atributo esta en la lista de atributos?
-      if ( array_key_exists($attr, $this->attributeTypes) )
-      {
-         // AHORA SE SETEA EL email_id al setear el email, asi que el valor se busca derecho en email_id.
-         return $this->attributeValues[ $attr ];
-      }
-      else if ( array_key_exists($attr, $this->hasOne) )
-      {
-         return $this->attributeValues[ $attr ]; // el valor esta tambien en "attributeValues"
-      }
-      else if ( array_key_exists($attr, $this->hasMany) )
-      {
-      	 // ====================================================================================
-      	 // TICKET #11
-      	 // TODO: Si agrego soporte para lazy loading, aca deberia verificar si
-      	 //       tengo o no cargados los objetos y cargarlos si no los tengo.
-         return $this->attributeValues[ $attr ]; // el valor esta tambien en "attributeValues"
-      }
-      else
-      {
-         throw new Exception("El atributo ". $attr ." no existe en la clase (" . get_class($this) . ")");
-      }
-
-   } // getAttributeValue
-*/
-
-   /* ahora se usa aSet
-   public function setAttributeValue( $attr, $value )
-   {
-//      $attr = self::getAssocRoleName( $attr ); // Podria tener codificador el nombre de la asociacion.
-//      echo "<h1>setAttributeValue getAssocRoleName: $attr</h1>";
-
-	   // VERIFY: CUal es la joda de discutir en que lista esta si al final hago lo mismo ??? SIRVE PARA VERIFICAR QUE LO QUE ESTOY SETEANDO ES VALIDO.
-      // CHECK 1: El atributo esta en la lista de atributos?
-      if ( array_key_exists($attr, $this->attributeTypes) )
-      {
-      	// TODO: Verificar que el valor es de tipo simple.
-         $this->attributeValues[ $attr ] = $value;
-      }
-      else if ( array_key_exists($attr, $this->hasOne) )
-      {
-         $_obj = $value;
-         if ( is_subclass_of( $_obj, PersistentObject ) )
-         {
-            // seteo "email"
-            // El valor tambien va en attrValues!!!
-            $this->attributeValues[ $attr ] = $_obj;
-
-            // FIXME: Si seteo NULL no puedo preguntarle el id!!!
-            // seteo "email_id"
-            $refAttrName = DatabaseNormalization::simpleAssoc( $attr );
-            $this->attributeValues[ $refAttrName ] = $_obj->getId(); // Seteo tambien "email_id", puede ser NULL !!!
-         }
-         else
-         {
-            // El objeto no es persistente!!!!!!
-         }
-      }
-      else if ( array_key_exists($attr, $this->hasMany) ) // El valor deberia ser una lista de objetos....
-      {
-         $_objList = $value; // TODO: Deberia ser un array, ademas deberia ser de objetos persistentes.
-
-         if (!is_array($_objList)) throw new Exception("El valor para el atributo ". $attr ." debe ser un array.");
-
-         // El valor tambien va en attrValues!!!
-         $this->attributeValues[ $attr ] = $_objList;
-      }
-      else
-      {
-         throw new Exception("El atributo ". $attr ." no existe en la clase (" . get_class($this) . ")");
-      }
-
-   } // setAttributeValue
-   */
-
    /**
     * Devuelve los valores de todos los atributos.
     */
@@ -633,14 +535,20 @@ class PersistentObject {
       return $this->attributeValues;
    }
 
-   // Solo de atributos simples :)
+   /**
+    * Devuelve los tipos de los atributos simples.
+    */
    public function getAttributeTypes()
    {
       return $this->attributeTypes;
    }
 
-   // Busca en hasOne y hasMany tambien...
-   // La uso en el PM.get para cargar objetos asociados.
+   /**
+    * Devuelve el tipo de un atributo, busca en hasOne y hasMany tambien.
+    * Se usa en el PM.get para cargar objetos asociados.
+    * 
+    * @param String attr nombre del atributo para el que se quiere obtener su tipo.
+    */
    public function getType( $attr )
    {
        if ( array_key_exists($attr, $this->hasOne) )
@@ -659,13 +567,19 @@ class PersistentObject {
    }
 
    /**
-    * Obtiene errores de validacion para los atributos que teniendo restricciones, se verificaron y fallaron.
+    * Obtiene errores de validacion para los atributos que teniendo 
+    * restricciones, se verificaron y fallaron.
     */
    public function getErrors()
    {
       return $this->errors;
    }
    
+   /**
+    * Devuelve los errores para un atributo, los errores se generan luego de validar.
+    * 
+    * @param String attr nombre del atributo para el cual se quieren los errores de validacion.
+    */
    public function getFieldErrors( $attr )
    {
    	if (array_key_exists($attr, $this->errors))
@@ -675,9 +589,12 @@ class PersistentObject {
       return NULL;
    }
    
+   /**
+    * Devuelve true si la instancia de la clase tiene algun error de validacion.
+    */
    public function hasErrors()
    {
-   	return ($this->errors !== NULL) && (count($this->errors) == 0);
+   	return ($this->errors !== NULL) && (count($this->errors) !== 0);
    }
 
    // Utilizada por PersistentManager para crear tablas intermedias para las asociaciones *..*
@@ -842,11 +759,11 @@ class PersistentObject {
 
       //Logger::getInstance()->log("Nullable ATTR2? $attr");
 
-      if ( $this->constraints[ $attr ] )
+      if ( isset($this->constraints[ $attr ]) )
       {
          foreach ( $this->constraints[ $attr ] as $constraint )
          {
-            if ( get_class($constraint) == Nullable )
+            if ( get_class($constraint) === 'Nullable' )
             {
                return $constraint->getValue();
             }
@@ -891,7 +808,7 @@ class PersistentObject {
                  //if (!$this->errors) $this->errors = array();
 
                  // Si no hay un vector de mensajes para este campo
-                 if (!$this->errors[ $attr ]) $this->errors[$attr] = array();
+                 if (!isset($this->errors[ $attr ])) $this->errors[$attr] = array();
 
                  // Agrego mensaje
                  // TODO: ver de donde sacar el mensaje segun el tipo de constraint.
@@ -941,7 +858,8 @@ class PersistentObject {
          $attr = substr($method, 3); // El problema es que con "tolower" el atributo "fechaNac" queda como "fechanac" y no lo encuentra...
 
          // Primera letra a minuscula
-         $attr = strtolower(substr($attr, 0, 1)) . substr($attr, 1, strlen($attr)); // FIXME: Poner operacion en clase YuppString.
+         //$attr = strtolower(substr($attr, 0, 1)) . substr($attr, 1, strlen($attr)); // FIXME: Poner operacion en clase YuppString.
+         $attr = String::firstToLower($attr);
 
          return $this->aGet( $attr );
       }
@@ -962,13 +880,15 @@ class PersistentObject {
          // =============================================================================================================
 
          // Primera letra a minuscula
-         $attr = strtolower(substr($attr, 0, 1)) . substr($attr, 1, strlen($attr));
+         //$attr = strtolower(substr($attr, 0, 1)) . substr($attr, 1, strlen($attr));
+         $attr = String::firstToLower($attr);
          $this->aSet( $attr, $args[0] );
       }
       else if ( substr($method,0,5) == "addTo" )
       {
          $attr = substr($method, 5); // El problema es que con "tolower" el atributo "fechaNac" queda como "fechanac" y no lo encuentra...
-         $attr = strtolower(substr($attr, 0, 1)) . substr($attr, 1, strlen($attr)); // Primera letra a minuscula
+         //$attr = strtolower(substr($attr, 0, 1)) . substr($attr, 1, strlen($attr)); // Primera letra a minuscula
+         $attr = String::firstToLower($attr);
          $this->aAddTo($attr, $args[0]);
       }
       else if ( substr($method,0,10) == "removeFrom" )
@@ -981,35 +901,10 @@ class PersistentObject {
          // Para hacerlo bien robusto, deberia cargar todo, buscar, eliminar en memoria y eliminar en la base (eliminar a relacion no el objeto!)
          //
 
-         $attr = strtolower(substr($attr, 0, 1)) . substr($attr, 1, strlen($attr)); // Primera letra a minuscula
-
-//echo "<h1>REMOVE FROM: $attr</h1>";
+         //$attr = strtolower(substr($attr, 0, 1)) . substr($attr, 1, strlen($attr)); // Primera letra a minuscula
+         $attr = String::firstToLower($attr);
 
          $this->aRemoveFrom( $attr, $args[0] );
-
-         /*
-         $attr = self::getAssocRoleName( $attr ); // Podria tener codificador el nombre de la asociacion.
-
-         // CHECK 1: El atributo esta en la lista de atributos hasMany
-         if ( array_key_exists($attr, $this->hasMany) )
-         {
-            // Busco y si encuentro elimino.
-            foreach ( $this->attributeValues[$attr] as $key => $value )
-            {
-               // WARNING: Es complicado xq no se si buscar por igualdad de elementos (===) o por comparacion del id.
-               // por ahora busco por igualdad de elementos.
-               if ( $value === $args[0] ) // FIXME: OJO COMPARACION DE OBJETOS... DEBERIA COMPARAR ids?
-               {
-                  $this->attributeValues[$attr][$key] = null;
-                  return;
-               }
-            }
-         }
-         else
-         {
-            throw new Exception("El atributo ". $attr ." no existe en la clase (" . get_class($this) . ")");
-         }
-         */
       }
       else if ( substr($method,-8) == "Contains" )
       {
@@ -1035,7 +930,7 @@ class PersistentObject {
          $obj = $this->attributeValues[ $attr ]; // Valor es un objeto (puede ser null!)
 
          // El objeto debe estar cargado para poder pedirle el id
-         if ( $obj != PersistentObject::NOT_LOADED_ASSOC )
+         if ( $obj !== PersistentObject::NOT_LOADED_ASSOC )
          {
             $refAttrName = DatabaseNormalization::simpleAssoc( $attr );
             if ($obj)
@@ -1131,7 +1026,7 @@ class PersistentObject {
    //public static function listAll( $params = array() )
    public static function listAll( $params )
    {
-      Logger::getInstance()->po_log("ListAll ". get_class($this));
+      Logger::getInstance()->po_log("ListAll ". self::$thisClass);
 
 //      $offset = 0;
 //      if (isset( $params['offset'] )) $offset = $params['offset'];
@@ -1438,7 +1333,7 @@ class PersistentObject {
 
    public function hasAttribute( $attr )
    {
-      return array_key_exists ( $attr, $this->attributeTypes );
+      return array_key_exists( $attr, $this->attributeTypes ) || array_key_exists($attr, $this->hasOne) || array_key_exists($attr, $this->hasMany);
    }
 
    // operacion para saber si tengo un objeto de esta clase en hasOne.
@@ -1511,7 +1406,7 @@ class PersistentObject {
       if ( array_key_exists($full_attribute, $this->hasOne) )
       {
 
-         if ( is_null($value) || is_subclass_of( $value, PersistentObject ) ) // El caso null es valido pero falla en el is_subclass_of, por eso se agrega como OR a la conicion.
+         if ( is_null($value) || is_subclass_of( $value, 'PersistentObject' ) ) // El caso null es valido pero falla en el is_subclass_of, por eso se agrega como OR a la conicion.
          {
             $this->attributeValues[ $full_attribute ] = $value; // email
 
@@ -1571,7 +1466,7 @@ class PersistentObject {
          $attr = $this->getFullAttributename( $attr ); // Podria tener codificador el nombre de la asociacion.
 
          // Soporte para lazy loading par ahasOne y hasMany
-         if ( $this->attributeValues[$attr] == self::NOT_LOADED_ASSOC )
+         if ( $this->attributeValues[$attr] === self::NOT_LOADED_ASSOC )
          {
             if ( array_key_exists($attr, $this->hasMany) )
             {
@@ -1598,7 +1493,9 @@ class PersistentObject {
          } // si no esta cargada
       } // si no es simple
 
-      return $this->attributeValues[ $attr ];
+      if (isset($this->attributeValues[ $attr ])) return $this->attributeValues[ $attr ];
+      
+      return NULL;
 
    } // aGet
 
@@ -1642,7 +1539,7 @@ class PersistentObject {
          $id = $value;
       }
 
-      if ( is_subclass_of($value, PersistentObject) ) // Busca por id del PO
+      if ( is_subclass_of($value, 'PersistentObject') ) // Busca por id del PO
       {
          $id = $value->getId(); // FIXME: debe tener id seteado!
       }
@@ -1799,7 +1696,7 @@ class PersistentObject {
                $id = $value;
             }
 
-            if ( is_subclass_of($value, PersistentObject) ) // Busca por id del PO
+            if ( is_subclass_of($value, 'PersistentObject') ) // Busca por id del PO
             {
                $id = $value->getId(); // TODO CHECK: debe tener id seteado!
             }

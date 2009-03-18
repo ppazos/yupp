@@ -98,7 +98,7 @@ class MultipleTableInheritanceSupport {
       $prevClassToIterate = $parent;
       $classToIterate = get_parent_class($parent); // Puede ser PO.
       $found = false;
-      while (!$found && $classToIterate != PersistentObject)
+      while (!$found && $classToIterate !== 'PersistentObject')
       {
          $superclassTable = YuppConventions::tableName( $classToIterate );
          
@@ -158,7 +158,7 @@ class MultipleTableInheritanceSupport {
       foreach ( $e as $class => $subclasses )
       {
          $c_ins = new $class();
-         if ( $e1[$class] == NULL ) $e1[$class] = array(); // armo otro array con las subclases que no tienen withTable.
+         if ( !array_key_exists($class, $e1) || $e1[$class] === NULL ) $e1[$class] = array(); // armo otro array con las subclases que no tienen withTable.
          foreach ($subclasses as $subclass)
          {
             $sc_ins = new $subclass();
@@ -268,14 +268,14 @@ Array
             $hone  = $sc_ins->getHasOne();
             $hmany = $sc_ins->getHasMany();
             $constraints = $sc_ins->getConstraints();
-            foreach( $constraints as $attr => $constraintList ) $c_ins->addConstraints($attr, $constraintList);
             foreach( $props as $name => $type ) $c_ins->addAttribute($name, $type);
             foreach( $hone  as $name => $type ) $c_ins->addHasOne($name, $type);
             foreach( $hmany as $name => $type ) $c_ins->addHasMany($name, $type);
+            foreach( $constraints as $attr => $constraintList ) $c_ins->addConstraints($attr, $constraintList);
          }
          
          $parent_class = get_parent_class($c_ins);
-         if ( $parent_class !== PersistentObject )
+         if ( $parent_class !== 'PersistentObject' )
          {
             // Se inyecta en el constructor...
             //$c_ins->addAttribute("super_id", Datatypes::INT_NUMBER);
@@ -454,7 +454,7 @@ Array
       	$parentClass = get_parent_class($objToIterate);
          $pcIns = new $parentClass(array(), true);
          
-         if ($parentClass !== PersistentObject)
+         if ($parentClass !== 'PersistentObject')
          {
             if ($obj->getWithTable() !== $pcIns->getWithTable()) $found = true;
          }

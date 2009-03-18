@@ -53,7 +53,7 @@ class ArtifactHolder {
 
       //Logger::artholder_log("ArtifactHolder.addModel " . $class . " " . $id);
 
-      if ( !$this->model[$class] ) $this->model[$class] = array();
+      if ( !array_key_exists($class, $this->model) || !$this->model[$class] ) $this->model[$class] = array();
 
       $this->model[$class][$id] = $obj;
    }
@@ -68,7 +68,8 @@ class ArtifactHolder {
    public function getModel( $class, $id )
    {
       Logger::artholder_log("ArtifactHolder.getModel " . $class . " " . $id);
-   	  if ( !$this->model[$class] ) return NULL;
+      if ( !isset($this->model[$class]) ) return NULL;
+      if ( !isset($this->model[$class][$id]) ) return NULL;
       return $this->model[$class][$id]; // VERIFY: Si no tengo un objeto con $id me tira null o una excepcion de que no existe la key?
    }
 
@@ -83,7 +84,7 @@ class ArtifactHolder {
       Logger::artholder_log("ArtifactHolder.existsModel " . $class . " " . $id);
       //print_r( $this->model );
 
-   	  return ( $this->getModel($class, $id) != NULL );
+   	return ( $this->getModel($class, $id) != NULL );
    }
 
 }
