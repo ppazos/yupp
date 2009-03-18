@@ -112,10 +112,65 @@ class YuppController {
        // FIXME: si no se le pasa action se ejecuta la accion index?? deberia tirar una excepcion si no me pasan la accion??
        $action = $params['action'];
        
-       if ( $params['params'] === NULL ) $params['params'] = array();
+       if ( !isset($params['params']) ) $params['params'] = array();
        
        return ViewCommand::execute( $component, $controller, $action, $params['params'], $this->flash );
     }
+    
+   /**
+    * Si un controlador no tiene la accion show definida, se ejecuta esta, 
+    * que va a la vista dinamica de show por scaffolding.
+    */
+   public function showAction()
+   {
+      $context = YuppContext::getInstance();
+      
+      $id = $this->params['id'];
+      $clazz = String::firstToUpper( $context->getController() );
+
+      // La clase debe estar cargada...
+      eval ('$obj' . " = $clazz::get( $id );");
+
+      $this->params['object'] = $obj;
+      $this->params['mode'] = "show"; // Para saber que pagina es.
+
+      return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
+   }
+   
+   /**
+    * Si un controlador no tiene la accion show definida, se ejecuta esta, 
+    * que va a la vista dinamica de show por scaffolding.
+    */
+   public function createAction()
+   {
+      $context = YuppContext::getInstance();
+      $clazz = String::firstToUpper( $context->getController() );
+      $obj = new $clazz (); // Crea instancia para mostrar en la web los valores por defecto para los atributos que los tengan.
+
+      // View create, que es como edit pero la accion de salvar vuelve aqui.
+
+      if ($this->params['doit']) // create
+      {
+         $obj->setProperties($this->params);
+         if (!$obj->save()) // Con validacion de datos!
+         {
+            // create
+            $this->params['object'] = $obj;
+            $this->params['mode'] = "create"; // Para saber que pagina es.
+            return $this->render(NULL, $this->params);
+         }
+
+         // show
+         $this->params['object'] = $obj;
+         $this->params['mode'] = "show"; // Para saber que pagina es.
+         return $this->render(NULL, $this->params);
+      }
+
+      // create
+      $this->params['object'] = $obj;
+      $this->params['mode'] = "create"; // Para saber que pagina es.
+      return $this->render(NULL, $this->params);
+   }
 }
 
 ?>
