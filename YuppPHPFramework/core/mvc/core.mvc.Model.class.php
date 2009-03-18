@@ -33,7 +33,8 @@ class Model {
 
     public function get($key)
     {
-    	 return $this->model[$key];
+    	 if ( isset($this->model[$key]) ) return $this->model[$key];
+       return NULL;
     }
 
     // FLASH ==========================================
@@ -43,7 +44,9 @@ class Model {
     }
     public function flash($key)
     {
-       return $this->flash[$key];
+       if ( isset($this->flash[$key]) ) return $this->flash[$key];
+       
+       return NULL;
     }
     public function addFlash( &$params )
     {
