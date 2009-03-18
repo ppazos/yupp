@@ -102,13 +102,17 @@ class RequestManager {
       $controllerClassName = String::firstToUpper($lr['controller']) . "Controller";
       $controllerFileName  = "components.".$lr['component'].".controllers.".$controllerClassName.".class.php";
       $controllerPath      = "components/".$lr['component']."/controllers/".$controllerFileName;
+      
+//      print_r( $lr );
+//      echo "<hr/>PATH: $controllerPath<br/>";
+      
       if ( !file_exists($componentPath) )
       {
-         throw new Exception("ERROR: routing.componentDoesntExists value: " . $lr['component']);
+         throw new Exception("routing.componentDoesntExists value: ". $lr['component'] ." ". __FILE__ ." ". __LINE__);
       }
       else if (!file_exists($controllerPath))
       {
-        	throw new Exception("ERROR: routing.controllerDoesntExists value: " . $lr['controller']);
+        	throw new Exception("routing.controllerDoesntExists value: ". $lr['controller'] ." ". __FILE__ ." ". __LINE__);
       }
       // Aca deberia chekear si la clase $lr['controller'] . "Controller" tiene le metodo $lr['action'] . "Action".
       // Esto igual salta en el executer cuando intenta llamar al metodo, y salta si no existe.
@@ -131,9 +135,21 @@ class RequestManager {
       /// ACTUALIZAR CONTEXTO ///
         
       //Logger::struct( $filter->getParams(), "FILTER->getParams" );
-        
+      
+      // Verificacion de controller filters (v0.1.6.3)
+      $controllerFiltersPath = "components/".$lr['component']."/ComponentControllerFilters.php"; // Nombre y ubicacion por defecto.
+//      Logger::show( $controllerFiltersPath, "h1" );
+      $controllerFiltersInstance = NULL;
+      if ( file_exists($controllerFiltersPath) ) // TODO: no ir al filesystem en cada request, una vez que se pone en prod se debe saber que el archivo existe o no.
+      {
+//         Logger::show( "el archivo existe", "h1" );
+         // FIXME: con la carga bajo demanda de PHP esto se haria automaticamente!
+         include_once( $controllerFiltersPath ); // FIXME: no usa YuppLoader (nombre de archivo no sigue estandares!).
+         $controllerFiltersInstance = new ComponentControllerFilters(); // Esta clase esta definida en el archivo incluido (es una convension de Yupp).
+      }
+      
       $executer = new Executer( $filter->getParams() );
-      $command = $executer->execute();
+      $command = $executer->execute( $controllerFiltersInstance ); // $controllerFiltersInstance puede ser null!
 
 //    echo "SSS"; // OK tiene el flash.
 //    $command->show();
@@ -176,7 +192,7 @@ class RequestManager {
                if ($command->viewName())
                {
                  	// Pagina dinamica
-                  throw new Exception("La vista co path: '$pagePath' no existe, y la pagina dinamica todavia no esta soportada. VERIFIQUE EN EL CONTROLLER QUE LA VISTA QUE QUIERE MOSTRAR EXISTE REALMENTE. " . __FILE__ . " " . __LINE__);
+                  throw new Exception("La vista con path: '$pagePath' no existe, y la pagina dinamica todavia no esta soportada. VERIFIQUE EN EL CONTROLLER QUE LA VISTA QUE QUIERE MOSTRAR EXISTE REALMENTE. " . __FILE__ . " " . __LINE__);
                }
                else
                {
@@ -198,13 +214,16 @@ class RequestManager {
 
             // FLASH // Por ahora meto el flash en el model, luego podria ir aparte por prolijidad nomas...
             //$model->setFlash( $controllerInstance->getFlash() ); // PROBLEMA: Si hay redirect, me sobreescribe el flash con vacio, y yo quiero mostrar el flash de la primer accion, por ejemplo en el delete pongo un flahs y luego muestra list y no me muestra en mensaje que puse en delete.
-            //$model->addFlash( $controllerInstance->getFlash() );
             
 //        echo "AAA"; // ERROR, se pierde el flash.
 //        $command->show();
 //        echo "AAA";
               
             $model->addFlash( $command->flash() );
+            
+            //print_r( $filter->getFlashParams() );
+            
+            $model->addFlash( $filter->getFlashParams() ); // Solucion a agregar flash cuando se hace redirect.
               
             /// ACTUALIZAR CONTEXTO ///
             $ctx->setModel ( &$model );
@@ -233,7 +252,7 @@ class RequestManager {
             return;
               
          } // isStringDisplayCommand
-         else // Es execute porque no hay otro tipo...
+         else // Es redirect porque no hay otro tipo...
          {
             // TODO: me gustaria poner todo esto en una clase "Redirect".
             
@@ -252,6 +271,8 @@ class RequestManager {
 //        $command->show();
 //        echo "BBB";
 
+            // FIXME: no hace nada con el model, deberia pasar lo que puede como params de GET.
+            // TODO: habria que ver como hacer un request por POST asi puedo mandar info sin que se vea en el request.
             $model = Model::getInstance();
             $model->addFlash( $command->flash() );
 
@@ -263,7 +284,15 @@ class RequestManager {
             $url_params['component']  = $command->component();
             $url_params['controller'] = $command->controller();
             $url_params['action']     = $command->action();
-               
+            
+            // Agrega params a la url (fix a perdida del flash en redirect)
+            foreach ($command->flash() as $key => $value)
+            {
+               $url_params['flash_'.$key] = urlencode( $value ); // Por ejemplo flash.message='un mensaje', url encode por si tiene simbolos.
+            }
+            
+            //print_r( $url_params );
+            
             $url = Helpers::url( $url_params );
                
             //echo "URL: http://". $_SERVER['HTTP_HOST'] . $url ."<hr/>"; // OK!
