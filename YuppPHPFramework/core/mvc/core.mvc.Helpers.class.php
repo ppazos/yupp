@@ -85,19 +85,19 @@ class Helpers {
     
     public static function ajax_link($paramsMap)
     {
-       $before = $paramsMap['before'];
-       $paramsMap['before'] = NULL;
+       $before = (array_key_exists('before',$paramsMap)) ? $paramsMap['before'] : NULL;
+       unset($paramsMap['before']);
        
-       $update = $paramsMap['update'];
-       $paramsMap['update'] = NULL;
+       $update = (array_key_exists('update',$paramsMap)) ? $paramsMap['update'] : NULL;
+       unset($paramsMap['update']);
        
        // callback no es necesario, usando updater y sobreescribiendolo funciona bien.
        // Igual si no usa updater y quiere usar request, el callback se puede hacer.
-       $callback = $paramsMap['after'];
-       $paramsMap['after'] = NULL;
+       $callback = (array_key_exists('after',$paramsMap)) ? $paramsMap['after'] : NULL;
+       unset($paramsMap['after']);
 
-       $body = $paramsMap['body'];
-       $paramsMap['body'] = NULL;
+       $body = (array_key_exists('body',$paramsMap)) ? $paramsMap['body'] : NULL;
+       unset($paramsMap['body']);
        
        /*
         new Ajax.Updater({ success: 'items', failure: 'notice' }, '/items', {
@@ -239,7 +239,7 @@ function $func {
        if ( !array_key_exists('src', $params) ) throw new Exception( __FILE__ . "(".__LINE__.") : parametro 'src' es obligatorio y no esta presente.");
        
        // Busca la ubicacion en un componente particular
-       if ( $params['component'] !== NULL ) 
+       if ( array_key_exists('component', $params) ) 
           $res = '<img src="'. $_base_dir .'/components/'. $params['component'] .'/images/'. $params['src'] .'"';
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
           $res = '<img src="'. $_base_dir .'/images/'. $params['src'] .'"';
@@ -257,7 +257,7 @@ function $func {
        global $_base_dir;
        
        // Busca la ubicacion en un componente particular
-       if ( $params['component'] !== NULL ) 
+       if ( array_key_exists('component', $params) ) 
           $res = '<script type="text/javascript" src="'. $_base_dir .'/components/'. $params['component'] .'/javascript/'. $params['name'] .'.js"></script>';
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
           $res = '<script type="text/javascript" src="' . $_base_dir . '/js/' . $params['name'] . '.js"></script>';
@@ -269,7 +269,7 @@ function $func {
     {
        global $_base_dir;
        
-       if ( $params['component'] !== NULL ) 
+       if ( array_key_exists('component', $params) ) 
           $res = '<link type="text/css" rel="stylesheet" href="'. $_base_dir .'/components/'. $params['component'] .'/css/'. $params['name'] .'.css" />';
        else
           $res = '<link type="text/css" rel="stylesheet" href="'. $_base_dir .'/css/'. $params['name'] .'.css" />';
