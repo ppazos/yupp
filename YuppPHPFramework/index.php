@@ -11,6 +11,15 @@ session_start();
 include_once ('core/core.YuppSession.class.php');
 include_once ('core/core.YuppLoader.class.php');
 
+// Para handlear WARNINGS y tirar exceptions.
+// E_ALL, E_WARNING, E_ERROR, E_PARSE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING, E_STRICT
+
+set_error_handler("my_warning_handler", E_ALL);
+
+function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext) {
+   throw new Exception( $errstr );
+}
+
 YuppLoader :: load("core.config", "YuppConfig");
 YuppLoader :: load("core.config", "YuppConventions");
 
@@ -55,7 +64,8 @@ YuppLoader :: load("core.persistent", "PersistentObject");
 // TEST
 YuppLoader :: load("core.routing", "Filter");
 YuppLoader :: load("core.routing", "Mapping");
-YuppLoader :: load("core.routing", "ControllerFilter"); // before y after filters
+//YuppLoader :: load("core.routing", "ControllerFilter"); // before y after filters
+YuppLoader :: load("core.routing", "ControllerFilter2"); // FIXME: prueba!
 YuppLoader :: load("core.routing", "Executer");
 
 YuppLoader :: load("core.utils", "YuppStats");
@@ -66,30 +76,8 @@ YuppLoader :: load("core.utils", "YuppStats");
 Logger::getInstance()->off(); 
 // ============================================================
 
-
 // Carga clases del modelo.
 YuppLoader :: loadModel();
-
-
-// TESTS ======================================================
-// Descomentar para ejecutar.
-
-
-// TODO: hacer alguna forma funcional de incluir tests, que sean ejecutados
-//       y mostrar los mensajes de error y logs de forma amigable.
-
-
-//include_once("test/MTI_TEST_1.php");
-
-// Prueba generar instancias de varias clases mti.
-//include_once("test/MTI_TEST_2.php");
-
-//include_once ("test/MTI_TEST_3.php");
-
-//include_once ("test/Test_Types_HasMany.php");
-
-// ============================================================
-
 
 //[SCRIPT_NAME] => /Persistent/index.php
 // Dejo algunas variables globales utiles:
@@ -101,9 +89,6 @@ YuppLoader :: loadModel();
  */
 $_base_dir = substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], '/'));
 
-// TEST
-//echo $base_dir;
-//echo strrchr( $_SERVER['SCRIPT_NAME'], '/' );
 
 // Hace el request y catchea por posibles errores.
 try
@@ -114,22 +99,22 @@ catch (Exception $e)
 {
    echo '<html><body>';
      echo '<h1>Ha ocurrido un error!</h1>'; // TODO: i18n
-     echo '<div style="border:1px solid #333; padding:10px; width:500px;">';
+     echo '<div style="border:1px solid #333; padding:10px; width:800px;">';
      
        echo '<div style="border:1px solid #333; background-color:#ffffaa; overflow:auto; padding:5px; margin-bottom:2px;">';
          echo 'Mensaje:'; // TODO: i18n
        echo '</div>';
        echo '<div style="border:1px solid #333; background-color:#ffff80; overflow:auto; padding:10px;">';
-         echo $e->getMessage();
+         echo $e->getMessage() . " [" . $e->getFile()." : ".$e->getLine() . "]";
        echo '</div>';
        
        //print_r( $e->getTrace() );
        echo '<div style="border:1px solid #333; background-color:#ffaaaa; overflow:auto; padding:5px; margin-bottom:2px; margin-top:10px;">';
          echo 'Traza:'; // TODO: i18n
        echo '</div>';
-       echo '<div style="border:1px solid #333; background-color:#ff8080; overflow:auto; padding:10px;">';
+       echo '<div style="border:1px solid #333; background-color:#ff8080; overflow:auto; padding:10px;"><pre>';
          echo $e->getTraceAsString();
-       echo '</div>';
+       echo '</pre></div>';
        
      echo '</div>';
    echo '</body></html>';
