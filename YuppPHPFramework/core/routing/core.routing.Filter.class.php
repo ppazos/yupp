@@ -21,20 +21,34 @@ class Filter {
     {
     	$this->parsedUrl = parse_url($url); // Puede dar falso o tirar error! url seria $_SERVER['REQUEST_URI']
       
-      $preUrlParams = explode("/", $this->parsedUrl['path']);
-      // El lugar 0 no tiene nada porque $url comienza en /
-      // El lugar 1 es el directorio donde esta instalado yupp, o sea baseDir
-      // 2 component
-      // 3 controller
-      // 4 action (si hay)
-      // 5 ... params.
+      // El lugar 0 es el directorio donde esta instalado yupp, o sea baseDir
+      // 1 component
+      // 2 controller
+      // 3 action (si hay)
+      // 4 ... params.
+
+      // $this->parsedUrl['path'] = [REQUEST_URI] => /YuppPHPFramework/portal/page/display/index
+      // [SCRIPT_NAME] => /YuppPHPFramework/index.php
       
-      for ($i=1; $i<count($preUrlParams)-4; $i++)
+      $lp = strrpos( $_SERVER["SCRIPT_NAME"], "/" );
+      $soloUrl = substr( $this->parsedUrl['path'], $lp+1 );
+      $preUrlParams = explode("/", $soloUrl);
+      
+      //print_r( $preUrlParams );
+      // 0 component
+      // 1 controller
+      // 2 action (si hay)
+      // 3 ... params.
+      
+      // Recorro desde el param 3 para arriba.
+      for ($i=1; $i<count($preUrlParams)-2; $i++)
       {
-         $this->urlParams["_param_".$i] = $preUrlParams[$i+4];
+         $this->urlParams["_param_".$i] = $preUrlParams[$i+2]; // FIXME: el 3 depende de donde este instalado el framework en el servidor, si esta en el root es 3, si esta en un subdirectorio es 4, etc, etc, etc.
       }
       
-      //Logger::struct( $this->urlParams, __FILE__ . " " . __LINE__ );
+      //Logger::struct( $this->parsedUrl, "PARSED URL: " . __FILE__ . " " . __LINE__ );
+      //Logger::struct( $preUrlParams, "PRE URL PARAMS: " . __FILE__ . " " . __LINE__ );
+      //Logger::struct( $this->urlParams, "URL PARAMS: " . __FILE__ . " " . __LINE__ );
     }
     
     /**
@@ -57,7 +71,7 @@ class Filter {
      */
     public function getActionParam()
     {
-    	 $paramsKeys = array_keys(array_merge( $_POST, $_GET));
+    	 $paramsKeys = array_keys(array_merge($_POST, $_GET));
        $current = current($paramsKeys);
        while ($current)
        {
@@ -65,6 +79,29 @@ class Filter {
           $current = next($paramsKeys);
        }
        return NULL;
+    }
+    
+    /**
+     * Si se hizo un redirect y se puso algo en flash, esos valores se pasan por GET.
+     * Este metodo retorna todos los valors de GET que se correspondan con flash. 
+     */
+    public function getFlashParams()
+    {
+       $res = array();
+       $paramsKeys = array_keys($_GET);
+       $current = current($paramsKeys);
+       while ($current)
+       {
+          //echo "CURRENT: $current<br/>";
+          if ( String::startsWith($current, "flash_") )
+          {
+             
+             $res[ substr($current, 6)  ] = $_GET[ $current ];
+          }
+          $current = next($paramsKeys);
+       }
+       
+       return $res;
     }
     
     public function getParams()
