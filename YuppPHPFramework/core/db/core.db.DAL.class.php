@@ -423,7 +423,6 @@ class DAL {
           // ===========================================
 
 
-
           $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
           //$q .= "`". DatabaseNormalization::col($attr) ."` $dbms_type $nullable , ";
 
@@ -437,7 +436,7 @@ class DAL {
                 // Si cae aca es poruqe puede ser una clase persistente, si es tengo que hacer la asoc con la otra tabla.
                 // Esto si es una relacion 1..1...
 
-                if ( is_subclass_of($type, PersistentObject) )
+                if ( is_subclass_of($type, 'PersistentObject') )
                 {
                    // Ahora agrego dinamicamente el atributo....
                    //$q .= $ins->getAssocAttrName( $type ) . " , "; // FK !!!
