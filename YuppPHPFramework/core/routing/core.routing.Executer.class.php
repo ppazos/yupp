@@ -209,7 +209,8 @@ class Executer {
            
            if ( $af_res !== true )
            {
-              if ( !($af_res instanceof ViewCommand) ) throw new Exception("After filter no retorna ViewCommand, retorna " . get_class($af_res));
+              if ( get_class($af_res) !== 'ViewCommand' ) throw new Exception("After filter no retorna ViewCommand, retorna " . get_class($af_res));
+              //if ( !($af_res instanceof ViewCommand) ) throw new Exception("After filter no retorna ViewCommand, retorna " . get_class($af_res));
               $command = $af_res; // Retorna el ViewCommand del after filter.
            }
            // ===================================================
