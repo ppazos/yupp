@@ -78,7 +78,7 @@ class MultipleTableInheritanceSupport {
    public static function superclassThatGenerateMyTable( $class )
    {
       $parent = get_parent_class($class);
-   	if ( $parent === PersistentObject ) return $class;
+   	if ( $parent === 'PersistentObject' ) return $class;
       
       $classTable = YuppConventions::tableName( $class );
       
@@ -341,7 +341,7 @@ Array
       $level1Class = NULL;
       foreach ( $superclasses as $class )
       {
-      	if ( get_parent_class( $class ) == PersistentObject )
+      	if ( get_parent_class( $class ) == 'PersistentObject' )
          {
             $level1Class = $class;
             break; // salir del foreach
@@ -440,7 +440,7 @@ Array
       // No alcanza que la superclase tenga un withTable distinto, tengo que buscar alguna superclase con withTable distinto.
       //$parentClass = get_parent_class($obj);
       //$pins = new $parentClass(array(), true);
-      //return ($parentClass !== PersistentObject && $obj->getWithTable() !== $pins->getWithTable());
+      //return ($parentClass !== 'PersistentObject' && $obj->getWithTable() !== $pins->getWithTable());
       
       // FIXME: esto chekea hacia arriba, pero si le paso una clase muy arriba, tendria que fijarme 
       // si para abajo hay alguna subclase en otra tabla. El tema que para abajo puede haber una subclase
