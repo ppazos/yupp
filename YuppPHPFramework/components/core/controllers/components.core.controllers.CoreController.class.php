@@ -105,7 +105,8 @@ class CoreController extends YuppController
 	}
 
 	/**
-	 * Accion estandar para mostrar una pagina.
+	 * FIXME: esta donde se usa?
+    * Accion estandar para mostrar una pagina.
 	 */
 	public function displayAction()
 	{
@@ -306,7 +307,7 @@ class CoreController extends YuppController
       // importa derecho la pagina...
       //include_once( $pagePath );
       
-      YuppLoader::getInstance()->loadScript("components.".$component, "bootstrap");
+      YuppLoader::getInstance()->loadScript("components.".$component, "Bootstrap");
       
       //$view = ob_get_clean();
       
@@ -320,11 +321,15 @@ class CoreController extends YuppController
    {
       YuppLoader::load("core.utils", "YuppStats");
       $stats = new YuppStats();
-      $stats->showStats();
+      $stats = $stats->showStats();
       
+      return $this->renderString( $stats );
+      
+      /*
    	return $this->redirect(array (
          'action' => 'index'
       ));
+      */
    }
 }
 ?>
