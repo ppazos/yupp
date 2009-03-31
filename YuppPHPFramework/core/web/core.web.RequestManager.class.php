@@ -55,6 +55,7 @@ class RequestManager {
       if ( $lr['controller'] === NULL || $lr['controller'] === "" ) // Si me pone el componente pero no el controller, entonces no se que hago... (poner core/core es un FIX nomas)
       {
          throw new Exception("ERROR: Se especifica el componente pero no el controlador, el controlador es obligatorio y es el segundo argumento de la url: componente/controlador/accion/params " . __FILE__ . " " . __LINE__);
+         // FIXME: tirar 404
       }
       
       /*
@@ -109,10 +110,12 @@ class RequestManager {
       if ( !file_exists($componentPath) )
       {
          throw new Exception("routing.componentDoesntExists value: ". $lr['component'] ." ". __FILE__ ." ". __LINE__);
+         // FIXME: tirar 404
       }
       else if (!file_exists($controllerPath))
       {
         	throw new Exception("routing.controllerDoesntExists value: ". $lr['controller'] ." ". __FILE__ ." ". __LINE__);
+         // FIXME: tirar 404
       }
       // Aca deberia chekear si la clase $lr['controller'] . "Controller" tiene le metodo $lr['action'] . "Action".
       // Esto igual salta en el executer cuando intenta llamar al metodo, y salta si no existe.
@@ -203,6 +206,7 @@ class RequestManager {
                   if ( !file_exists($pagePath) ) // Si la pagina NO es fisica
                   {
                      throw new Exception("La vista no existe y se intento mostrar una vista dinamica pero tampoco existe: $pagePath " . __FILE__ . " " . __LINE__);
+                     // FIXME: tirar 404
                   }
                }
             }
