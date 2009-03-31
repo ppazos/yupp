@@ -113,6 +113,8 @@ class YuppStats
     */
    function showStats()
    {
+      ob_start(); // agarro el output y devuelvo el string
+      
       // Line Count...
       
       $dirs = array (
@@ -169,6 +171,8 @@ class YuppStats
       echo "TOTAL LINES: $totalLines<br/>";
       echo "AVG LINES: ". ($totalLines/$fileCounter) ."<br/>";
       echo "<hr/>";
+      
+      return ob_get_clean(); // devuelve el output 
    }
 }
 ?>
