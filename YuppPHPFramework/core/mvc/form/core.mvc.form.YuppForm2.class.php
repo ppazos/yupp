@@ -4,6 +4,12 @@
  * Clase auxiliar para crear formularios en las vistas.
  */
 
+// TODO: agregar campo html que incluya el tinymce como editor, y que los params que se le pasen 
+// al campo, sean pasados al tinymce si se quiere customizar.
+
+// FIXME: en lugar de hacer> $f->add(YuppFormField2::text(array(...))
+//        hacer> $f->text(array(...))
+
 class YuppForm2
 {
    
@@ -140,9 +146,31 @@ class YuppFormField2
 	}
 	public function get($name)
 	{
-		if (isset($this->args[$name])) return $this->args[$name];
+		if (isset($this->args[$name]))
+      {
+         $val = $this->args[$name];
+         unset($this->args[$name]); // Para que al final queden solo los que no se pidieron.
+         return $val;
+      }
       return NULL;
 	}
+   
+   // Devuelve todos los params que haya en args, si se hizo get de algunos params, esos no van a estar!
+   public function getAll()
+   {
+      return $this->args;
+   }
+   
+   // Arma un string para poner en la tag los params que faltan tipo: par1="val1" par2="val2" ...
+   public function getTagParams()
+   {
+      $r = " ";
+      foreach ($this->args as $name => $value)
+      {
+         $r .= $name . '="' . $value . '" ';
+      }
+      return $r;
+   }
    
    public static function date($params)
    {
@@ -233,11 +261,11 @@ class YuppFormDisplay2
 		{
          case YuppFormField2 :: DATE :
          
-            $fieldHTML .= '<div class="label">'. $field->getLabel() .'</div>';
             $name = $field->get("name");
-
+         
+            $fieldHTML .= '<div class="label">'. $field->getLabel() .'</div>';
             $fieldHTML .= '<div class="field">';
-            $fieldHTML .= '<label for="day">D&iacute;a: </label>';
+            $fieldHTML .= '<label for="day">D&iacute;a: </label>'; // TODO: i18n soportado por el framework.
             $fieldHTML .= '<select name="'.$name.'_day">';
             for ( $d=1; $d<32; $d++ )
             {
@@ -246,7 +274,7 @@ class YuppFormDisplay2
             }
             $fieldHTML .= '</select>';
             
-            $fieldHTML .= '<label for="month"> Mes: </label>';
+            $fieldHTML .= '<label for="month"> Mes: </label>'; // TODO: i18n soportado por el framework.
             $fieldHTML .= '<select name="'.$name.'_month">';
             for ( $m=1; $m<13; $m++ )
             {
@@ -255,7 +283,7 @@ class YuppFormDisplay2
             }
             $fieldHTML .= '</select>';
             
-            $fieldHTML .= '<label for="year"> A&ntilde;o: </label>';
+            $fieldHTML .= '<label for="year"> A&ntilde;o: </label>'; // TODO: i18n soportado por el framework.
             $fieldHTML .= '<select name="'.$name.'_year">';
             for ( $y=1930; $y<2010; $y++ )
             {
@@ -269,18 +297,22 @@ class YuppFormDisplay2
 			case YuppFormField2 :: TEXT :
 
             $name = $field->get("name");
+            
+            // Nombre obligatorio
             if ($name === NULL)
                throw new Exception("El argumento 'name' es obligatorio para el campo TEXT." . __FILE__ . " " . __LINE__);
             
+            $isReadOnly = $field->get("read-only"); // opcional
             $readOnly = ""; // $field->get("read-only") si viene es un bool
-            if ( $field->get("read-only") !== NULL && $field->get("read-only") )
+            
+            if ( $isReadOnly !== NULL && $isReadOnly )
             {
                $readOnly = ' readonly="true" ';
             }
             
             $fieldHTML .= '<div class="label"><label for="'.$name.'">' . $field->getLabel() . '</label></div><div class="field">';
 				$value = $field->get("value");
-            $fieldHTML .= '<input type="text" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $readOnly . ' /></div>';
+            $fieldHTML .= '<input type="text" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $readOnly . $field->getTagParams() .' /></div>';
 
 			break;
 			case YuppFormField2 :: HIDDEN :
@@ -290,7 +322,7 @@ class YuppFormDisplay2
                throw new Exception("El argumento 'name' es obligatorio para el campo HIDDEN." . __FILE__ . " " . __LINE__);
             
             $value = $field->get("value");
-            $fieldHTML .= '<input type="hidden" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') .' />';
+            $fieldHTML .= '<input type="hidden" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' />';
          
 			break;
          case YuppFormField2 :: PASSWORD :
@@ -300,7 +332,7 @@ class YuppFormDisplay2
                throw new Exception("El argumento 'name' es obligatorio para el campo PASSWORD." . __FILE__ . " " . __LINE__);
             
             $value = $field->get("value");
-            $fieldHTML .= '<input type="password" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') .' />';
+            $fieldHTML .= '<input type="password" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' />';
          
          break;
 			case YuppFormField2 :: BIGTEXT :
@@ -313,13 +345,13 @@ class YuppFormDisplay2
             if ( $field->get("read-only") !== NULL && $field->get("read-only") )
             {
                $fieldHTML .= '<div class="label"><label for="'.$name.'">'. $field->getLabel() .'</label></div><div class="field">';
-               $fieldHTML .= $field->get("value").'</textarea></div>';
+               $fieldHTML .= $field->get("value").'</div>';
             }
             else
             {
                $fieldHTML .= '<div class="label"><label for="'.$name.'">'. $field->getLabel() .'</label></div><div class="field">';
                $value = $field->get("value");
-               $fieldHTML .= '<textarea name="'. $name .'">'. (($value)?$value:'') .'</textarea></div>';
+               $fieldHTML .= '<textarea name="'. $name .'"'. $field->getTagParams() .'>'. (($value)?$value:'') .'</textarea></div>';
             }
             
 			break;
@@ -333,7 +365,7 @@ class YuppFormDisplay2
             $name = $field->get("name"); // FIXME: verificar que es obligatorio
             $fieldHTML .= '<div class="label"><label for="'.$name.'">' . $field->getLabel() . '</label></div><div class="field">';
 
-            $fieldHTML .= '<select name="'. $name .'">';
+            $fieldHTML .= '<select name="'. $name .'"'. $field->getTagParams() .'>';
             foreach ( $field->get("options") as $value => $text )
             {
                if ( $value === $field->get("value") )
@@ -356,16 +388,20 @@ class YuppFormDisplay2
 			break;
 			case YuppFormField2 :: SUBMIT :
 
+            $action = $field->get("action"); // El get borra el param...
+            $name   = $field->get("name");
+            
             // no tiene label for, la label es el texto del boton de submit.
             $fieldHTML .= '<div class="field">';
-            $name = $field->get("name");
-            if ($name === NULL || $name === "") $name = '_action_'.$field->get("action");
+            
+            // Si no hay name, DEBE haber action.
+            if ($name === NULL || $name === "") $name = '_action_'.$action;
             if ($name === NULL)
                throw new Exception("Uno de los argumentos 'name' o 'action' es obligatorio para el campo SUBMIT." . __FILE__ . " " . __LINE__);
             
             // si no tiene name, se le pone action.
             // "value="'. $field->getLabel()
-				$fieldHTML .= '<input type="submit" name="'. $name .'" value="'. $field->getLabel()  .'" /></div>';
+				$fieldHTML .= '<input type="submit" name="'. $name .'" value="'. $field->getLabel() .'" '. $field->getTagParams() .' /></div>';
 
 			break;
 			default :
