@@ -2099,7 +2099,7 @@ class PersistentManager {
     */
    public function generateAll()
    {
-      Logger::getInstance()->pm_log("PersistentManager::generateAll");
+      Logger::getInstance()->pm_log("PersistentManager::generateAll ======");
       
    	// Todas las clases del primer nivel del modelo.
       $A = ModelUtils::getSubclassesOf( 'PersistentObject' );
@@ -2109,9 +2109,11 @@ class PersistentManager {
 
       foreach( $A as $clazz )
       {
+         //Logger::getInstance()->pm_log("foreach $clazz " . __FILE__ . " " . __LINE__);
+         
          $struct = MultipleTableInheritanceSupport::getMultipleTableInheritanceStructureToGenerateModel( $clazz );
 
-         //Logger::struct( $struct, "PM.generateAll: MTI Struct");
+         //Logger::struct( $struct, "MTI Struct" . __FILE__ . " " . __LINE__);
 
          // struct es un mapeo por clave las clases que generan una tabla y valor las clases que se mapean a esa tabla.
          // TODO: para cada tabla que sea generada, que no sea la tabla de la superclase (la que hereda de PO) tiene que inyectarse un 
@@ -2127,41 +2129,52 @@ class PersistentManager {
             // Para cara subclase que se mapea en la misma tabla
             foreach ( $subclassesOnSameTable as $subclass )
             { 
+               //Logger::getInstance()->pm_log( "Subclass on same table $class -> $subclass" . __FILE__ . " " . __LINE__);
+               
                $sc_ins = new $subclass(); // Para setear los atributos.
                
                $props = $sc_ins->getAttributeTypes();
                $hone  = $sc_ins->getHasOne();
                $hmany = $sc_ins->getHasMany();
                
-               
                // FIXME: si el artibuto no es de una subclase parece que tambien pone nullable true...
                
                // Agrega constraint nullable true, para que los atributos de las subclases
                // puedan ser nulos en la tabla, para que funcione bien el mapeo de herencia de una tabla.
+               //Logger::getInstance()->pm_log( "Para cada attr de: $subclass " . __FILE__ . " " . __LINE__);
                foreach ($props as $attr => $type)
                {
+                  // FIXME: esta parte seria mas facil si simplemente cuando la clase tiene la constraint 
+                  // y le seteo otra del mismo tipo para el mismo atributo, sobreescriba la anterior.
+                  
                   //Logger::getInstance()->log( "ATTR: " . $attr );
-                  $constraint = $sc_ins->getConstraintOfClass( $attr, Nullable );
+                  //Logger::getInstance()->pm_log( "ATTR: $attr " . __FILE__ . " " . __LINE__);
+                  $constraint = $sc_ins->getConstraintOfClass( $attr, 'Nullable' );
                   if ($constraint !== NULL)
                   {
-                     //Logger::getInstance()->log( "CONTRAINT EXISTE!");
+                     //Logger::getInstance()->log( "CONTRAINT NULLABLE EXISTE!");
                      // Si hay, setea en true
                   	$constraint->setValue(true);
                   }
                   else
                   {
                      // Si no hay, agrega nueva
+                     //Logger::getInstance()->log( "CONTRAINT NULLABLE NO EXISTE!, LA AGREGA");
                   	$sc_ins->addConstraints($attr, array(Constraint::nullable(true)));
                   }
                }
                
+               //Logger::getInstance()->pm_log( "Termina con las constraints ======= " . __FILE__ . " " . __LINE__);
+               
                // Se toma luego de modificar las restricciones
                $constraints = $sc_ins->getConstraints();
                
-               foreach( $constraints as $attr => $constraintList ) $c_ins->addConstraints($attr, $constraintList);
                foreach( $props       as $name => $type ) $c_ins->addAttribute($name, $type);
                foreach( $hone        as $name => $type ) $c_ins->addHasOne($name, $type);
                foreach( $hmany       as $name => $type ) $c_ins->addHasMany($name, $type);
+               
+               // Agrego las constraints al final porque puedo referenciar atributos que todavia no fueron agregados.
+               foreach( $constraints as $attr => $constraintList ) $c_ins->addConstraints($attr, $constraintList);
             }
             
             $parent_class = get_parent_class($c_ins);

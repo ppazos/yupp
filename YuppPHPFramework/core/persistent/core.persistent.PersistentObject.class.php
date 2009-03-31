@@ -149,7 +149,7 @@ class PersistentObject {
    public function addConstraints( $attr, $constraints )
    {
       // Check 1: el atributo existe.
-      if (!$this->hasAttribute($attr)) throw new Exception("Se intenta definir una restriccion para un atributo que no existe ($attr) " . __FILE__ . " " . __LINE__);
+      if (!$this->hasAttribute($attr)) throw new Exception("Se intenta definir una restriccion en [". print_r($this, true) ."] para un atributo que no existe ($attr) " . __FILE__ . " " . __LINE__);
       
       // Check 2: constraints debe ser un array.
       if (!is_array($constraints)) throw new Exception("El parametro 'constraints' debe ser un array " . __FILE__ . " " . __LINE__);
@@ -705,7 +705,7 @@ class PersistentObject {
    {
       if ( $attr === NULL ) return $this->constraints;
       
-      if ( $this->constraints[ $attr ] !== NULL )
+      if ( isset($this->constraints[ $attr ]) )
       {
          return $this->constraints[ $attr ];
       }
@@ -1466,7 +1466,7 @@ class PersistentObject {
          $attr = $this->getFullAttributename( $attr ); // Podria tener codificador el nombre de la asociacion.
 
          // Soporte para lazy loading par ahasOne y hasMany
-         if ( $this->attributeValues[$attr] === self::NOT_LOADED_ASSOC )
+         if ( isset($this->attributeValues[$attr]) && $this->attributeValues[$attr] === self::NOT_LOADED_ASSOC )
          {
             if ( array_key_exists($attr, $this->hasMany) )
             {
