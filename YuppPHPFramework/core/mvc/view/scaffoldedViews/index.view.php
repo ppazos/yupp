@@ -10,35 +10,11 @@ $m = Model::getInstance();
    <body>
       <h1>Index</h1>
 
+      <!-- NO ES UTIL EL SELECTOR DE MODO, AHORA SE CAMBIA DESDE LA CONFIG.
       <h2>Seleccion del modo de ejecucion</h2>
-      <?php echo h('mode_chooser'); ?><hr/>
+      <?php /* echo h('mode_chooser'); */ ?><hr/>
+      -->
 
-<?php
-/**
- * TODO: verificar si el componente tiene un archivo de bootstrap, de no tener, no mostrarlo en la lista.
- */
-?>
-      <h2>Componentes</h2>
-      Esta secci&oacute;n le permite ejecutar scripts de inicializaci&oacute;n 
-      para los componentes del sistema.<br/>
-      <ul>
-         <?php foreach ($m->get('components') as $component): ?>
-           <?php if (!String::startsWith($component, ".")) : ?>
-            <li>
-               <?php echo $component; ?>
-               <?php if (file_exists("components/$component/components.$component.bootstrap.script.php")): ?>
-                  <?php echo h('link', array("action"        => "executeBootstrap",
-                                             "body"          => "Ejecutar bootstrap",
-                                             "componentName" => $component) ); ?>
-               <?php else: ?>
-                 (no existe script de bootstrap)
-               <?php endif; ?>
-            </li>
-            <?php endif; ?>
-         <?php endforeach; ?>
-      </ul>
-      <hr/>
-      
 
       <!-- fixme: no deberia mostrarse si el modo es produccion, esto es solo para dev -->
       <h2>Informacion del modelo</h2>
@@ -50,7 +26,7 @@ $m = Model::getInstance();
          {
             if (!$allTablesCreated)
             {
-         	   echo "Existe modelo para el que no se generaron las tablas, ¿desea crear las tablas ahora?<br/>";
+               echo "Existe modelo para el que no se generaron las tablas, ¿desea crear las tablas ahora?<br/>";
                // TODO: link a una accion que genere las tablas.
                
                echo "<h3>";
@@ -61,7 +37,7 @@ $m = Model::getInstance();
             }
             else
             {
-            	echo "Se generaron todas las tablas para el modelo.<br/>";
+               echo "Se generaron todas las tablas para el modelo.<br/>";
             }
          }
 
@@ -81,15 +57,45 @@ $m = Model::getInstance();
          /*
          foreach ( YuppLoader::getLoadedClasses() as $path => $classInfo )
          {
-         	if ( String::endsWith($classInfo['package'], "model") )
+            if ( String::endsWith($classInfo['package'], "model") )
             {
-            	echo '[ <a href="core/list?class='. $classInfo['class'] .'">'. $classInfo['class'] .'</a> ]<br/>';
+               echo '[ <a href="core/list?class='. $classInfo['class'] .'">'. $classInfo['class'] .'</a> ]<br/>';
             }
          }
          */
+      ?>
+
+
+<?php
+/**
+ * TODO: verificar si el componente tiene un archivo de Bootstrap, de no tener, no mostrarlo en la lista.
+ */
+?>
+
+
+      <h2>Componentes</h2>
+      Esta secci&oacute;n le permite ejecutar scripts de inicializaci&oacute;n 
+      para los componentes del sistema.<br/>
+      <ul>
+         <?php foreach ($m->get('components') as $component): ?>
+           <?php if (!String::startsWith($component, ".")) : ?>
+            <li>
+               <?php echo $component; ?>
+               <?php if (file_exists("components/$component/components.$component.Bootstrap.script.php")): ?>
+                  <?php echo h('link', array("action"        => "executeBootstrap",
+                                             "body"          => "Ejecutar Bootstrap",
+                                             "componentName" => $component) ); ?>
+               <?php else: ?>
+                 (no existe script de Bootstrap)
+               <?php endif; ?>
+            </li>
+            <?php endif; ?>
+         <?php endforeach; ?>
+      </ul>
+      <hr/>        
       
-         echo "<h2>Ingreso a los controladores</h2>";
-         
+      <h2>Ingreso a los controladores</h2>
+      <?php
          $dir = dir("./components");
          $suffix = "Controller.class.php";
       
