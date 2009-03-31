@@ -30,6 +30,7 @@ class Filter {
       // $this->parsedUrl['path'] = [REQUEST_URI] => /YuppPHPFramework/portal/page/display/index
       // [SCRIPT_NAME] => /YuppPHPFramework/index.php
       
+      // Saca los params de la url sin importar en que subdirectorio esta instalado Yupp.
       $lp = strrpos( $_SERVER["SCRIPT_NAME"], "/" );
       $soloUrl = substr( $this->parsedUrl['path'], $lp+1 );
       $preUrlParams = explode("/", $soloUrl);
