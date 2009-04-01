@@ -1,0 +1,103 @@
+#labels v0.1.6.3,liberacion,notas
+=Notas de la version:=
+
+Version 0.1.6.3 del Yupp Framework PHP
+
+
+=Incluye los siguientes componentes:=
+
+  * version 0.6.1 del YORM (Yupp Object Relational Mapping)
+  * version 0.1.7 del YMVC (Yupp Model View Controller)
+
+
+=Requisitos:=
+
+  * Version de PHP: 5.2.x (nosotros utilizamos 5.2.3)
+    * Probado en 5.2.0, 5.2.4 y 5.2.8 (versión de Windows)
+  * Motor de bases de datos: MySQL 5.x o superior (nosotros utilizamos 5.0.41)
+  * Tener el modulo de Apache MOD_REWRITE instalado y activado.
+
+
+=Cambios con respecto a la versión anterior:=
+
+  # Corregido que si se crean urls con parametros llamados _param_1, _param_2, etc, esos se pongan en la propia url sin ?_param_1&...
+  # Correccion de clase Filter, el metodo que procesa los params dependía de la cantidad de directorios en la ruta a donde está instalado Yupp Framework, ahora es independiente de donde se instale el framework.
+  # Se quitó devolver la referencia (&) en YuppSession::get porque da error cuando se devuelve NULL.
+  # Correción en clase Helpers: correccion de compatibilidad con PHP 5.2.8.
+  # Corregido el flash que se perdía cuando se hace redirect, los valores se mandan en la url.
+  # Resuelto un pequeño bug en la clase Logger.
+  # Se integró la funcionalidad de submit de forms via ajax, utiliza el plugin forms de jQuery.
+  # YuppDateTime Se agrega operacion para manipular fechas.
+  # Nueva clase YuppForm2 que suplanta a YuppForm y acepta submit por ajax. Se deja YuppForm hasta la próxima liberación. Se agregó el campo "select" y la forma de pasarle los parámetros a los campos ahora es mediante un array asociativo, y los parámetros desconocidos son ingresados en la tag HTML generada como atributo de la misma.
+  # Se hicieron grandes modificaciones en cómo se definen y ejecutan los filtros de controladores, estos filtros sirven para definir acciones que se ejecutan antes o después de las acciones de los controladores según ciertas reglas (se pueden definir filtros por componente, por controlador, por accion, todas las acciones menos una, etc).
+  # Correccion de metodo PersistentObject.hasErrors, tenia un error en la condicion.
+  # Renombrado de archivo de arranque a components.{componente}.Bootstrap.script.php
+  # Correccion de bug en PersistentManager::generateAll(), se agregaban las restricciones para atributos que todavía no se habían agregado.
+
+
+=Que contiene esta liberación?=
+
+Contiene los componentes mencionados antes, el YORM y el YMVC.
+
+Esta liberación contiene un ejemplo de un sistema de Blog sencillo donde
+se pueden crear entradas y comentarios, mostrando el funcionamiento básico
+del framework, con funcionalidades como:
+
+  * Definicion de modelo persistente
+  * Crear modelo
+  * Modificar modelo
+  * Obtener modelo
+  * Definicion de controladores
+  * Definicion de vistas
+  * Uso de helpers basicos
+  * Validacion automatica de informacion
+
+
+=Para correr el ejemplo=
+
+  * Debes tener un servidor Apache con soporte para PHP corriendo.
+  * Debes tener PHP 5.2.x o superior.
+  * Debes tener MySQL 5.x o superior instalado y corriendo.
+
+Descomprime el contenido de la liberacion que descargaste desde http://www.SimpleWebPortal.net 
+en un directorio de tu servidor Apache, accesible desde un browser, 
+por ejemplo /www o /public_html.
+
+
+==Configuracion de la base de datos y creacion de la base:==
+
+  * Para configurar los datos de conexion a la base de datos MySQL se debe editar la informacion presente en el archivo: "/core/config/core.config.YuppConfig.class.php", modificando el campo $dev_datasource, estableciendo los valores correctos para cada clave de dicho array: url, user, pass y database. Y se debe crear la base de datos con el nombre que hayas configurado en "/core/config/core.config.YuppConfig.class.php" en el campo "database".
+
+
+==Acceder al ejemplo:==
+
+  Accede al directorio donde se descomprimió Yupp Framework PHP desde un
+  browser, aparecerá una página con links, esos links ejecutan las acciones
+  por defecto de los controladores existentes, el único controlador que
+  tiene utilidad por el momento es "EntradaBlog" que es de donde se permite
+  crear entradas para el blog.
+
+
+==Generacion de las tablas:==
+
+  Desde la pantalla de administración que aparece al instalar Yupp y accederlo
+  mediante un navegador web, existe una sección llamada "Información del modelo",
+  ahí se listan todas las clases presentes en el modelo de datos de todos los 
+  componentes instalados (con esta liberación el único componente instalado es
+  el de "blog"). En esta sección hay un link "Generar tablas", que al hacerle clic
+  ejecutará la generación de todas las tablas necesarias en la base de datos
+  configurada previamente.
+
+  Si tienes algún problema o alguna pregunta, no dudes en comunicarte con nosotros:
+     http://groups.google.com/group/yuppframeworkphp
+
+
+==CONTACTO:==
+Cualquier duda o sugerencia, envianos un mail desde http://www.SimpleWebPortal.net > contacto.
+Tambien puedes contactarnos a por nuestro blog: http://YuppFramework.blogspot.com.
+
+{{{
+Pablo Pazos
+Líder del proyecto
+www.SimpleWebPortal.net
+}}}
