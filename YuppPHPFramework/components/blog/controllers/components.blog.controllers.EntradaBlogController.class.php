@@ -32,7 +32,8 @@ class EntradaBlogController extends YuppController {
        $count = EntradaBlog::count();
        $this->params['count'] = $count; // Maximo valor para el paginador.
        
-       return $this->render("entradaBlog/list", &$this->params);
+       //return $this->render("entradaBlog/list", &$this->params);
+       return $this->render("list", &$this->params);
     }
 
     public function showAction()
@@ -40,7 +41,8 @@ class EntradaBlogController extends YuppController {
        $id  = $this->params['id'];
        $obj = EntradaBlog::get( $id );
        $this->params['object'] = $obj;
-       return $this->render("entradaBlog/show", &$this->params);
+       //return $this->render("entradaBlog/show", &$this->params);
+       return $this->render("show", &$this->params);
     }
     
     public function getCommentsJSONAction()
@@ -89,14 +91,16 @@ class EntradaBlogController extends YuppController {
        if ( !$obj->save() ) // Con validacion de datos!
        {
           $this->params['object'] = $obj;
-          return $this->render("entradaBlog/edit", &$this->params);
+          //return $this->render("entradaBlog/edit", &$this->params);
+          return $this->render("edit", &$this->params);
        }
 
        // show
        $this->params['object'] = $obj;
        
        // Con esta accion no puedo retornar solo los params porque no hay vista llamada "save".
-       return $this->render("entradaBlog/show", &$this->params);
+       //return $this->render("entradaBlog/show", &$this->params);
+       return $this->render("show", &$this->params);
     }
 
     public function deleteAction()

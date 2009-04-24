@@ -26,7 +26,8 @@ class UsuarioController extends YuppController {
       $this->params['list']  = Usuario::listAll( $this->params );
       $this->params['count'] = Usuario::count(); // Maximo valor para el paginador.
 
-      return $this->render("usuario/list", & $this->params); // Id NULL para paginas de scaffolding
+      //return $this->render("usuario/list", & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
    }
    
 
@@ -126,15 +127,16 @@ class UsuarioController extends YuppController {
    
    // ======================================================================================================================
 
-    public function loginAction()
-    {
+   public function loginAction()
+   {
        // OBS: si retorno NULL o modelo, desde la accion index, se intenta mostrar la vista index.view.php.
        if ( array_key_exists( 'doit', $this->params) )
        {
           if (!array_key_exists('email',$this->params) || !array_key_exists('clave', $this->params))
           {
           	 $this->flash['message'] = "Por favor ingrese email y clave";
-             return $this->render("/usuario/login", &$this->params);
+             //return $this->render("/usuario/login", &$this->params);
+             return $this->render("login", &$this->params);
           }
           
           // Login
@@ -150,7 +152,8 @@ class UsuarioController extends YuppController {
           if ( count($list) === 0 )
           {
           	 $this->flash['message'] = "El usuario no existe";
-             return $this->render("/usuario/login", &$this->params);
+             //return $this->render("/usuario/login", &$this->params);
+             return $this->render("login", &$this->params);
           }
           
           // Uusario logueado queda en session
@@ -162,14 +165,16 @@ class UsuarioController extends YuppController {
           return $this->redirect( array("controller" => "entradaBlog", "action" => "list") );
        }
        
-    	 return $this->render("/usuario/login", &$this->params);
-    }
+    	 //return $this->render("/usuario/login", &$this->params);
+       return $this->render("login", &$this->params);
+   }
 
     public function logoutAction()
     {
        YuppSession::remove("user");
        $this->flash['message'] = "Vuelve a ingresar en otra ocasi&oacute;n!'";
-    	 return $this->render("/usuario/login", &$this->params);
+    	 //return $this->render("/usuario/login", &$this->params);
+       return $this->render("login", &$this->params);
     }
     
     public function deleteAction()

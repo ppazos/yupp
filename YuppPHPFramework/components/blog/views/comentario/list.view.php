@@ -41,7 +41,7 @@ $m = Model::getInstance();
       [ <a href="?class=<?php echo $m->get('class') ?>&max=<?php echo $m->get('max'); ?>&offset=<?php echo ($m->get('offset')-$m->get('max')); ?>">Previous</a> ]
       <?php } ?>
       
-      <?php echo (int)($m->get('offset')/$m->get('max') + 1); ?> / <?php echo (int)($m->get('count')/$m->get('max') + 1); ?>
+      <?php echo (int)($m->get('offset')/$m->get('max') + 1); ?> / <?php echo ceil($m->get('count')/$m->get('max')); ?>
       
       <?php if ( $m->get('offset')+$m->get('max') < $m->get('count') ) { ?>
       [ <a href="?class=<?php echo $m->get('class') ?>&max=<?php echo $m->get('max'); ?>&offset=<?php echo ($m->get('offset')+$m->get('max')); ?>">Next</a> ]

@@ -32,7 +32,8 @@ class ComentarioController extends YuppController {
        $this->params['count'] = $count; // Maximo valor para el paginador.
 
        //return ViewCommand::display( "comentario/list", $this->params ); // Id NULL para paginas de scaffolding
-       return $this->render("comentario/list", &$this->params);
+       //return $this->render("comentario/list", &$this->params);
+       return $this->render("list", &$this->params);
     }
 
     public function showAction()
@@ -42,7 +43,8 @@ class ComentarioController extends YuppController {
        $this->params['object'] = $obj;
 
        //return ViewCommand::display( "comentario/show", $this->params ); // Id NULL para paginas de scaffolding
-       return $this->render("comentario/show", &$this->params);
+       //return $this->render("comentario/show", &$this->params);
+       return $this->render("show", &$this->params);
     }
 
     public function editAction()
@@ -52,7 +54,8 @@ class ComentarioController extends YuppController {
        $this->params['object'] = $obj;
 
        //return ViewCommand::display( "comentario/edit", $this->params ); // Id NULL para paginas de scaffolding
-       return $this->render("comentario/edit", &$this->params);
+       //return $this->render("comentario/edit", &$this->params);
+       return $this->render("edit", &$this->params);
     }
 
     public function saveAction()
@@ -65,13 +68,14 @@ class ComentarioController extends YuppController {
        if ( !$obj->save() ) // Con validacion de datos!
        {
           $this->params['object'] = $obj;
-          return $this->render("entradaBlog/edit", &$this->params);
+          //return $this->render("entradaBlog/edit", &$this->params);
+          return $this->render("edit", &$this->params);
        }
 
        // show
        $this->params['object'] = $obj;
-       //return ViewCommand::display( "comentario/show", $this->params );
-       return $this->render("comentario/show", &$this->params);
+       //return $this->render("comentario/show", &$this->params);
+       return $this->render("show", &$this->params);
     }
 
     public function deleteAction()
@@ -104,7 +108,8 @@ class ComentarioController extends YuppController {
           {
              // create
              $this->params['object'] = $obj;
-             return $this->render("comentario/create", &$this->params);
+             //return $this->render("comentario/create", &$this->params);
+             return $this->render("create", &$this->params);
           }
 
           $this->flash['message'] = "Comentario creado con exito.";
@@ -118,7 +123,8 @@ class ComentarioController extends YuppController {
 
        // create
        $this->params['object'] = $obj;
-       return $this->render("comentario/create", &$this->params);
+       //return $this->render("comentario/create", &$this->params);
+       return $this->render("create", &$this->params);
     }
 
 }
