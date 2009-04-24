@@ -181,15 +181,27 @@ class RequestManager {
             // Configuro el command para la view...
             // OJO DEBERIA PODER MOSTRAR PAGINAS DE CUALQUIER COMPONENTE!!! LOS TIPOS NO VAN A PONER SUS PAGINAS EN /CORE...
             // Si la pagina es fisica
-            $pagePath = "components/".$lr['component']."/views/".$command->viewName().".view.php";
-            //$pagePath = "components/".$lr['component']."/views/".$lr['controller']."/".$command->viewName().".view.php";
-            // components/blog/views/usuario//usuario/login.view.php
-
-            //Logger::show( "LogicalRouteController: " . $lr['controller'], "h1" );
-            //Logger::show( "CommandViewName: " . $command->viewName(), "h1" );
-              
+//            $pagePath = "components/".$lr['component']."/views/".$command->viewName().".view.php"; // ViewName incluye el controller.
+            $pagePath = "components/".$lr['component']."/views/".$lr['controller']."/".$command->viewName().".view.php";
+            
+            // Si la ruta referenciada no existe, intento mostrar la vista de scafolding correspondiente
+            // a la accion, pero las acciones con vistas dinamicas son solo para acciones: "show","list","edit","create".
             if ( !file_exists($pagePath) ) // Si la pagina NO es fisica
             {
+               // Si puedo mostrar la vista dinamica:
+               if ( in_array($command->viewName(), array("show","list","edit","create","index")) )
+               {
+                  $pagePath = "core/mvc/view/scaffoldedViews/".$command->viewName().".view.php"; // No puede no existir, es parte del framework!
+               }
+               else
+               {
+                  throw new Exception("La vista con path: '$pagePath' no existe. VERIFIQUE EN EL CONTROLLER QUE LA VISTA QUE QUIERE MOSTRAR EXISTE. " . __FILE__ . " " . __LINE__);
+               }
+               
+               
+               // FIXME: con esto de arriba no es necesario tener mas el "mode".
+               
+               /*
                // Si tiene Id -> es logica y se tiene que armar con metadata de la base
                // Si no tiene Id, le tiro con pagina de scaffolding.
                if ($command->viewName())
@@ -209,8 +221,11 @@ class RequestManager {
                      // FIXME: tirar 404
                   }
                }
+               */
             }
-              
+            
+            //echo "$pagePath<br/>";
+            
             $command->setPagePath( $pagePath );
 
             $model = Model::getInstance();
