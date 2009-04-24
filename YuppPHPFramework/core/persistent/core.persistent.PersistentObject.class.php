@@ -1253,29 +1253,24 @@ class PersistentObject {
    // Funcion inversa a belongsTo
    public function isOwnerOf( $attr )
    {
-      // bool array_key_exists ( mixed $key, array $search )
+      // SOL TICKET #2
+      // Dependiendo del tipo de relacion se si un objeto es duenio de otro:
+      // - 1)  Si la relacion es A (1)->(1) B entonces B belongsTo A.
+      // - 2)  Si la relacion es A (1)<->(1) B entonces se necesita belongsTo para saber cual es el lado fuerte.
+      // - 3)  Si la relacion es A (1)->(*) B entonces B belongsTo A.
+      // - 4)  Si la relacion es A (1)<->(*) B entonces B belongsTo A.
+      // - 5)  Si la relacion es A (*)->(*) B entonces B belongsTo A.
+      // - 6)  Si la relacion es A (*)<->(*) B entonces se necesita belongsTo en alg�n lado.
+      //
+      // La clase actual es A, el obj es de clase B.
 
       $_thisClass = get_class($this); //self::$thisClass; // get_class da PO, deberia usar otro valor y no la clase...
 
-      // Verifico si tengo el atributo y esta en una relacion.
-      //array_key_exists ( $attr, $this->attributeTypes ) // Los atributos simples no son asociaciones.
+      // Verifico si tengo el atributo y esta en una relacion (hasMany o hasOne).
+      //
       if ( array_key_exists ( $attr, $this->hasOne ) )
       {
-         //Logger::getInstance()->info( "PersistenObject.isownerOf( $attr ) Entra en hasOne." );
          $obj = new $this->hasOne[$attr]();
-
-//         Logger::getInstance()->error( $obj->belonsToClass( get_class($this) ) );
-
-         // SOL TICKET #2
-         // Dependiendo del tipo de relacion se si un objeto es duenio de otro:
-         // - 1)  Si la relacion es A (1)->(1) B entonces B belongsTo A.
-         // - 2)  Si la relacion es A (1)<->(1) B entonces se necesita belongsTo para saber cual es el lado fuerte.
-         // - 3)  Si la relacion es A (1)->(*) B entonces B belongsTo A.
-         // - 4)  Si la relacion es A (1)<->(*) B entonces B belongsTo A.
-         // - 5)  Si la relacion es A (*)->(*) B entonces B belongsTo A.
-         // - 6)  Si la relacion es A (*)<->(*) B entonces se necesita belongsTo en alg�n lado.
-         //
-         // La clase actual es A, el obj es de clase B.
 
          // Si la relacion es unidireccional, como yo lo tengo, yo soy el duenio... (CONVENSION)
          if ($obj->hasOneOfThis( $_thisClass )) // 2) bidireccional 1..1
@@ -1284,15 +1279,13 @@ class PersistentObject {
          }
          else // 1) unidireccional 1..1
          {
-            return true;
+            //return true;
+            return $obj->belonsToClass( $_thisClass ); // Ahora se pide belongsTo obligatorio para 1..1 unidireccional (esto evita que se salven en cascada links que realmente son blandos)
          }
       }
       else if ( array_key_exists ( $attr, $this->hasMany ) )
       {
-         //Logger::getInstance()->info( "PersistenObject.isownerOf( $attr ) Entra en hasMany." );
-
          $obj = new $this->hasMany[$attr]();
-         //print_r( $obj );
 
          if ($obj->hasOneOfThis( $_thisClass )) // 4) bidireccional 1..*
          {
@@ -1300,13 +1293,10 @@ class PersistentObject {
          }
          else
          {
-            //echo "<h1>PO.isOwnerOf --- VEO HAS MANY ". get_class($obj) ." - ". $this->name .", ". $this->withTable ."</h1>";
-
             //if ($obj->hasManyOfThis( get_class($this) )) // 6) bidireccional *..*
             if ($obj->hasManyOfThis( $_thisClass  ))
             {
                 return $obj->belonsToClass( $_thisClass ); // problema: get_class(this) tira PO...
-               //return $obj->belonsToClass( get_class($this) ); // Si el objeto que quiero saber si soy duenio pertenece a mi => si soy duenio de el.
             }
             else // casos 3 o 5, como es unidireccional, toma el control la clase del lado que no es visto de la otra.
             {
