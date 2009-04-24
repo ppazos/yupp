@@ -7,7 +7,7 @@ class CoreController extends YuppController
 	 */
 	public function indexAction()
 	{
-		$this->params['mode'] = "index";
+//		$this->params['mode'] = "index";
 
 		// Si estoy en mode DEV quiero mosrar informacion sobre lo 
 		// que hay en la base, y lo que falta crear, y dar opcion 
@@ -49,8 +49,9 @@ class CoreController extends YuppController
       $this->params['components'] = $components;
       
 
-		return $this->render(NULL, $this->params);
-	}
+		//return $this->render(NULL, $this->params);
+      return $this->render("index", $this->params);
+	} // index
    
    
    /**
@@ -70,6 +71,8 @@ class CoreController extends YuppController
 
 
 	/**
+    * FIXME: Esta no se necesita mas, esto fue resuelto en el htaccess para poder acceder a los archivos fisicos. 
+    * 
 	 * @param $type tipo de recurso: js, css, img.
 	 * @param $name nombre del recurso.
 	 * @return el recurso pedido como stream.
@@ -135,12 +138,13 @@ class CoreController extends YuppController
 		eval ('$list = ' . $clazz . '::listAll( $this->params );'); // Se pasan los params por si vienen atributos de paginacion.
 
 		$this->params['list'] = $list;
-		$this->params['mode'] = "list"; // Para saber que pagina es.
+//		$this->params['mode'] = "list"; // Para saber que pagina es.
 
 		eval ('$count = ' . $clazz . '::count();');
 		$this->params['count'] = $count; // Maximo valor para el paginador.
 
-		return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
+//		return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
 	}
 
 	public function showAction()
@@ -152,9 +156,10 @@ class CoreController extends YuppController
 		eval ('$obj' . " = $clazz::get( $id );");
 
 		$this->params['object'] = $obj;
-		$this->params['mode'] = "show"; // Para saber que pagina es.
+//		$this->params['mode'] = "show"; // Para saber que pagina es.
 
-		return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
+//	   return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("show", & $this->params); // Id NULL para paginas de scaffolding
 	}
 
 	public function editAction()
@@ -166,9 +171,10 @@ class CoreController extends YuppController
 		eval ('$obj' . " = $clazz::get( $id );");
 
 		$this->params['object'] = $obj;
-		$this->params['mode'] = "edit"; // Para saber que pagina es.
+//		$this->params['mode'] = "edit"; // Para saber que pagina es.
 
-		return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
+//      return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("edit", & $this->params); // Id NULL para paginas de scaffolding
 	}
 
 	/**
@@ -187,15 +193,16 @@ class CoreController extends YuppController
 		{
 			// create
 			$this->params['object'] = $obj;
-			$this->params['mode'] = "edit"; // Para saber que pagina es.
-			return ViewCommand :: display(NULL, & $this->params);
+//       $this->params['mode'] = "edit"; // Para saber que pagina es.
+//       return ViewCommand :: display(NULL, & $this->params);
+         return ViewCommand :: display("edit", & $this->params);
 		}
 
 		// show
 		$this->params['object'] = $obj;
-		$this->params['mode'] = "show"; // Para saber que pagina es.
-
-		return $this->render(NULL, & $this->params);
+//		$this->params['mode'] = "show"; // Para saber que pagina es.
+//		return $this->render(NULL, & $this->params);
+      return $this->render("show", & $this->params);
 	}
 
 	public function deleteAction()
@@ -231,20 +238,23 @@ class CoreController extends YuppController
 			{
 				// create
 				$this->params['object'] = $obj;
-				$this->params['mode'] = "create"; // Para saber que pagina es.
-				return $this->render(NULL, $this->params);
+				//$this->params['mode'] = "create"; // Para saber que pagina es.
+				//return $this->render(NULL, $this->params);
+            return $this->render("create", $this->params);
 			}
 
 			// show
 			$this->params['object'] = $obj;
-			$this->params['mode'] = "show"; // Para saber que pagina es.
-			return $this->render(NULL, $this->params);
+			//$this->params['mode'] = "show"; // Para saber que pagina es.
+			//return $this->render(NULL, $this->params);
+         return $this->render("show", $this->params);
 		}
 
 		// create
 		$this->params['object'] = $obj;
-		$this->params['mode'] = "create"; // Para saber que pagina es.
-		return $this->render(NULL, $this->params);
+		//$this->params['mode'] = "create"; // Para saber que pagina es.
+		//return $this->render(NULL, $this->params);
+      return $this->render("create", $this->params);
 	}
    
 
