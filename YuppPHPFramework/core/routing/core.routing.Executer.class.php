@@ -46,10 +46,6 @@ class Executer {
         }
         else // Si pasa el filtro, ejecuta la accion normalmente
         {
-//           echo "<pre>";
-//           print_r( $ctx );
-//           echo "</pre>";
-         
        	  $controllerClassName = strtoupper($controller[0]) . substr($controller, 1) . "Controller"; // El nombre de la clase es el que viene en la url + 'Controller''
    
            try
@@ -176,9 +172,10 @@ class Executer {
               // y luego el modelo se agrega a eso.
               // =================
             
-              // Nombre de la vista se deriva del controller y la accion.
-              $view = $controller . '/' . $action;
+              // Nombre de la vista es la accion.
+              $view = $action; // $controller . '/' . $action;
               
+              // $model_or_command incluye los params submiteados!
               $command = ViewCommand::display( $view, $model_or_command, $controllerInstance->getFlash() );
            }
            else if ( get_class( $model_or_command ) === 'ViewCommand' ) // Es comando (FIXME: no es lo mismo que instanceof?)
@@ -187,8 +184,8 @@ class Executer {
            }
            else if ( $model_or_command === NULL ) // No retorno nada
            {
-              // Nombre de la vista se deriva del controller y la accion.
-              $view = $controller . '/' . $action;
+              // Nombre de la vista es la accion.
+              $view = $action; // $controller . '/' . $action;
               
               // El modelo que se devuelve es solo los params submiteados.
               $command = ViewCommand::display( $view, $this->params, $controllerInstance->getFlash() );
