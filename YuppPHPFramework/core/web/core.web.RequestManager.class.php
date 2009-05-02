@@ -35,6 +35,7 @@ class RequestManager {
       $mapping = new Mapping( $filter->getPath() ); // Toma la ruta y extrae el nombre del componente, controller y accion. (no hay chequeos, pueden no existir!)
       $lr = $mapping->getLogicalRoute();
          
+      //Logger::struct( $lr, __FILE__ . " " . __LINE__ );
       //Logger::struct( $filter->getPath() );
 //      Logger::struct($lr, "LOGICAL ROUTE 1");
          
@@ -73,7 +74,7 @@ class RequestManager {
       $actionParam = $filter->getActionParam(); // Por si la accion viene codificada en una key de un param como '_action_laAccion', por ejemplo: esto pasa en un submit de un YuppForm.
       if ($actionParam === NULL || $actionParam === "") // Solo si no hay actionParam, me fijo si viene en la url.
       {
-         if ( $lr['action'] === NULL || $lr['action'] === "" )
+         if ( !isset($lr['action']) || $lr['action'] === "" )
          {
             $lr['action'] = "index";
          }
@@ -98,8 +99,8 @@ class RequestManager {
       // Estaria bueno definir codigos estandar de errores de yupp, para poder tener una
       // lista ed todos los errores que pueden ocurrir.
       // *******************************************************************************
-      $componentPath = "components/".$lr['component'];
-         
+      
+      $componentPath       = "components/".$lr['component'];
       $controllerClassName = String::firstToUpper($lr['controller']) . "Controller";
       $controllerFileName  = "components.".$lr['component'].".controllers.".$controllerClassName.".class.php";
       $controllerPath      = "components/".$lr['component']."/controllers/".$controllerFileName;
@@ -178,90 +179,19 @@ class RequestManager {
       {
          if ( $command->isDisplayCommand() )
          {
-            // Configuro el command para la view...
-            // OJO DEBERIA PODER MOSTRAR PAGINAS DE CUALQUIER COMPONENTE!!! LOS TIPOS NO VAN A PONER SUS PAGINAS EN /CORE...
-            // Si la pagina es fisica
-//            $pagePath = "components/".$lr['component']."/views/".$command->viewName().".view.php"; // ViewName incluye el controller.
-            $pagePath = "components/".$lr['component']."/views/".$lr['controller']."/".$command->viewName().".view.php";
-            
-            // Si la ruta referenciada no existe, intento mostrar la vista de scafolding correspondiente
-            // a la accion, pero las acciones con vistas dinamicas son solo para acciones: "show","list","edit","create".
-            if ( !file_exists($pagePath) ) // Si la pagina NO es fisica
-            {
-               // Si puedo mostrar la vista dinamica:
-               if ( in_array($command->viewName(), array("show","list","edit","create","index")) )
-               {
-                  $pagePath = "core/mvc/view/scaffoldedViews/".$command->viewName().".view.php"; // No puede no existir, es parte del framework!
-               }
-               else
-               {
-                  throw new Exception("La vista con path: '$pagePath' no existe. VERIFIQUE EN EL CONTROLLER QUE LA VISTA QUE QUIERE MOSTRAR EXISTE. " . __FILE__ . " " . __LINE__);
-               }
-               
-               
-               // FIXME: con esto de arriba no es necesario tener mas el "mode".
-               
-               /*
-               // Si tiene Id -> es logica y se tiene que armar con metadata de la base
-               // Si no tiene Id, le tiro con pagina de scaffolding.
-               if ($command->viewName())
-               {
-                 	// Pagina dinamica
-                  throw new Exception("La vista con path: '$pagePath' no existe, y la pagina dinamica todavia no esta soportada. VERIFIQUE EN EL CONTROLLER QUE LA VISTA QUE QUIERE MOSTRAR EXISTE REALMENTE. " . __FILE__ . " " . __LINE__);
-               }
-               else
-               {
-                  // FIXME: funciona solo si el mode es: list, edit, create, show (en realidad deberia ser el nombre de la accion no "mode").
-                  // Scaffonding dinamico
-                  $pagePath = "core/mvc/view/scaffoldedViews/".$command->param("mode").".view.php";
-                    
-                  if ( !file_exists($pagePath) ) // Si la pagina NO es fisica
-                  {
-                     throw new Exception("La vista no existe y se intento mostrar una vista dinamica pero tampoco existe: $pagePath " . __FILE__ . " " . __LINE__);
-                     // FIXME: tirar 404
-                  }
-               }
-               */
-            }
-            
-            //echo "$pagePath<br/>";
-            
-            $command->setPagePath( $pagePath );
-
-            $model = Model::getInstance();
-            $model->setModel( $command->params() ); // $command->params() es el modelo devuelto por la accion del controller.
-
-            // FLASH // Por ahora meto el flash en el model, luego podria ir aparte por prolijidad nomas...
-            //$model->setFlash( $controllerInstance->getFlash() ); // PROBLEMA: Si hay redirect, me sobreescribe el flash con vacio, y yo quiero mostrar el flash de la primer accion, por ejemplo en el delete pongo un flahs y luego muestra list y no me muestra en mensaje que puse en delete.
-            
-//        echo "AAA"; // ERROR, se pierde el flash.
-//        $command->show();
-//        echo "AAA";
-              
-            $model->addFlash( $command->flash() );
-            
-            //print_r( $filter->getFlashParams() );
-            
-            $model->addFlash( $filter->getFlashParams() ); // Solucion a agregar flash cuando se hace redirect.
-              
-            /// ACTUALIZAR CONTEXTO ///
-            $ctx->setModel ( &$model );
-            $ctx->update();
-            /// ACTUALIZAR CONTEXTO ///
-              
             // FIXME: mostrar o no el tiempo de procesamiento deberia ser configurable.
             $tiempo_final = microtime(true);
             $tiempo_proc = $tiempo_final - $tiempo_inicio;
             $tiempo_inicio = microtime(true);
-
-            LayoutManager::renderWithLayout( $pagePath );
-
+      
+            self::render( $lr, $command, $ctx, $filter );
+            
             $tiempo_final = microtime(true);
             $tiempo = $tiempo_final - $tiempo_inicio;
-
+      
             echo "<br/><br/>Tiempo de proceso: " . $tiempo_proc . " s<br/>";
             echo "Tiempo de render: " . $tiempo . " s<br/>";
-
+      
             return;
               
          } // isDisplayCommand
@@ -354,5 +284,73 @@ class RequestManager {
       } // si hay command
       // NO DEBERIA LLEGAR ACA, DEBE HACERSE UN RENDER O UN REDIRECT ANTES...
    }
+   
+   private static function render( $logic_route, $command, $context, $filter )
+   {
+      // Configuro el command para la view...
+      // OJO DEBERIA PODER MOSTRAR PAGINAS DE CUALQUIER COMPONENTE!!! LOS TIPOS NO VAN A PONER SUS PAGINAS EN /CORE...
+      // Si la pagina es fisica
+      //$pagePath = "components/".$lr['component']."/views/".$command->viewName().".view.php"; // ViewName incluye el controller.
+      $pagePath = "components/".$logic_route['component']."/views/".$logic_route['controller']."/".$command->viewName().".view.php";
+      
+      // Si la ruta referenciada no existe, intento mostrar la vista de scafolding correspondiente
+      // a la accion, pero las acciones con vistas dinamicas son solo para acciones: "show","list","edit","create".
+      if ( !file_exists($pagePath) ) // Si la pagina NO es fisica
+      {
+         // Si puedo mostrar la vista dinamica:
+         if ( in_array($command->viewName(), array("show","list","edit","create","index")) )
+         {
+            $pagePath = "core/mvc/view/scaffoldedViews/".$command->viewName().".view.php"; // No puede no existir, es parte del framework!
+         }
+         else
+         {
+            throw new Exception("La vista con path: '$pagePath' no existe. VERIFIQUE EN EL CONTROLLER QUE LA VISTA QUE QUIERE MOSTRAR EXISTE. " . __FILE__ . " " . __LINE__);
+         }
+         
+         
+         // FIXME: con esto de arriba no es necesario tener mas el "mode".
+         
+         /*
+         // Si tiene Id -> es logica y se tiene que armar con metadata de la base
+         // Si no tiene Id, le tiro con pagina de scaffolding.
+         if ($command->viewName())
+         {
+            // Pagina dinamica
+            throw new Exception("La vista con path: '$pagePath' no existe, y la pagina dinamica todavia no esta soportada. VERIFIQUE EN EL CONTROLLER QUE LA VISTA QUE QUIERE MOSTRAR EXISTE REALMENTE. " . __FILE__ . " " . __LINE__);
+         }
+         else
+         {
+            // FIXME: funciona solo si el mode es: list, edit, create, show (en realidad deberia ser el nombre de la accion no "mode").
+            // Scaffonding dinamico
+            $pagePath = "core/mvc/view/scaffoldedViews/".$command->param("mode").".view.php";
+              
+            if ( !file_exists($pagePath) ) // Si la pagina NO es fisica
+            {
+               throw new Exception("La vista no existe y se intento mostrar una vista dinamica pero tampoco existe: $pagePath " . __FILE__ . " " . __LINE__);
+               // FIXME: tirar 404
+            }
+         }
+         */
+      }
+      
+      $command->setPagePath( $pagePath ); // FIXME: No se usa para nada el pagePath en el command.
+
+      // Model va a ser accedida desde las vistas.
+      $model = Model::getInstance();
+      $model->setModel( $command->params() ); // $command->params() es el modelo devuelto por la accion del controller.
+      $model->addFlash( $command->flash() );
+      $model->addFlash( $filter->getFlashParams() ); // Solucion a agregar flash cuando se hace redirect.
+        
+      /// ACTUALIZAR CONTEXTO ///
+      $context->setModel ( &$model );
+      $context->update();
+      /// ACTUALIZAR CONTEXTO ///
+      
+      //Logger::struct( $context, __FILE__ . " " . __LINE__ );
+
+      LayoutManager::renderWithLayout( $pagePath );
+      
+   } // render
+   
 }
 ?>
