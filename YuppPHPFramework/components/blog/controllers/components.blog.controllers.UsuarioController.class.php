@@ -16,6 +16,8 @@ class UsuarioController extends YuppController {
 
    public function listAction()
    {
+      //Logger::struct( $this );
+      
       // paginacion
       if (!array_key_exists('max', $this->params))
       {
@@ -26,7 +28,6 @@ class UsuarioController extends YuppController {
       $this->params['list']  = Usuario::listAll( $this->params );
       $this->params['count'] = Usuario::count(); // Maximo valor para el paginador.
 
-      //return $this->render("usuario/list", & $this->params); // Id NULL para paginas de scaffolding
       return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
    }
    
@@ -36,6 +37,9 @@ class UsuarioController extends YuppController {
     */
    protected function createUserFlow()
    {
+      //echo "<h1>CREATE USER FLOW</h1>";
+      //Logger::struct( $this );
+      
       $flow = WebFlow::create("createUser")
                 ->add( // El primero que se agrega, por defecto, es el inicial!!!
                   State::create( "fillName" ) // Se asume que hay una vista "fillName" para el flow.
@@ -60,15 +64,18 @@ class UsuarioController extends YuppController {
     */
    public function fillNameAction( &$flow )
    {
-   	if ( array_key_exists('doit', $this->params) )
+      //echo "<h1>FILL NAME FLOW</h1>";
+      //Logger::struct( $this );
+      
+   	if ( isset($this->params['doit']) )
       {
-         if ( $this->params['name'] === "" ) // TODO: validacion automatica desde las constraints de Usuario
-         {
-         	return "createUserFlow.fillName.error.nameRequired"; // Devolviendo un error no deja hacer la transicion.
-         }
+         $user = new Usuario( array("nombre" => $this->params["name"], "edad" => $this->params["edad"]) );
+         $flow->addToModel("usuario", $user);
          
-         $flow->addToModel("name", $this->params['name']); // Agrego el nombre a memoria de flow
-         $flow->addToModel("edad", $this->params['edad']);
+         if ( !$user->validateOnly( array("nombre", "edad") ) ) // TODO: validacion automatica desde las constraints de Usuario
+         {
+         	return "createUserFlow.fillName.error.pleaseVerifyEnteredData"; // Devolviendo un error no deja hacer la transicion.
+         }
          
          return "move"; // Accion completada correctamente, le permito al flow moverse al proximo estado, es como un redirect a fillUserIdAndPass.
       }
@@ -81,16 +88,27 @@ class UsuarioController extends YuppController {
     */
    public function fillUserAndPassAction( &$flow )
    {
-      if ( array_key_exists('doit', $this->params) )
+      //echo "<h1>FILL USER AND PASS FLOW</h1>";
+      //Logger::struct( $this );
+      
+      if ( isset($this->params['doit']) )
       {
-         if ( $this->params['email'] === "" || $this->params['pass'] === "" ) // TODO: validacion automatica desde las constraints de Usuario
+         $user = $flow->getFromModel("usuario");
+         $user->setEmail( $this->params['email'] );
+         $user->setClave( $this->params['pass'] );
+         $flow->addToModel("usuario", $user);
+         
+         if ( !$user->validateOnly( array("email", "clave") ) ) // TODO: validacion automatica desde las constraints de Usuario
          {
-            return "createUserFlow.fillUserAndPass.error.userAndPassRequired"; // Devolviendo un error no deja hacer la transicion.
+            return "createUserFlow.fillUserAndPass.error.pleaseVerifyEnteredData"; // Devolviendo un error no deja hacer la transicion.
          }
-         
-         $flow->addToModel("email", $this->params['email']); // Agrego el nombre a memoria de flow
-         $flow->addToModel("pass", $this->params['pass']);
-         
+                           
+         if ( !$user->save() )
+         {
+            //Logger::struct( $user->getErrors() );
+            return "createUserFlow.fillUserAndPass.error.errorSavingUser"; // Devolviendo un error no deja hacer la transicion.
+         }
+
          return "move"; // Accion completada correctamente, le permito al flow moverse al proximo estado, es como un redirect a fillUserIdAndPass.
       }
       
@@ -102,27 +120,7 @@ class UsuarioController extends YuppController {
     */
    public function displayUserAction( &$flow )
    {
-      // ??? puedo redirigir a show directamente sin tener esta accion?
-      $data = $flow->getModel();
-      
-      $user = new Usuario( array (
-                                  "nombre" => $data["name"],
-                                  "email" =>  $data["email"],
-                                  "clave" => $data["pass"],
-                                  //"fechaNacimiento" => "1981-10-24 09:59:00",
-                                  "edad" =>  $data["edad"],
-                                  //"gggf" => "2008-09-23 00:39:38"
-                                ) );
-                        
-      if ( !$user->save() )
-      {
-         Logger::struct( $user->getErrors() );
-         // FIXME: Si hay un error deberia regresar la maquina de estados al estado anterior.
-      }
-      
       // No devuelvo nada, es el ultimo estado y todo salio OK.
-      // TODO: y si quiero devolver el usuario en modelo?
-      $flow->addToModel("usuario", $user);
    }
    
    // ======================================================================================================================
@@ -135,7 +133,6 @@ class UsuarioController extends YuppController {
           if (!array_key_exists('email',$this->params) || !array_key_exists('clave', $this->params))
           {
           	 $this->flash['message'] = "Por favor ingrese email y clave";
-             //return $this->render("/usuario/login", &$this->params);
              return $this->render("login", &$this->params);
           }
           
@@ -147,12 +144,9 @@ class UsuarioController extends YuppController {
           
           $list = Usuario::findBy( $condition, &$this->params );
        
-          //print_r( $list );
-          
           if ( count($list) === 0 )
           {
           	 $this->flash['message'] = "El usuario no existe";
-             //return $this->render("/usuario/login", &$this->params);
              return $this->render("login", &$this->params);
           }
           
@@ -165,7 +159,6 @@ class UsuarioController extends YuppController {
           return $this->redirect( array("controller" => "entradaBlog", "action" => "list") );
        }
        
-    	 //return $this->render("/usuario/login", &$this->params);
        return $this->render("login", &$this->params);
    }
 
@@ -173,7 +166,6 @@ class UsuarioController extends YuppController {
     {
        YuppSession::remove("user");
        $this->flash['message'] = "Vuelve a ingresar en otra ocasi&oacute;n!'";
-    	 //return $this->render("/usuario/login", &$this->params);
        return $this->render("login", &$this->params);
     }
     

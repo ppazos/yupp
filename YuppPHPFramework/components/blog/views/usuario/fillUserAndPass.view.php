@@ -28,6 +28,10 @@ YuppLoader::loadScript("components.blog", "Messages");
          <div class="flash"><?php echo $m->flash('message'); ?></div>
       <?php endif; ?>
       
+      <?php if ( ($u = $m->get('usuario')) !== NULL && $u->hasErrors() ) : ?>
+         <?php echo DisplayHelper::errors( $u ); ?>
+      <?php endif; ?>
+      
       <div class="login">
          <form action="<?php echo Helpers::url( array("action"=>"createUser", "event"=>"userIdFilled") ); ?>" method="post">
          

@@ -20,12 +20,6 @@ YuppLoader::loadScript("components.blog", "Messages");
          <div class="flash"><?php echo $m->flash('message'); ?></div>
       <?php endif; ?>
       
-      <!--
-      Name: <?php echo $m->get('name'); ?><br />
-      Email: <?php echo $m->get('user'); ?><br />
-      Pass: <?php echo $m->get('pass'); ?><br />
-      -->
-      
       <table border="1" cellpadding="5" cellspacing="0">
         <tr>
           <th>ID</th>

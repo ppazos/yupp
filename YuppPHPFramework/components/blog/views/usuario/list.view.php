@@ -34,7 +34,7 @@ YuppLoader::loadScript("components.blog", "Messages");
                                        "body" => DisplayHelper::message("blog.usuario.list.action.addUser")) ); ?></li>
       </ul>
       <br/><br/>
-
+      
       <table border="1" cellpadding="5" cellspacing="0">
         <tr>
           <th>ID</th>
@@ -44,15 +44,14 @@ YuppLoader::loadScript("components.blog", "Messages");
           <th>Edad</th>
           <th></th>
         </tr>
-         <?php
-         foreach ( $m->get('list') as $usuario )
-         {
-           Helpers::template( array("controller" => "usuario",
-                                    "name"       => "details",
-                                    "args"       => array("usuario" => $usuario)
-                                   ) );
-         }
-         ?>
+        <?php
+          foreach ( $m->get('list') as $usuario )
+          {
+            Helpers::template( array("controller" => "usuario",
+                                     "name"       => "details",
+                                     "args"       => array("usuario" => $usuario) ) );
+          }
+        ?>
       </table>
       
       <?php if ( $m->get('offset')-$m->get('max') >= 0 ) { ?>
