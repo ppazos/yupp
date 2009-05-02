@@ -24,7 +24,8 @@ class Mapping {
       //echo "REL LOGIC URL: " . $this->relative_logic_url. "<br/>";
       
       // Lista de campos de la url logica.
-      $this->field_list = explode("/", $this->relative_logic_url);
+      // array_filter para no tener espacios vacios.
+      $this->field_list = array_filter( explode("/", $this->relative_logic_url) );
    }
    
    public function getLogicalRoute()
@@ -61,9 +62,9 @@ class DefaultMapping {
    
    public function getLogicalRoute( & $field_list )
    {
-   	return array('component'  => $field_list[0], 
-                   'controller' => (!array_key_exists(1, $field_list)) ? NULL : $field_list[1],  // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 1 not defined. 
-                   'action'     => (!array_key_exists(2, $field_list)) ? NULL : $field_list[2]); // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 2 not defined.
+   	return array('component'  => (!isset($field_list[0])) ? NULL : $field_list[0], 
+                   'controller' => (!isset($field_list[1])) ? NULL : $field_list[1],  // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 1 not defined. 
+                   'action'     => (!isset($field_list[2])) ? NULL : $field_list[2]); // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 2 not defined.
    
                   // 'controller' => (array_key_exists(1, $field_list)) ? NULL : $field_list[1],  // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 1 not defined. 
                   // 'action'     => (array_key_exists(2, $field_list)) ? NULL : $field_list[2]); // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 2 not defined.
@@ -79,8 +80,8 @@ class BlogMapping {
    public function getLogicalRoute( & $field_list )
    {
       return array('component'  => $field_list[0], 
-                   'controller' => ($field_list[1] === NULL) ? 'entradaBlog' : $field_list[1], 
-                   'action'     => $field_list[2]);
+                   'controller' => (!isset($field_list[1])) ? 'entradaBlog' : $field_list[1], 
+                   'action'     => (!isset($field_list[2])) ? 'list' : $field_list[2]);
    }
 }
 
