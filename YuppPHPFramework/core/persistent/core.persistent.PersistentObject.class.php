@@ -775,7 +775,75 @@ class PersistentObject {
    // ===================================================================
 
 
-   // Valida el objeto.
+   /**
+    * Similara a 'validate()', solo que valida los valores de los campos cuyos nombres estan presentes en $attrs.
+    * 
+    * @param array attrs lista de nombres de atributos a verificar la validez de su valor.
+    * @return boolean true si no hubieron errores de validacion, false en caso contrario.
+    */
+   public function validateOnly( $attrs )
+   {
+      $valid = true;
+      $this->errors = NULL; // Reset
+
+      if ($this->constraints)
+      {
+        // Para cada campo
+        foreach ( $this->constraints as $attr => $constraintArray )
+        {
+           if ( in_array($attr, $attrs) )
+           {
+              foreach ( $constraintArray as $constraint )
+              {
+                 //if ( !$constraint->evaluate( $this->attributeValues[$attr] ) ) // NO PIDE HASONE...
+                 if ( !$constraint->evaluate( $this->aGet($attr) ) )
+                 {
+                    $valid = false;
+   
+                    // TODO: Validar asociaciones hasOne !!!  (*****)
+   
+                    // Agrego el error a "errors"
+   
+                    // Si no esta inicializada // NO ES NECESARIO, AHORA LO INICIALIZO CON UN ARRAY.
+                    //if (!$this->errors) $this->errors = array();
+   
+                    // Si no hay un vector de mensajes para este campo
+                    if (!isset($this->errors[ $attr ])) $this->errors[$attr] = array();
+   
+                    // Agrego mensaje
+                    // TODO: ver de donde sacar el mensaje segun el tipo de constraint.
+                    // FIX: se pueden tener keys i18n estandar para problemas con constraints, y para resolver
+                    //      el mensaje como parametros le paso la constraint, el atributo y el valor que fallo.
+                    $err = "Error " . get_class($constraint) . " " . $constraint . " en " . $attr . " con valor ";
+   
+                    /*
+                    // FIXME!!: BUG: Si el atributo es un string vacio, me muestra 0.
+   
+                    // Le pongo el valor que viola, pero si es 0 o null se confunde... por eso distingo usando is_null.
+                    if ( !is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
+                    else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
+                    */
+   
+                    if ( is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
+                    else if ( is_string($this->attributeValues[$attr]) && strcmp($this->attributeValues[$attr], "")==0 ) $err .= "EMPTY STRING";
+                    else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
+   
+                    $this->errors[$attr][] = $err;
+                 }
+              }
+           }
+        }
+      }
+
+      return $valid;
+   }
+
+   /**
+    * Valida los valores de los campos del objeto contra las restricciones definidas en el.
+    * Si se verifican errores, estos se agregan en el campo 'errors' del objeto.
+    * 
+    * @return boolean true si no hubieron errores de validacion, false en caso contrario.
+    */
    public function validate()
    {
       //Logger::getInstance()->log("PersistenObject::validate");
