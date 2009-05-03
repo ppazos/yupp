@@ -162,7 +162,7 @@ class DisplayHelper {
               $maxStringLength = NULL;
               if ( $type === Datatypes::TEXT )
               {
-              	  $maxLengthConstraint = $po->getConstraintOfClass( $attr, MaxLengthConstraint );
+              	  $maxLengthConstraint = $po->getConstraintOfClass( $attr, 'MaxLengthConstraint' );
                  if ($maxLengthConstraint !== NULL) $maxStringLength = $maxLengthConstraint->getValue();
               }
               

@@ -8,7 +8,7 @@ class YuppController {
 
     protected $controllerName;
     protected $actionName;
-
+    
     /**
      * Como el nombre del flow ocupa el lugar de la accion, 
      * el RequestManager (en realidad router.Executer) debe 
@@ -117,6 +117,36 @@ class YuppController {
        return ViewCommand::execute( $component, $controller, $action, $params['params'], $this->flash );
     }
     
+    
+    // ==========================================================================
+    // CRUD dinamico.
+    
+    public function index()
+    {
+       return $this->listAction();
+    }
+    
+    public function listAction()
+    {
+      if ( !isset($this->params['max']) ) // paginacion
+      {
+         $this->params['max'] = 10;
+         $this->params['offset'] = 0;
+      }
+
+      $context = YuppContext::getInstance();
+      $clazz = String::firstToUpper( $context->getController() );
+      eval ('$list  = '. $clazz .'::listAll( $this->params );');
+      eval ('$count = '. $clazz .'::count();');
+
+      $this->params['class']  = $clazz;
+      $this->params['list'] = $list;
+      $this->params['count'] = $count;
+
+      return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
+    }
+    
+    
    /**
     * Si un controlador no tiene la accion show definida, se ejecuta esta, 
     * que va a la vista dinamica de show por scaffolding.
@@ -132,10 +162,11 @@ class YuppController {
       eval ('$obj' . " = $clazz::get( $id );");
 
       $this->params['object'] = $obj;
-      $this->params['mode'] = "show"; // Para saber que pagina es.
+      //$this->params['mode']   = "show"; // Para saber que pagina es.
 
-      return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("show", & $this->params); // Id NULL para paginas de scaffolding
    }
+   
    
    /**
     * Si un controlador no tiene la accion show definida, se ejecuta esta, 
@@ -149,27 +180,72 @@ class YuppController {
 
       // View create, que es como edit pero la accion de salvar vuelve aqui.
 
-      if ($this->params['doit']) // create
+      if ( isset($this->params['doit']) ) // create
       {
          $obj->setProperties($this->params);
          if (!$obj->save()) // Con validacion de datos!
          {
             // create
             $this->params['object'] = $obj;
-            $this->params['mode'] = "create"; // Para saber que pagina es.
-            return $this->render(NULL, $this->params);
+            //$this->params['mode'] = "create"; // Para saber que pagina es.
+            return $this->render("create", $this->params);
          }
 
          // show
          $this->params['object'] = $obj;
-         $this->params['mode'] = "show"; // Para saber que pagina es.
-         return $this->render(NULL, $this->params);
+         //$this->params['mode'] = "show"; // Para saber que pagina es.
+         return $this->render("show", $this->params);
       }
 
       // create
       $this->params['object'] = $obj;
-      $this->params['mode'] = "create"; // Para saber que pagina es.
-      return $this->render(NULL, $this->params);
+      //$this->params['mode'] = "create"; // Para saber que pagina es.
+      return $this->render("create", $this->params);
+   }
+   
+   public function editAction()
+   {
+      $context = YuppContext::getInstance();
+      $clazz = String::firstToUpper( $context->getController() );
+
+      eval ('$obj = '. $clazz .'::get( $this->params["id"] );');
+      $this->params['object'] = $obj;
+      
+      return $this->params;
+   }
+   
+   public function saveAction()
+   {
+      $context = YuppContext::getInstance();
+      $clazz = String::firstToUpper( $context->getController() );
+      
+      $id  = $this->params['id'];
+      eval('$obj = '. $clazz .'::get( $id );');
+      $obj->setProperties( $this->params );
+       
+      if ( !$obj->save() ) // Con validacion de datos!
+      {
+         $this->params['object'] = $obj;
+         return $this->render("edit", &$this->params);
+      }
+
+      $this->flash['message'] = "Los datos fueron actualizados"; // FIXME: i18n
+      return $this->redirect( array('action' => 'show',
+                                    'params' => array('id' => $obj->getId()) ));
+   }
+   
+   public function deleteAction()
+   {
+      $context = YuppContext::getInstance();
+      $clazz = String::firstToUpper( $context->getController() );
+      
+      $id  = $this->params['id'];
+      eval('$ins = '. $clazz .'::get( $id );');
+      
+      $ins->delete(true); // Eliminacion logica, si fuera fisica tendria que actualizar los links a las entradas, o borrar tambien las entradas del user.
+  
+      $this->flash['message'] = "Objeto [$id] eliminado."; // FIXME: i18n
+      return $this->redirect( array("action" => "list") ); // FIXME: el redirect mata el flash!
    }
 }
 

@@ -39,7 +39,6 @@ td {
 
 <div align="center"><?php echo $m->flash('message'); ?></div>
 
-
 [ <a href="create?class=<?php echo $m->get('class') ?>">Create</a> ]<br/><br/>
 
 <?php echo DisplayHelper::model( $m->get('list'), "list", $m->get('class') ); ?>
