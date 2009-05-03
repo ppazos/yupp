@@ -45,6 +45,34 @@ class CurrentFlows {
    {
    	return $this->flows[ $flowId ];
    }
+   
+   /**
+    * Devuelve true si tiene algun flow, false si no.
+    */
+   public function hasAnyFlow()
+   {
+      return ( count($this->flows) !== 0 );
+   }
+   
+   /**
+    * Devuelve la cantidad de flows.
+    */
+   public function getFlowCount()
+   {
+      return count($this->flows);
+   }
+   
+   /**
+    * Si hay algun flow, los vuelve a su estado original mediante 'init()'.
+    */
+   public function resetFlows()
+   {
+      if ( $this->hasAnyFlow() )
+      {
+         foreach ( $this->flows as $flow ) $flow->init(); // OJO capaz que no cambia los objetos dentro del array! (funciona OK)
+         YuppSession::set("_current_flows_singleton_instance", $this);
+      } 
+   }
 
 }
 

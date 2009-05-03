@@ -63,6 +63,7 @@ class Executer {
            $controllerInstance = new $controllerClassName($controller, $action, $this->params); // Se usa abajo!!!
    
 
+
            // Si hay except la agarra en el try del index.php
 
            if ( $controllerInstance->flowExists($action) ) // Si es un web flow
@@ -157,6 +158,11 @@ class Executer {
            }
            else // Es una accion comun.
            {
+              // Si hay algun flow activo y ejecuto una accion comun, tengo que resetearlos 
+              // (porque sali del flow y si vuelvo a ejecutar el flow puede estar en un estado inconsistente).
+              CurrentFlows::getInstance()->resetFlows(); // Se encarga de verificar si hay algun flow para resetear
+              
+
               //Logger::show("ES ACCION COMUN, " . __FILE__ . " " . __LINE__ );
               $model_or_command = $controllerInstance->{$action}();
            }
