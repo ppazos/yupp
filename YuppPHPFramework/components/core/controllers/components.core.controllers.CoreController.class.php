@@ -49,8 +49,8 @@ class CoreController extends YuppController
       $this->params['components'] = $components;
       
 
-		//return $this->render(NULL, $this->params);
       return $this->render("index", $this->params);
+      
 	} // index
    
    
@@ -118,10 +118,11 @@ class CoreController extends YuppController
 		return $this->render($id, & $this->params);
 	}
 
+   
 	/**
 	 * Mostrar lista de elementos de alguna clase.
 	 */
-	public function listAction()
+   public function listAction()
 	{
 		$clazz = $this->params['class'];
 
@@ -132,20 +133,15 @@ class CoreController extends YuppController
 			$this->params['offset'] = 0;
 		}
 
-		// No encara pasarle el $this->params al eval ...
-		//$_params = $this->params;
-
 		eval ('$list = ' . $clazz . '::listAll( $this->params );'); // Se pasan los params por si vienen atributos de paginacion.
-
 		$this->params['list'] = $list;
-//		$this->params['mode'] = "list"; // Para saber que pagina es.
 
 		eval ('$count = ' . $clazz . '::count();');
 		$this->params['count'] = $count; // Maximo valor para el paginador.
 
-//		return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
       return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
 	}
+   
 
 	public function showAction()
 	{
