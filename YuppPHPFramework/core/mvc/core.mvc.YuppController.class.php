@@ -121,10 +121,12 @@ class YuppController {
     // ==========================================================================
     // CRUD dinamico.
     
+    /* Index deberia declararse en los controllers si o si.
     public function index()
     {
        return $this->listAction();
     }
+    */
     
     public function listAction()
     {
