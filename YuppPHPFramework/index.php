@@ -65,7 +65,7 @@ YuppLoader :: load("core.persistent", "PersistentObject");
 YuppLoader :: load("core.routing", "Filter");
 YuppLoader :: load("core.routing", "Mapping");
 //YuppLoader :: load("core.routing", "ControllerFilter"); // before y after filters
-YuppLoader :: load("core.routing", "ControllerFilter2"); // FIXME: prueba!
+YuppLoader :: load("core.routing", "YuppControllerFilter"); // FIXME: prueba!
 YuppLoader :: load("core.routing", "Executer");
 
 YuppLoader :: load("core.utils", "YuppStats");

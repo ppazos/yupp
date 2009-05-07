@@ -32,7 +32,7 @@ class Executer {
         // Before y After filters para acciones de controllers
         $beforeFilters = ($componentControllerFiltersInstance !== NULL)? $componentControllerFiltersInstance->getBeforeFilters() : array();
         $afterFilters  = ($componentControllerFiltersInstance !== NULL)? $componentControllerFiltersInstance->getAfterFilters()  : array();
-        $filters = new ControllerFilter2( $beforeFilters, $afterFilters ); // TODO: cambiar nombre a YuppControllerFilter.
+        $filters = new YuppControllerFilter( $beforeFilters, $afterFilters ); // TODO: cambiar nombre a YuppControllerFilter.
         
         // Ejecucion de los before filters, true si pasan o un ViewCommand si no.
         $bf_res = $filters->before_filter($component, $controller, $action, &$this->params);

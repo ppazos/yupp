@@ -6,7 +6,7 @@
  * 
  * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
  */
-class ControllerFilter2 {
+class YuppControllerFilter {
 
     /**
      * Arrays de filtros, en before_filters son clases que implementan IControllerBeforeFilter,
@@ -151,7 +151,7 @@ class ControllerFilter2 {
        // Si llega aca hay algo mal con la definicion de controllers...
        //throw new Exception("Valor dado para controllers es incorrecto para el filtro " . get_class($filterInstance) . ", tiene valor '$controllers'");
     }
-} // ControllerFilter2
+} // YuppControllerFilter
 
 interface IComponentControllerFilters {
    
