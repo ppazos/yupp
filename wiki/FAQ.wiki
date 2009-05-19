@@ -1,4 +1,4 @@
-#labels faq,yupp,preguntas
+#labels faq,yupp,preguntas,consultas,problemas,soluciones,consejos
 = Preguntas Frecuentes =
 
 == Pregunta 1 ==
@@ -18,5 +18,23 @@ INI file. in C:\wamp\www\femi\core\persistent
 
 == Pregunta 2 ==
 
-  * **
-  * 
+  * *Instalo el framework con éxito pero los links están rotos*
+{{{
+Me pasa que instalo el framework, veo la página principal con los links de crear tablas, ejecutar bootstrap y ver estadísticas, pero al hacer clic en ellos no me lleva a ningún lado.
+
+Estos links no funcionan:
+http://localhost/Yupp_Framework_PHP_v0.1.6.3/core/core/createModelTables
+http://localhost/Yupp_Framework_PHP_v0.1.6.3/core/core/executeBootstrap?componentName=blog
+}}}
+
+  * Lo que puede pasar es que no tengas el MOD_REWRITE (o REWRITE MODULE) de Apache activado. Verifica si está activado, y si no, actívalo. Si al activarlo sigues con el error por favor publica un comentario en esta página o abre una discusión nueva en el grupo: [http://groups.google.com/group/yuppframeworkphp]
+
+
+== Pregunta 3 ==
+
+  * *Me aparece un error de que no encuentra la base de datos*
+{{{
+Instalo el framework correctamente y al acceder a la aplicación un mensaje me dice que no puede seleccionar la base de datos "carlitos".
+}}}
+
+  * Antes de intentar acceder a la aplicación debes configurar la base de datos en el archivo "core.config.YuppConfig.class.php", cambiando el nombre de la base de datos, el usuario y password para ingresar a ella. Por defecto la base de datos se llama "carlitos". Luego de configurar correctamente estos datos, debes crear la base (por ejemplo si usas MySQL puedes crearla mediante el PHPMyAdmin), y debe llamarse igual al nombre configurado en YuppConfig.
