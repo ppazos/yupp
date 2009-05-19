@@ -492,7 +492,6 @@ class DAL {
    //public function update ( $tableName, &$obj )
    public function update ( $tableName, &$data )
    {
-      //Logger::getInstance()->dal_log("DAL::update " . $tableName . " " . get_class($obj));
       Logger::getInstance()->dal_log("DAL::update " . $tableName . " " . $data['class']);
 
       // DBG
@@ -942,6 +941,7 @@ class DAL {
     */
    private function update_query2( $data, $tableName )
    {
+      // UPDATE hello_world_persona SET nombre='aaaa' ,edad='24' ,class='Persona' ,deleted='0' WHERE id=2
       if ( $data['id'] === NULL) throw new Exception("Clave 'id' es vacia...");
       if ( $tableName  === NULL) throw new Exception("Tablename es vacio...");
       
@@ -954,6 +954,7 @@ class DAL {
          if ( strcmp($attr, "id") != 0 ) // No updateo el id...
          {
             if ( is_null($value) ) $tableAttrs .= DatabaseNormalization::col( $attr ) ."=NULL,"; // Si no se pone esto ponia '' y se guardaba 0, mientras necesito que se guarde NULL.
+            else if ( is_string($value) ) $tableAttrs .= DatabaseNormalization::col( $attr ) ."='". addslashes($value) ."' ,"; // Debe agregar slashes solo si el valor es string, esto es por si guardo "'" dentro del propio string donde mysql me da error.
             else $tableAttrs .= DatabaseNormalization::col( $attr ) ."='". $value ."',"; // FIXME: Ver si el value es literal...
          }
       }
@@ -1019,6 +1020,7 @@ class DAL {
     */
    private function insert_query( $object, $tableName = NULL )
    {
+      // INSERT INTO hello_world_persona ( nombre ,edad ,class ,id ,deleted ) VALUES ('pepe' ,'12' ,'Persona' ,'6' ,'' );
       if (!$tableName) $tableName = YuppConventions::tableName( $object );
       
       $q = "INSERT INTO " . $tableName . " ( "; // DBSTD
@@ -1032,6 +1034,7 @@ class DAL {
       $q .= $tableAttrs;
       $q .= ") VALUES (";
 
+      // El codigo es distinto al de update porque la forma de la consulta es distinta.
       // TODO: Si el valor es null tengo que poner null en la tabla, no el string vacio.
       // TODO: Verificar atributos no nullables en null en la instancia de la clase, esto falta agregar cosas a la clase persistente, "las restricciones"
       $tableVals = "";
@@ -1039,6 +1042,7 @@ class DAL {
       {
          $value = $object->aGet( $attr ); // Valor del atributo simple.
          if ( is_null($value) ) $tableVals .= "NULL ,";
+         else if ( is_string($value) ) $tableVals .= "'". addslashes($value) ."' ,"; // Debe agregar slashes solo si el valor es string, esto es por si guardo "'" dentro del propio string donde mysql me da error.
          else $tableVals .= "'". $value ."' ,"; // FIXME: OJO, si no es literal no deberia poner comillas !!!!  y si es null deberia guardar null
       }
       $tableVals = substr($tableVals, 0, sizeof($tableVals)-2);
