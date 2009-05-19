@@ -78,11 +78,6 @@ class RequestManager {
          {
             $lr['action'] = "index";
          }
-         else
-         {
-            //echo "<h1>C</h1>";
-          	//echo "<h1>ACTION 1: ". $lr['action'] ."</h1>";
-         }
       }
       else
       {
