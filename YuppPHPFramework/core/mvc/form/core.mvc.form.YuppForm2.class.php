@@ -12,29 +12,66 @@
 
 class YuppForm2
 {
+   // FIXME: el method del form deberia ser un parametro. (post, get, etc)
    
 	//private static $counter = 0;
 	private $fields = array (); // Lista de campos o grupos del form.
 
-	// Destino del form
+	// Destino del form en partes.
 	private $component;
 	private $controller;
 	private $action;
+   
+   // Destino del form url armada
+   private $action_url = NULL; // Se inicializa en NULL para verificar si se usa este o el destino en partes.
+   
+   private $method = "post"; // Metodo para enviar el form
    
    private $isAjax; // True si se submitea el form por ajax.
    private $ajaxCallback; // Funcion JS que se llama al submitea via ajax el form.
    private $id;
 
    private static $counter = 0;
+   private $hasFileFields = false; // True si se incluye algun campo de tipo FILE.
 
-	public function __construct($component, $controller, $action, $isAjax = false, $ajaxCallback = '')
+   /**
+    * Crea una nueva instancia de un formulario.
+    * 
+    * @param array $params lista de parametros con nombre, los parametros posibles son:
+    * 
+    *   - string  actionUrl: direccion de destino del formulario.
+    *   - string  component: 
+    *   - string  controller: 
+    *   - string  action: 
+    *   - boolean isAjax: indica si al enviar el formulario se utiliza ajax o no.
+    *   - string  ajaxCallback: nombre de la funcion javascript que es invocada cuando el
+    *                           formulario termina de ser enviado via ajax, solo tiene
+    *                           sentido darle un valor si $isAjax es true.
+    *
+    */
+	//public function __construct($component, $controller, $action, $isAjax = false, $ajaxCallback = '')
+   public function __construct( $params )
 	{
-		$this->component = $component;
-		$this->controller = $controller;
-		$this->action = $action;
+      if (!is_array($params)) throw new Exception("Error: 'params' debe ser un array. " . __FILE__ ." ". __LINE__);
       
-      $this->isAjax = $isAjax;
-      $this->ajaxCallback = $ajaxCallback;
+      if ( isset($params['actionUrl']) )
+      {
+         $this->action_url = $params['actionUrl'];
+      }
+      else
+      {
+		   $this->component  = $params['component'];
+		   $this->controller = $params['controller'];
+		   $this->action     = $params['action'];
+      }
+      
+      if ( isset($params['method']) ) $this->method = $params['method'];
+      
+      if ( isset($params['isAjax']) )
+      {
+         $this->isAjax       = $params['isAjax'];
+         $this->ajaxCallback = $params['ajaxCallback'];
+      }
       
       // Para ids autogenerados
       $c = self::$counter;
@@ -42,20 +79,12 @@ class YuppForm2
       $this->id = "form_$c";
    }
    
-   public function getId()
-   {
-      return $this->id;
-   }
-   
-   public function getAjaxCallback()
-   {
-      return $this->ajaxCallback;
-   }
-
-   public function isAjax()
-   {
-      return $this->isAjax;
-   }
+   public function getId() { return $this->id; }
+   public function hasFileFields() { return $this->hasFileFields; }
+   public function getAjaxCallback() { return $this->ajaxCallback; }
+   public function isAjax() { return $this->isAjax; }
+   public function get() { return $this->fields; }
+   public function getMethod() { return $this->method; }
 
 	/**
 	 * Depende de los helpers. Si se utiliza YuppForm por fuera de Yupp 
@@ -64,22 +93,73 @@ class YuppForm2
 	 */
 	public function getUrl()
 	{
-		return Helpers :: url(array (
-			"component" => $this->component,
-			"controller" => $this->controller,
-			"action" => $this->action
-		));
+      if ( is_null($this->action_url) )
+         return Helpers :: url(array (
+            "component" => $this->component,
+            "controller" => $this->controller,
+            "action" => $this->action
+         ));
+      else
+         return $this->action_url;
 	}
 
 	public function add($fieldOrGroup)
 	{
+      if ( $fieldOrGroup->isFile() ) $this->hasFileFields = true;
 		$this->fields[] = $fieldOrGroup;
       return $this;
 	}
-	public function get()
-	{
-		return $this->fields;
-	}
+   
+   // Constructores de campos
+   public static function text( $params )
+   {
+      return YuppFormField2::text($params);
+   }
+   
+   public static function bigtext( $params )
+   {
+      return YuppFormField2::bigtext($params);
+   }
+   
+   public static function hidden( $params )
+   {
+      return YuppFormField2::hidden($params);
+   }
+   
+   public static function password( $params )
+   {
+      return YuppFormField2::password($params);
+   }
+   
+   public static function date( $params )
+   {
+      return YuppFormField2::date($params);
+   }
+   
+   public static function select( $params )
+   {
+      return YuppFormField2::select($params);
+   }
+   
+   public static function submit( $params )
+   {
+      return YuppFormField2::submit($params);
+   }
+   
+   public static function radio( $params )
+   {
+      return YuppFormField2::radio($params);
+   }
+   
+   public static function check( $params )
+   {
+      return YuppFormField2::check($params);
+   }
+   
+   public static function file( $params )
+   {
+      return YuppFormField2::file($params);
+   }
 }
 
 /** 
@@ -87,25 +167,24 @@ class YuppForm2
  */
 class YuppFormField2Group
 {
-
 	private $name;
 	private $fields = array ();
 
-	public function __construct($name)
-	{
-		$this->name = $name;
-	}
+	public function __construct($name) { $this->name = $name; }
+   
+   public function getName() { return $this->name; }
 
 	public function add(YuppFormField2 $field)
 	{
 		$field->add("group", $this->name);
 		$this->fields[] = $field;
+      return $this;
 	}
 
-	public function get()
-	{
-		return $this->fields;
-	}
+	public function get() { return $this->fields; }
+   
+   // Este metodo se necesita para el add de Form que pregunta al campo si es file (para que group tenga la misma interfaz que field)
+   public function isFile() { return false; }
 }
 
 /**
@@ -120,14 +199,16 @@ class YuppFormField2
 	const TEXT     = 1; // input text
 	const HIDDEN   = 2; // input hidden
 	const BIGTEXT  = 3; // textaea
-	const SELECTOR = 4; // select size>1 multiple?
-	const DROPDOWN = 5; // select
-	const RADIO    = 6; // input type = radio
-	const CHECK    = 7; // input type = checkbox
-	const SUBMIT   = 8; // input type = submit
+	//const SELECTOR = 4; // select size>1 multiple? // No senecesario, se hace con select y parametros size y multiple.
+	const SELECT = 4; // select
+	const RADIO    = 5; // input type = radio
+	const CHECK    = 6; // input type = checkbox
+	const SUBMIT   = 7; // input type = submit
    
-   const DATE     = 9; // 3 selects dia mes anio.
-   const PASSWORD = 10;
+   const DATE     = 8; // 3 selects dia mes anio.
+   const PASSWORD = 9;
+   
+   const FILE     = 10; // Recordar que si hay archivos para subir el form debe tener el atributo: enctype="multiplart/form-data"
 
 	private function __construct($type, $label = NULL)
 	{
@@ -165,61 +246,94 @@ class YuppFormField2
    public function getTagParams()
    {
       $r = " ";
-      foreach ($this->args as $name => $value)
-      {
-         $r .= $name . '="' . $value . '" ';
-      }
+      foreach ($this->args as $name => $value) $r .= $name .'="'. $value .'" ';
       return $r;
+   }
+ 
+   public function getType()
+   {
+      return $this->type;
+   }
+
+   public function isFile()
+   {
+      return $this->type === self::FILE;
+   }
+
+   public function getLabel()
+   {
+      return $this->label;
    }
    
    public static function date($params)
    {
-      $f = new YuppFormField2(self::DATE, $params['label']);
+      $label = $params['label'];
+      unset($params['label']); // para que label no aparezca en la lista de params.
+      $f = new YuppFormField2(self::DATE, $label);
       $f->set( $params );
       return $f;
    }
    
    public static function password($params)
    {
-      $f = new YuppFormField2(self::PASSWORD, $params['label']);
+      $label = $params['label'];
+      unset($params['label']); // para que label no aparezca en la lista de params.
+      $f = new YuppFormField2(self::PASSWORD, $label);
       $f->set( $params );
       return $f;
    }
 
    public static function select( $params ) //($name, $action, $label = "")
    {
-      $f = new YuppFormField2(self::DROPDOWN, $params['label']);
+      $label = $params['label'];
+      unset($params['label']); // para que label no aparezca en la lista de params.
+      $f = new YuppFormField2(self::SELECT, $label);
       $f->set( $params );
-      //$f->add("name",    $params['name']);
-      //$f->add("value",   $params['value']); // algun valor de options para que quede seleccionado.
-      //$f->add("options", $params['options']);
       return $f;
    }
 
 	public static function submit($params)
 	{
-		$f = new YuppFormField2(self::SUBMIT, $params['label']);
+      $label = $params['label'];
+      unset($params['label']); // para que label no aparezca en la lista de params.
+		$f = new YuppFormField2(self::SUBMIT, $label);
       $f->set( $params );
-		//$f->add("name",   $params['name']);
-		//$f->add("action", $params['action']);
 		return $f;
 	}
 
 	public static function text($params)
 	{
-		$f = new YuppFormField2(self::TEXT, $params['label']);
+      $label = $params['label'];
+      unset($params['label']); // para que label no aparezca en la lista de params.
+		$f = new YuppFormField2(self::TEXT, $label);
       $f->set( $params );
-		//$f->add("name",  $params['name']);
-		//$f->add("value", $params['value']);
 		return $f;
 	}
    
+   public static function radio($params)
+   {
+      $label = $params['label'];
+      unset($params['label']); // para que label no aparezca en la lista de params.
+      $f = new YuppFormField2(self::RADIO, $label);
+      $f->set( $params );
+      return $f;
+   }
+   
+   public static function check($params)
+   {
+      $label = $params['label'];
+      unset($params['label']); // para que label no aparezca en la lista de params.
+      $f = new YuppFormField2(self::CHECK, $label);
+      $f->set( $params );
+      return $f;
+   }
+   
    public static function bigtext($params)
    {
-      $f = new YuppFormField2(self::BIGTEXT, $params['label']);
+      $label = $params['label'];
+      unset($params['label']); // para que label no aparezca en la lista de params.
+      $f = new YuppFormField2(self::BIGTEXT, $label);
       $f->set( $params );
-      //$f->add("name",  $params['name']);
-      //$f->add("value", $params['value']);
       return $f;
    }
    
@@ -227,33 +341,34 @@ class YuppFormField2
    {
       $f = new YuppFormField2( self::HIDDEN );
       $f->set( $params );
-      //$f->add("name",  $params['name']);
-      //$f->add("value", $params['value']);
+      return $f;
+   }
+   
+   public static function file($params)
+   {
+      $label = $params['label'];
+      unset($params['label']); // para que label no aparezca en la lista de params.
+      $f = new YuppFormField2(self::FILE, $label);
+      $f->set( $params );
       return $f;
    }
 
-	public function getType()
-	{
-		return $this->type;
-	}
-
-	public function getLabel()
-	{
-		return $this->label;
-	}
-}
+} // YuppFormField
 
 /**
  * Clase para definir una forma de mostrar el formulario.
+ * Se puede sobreescribir segun las necesidades de generacion de HTML.
+ * La clase por defecto genera una DIV para cada etiqueta y cada campo,
+ * para luego aplicarle CSS para ubicar los elementos como se requiera.
  */
 class YuppFormDisplay2
 {
 	/**
 	 * 
 	 */
-	private static function displayField(YuppFormField2 $field)
+	private static function displayField(YuppFormField2 $field, $fieldNumber)
 	{
-		// TODO: debe considerar el atributo "group" (es el atributo "name" del radio).
+		// TODO: debe considerar el atributo "group" (es el atributo "name" del radio) ???
 
 		$fieldHTML = '<div class="field_container">';
 
@@ -262,9 +377,11 @@ class YuppFormDisplay2
          case YuppFormField2 :: DATE :
          
             $name = $field->get("name");
+            if ($name === NULL)
+               throw new Exception("El argumento 'name' es obligatorio para el campo DATE." . __FILE__ . " " . __LINE__);
          
-            $fieldHTML .= '<div class="label">'. $field->getLabel() .'</div>';
-            $fieldHTML .= '<div class="field">';
+            $fieldHTML .= '<div class="label date">'. $field->getLabel() .'</div>';
+            $fieldHTML .= '<div class="field date">';
             $fieldHTML .= '<label for="day">D&iacute;a: </label>'; // TODO: i18n soportado por el framework.
             $fieldHTML .= '<select name="'.$name.'_day">';
             for ( $d=1; $d<32; $d++ )
@@ -302,6 +419,7 @@ class YuppFormDisplay2
             if ($name === NULL)
                throw new Exception("El argumento 'name' es obligatorio para el campo TEXT." . __FILE__ . " " . __LINE__);
             
+            $value = $field->get("value");
             $isReadOnly = $field->get("read-only"); // opcional
             $readOnly = ""; // $field->get("read-only") si viene es un bool
             
@@ -310,9 +428,8 @@ class YuppFormDisplay2
                $readOnly = ' readonly="true" ';
             }
             
-            $fieldHTML .= '<div class="label"><label for="'.$name.'">' . $field->getLabel() . '</label></div><div class="field">';
-				$value = $field->get("value");
-            $fieldHTML .= '<input type="text" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $readOnly . $field->getTagParams() .' /></div>';
+            $fieldHTML .= '<div class="label text"><label for="'.$name.'">' . $field->getLabel() . '</label></div>';
+            $fieldHTML .= '<div class="field text"><input type="text" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $readOnly . $field->getTagParams() .' /></div>';
 
 			break;
 			case YuppFormField2 :: HIDDEN :
@@ -322,6 +439,9 @@ class YuppFormDisplay2
                throw new Exception("El argumento 'name' es obligatorio para el campo HIDDEN." . __FILE__ . " " . __LINE__);
             
             $value = $field->get("value");
+            if ($value === NULL)
+               throw new Exception("El argumento 'value' es obligatorio para el campo HIDDEN." . __FILE__ . " " . __LINE__);
+            
             $fieldHTML .= '<input type="hidden" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' />';
          
 			break;
@@ -332,7 +452,9 @@ class YuppFormDisplay2
                throw new Exception("El argumento 'name' es obligatorio para el campo PASSWORD." . __FILE__ . " " . __LINE__);
             
             $value = $field->get("value");
-            $fieldHTML .= '<input type="password" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' />';
+            
+            $fieldHTML .= '<div class="label password">'. $field->getLabel() .'</div>';
+            $fieldHTML .= '<div class="field password"><input type="password" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' /></div>';
          
          break;
 			case YuppFormField2 :: BIGTEXT :
@@ -341,58 +463,81 @@ class YuppFormDisplay2
             if ($name === NULL)
                throw new Exception("El argumento 'name' es obligatorio para el campo BIGTEXT." . __FILE__ . " " . __LINE__);
             
+            $value = $field->get("value");
+            
             $readOnly = ""; // $field->get("read-only") si viene es un bool
             if ( $field->get("read-only") !== NULL && $field->get("read-only") )
             {
-               $fieldHTML .= '<div class="label"><label for="'.$name.'">'. $field->getLabel() .'</label></div><div class="field">';
-               $fieldHTML .= $field->get("value").'</div>';
+               $fieldHTML .= '<div class="label bigtext"><label for="'.$name.'">'. $field->getLabel() .'</label></div>';
+               $fieldHTML .= '<div class="field bigtext">'. $value .'</div>';
             }
             else
             {
-               $fieldHTML .= '<div class="label"><label for="'.$name.'">'. $field->getLabel() .'</label></div><div class="field">';
-               $value = $field->get("value");
-               $fieldHTML .= '<textarea name="'. $name .'"'. $field->getTagParams() .'>'. (($value)?$value:'') .'</textarea></div>';
+               $fieldHTML .= '<div class="label bigtext"><label for="'.$name.'">'. $field->getLabel() .'</label></div>';
+               $fieldHTML .= '<div class="field bigtext"><textarea name="'. $name .'"'. $field->getTagParams() .'>'. (($value)?$value:'') .'</textarea></div>';
             }
             
 			break;
-			case YuppFormField2 :: SELECTOR :
+			case YuppFormField2 :: SELECT :
          
-           // TODO
-         
-			break;
-			case YuppFormField2 :: DROPDOWN :
-         
-            $name = $field->get("name"); // FIXME: verificar que es obligatorio
-            $fieldHTML .= '<div class="label"><label for="'.$name.'">' . $field->getLabel() . '</label></div><div class="field">';
-
-            $fieldHTML .= '<select name="'. $name .'"'. $field->getTagParams() .'>';
-            foreach ( $field->get("options") as $value => $text )
+            // OJO, al hacer get de los params, estos se borran!.
+            $name = $field->get("name");
+            
+            if ($name === NULL)
+               throw new Exception("El argumento 'name' es obligatorio para el campo SELECT." . __FILE__ . " " . __LINE__);
+            
+            $value = $field->get("value");
+            $options = $field->get("options");
+            
+            $fieldHTML .= '<div class="label select"><label for="'.$name.'">' . $field->getLabel() . '</label></div>';
+            $fieldHTML .= '<div class="field select"><select name="'. $name .'"'. $field->getTagParams() .'>';
+            foreach ( $options as $opt_value => $text )
             {
-               if ( $value === $field->get("value") )
-                  $fieldHTML .= '<option value="'. $value .'" selected="true">'. $text .'</option>';
+               if ( $opt_value === $value )
+                  $fieldHTML .= '<option value="'. $opt_value .'" selected="true">'. $text .'</option>';
                else
-                  $fieldHTML .= '<option value="'. $value .'">'. $text .'</option>';
+                  $fieldHTML .= '<option value="'. $opt_value .'">'. $text .'</option>';
             }
             $fieldHTML .= '</select></div>';
          
 			break;
 			case YuppFormField2 :: RADIO :
          
-            // TODO
+            // OJO, al hacer get de los params, estos se borran!.
+            $name = $field->get("name");
+            if ($name === NULL)
+               throw new Exception("El argumento 'name' es obligatorio para el campo RADIO." . __FILE__ . " " . __LINE__);
+               
+            $value = $field->get("value");
+            if ($value === NULL)
+               throw new Exception("El argumento 'value' es obligatorio para el campo RADIO." . __FILE__ . " " . __LINE__);
+            
+            $fieldHTML .= '<div class="label radio"><label for="radio_'. $fieldNumber .'">' . $field->getLabel() . '</label></div>';
+            $fieldHTML .= '<div class="field radio"><input type="radio" id="radio_'. $fieldNumber .'" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' /></div>';
          
 			break;
 			case YuppFormField2 :: CHECK :
          
-            // TODO
+            // OJO, al hacer get de los params, estos se borran!.
+            $name = $field->get("name");
+            if ($name === NULL)
+               throw new Exception("El argumento 'name' es obligatorio para el campo CHECK." . __FILE__ . " " . __LINE__);
+               
+            $value = $field->get("value");
+            if ($value === NULL)
+               throw new Exception("El argumento 'value' es obligatorio para el campo CHECK." . __FILE__ . " " . __LINE__);
+            
+            $fieldHTML .= '<div class="label check"><label for="checkbox_'. $fieldNumber .'">' . $field->getLabel() . '</label></div>';
+            $fieldHTML .= '<div class="field check"><input type="checkbox" id="checkbox_'. $fieldNumber .'" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' /></div>';
          
 			break;
 			case YuppFormField2 :: SUBMIT :
 
             $action = $field->get("action"); // El get borra el param...
             $name   = $field->get("name");
-            
+
             // no tiene label for, la label es el texto del boton de submit.
-            $fieldHTML .= '<div class="field">';
+            $fieldHTML .= '<div class="field submit">';
             
             // Si no hay name, DEBE haber action.
             if ($name === NULL || $name === "") $name = '_action_'.$action;
@@ -404,6 +549,16 @@ class YuppFormDisplay2
 				$fieldHTML .= '<input type="submit" name="'. $name .'" value="'. $field->getLabel() .'" '. $field->getTagParams() .' /></div>';
 
 			break;
+         case YuppFormField2 :: FILE :
+
+            $name = $field->get("name");
+            if ($name === NULL) // Nombre obligatorio
+               throw new Exception("El argumento 'name' es obligatorio para el campo TEXT." . __FILE__ . " " . __LINE__);
+            
+            $fieldHTML .= '<div class="label file"><label for="'.$name.'">' . $field->getLabel() . '</label></div>';
+            $fieldHTML .= '<div class="field file"><input type="file" name="'. $name .'" '. $field->getTagParams() .' /></div>';
+
+         break;
 			default :
 			break;
 		}
@@ -416,16 +571,21 @@ class YuppFormDisplay2
 	/**
 	 * 
 	 */
-	private static function displayGroup(YuppFormField2Group $group)
+	private static function displayGroup(YuppFormField2Group $group, &$fieldNumber)
 	{
-		$groupHTML = '<span class="group">';
-		$fieldsOrGroups = $form->get();
-		foreach ($fieldsOrGroups as $fieldOrGroup)
+		$groupHTML = '<div class="group">';
+      $groupHTML .= '<div class="label">' . $group->getName() . '</label></div>';
+      
+      $fields = $group->get();
+      foreach ( $fields as $field )
 		{
-			$groupHTML .= self::displayField($fieldOrGroup);
+			$groupHTML .= self::displayField($field, &$fieldNumber);
+         $fieldNumber++;
 		}
 
-		return $groupHTML . '</span>';
+      $fieldNumber--; // por que en el metodo de afuera hace otra suma, asi no suma 2 veces.
+
+		return $groupHTML . '</div>';
 	}
 
 	/**
@@ -439,32 +599,31 @@ class YuppFormDisplay2
           $formHTML .= h('js', array('component'=>'portal', 'name'=>'jquery/jquery-1.3.1.min'));
           $formHTML .= h('js', array('component'=>'portal', 'name'=>'jquery/jquery.form.2_18'));
        
-          $formHTML .= '<script type="text/javascript">'. 
-                       '$(document).ready(function() { '.
-                       '  $(\'#'. $form->getId() .'\').ajaxForm(function() {'. 
-                       //alert("Thank you for your comment!"); // TODO: pasar algun nombre de funcion JS para que se llame aca.
-                       $form->getAjaxCallback() . '();'. 
-                       '  });'. 
-                       '});'.
-                       '</script>';
+          // TODO: llamar a una funcion JS antes de hacer el request AJAX.
+          // Dependencia con jQuery.
+          $formHTML .= '<script type="text/javascript">$(document).ready(function() { '.
+                       '$(\'#'. $form->getId() .'\').ajaxForm(function() {'. $form->getAjaxCallback() . '(); });'. 
+                       '});</script>';
       }
 
-		$formHTML .= '<form action="'. $form->getUrl() .'" id="'. $form->getId() .'">';
+      
+      $fieldCount = 0;
+		$formHTML .= '<form action="'. $form->getUrl() .'" id="'. $form->getId() .'" method="'. $form->getMethod() .'" '. (($form->hasFileFields())?'enctype="multipart/form-data"':'') .'>';
       $fieldsOrGroups = $form->get();
 		foreach ($fieldsOrGroups as $fieldOrGroup)
 		{
+         $fieldCount++;
+         
 			if ($fieldOrGroup instanceof YuppFormField2)
 			{
-				$formHTML .= self::displayField($fieldOrGroup);
+				$formHTML .= self::displayField($fieldOrGroup, &$fieldCount);
 			}
 			else
 			{
-				$formHTML .= self::displayGroup($fieldOrGroup);
+				$formHTML .= self::displayGroup($fieldOrGroup, &$fieldCount);
 			}
 		}
-
 		$formHTML .= '</form>';
-      
       echo $formHTML;
 	}
 

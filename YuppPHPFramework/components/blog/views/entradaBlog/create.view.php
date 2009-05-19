@@ -4,10 +4,9 @@ $m = Model::getInstance();
 
 YuppLoader::loadScript("components.blog", "Messages");
 
-YuppLoader::load("core.mvc.form", "YuppForm");
+YuppLoader::load("core.mvc.form", "YuppForm2");
 
 ?>
-
 <html>
    <head>
       <?php echo h("css", array("name" => "main") ); ?>
@@ -44,44 +43,21 @@ YuppLoader::load("core.mvc.form", "YuppForm");
             height: 140px;
          }
       </style>
-      
    </head>
    <body>
-      
       <h1><?php echo DisplayHelper::message("blog.entrada.create.title"); ?></h1>
       
       <?php echo DisplayHelper::errors( $m->get('object') ); ?>
       
-      <?php
-      /*
       <div class="entrada create">
-         <form action="<?php echo Helpers::url( array("action"=>"create") ); ?>" method="get">
-         
-           <?php echo DisplayHelper::message("blog.entrada.label.title"); ?>:<br/>
-           <input type="text" name="titulo" value="<?php echo $m->get('titulo'); ?>" />
-           <br/><br/>
-           
-           <?php echo DisplayHelper::message("blog.entrada.label.text"); ?>:<br/>
-           <textarea name="texto"><?php echo $m->get('texto'); ?></textarea>
-           <br/><br/>
-         
-           <input type="submit" name="doit" value="<?php echo DisplayHelper::message("blog.entrada.action.create"); ?>" />
-           <?php echo Helpers::link( array("action" => "list",
-                                           "body"   => DisplayHelper::message("blog.entrada.action.cancel")) ); ?>
-         </form>
-      </div>
-      */
-      ?>
-      
-      <div class="entrada create">
-      <?php
-         $f = new YuppForm("blog", "entradaBlog", "create");
-         $f->add( YuppFormField::text("titulo", $m->get('titulo'), DisplayHelper::message("blog.entrada.label.title")) )
-           ->add( YuppFormField::bigtext("texto" , $m->get('texto') , DisplayHelper::message("blog.entrada.label.text")) )
-           ->add( YuppFormField::submit("doit", "", DisplayHelper::message("blog.entrada.action.create")) )
-           ->add( YuppFormField::submit("", "list", DisplayHelper::message("blog.entrada.action.cancel")) );
-         YuppFormDisplay::displayForm( $f );
-      ?>
+        <?php
+          $f = new YuppForm2(array("component"=>"blog", "controller"=>"entradaBlog", "action"=>"create"));
+          $f->add( YuppForm2::text(array('name'=>"titulo", 'value'=>$m->get('titulo'), 'label'=>DisplayHelper::message("blog.entrada.label.title"))) )
+            ->add( YuppForm2::bigtext(array('name'=>"texto", 'value'=>$m->get('texto'), 'label'=>DisplayHelper::message("blog.entrada.label.text"))) )
+            ->add( YuppForm2::submit(array('name'=>'doit', 'label'=>DisplayHelper::message("blog.entrada.action.create"))) )
+            ->add( YuppForm2::submit(array('action'=>'list', 'label'=>DisplayHelper::message("blog.entrada.action.cancel")) ) );
+          YuppFormDisplay2::displayForm( $f );
+        ?>
       </div>
       
    </body>
