@@ -115,11 +115,10 @@ class PersistentManager {
     * Se llama para los elementos asociados por hasMany. (independientemente que la relacion sea * o 1 del otro lado)
     * ownerAttr es el atributo de owner que apunta a child.
     * 
-    * @param
-    * @param
-    * @param
+    * @param PersistenObject $owner objeto donde se declara la relacion con child, es el lado fuerte de la relacion.
+    * @param PersistenObject $child objeto relacionado a owner, es el lado debil de la relacion.
+    * @param string $ownerAttr nombre del atributo de owner que mantiene la relacion con child.
     * @param integer ord es el orden de child en el atributo hasMany ownerAttr de owner.
-    * 
     */
    public function save_assoc( PersistentObject &$owner, PersistentObject &$child, $ownerAttr, $ord )
    {
@@ -127,7 +126,7 @@ class PersistentManager {
 
       $dal = DAL::getInstance();
 
-      // TODO: considerar la direccion del link...
+      // Considera la direccion de la relacion del owner con el child.
       // VERIFICAR: el owner de la relacion, como esta ahora, es la parte fuerte declarada o asumida,
       //            pero la relacion podria ser bidireccional y sin restricciones estructurales,
       //            instancias de child pueden tener varios owners sin que estos tengas asociados
@@ -136,20 +135,19 @@ class PersistentManager {
       //            q diga q son asi, se instancia la relacion como bidir, por lo que no queda
       //            el mismo snapshot que fue el que se salvo.
 
-      // En una relacion n-n bidireccional, se fija si la instancia de esa relacion es tambien bidireccional.
+      // En una relacion n-n bidireccional, es necesario verificar si la instancia de esa relacion
+      // es tambien bidireccional (si tengo visibilidad para ambos lados desde cada elemento de la relacion).
+      
       // Todavia no se si la relacion es bidireccional.
       $relType = ObjectReference::TYPE_ONEDIR;
 
-      // PROBADO, FUNCIONA BIEN EL SETEO DEL TIPO...
       // Se que el owner hasMany child, pero no se como es la relacion desde child,
-      // puede no haber   => owner ->(*)child y la relacion es de tipo 1
-      // puede ser hasOne => owner (1)<->(*)child tengo que ver si tengo linkeado owner en child, si lo tengo, es de tipo 2.
+      // puede no haber    => owner ->(*)child y la relacion es de tipo 1
+      // puede ser hasOne  => owner (1)<->(*)child tengo que ver si tengo linkeado owner en child, si lo tengo, es de tipo 2.
       // puede ser hasMany => owner (*)<->(*)child, con owner la parte fuerte, tengo que fijarme si child contains al owner, si es asi, es de tipo 2.
       $hoBidirChildAttr = $child->getHasOneAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
-      //$hoBidirChildAttr = $child->getHasOneAttributeNameByAssocAttribute( $owner->getClass(), $ownerAttr );
-      if ( $hoBidirChildAttr )
+      if ( $hoBidirChildAttr ) // hasOne
       {
-         //echo "<h1>ENTRA EN HAS ONE</h1>";
          $assocObj = $child->aGet($hoBidirChildAttr);
 
          // Si hay objeto, si esta cargado, y si coincide el id.
@@ -158,11 +156,9 @@ class PersistentManager {
             $relType = ObjectReference::TYPE_BIDIR;
          }
       }
-      else // si el atributo no era de hasOne...
+      else // si el atributo no era de hasOne, es hasMany
       {
-         //echo "<h1>ENTRA EN HAS MANY</h1>";
          $hmBidirChildAttr = $child->getHasManyAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
-         //$hmBidirChildAttr = $child->getHasManyAttributeNameByAssocAttribute( $owner->getClass, $ownerAttr );
          if ( $hmBidirChildAttr && $child->aContains( $hmBidirChildAttr, $owner->getId() ) ) // FIXME: No se como se llama el atributo como para preguntar si child tiene a owner...
          {
             $relType = ObjectReference::TYPE_BIDIR;
@@ -174,7 +170,7 @@ class PersistentManager {
       $refObj = NULL;
       if ( $owner->getHasManyType($ownerAttr) === PersistentObject::HASMANY_LIST )
       {
-         Logger::getInstance()->pm_log("ES LISTA" . __FILE__ . " ". __LINE__);
+         //Logger::getInstance()->pm_log("ES LISTA" . __FILE__ . " ". __LINE__);
          
       	$refObj = new ObjectReference( array(
                                           "owner_id" => $owner->getId(),
@@ -184,7 +180,7 @@ class PersistentManager {
       }
       else
       {
-         Logger::getInstance()->pm_log("NO ES LISTA" . __FILE__ . " ". __LINE__);
+         //Logger::getInstance()->pm_log("NO ES LISTA" . __FILE__ . " ". __LINE__);
          
          $refObj = new ObjectReference( array(
                                           "owner_id" => $owner->getId(),
@@ -193,23 +189,22 @@ class PersistentManager {
       }
 
       // se pasan instancias... para poder pedir el withtable q se setea en tiempo de ejecucion!!!!
-      //
       $tableName =  YuppConventions::relTableName( $owner, $ownerAttr, $child );
 
       //echo "--- REL TABLE NAME: " . $tableName . " ---<br/>";
-
       //$tableName = $this->relTableName( get_class($owner), get_class($child) );
 
       // ========================================================================
-      // VERIFICACION DE QUE LA RELACION NO EXISTE YA: (FIXME: ojo ahora tendria que tener en cuenta la direccion tambien!)
+      // VERIFICA DE QUE LA RELACION NO EXISTE YA.
+      // FIXME: ojo ahora tendria que tener en cuenta la direccion tambien!
 
       $params['where'] = Condition::_AND()
-                                       ->add(  Condition::EQ( $tableName, "owner_id", $owner->getId() )  )
-                                       ->add(  Condition::EQ( $tableName, "ref_id", $child->getId() )  );
+                           ->add( Condition::EQ($tableName, "owner_id", $owner->getId()) )
+                           ->add( Condition::EQ($tableName, "ref_id",   $child->getId()) );
 
       if ( $dal->count($tableName, $params) == 0 )
       {
-         // LA asociacion es con insert o update? => insert xq chekea q la relacion no exista para meterlo en la base.
+         // La asociacion se guarda con insert xq chekea q la relacion no exista para meterlo en la base.
          // TODO: deberia fijarme si los objetos con estos ids ya estan.
          // TODO2: Ademas deberia mantener las relaciones, si se eliminan objetos deberia borrar las relaciones!!!
 
@@ -788,6 +783,11 @@ class PersistentManager {
          if ($obj->hasAttribute($attr)) // Setea solo si es un atributo de el.
          {
             // TODO: Ver como se cargan los NULLs, por ahora se setean... como debe ser?
+            
+            // Deshace el addslashes del inser_query y update_query de DAL.
+            // FIXME: esto deberia ser tambien responsabilidad de DAL.
+            if ( is_string( $value ) ) $value = stripslashes($value);
+            
             $obj->aSet( $attr, $value );
          }
       }
