@@ -123,7 +123,7 @@ class YuppStats
                 "./core/config",
                 "./core/db", "./core/db/criteria2",
                 "./core/layout",
-                "./core/mvc",
+                "./core/mvc", "./core/mvc/form", "./core/mvc/view", "./core/mvc/webflow",
                 "./core/persistent",
                 "./core/routing",
                 "./core/support",
