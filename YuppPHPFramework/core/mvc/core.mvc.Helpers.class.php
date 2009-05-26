@@ -9,6 +9,14 @@ function h( $name, $paramsMap = array() )
    return Helpers::$name(&$paramsMap);
 }
 
+/**
+ * Se utiliza como callback de array_filter, para sacar NULLs de un array, pero dejar valores validos como 0 (cero).
+ */
+function notNull( $value )
+{
+   return $value !== NULL;
+}
+
 class Helpers {
 
     function __construct() {}
@@ -48,15 +56,17 @@ class Helpers {
         $paramsMap['controller'] = NULL;
         $paramsMap['action']     = NULL;
         
-        $params = array_filter($paramsMap); // Saca nulls // ['params']; // opcional, es un mapa.
-        
+        $params = array_filter($paramsMap, "notNull"); // Saca nulls // ['params']; // opcional, es un mapa.
+                                                       // FIXED: si tengo un 0 que es un valor valido par un param, me lo saca tambien!
+                                                       // Ahora con callback notNull, el valor 0 se queda en el array. 
+
         // debe ser un array!
         $params_url = "";
         $params_in_url = array();
         foreach ($params as $key => $value) // FIXME: hay una funcion de PHP que ya hace esto...
         {
            // armo: key=val&key=val&...=val
-           // FIXME: php tiene una funcion para hacr esto.
+           // FIXME: php tiene una funcion para hacer esto. (poner params en una url)
            if ( String::startsWith($key, "_param_") ) $params_in_url[ substr($key, 7) ] = $value; // agrega los _param_x en orden.
            else $params_url .= $key ."=". $value ."&";
         }
@@ -80,7 +90,55 @@ class Helpers {
        $body = $paramsMap['body'];
        $paramsMap['body'] = NULL;
        
-    	 return '<a href="'. self::url(array_filter($paramsMap)) .'">'. $body .'</a>';
+    	 return '<a href="'. self::url(array_filter($paramsMap, "notNull")) .'">'. $body .'</a>';
+    }
+    
+    /**
+     * Paginador para listados.
+     */
+    public static function pager($paramsMap)
+    {
+       //echo "A: ";
+       //print_r($paramsMap);
+      
+       $bodyPrev = (isset($paramsMap['bodyPrev'])) ? $paramsMap['bodyPrev'] : "Previo";
+       $paramsMap['bodyPrev'] = NULL;
+       $bodyNext = (isset($paramsMap['bodyNext'])) ? $paramsMap['bodyNext'] : "Siguiente";
+       $paramsMap['bodyNext'] = NULL;
+       
+       $offset = (isset($paramsMap['offset'])) ? $paramsMap['offset'] : '0';
+       $max    = (isset($paramsMap['max']))    ? $paramsMap['max'] : '10';
+       
+       if (!isset($paramsMap['count'])) throw new Exception("El parametro 'count' es obligatorio y no aparece en la lista de parametros");
+       $count  = $paramsMap['count'];
+       $paramsMap['count'] = NULL;
+       
+       // El helper link necesita la accion, le paso la accion actual.
+       $ctx = YuppContext::getInstance();
+       $paramsMap['action'] = $ctx->getAction();
+       
+       $linkPrev = "";
+       if ( $offset - $max >= 0 ) // Si no esta en la primer pagina, puedo volver para atras.
+       {
+          // Link previo
+          $paramsMap['body'] = $bodyPrev;
+          $paramsMap['offset'] = $offset-$max;
+          $linkPrev = '[ '. self::link($paramsMap) . ' ] ';
+       }
+       
+       // pagina actual / cantidad de paginas
+       $pagerState = (floor($offset/$max) + 1) .' / '. (($count==0) ? '1' : ceil($count/$max));
+       
+       $linkNext = "";
+       if ( $offset + $max < $count ) // Si no esta en la ultima pagina, puede ir para adelante.
+       {
+          // Link Siguiente
+          $paramsMap['body'] = $bodyNext;
+          $paramsMap['offset'] = $offset+$max;
+          $linkNext = ' [ '. self::link($paramsMap).' ] ';
+       }
+       
+       return $linkPrev . $pagerState . $linkNext;
     }
     
     public static function ajax_link($paramsMap)
