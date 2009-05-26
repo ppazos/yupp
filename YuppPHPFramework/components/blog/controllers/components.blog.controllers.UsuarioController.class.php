@@ -150,6 +150,20 @@ class UsuarioController extends YuppController {
              return $this->render("login", &$this->params);
           }
           
+          /**
+           * Problema con comparacion de Srtings en MySQL:
+           * - no distingue entre mayusculas y minusculas.
+           * => se verifica por mayusculas y minusculas.
+           * Gracias Shadow!
+           */
+          //SOLUCION AL PROBLEMA
+          if ( strcmp( $list[0]->getPassword(), $this->params['clave'] ) != 0 )
+          {
+             $this->flash['message'] = "La contrase&ntilde;a es incorrecta";
+             return $this->render("login", &$this->params);
+          }
+          //FIN DE LA SOLUCION
+          
           // Uusario logueado queda en session
           YuppSession::set("user", $list[0]);
           
