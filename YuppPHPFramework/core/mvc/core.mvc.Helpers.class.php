@@ -100,6 +100,8 @@ class Helpers {
     {
        //echo "A: ";
        //print_r($paramsMap);
+       
+       // TODO: considerar ordenamiento para crear los links !!!
       
        $bodyPrev = (isset($paramsMap['bodyPrev'])) ? $paramsMap['bodyPrev'] : "Previo";
        $paramsMap['bodyPrev'] = NULL;
@@ -388,6 +390,49 @@ function $func {
        
        $res .= '<input type="submit" name="Cambiar" />';
        $res .= '</form>';
+       
+       return $res;
+    }
+    
+    /**
+     * Helper para crear titulos de columnas ordenables en los listados.
+     * 
+     * attr es el nombre del atributo por la que se va a verficar el orden.
+     * sort es el nombre del atributo por el que se esta ordenando actualmente.
+     * 
+     */
+    public static function orderBy($params)
+    {
+       $model = Model::getInstance();
+       $sort = $model->get('sort'); // puede ser vacio //$params['sort']; // sort actual
+       $current_dir = $model->get('dir');
+       
+       // TODO> si hay max y offset, conservarlos.
+       
+       $dir = 'asc';
+       if ( $sort === $params['attr'] )
+       {
+          if ( $current_dir === 'asc' )
+          {
+             $dir = 'desc';
+             //$params['class'] = 'order_desc'; // para CSS FIXME: me lo pone como params de la url, no en la tag.
+          }
+          else
+          {
+             //$params['class'] = 'order_asc'; // para CSS FIXME: me lo pone como params de la url, no en la tag.
+          }
+       }
+
+       //$res .= '<a href="'. Helpers::params2url( array('sort'=>$attr, 'dir'=>$dir) ) .'">'; // TODO: no tengo acceso a los params desde helpers.
+       //$res .= $attr; // TODO: Habria que ver si esto es i18n, deberia haber algun "display name" asociado al nombre del campo.
+       //$res .= '</a>';
+       
+       // Para mantener el paginado.
+       $params['offset'] = $model->get('offset'); // puede no estar
+       $params['max'] = $model->get('max'); // puede no estar
+       $params['dir'] = $dir;
+       $params['sort'] = $params['attr'];
+       $res = self::link( $params );
        
        return $res;
     }
