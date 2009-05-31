@@ -1140,9 +1140,7 @@ class PersistentObject {
    public static function countBy( Condition $condition )
    {
       $pm = PersistentManager::getInstance();
-
       $ins = new self::$thisClass();
-
       return $pm->countBy( $ins, $condition );
    }
 
@@ -1340,7 +1338,7 @@ class PersistentObject {
       {
          $obj = new $this->hasOne[$attr]();
 
-         // Si la relacion es unidireccional, como yo lo tengo, yo soy el duenio... (CONVENSION)
+         // Si la relacion es unidireccional, se es duenio del otro solo si el otro declara belongsTo mi clase.
          if ($obj->hasOneOfThis( $_thisClass )) // 2) bidireccional 1..1
          {
             return $obj->belonsToClass( $_thisClass ); // Si el objeto que quiero saber si soy duenio pertenece a mi => si soy duenio de el.
@@ -1375,7 +1373,8 @@ class PersistentObject {
 
       // Si llega aca deberia tirar un warning xq el atributo que me pasaron no es de una relacion...
       return false;
-   }
+      
+   } // isOwnerOf
 
    // Simplemente se fija si tengo la clase en la lista de objetos a los que pertenezco.
    // Busqueda simple del valor pasado.
@@ -1623,8 +1622,15 @@ class PersistentObject {
       throw new Exception("Tipo de busqueda no soportada, value debe ser un entero o un PersistentObject y su valor es " . print_r($value,true));
    }
 
+   /**
+    * TODO: ya deberia salvar en la base?
+    */
    public function aAddTo ($attribute, $value)
    {
+      Logger::add( Logger::LEVEL_PO, "PO::aAddTo $attribute []=". $value->getClass() ." ". __LINE__ );
+      
+      Logger::getInstance()->po_log("aAddTo $attribute []=".$value->getClass());
+      
       // CHEK: attribute es un atributo hasMany
       // CHEK: value es un PO, TODO: podria pasarle una lista y que agregue todos los elementos.
 
@@ -1643,7 +1649,7 @@ class PersistentObject {
          //          Con lista, cada elemento tiene un indice.
          //          Con set, no hay elementos repetidos.
 
-         if ( $this->attributeValues[ $attr_with_assoc_name ] == self::NOT_LOADED_ASSOC )
+         if ( $this->attributeValues[ $attr_with_assoc_name ] === self::NOT_LOADED_ASSOC )
          {
             $pm = PersistentManager::getInstance();
             // Si el objeto esta guardado, entonces trae las clases ya asociadas...
@@ -1659,7 +1665,6 @@ class PersistentObject {
 
          // TODO: permitir que value sea un array y agregar cada objeto... (sin chekear repetidos)
 
-
          // Chekeo de tipos con el tipo definido en hasMany para este atributo.
          
          // Si es colection, se agrega normalmente, 
@@ -1671,7 +1676,7 @@ class PersistentObject {
             case self::HASMANY_COLECTION:
             
                $this->attributeValues[ $attr_with_assoc_name ][] = $value; // TODO: Verificar que args0 es un PersistentObject y es simple!
-                                                                           // FIX: bool is_subclass_of ( mixed $object, string $class_name )
+                                                                           // FIXME: bool is_subclass_of ( mixed $object, string $class_name )
             break;
             case self::HASMANY_SET: // Buscar repetidos por id, si ya esta no agrego de nuevo.
             
@@ -1693,14 +1698,14 @@ class PersistentObject {
                if (!$found)
                {
                	$this->attributeValues[ $attr_with_assoc_name ][] = $value; // TODO: Verificar que args0 es un PersistentObject y es simple!
-                                                                              // FIX: bool is_subclass_of ( mixed $object, string $class_name )
+                                                                              // FIXME: bool is_subclass_of ( mixed $object, string $class_name )
                }
             
             break;
             case self::HASMANY_LIST: // Por ahora hace lo mismo que COLECTION, en PM se verificaria el orden.
             
                $this->attributeValues[ $attr_with_assoc_name ][] = $value; // TODO: Verificar que args0 es un PersistentObject y es simple!
-                                                                           // FIX: bool is_subclass_of ( mixed $object, string $class_name )
+                                                                           // FIXME: bool is_subclass_of ( mixed $object, string $class_name )
             break;
          }
          
@@ -1709,8 +1714,7 @@ class PersistentObject {
       {
          throw new Exception("El atributo $attribute no existe en la clase (" . get_class($this) . ")");
       }
-
-   }
+   } // aAddTo
 
    public function aRemoveFrom ($attribute, $value, $logical = false)
    {
