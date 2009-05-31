@@ -8,7 +8,7 @@ class Executer {
 
     private $params = array();
 
-    function Executer( & $params )
+    function Executer( $params )
     {
        $this->params = $params;
     }
@@ -98,9 +98,13 @@ class Executer {
                  Logger::show( "Flow Execution Result = NULL, " . __FILE__ . " " . __LINE__ );
                
               	  // TODO: debe mostrar la vista llamada: $currentState
-                 $params = array_merge($flow->getModel(), $this->params);
+                 
+                 //$params = array_merge($flow->getModel(), $this->params);
+                 $controllerInstance->addToParams( $flow->getModel() ); // Hace lo mismo que la linea de arriba. Los params son los del request y los del flow.
+                 
                  //$model_or_command = $controllerInstance->render( $controller . "/" . $flow->getCurrentState()->getName(), &$params ); // En los params no se que pasarle, deberian ser el modelo del flow mas los params submiteados en el request anterior.
-                 $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params ); // En los params no se que pasarle, deberian ser el modelo del flow mas los params submiteados en el request anterior.
+                 //$model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
+                 $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName() );
               }
               else if ( $flowExecutionResult === "move" )
               {
@@ -124,11 +128,13 @@ class Executer {
                     
                     $controllerInstance->{$flowActionName}( &$flow ); // FIXME: podria retornar error y deberia volver al estado anterior y mostrar esa vista.
         
-                    $params = array_merge($flow->getModel(), $this->params); // La accion puede haber agregado modelo (al flow o params del controller).
+                    //$params = array_merge($flow->getModel(), $this->params); // La accion puede haber agregado modelo (al flow o params del controller).
+                    $controllerInstance->addToParams( $flow->getModel() ); // Hace lo mismo que la linea de arriba. Los params son los del request y los del flow.
                     
                     // Quiero mostrar la vista correspondiente al nuevo estado. (antes de ejecutar init q cambia el estado!)
                     //$model_or_command = $controllerInstance->render( $controller . "/" . $flow->getCurrentState()->getName(), &$params );
-                    $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
+                    //$model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
+                    $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName() );
 
                     // TODO: remover el flow del controller o inicializarlo de nuevo ya que se termino el que venia ejecutando.
                     $flow->init();
@@ -139,8 +145,11 @@ class Executer {
                     
                     // Quiero mostrar la vista correspondiente al nuevo estado.
                     //$model_or_command = $controllerInstance->render( $controller . "/" . $flow->getCurrentState()->getName(), &$params );
-                    $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
-                 	  $params = array_merge($flow->getModel(), $this->params);
+//                    $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
+//                 	  $params = array_merge($flow->getModel(), $this->params); // FIXME? porque este params estaba luego del render?
+
+                    $controllerInstance->addToParams( $flow->getModel() ); // Los params son los del request y los del flow.
+                    $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName() );
                  }
               }
               else
@@ -151,9 +160,13 @@ class Executer {
                  $controllerInstance->addToFlash("message", $flowExecutionResult); // Pongo el error en flash.message
                  
                  // Quiero mostrar la vista correspondiente al nuevo estado.
-                 $params = array_merge($flow->getModel(), $this->params);
+                 //$params = array_merge($flow->getModel(), $this->params);
+                 
+                 $controllerInstance->addToParams( $flow->getModel() );
+                 
                  //$model_or_command = $controllerInstance->render( $controller . "/" . $flow->getCurrentState()->getName(), &$params );
-                 $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
+                 //$model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
+                 $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName() );
               }
            }
            else // Es una accion comun.
@@ -161,7 +174,6 @@ class Executer {
               // Si hay algun flow activo y ejecuto una accion comun, tengo que resetearlos 
               // (porque sali del flow y si vuelvo a ejecutar el flow puede estar en un estado inconsistente).
               CurrentFlows::getInstance()->resetFlows(); // Se encarga de verificar si hay algun flow para resetear
-              
 
               //Logger::show("ES ACCION COMUN, " . __FILE__ . " " . __LINE__ );
               $model_or_command = $controllerInstance->{$action}();
@@ -173,7 +185,8 @@ class Executer {
            
            //Logger::struct( $model_or_command, "MODEL OR COMMAND, " . __FILE__ . " " . __LINE__ );
            
-           // Puede haber retornado solo modelo, un comando o nada.
+           // Puede haber retornado un comando o nada (se toman los params del controller)
+           /*
            if ( is_array($model_or_command) ) // Es solo modelo
            {
               // =================
@@ -187,9 +200,12 @@ class Executer {
               $view = $action; // $controller . '/' . $action;
               
               // $model_or_command incluye los params submiteados!
-              $command = ViewCommand::display( $view, $model_or_command, $controllerInstance->getFlash() );
+              //$command = ViewCommand::display( $view, $model_or_command, $controllerInstance->getFlash() );
+              $command = ViewCommand::display( $view, $controllerInstance->getParams(), $controllerInstance->getFlash() );
            }
-           else if ( get_class( $model_or_command ) === 'ViewCommand' ) // Es comando (FIXME: no es lo mismo que instanceof?)
+           else
+           */
+           if ( get_class( $model_or_command ) === 'ViewCommand' ) // Es comando (FIXME: no es lo mismo que instanceof?)
            {
               $command = $model_or_command;
            }
@@ -199,11 +215,13 @@ class Executer {
               $view = $action; // $controller . '/' . $action;
               
               // El modelo que se devuelve es solo los params submiteados.
-              $command = ViewCommand::display( $view, $this->params, $controllerInstance->getFlash() );
+              $command = ViewCommand::display( $view, $controllerInstance->getParams(), $controllerInstance->getFlash() );
            }
            else
            {
               // CASO IMPOSIBLE, ACCION DE CONTROLLER RETORNA OTRA COSA.
+              echo "CASO IMPOSIBLE, ACCION DE CONTROLLER RETORNA OTRA COSA.";
+              print_r( $model_or_command );
            }
            
 //        echo "<pre>";
