@@ -122,7 +122,7 @@ class PersistentManager {
     */
    public function save_assoc( PersistentObject &$owner, PersistentObject &$child, $ownerAttr, $ord )
    {
-      Logger::getInstance()->pm_log("PersistentManager::save_assoc " . get_class($owner) . " -> " . get_class($child));
+      Logger::getInstance()->pm_log("PM::save_assoc " . get_class($owner) . " -> " . get_class($child));
 
       $dal = DAL::getInstance();
 
@@ -148,6 +148,8 @@ class PersistentManager {
       $hoBidirChildAttr = $child->getHasOneAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
       if ( $hoBidirChildAttr ) // hasOne
       {
+         Logger::getInstance()->pm_log("PM::save_assoc $ownerAttr es hasOne " . __LINE__);
+         
          $assocObj = $child->aGet($hoBidirChildAttr);
 
          // Si hay objeto, si esta cargado, y si coincide el id.
@@ -158,19 +160,23 @@ class PersistentManager {
       }
       else // si el atributo no era de hasOne, es hasMany
       {
+         Logger::getInstance()->pm_log("PM::save_assoc $ownerAttr es hasMany " . __LINE__);
+         
          $hmBidirChildAttr = $child->getHasManyAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
          if ( $hmBidirChildAttr && $child->aContains( $hmBidirChildAttr, $owner->getId() ) ) // FIXME: No se como se llama el atributo como para preguntar si child tiene a owner...
          {
             $relType = ObjectReference::TYPE_BIDIR;
          }
       }
+      
+      // FIXME: si es hasOne, ¿esta bien que ejecute el codigo de abajo checkeando hasMany? Capaz es porque es bidireccional 1-* y lo esta mirando desde el otro lado de la relacion.
 
       // FIXME: (owner_id, ref_id) debe ser clave, o sea, unique porque primary key es "id". 
       // (en varios lugares como aca abajo y en remove_assoc considero que la relacion entre 2 objetos es unica en la misma tabla.)
       $refObj = NULL;
       if ( $owner->getHasManyType($ownerAttr) === PersistentObject::HASMANY_LIST )
       {
-         //Logger::getInstance()->pm_log("ES LISTA" . __FILE__ . " ". __LINE__);
+         Logger::getInstance()->pm_log("ES LISTA" . __FILE__ . " ". __LINE__);
          
       	$refObj = new ObjectReference( array(
                                           "owner_id" => $owner->getId(),
@@ -180,7 +186,7 @@ class PersistentManager {
       }
       else
       {
-         //Logger::getInstance()->pm_log("NO ES LISTA" . __FILE__ . " ". __LINE__);
+         Logger::getInstance()->pm_log("NO ES LISTA" . __FILE__ . " ". __LINE__);
          
          $refObj = new ObjectReference( array(
                                           "owner_id" => $owner->getId(),
@@ -202,8 +208,11 @@ class PersistentManager {
                            ->add( Condition::EQ($tableName, "owner_id", $owner->getId()) )
                            ->add( Condition::EQ($tableName, "ref_id",   $child->getId()) );
 
+      // FIXME: llamar a exists de DAL
       if ( $dal->count($tableName, $params) == 0 )
       {
+         Logger::getInstance()->pm_log("PM::save_assoc No existe la relacion en la tabla intermedia, hago insert en ella. " . __LINE__);
+         
          // La asociacion se guarda con insert xq chekea q la relacion no exista para meterlo en la base.
          // TODO: deberia fijarme si los objetos con estos ids ya estan.
          // TODO2: Ademas deberia mantener las relaciones, si se eliminan objetos deberia borrar las relaciones!!!
@@ -318,13 +327,17 @@ class PersistentManager {
          $sassoc = $obj->getSimpleAssocValues(); // TODO?: Podria chekear si debe o no salvarse en cascada...
          foreach ( $sassoc as $attrName => $assocObj )
          {
+            //echo "=== PO hasOne.attr: $attrName<br/>"; 
+            
             // ojo el objeto debe estar cargado (se verifica eso)
             if ( $assocObj !== PersistentObject::NOT_LOADED_ASSOC )
             {
+               //echo "=== PO loaded: $attrName<br/>";
+               
                // Si se detecta un loop en el salvado del modelo,
                if ( $assocObj->isLoopMarked( $sessId ) )
                {
-                  //Logger::getInstance()->pm_log("LOOP DETECTADO " . get_class($obj) . " " . get_class($assocObj));
+                  Logger::getInstance()->pm_log("LOOP DETECTADO " . get_class($obj) . " " . get_class($assocObj));
 
                   // Agrega al objeto un callback cuando para que se llame cuando termine de llamarse, para salvar el objeto hasOne asociado.
                   // Se salva el objeto actual sin el asociado (assocObj viene a ser instancia de A del modelo A -> B -> C -> A, donde obj viene a ser instancia de C).
@@ -359,11 +372,17 @@ class PersistentManager {
                   // if ( $ins->isOwnerOf( $attr ) )
                   if (!$assocObj->isSaved( $sessId ) && $obj->isOwnerOf( $attrName )) // VERIFY:  si el objeto asociado esta salvado, la asociacion tambien ????
                   {                                                              // VERIFY: Salva en cascada solo si soy el duenio de la relacion.. esto esta bien para 1..* ??
+                     Logger::getInstance()->pm_log("PM::save_assoc save_cascade de ". $assocObj->getClass() .__LINE__);
+                     
                      $this->save_cascade( $assocObj, $sessId ); // salva objeto y sus asociaciones.
                      //PersistentManager::save_assoc( $obj, $assocObj ); // hasOne no necesita tablas intermedias (salvar la referencia)
                   }
                }
             } // si esta cargado
+            else
+            {
+               //echo "=== PO not loaded: $attrName<br/>";
+            }
          } // Para cada objeto asociado
 
          // ------------------------------------------------------------------------------------------------------------------
@@ -376,7 +395,7 @@ class PersistentManager {
          
          //Logger::struct( $obj , "PRE PM.save_object en PM.save_cascade");
          
-         
+         Logger::getInstance()->pm_log("PM::save_assoc save_object ". $obj->getClass() .__LINE__);
          $this->save_object( $obj, $sessId ); // salva el objeto
 
 
@@ -398,16 +417,24 @@ class PersistentManager {
                // No se cual es la condicion para salvar la relacion solo, voy a intentar solo decir que c1 es owner de a1 a ver que pasa...
                if ( $obj->isOwnerOf( $attrName ) )
                {
+                  Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." isOwnerOf $attrName. " .__LINE__);
+                  
+                  // FIXME ?: por que aca no es igual que en las relaciones hasOne?
+                  
                   if (!$assocObj->isSaved( $sessId )) // VERIFY:  si el objeto asociado esta salvado, la asociacion tambien ????
                   {                                   // VERIFY: Salva en cascada solo si soy el duenio de la relacion.. esto esta bien para 1..* ??
                      $this->save_cascade( $assocObj, $sessId ); // salva objeto y sus asociaciones.
                   }
 
                   // echo "<h1>SAVE ASSOC:" .get_class($obj). " - ". get_class($assocObj) ."</h1>";
-
+                  Logger::getInstance()->pm_log("PM::save_assoc save_assoc de ". $obj->getClass(). " ". $assocObj->getClass(). " " .__LINE__);
                   // Actualiza tabla intermedia.
                   // Necesito tener, si la relacion es bidireccional, el nombre del atributo de assocObj que tiene Many obj, podria haber varios!
                   $this->save_assoc( $obj, $assocObj, $attrName, $ord ); // Se debe salvar aunque a1 este salvado (problema loop hasmany)
+               }
+               else
+               {
+                  Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." !isOwnerOf $attrName. " .__LINE__);
                }
                
                $ord++;
