@@ -84,7 +84,8 @@ class ViewCommand {
      * Para mostrar una pagina del componente actual.
      * Se ejecuta desde el controller.
      */
-    public static function display($viewName, &$params, &$flash)
+    //public static function display($viewName, &$params, &$flash)
+    public static function display($viewName, $params, $flash)
     {
        $c           = new ViewCommand();
     	 $c->viewName = $viewName;

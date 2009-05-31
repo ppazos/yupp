@@ -74,6 +74,16 @@ class YuppController {
        	 return $this->flash;
        }
     }
+    
+    public function getParams()
+    {
+       return $this->params;
+    }
+    
+    public function addToParams( $params )
+    {
+       $this->params = array_merge($this->params, $params);
+    }
 
     public function renderString( $string ) // FIXME: puedo crearlo sin pasarle los params, xq es un atributo mio.
     {
@@ -84,9 +94,15 @@ class YuppController {
     * @param String view (comentario/list)
     * @param array params
     */
+    /*
     public function render( $view, &$params ) // FIXME: puedo crearlo sin pasarle los params, xq es un atributo mio.
     {
     	 return ViewCommand::display( $view, $params, $this->flash );
+    }
+    */
+    public function render( $view )
+    {
+       return ViewCommand::display( $view, $this->params, $this->flash );
     }
     
     /**
@@ -128,8 +144,8 @@ class YuppController {
     }
     */
     
-    public function listAction()
-    {
+   public function listAction()
+   {
       if ( !isset($this->params['max']) ) // paginacion
       {
          $this->params['max'] = 10;
@@ -145,8 +161,9 @@ class YuppController {
       $this->params['list'] = $list;
       $this->params['count'] = $count;
 
-      return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
-    }
+      //return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("list");
+   }
     
     
    /**
@@ -166,7 +183,8 @@ class YuppController {
       $this->params['object'] = $obj;
       //$this->params['mode']   = "show"; // Para saber que pagina es.
 
-      return $this->render("show", & $this->params); // Id NULL para paginas de scaffolding
+      //return $this->render("show", & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("show");
    }
    
    
@@ -190,19 +208,21 @@ class YuppController {
             // create
             $this->params['object'] = $obj;
             //$this->params['mode'] = "create"; // Para saber que pagina es.
-            return $this->render("create", $this->params);
+            //return $this->render("create", $this->params);
+            return $this->render("create");
          }
 
          // show
          $this->params['object'] = $obj;
          //$this->params['mode'] = "show"; // Para saber que pagina es.
-         return $this->render("show", $this->params);
+         //return $this->render("show", $this->params);
+         return $this->render("show");
       }
 
       // create
       $this->params['object'] = $obj;
-      //$this->params['mode'] = "create"; // Para saber que pagina es.
-      return $this->render("create", $this->params);
+      //return $this->render("create", $this->params);
+      return $this->render("create");
    }
    
    public function editAction()
@@ -213,7 +233,8 @@ class YuppController {
       eval ('$obj = '. $clazz .'::get( $this->params["id"] );');
       $this->params['object'] = $obj;
       
-      return $this->params;
+      //return $this->params;
+      return;
    }
    
    public function saveAction()
@@ -228,7 +249,8 @@ class YuppController {
       if ( !$obj->save() ) // Con validacion de datos!
       {
          $this->params['object'] = $obj;
-         return $this->render("edit", &$this->params);
+         //return $this->render("edit", &$this->params);
+         return $this->render("edit");
       }
 
       $this->flash['message'] = "Los datos fueron actualizados"; // FIXME: i18n
