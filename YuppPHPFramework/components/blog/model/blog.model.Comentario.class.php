@@ -7,7 +7,7 @@ class Comentario extends Entrada {
     function __construct( $args = array(), $isSimpleInstance = false )
     {
        $this->addHasOne("entrada", 'EntradaBlog'); // Si fuera Entrada podria tener comentarios a los comnetarios.
-
+       //$this->belongsTo = array( 'EntradaBlog' ); // El comentario pertenece a la entrada.
        $this->addConstraints( "entrada", array( Constraint::nullable(false) ) );
 
        parent::__construct( $args, $isSimpleInstance ); 
