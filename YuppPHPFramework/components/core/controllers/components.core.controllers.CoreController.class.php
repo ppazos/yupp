@@ -49,7 +49,8 @@ class CoreController extends YuppController
       $this->params['components'] = $components;
       
 
-      return $this->render("index", $this->params);
+      //return $this->render("index", $this->params);
+      return $this->render("index");
       
 	} // index
    
@@ -64,9 +65,7 @@ class CoreController extends YuppController
       // a la DB para las tablas que ya existen que no se pueden crear.
       PersistentManager::getInstance()->generateAll();
       
-   	return $this->redirect(array (
-         "action" => "index"
-      ));
+   	return $this->redirect( array( "action" => "index" ));
    }
 
 
@@ -115,7 +114,8 @@ class CoreController extends YuppController
 	{
 		$id = $this->params['_param_1'];
 		$this->flash['message'] = "Arriba loco, este es el mensaje del flash!";
-		return $this->render($id, & $this->params);
+		//return $this->render($id, & $this->params);
+      return $this->render( $id );
 	}
 
    
@@ -139,7 +139,8 @@ class CoreController extends YuppController
 		eval ('$count = ' . $clazz . '::count();');
 		$this->params['count'] = $count; // Maximo valor para el paginador.
 
-      return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
+      //return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("list");
 	}
    
 
@@ -155,7 +156,8 @@ class CoreController extends YuppController
 //		$this->params['mode'] = "show"; // Para saber que pagina es.
 
 //	   return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
-      return $this->render("show", & $this->params); // Id NULL para paginas de scaffolding
+      //return $this->render("show", & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("show");
 	}
 
 	public function editAction()
@@ -170,7 +172,8 @@ class CoreController extends YuppController
 //		$this->params['mode'] = "edit"; // Para saber que pagina es.
 
 //      return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
-      return $this->render("edit", & $this->params); // Id NULL para paginas de scaffolding
+      //return $this->render("edit", & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("edit");
 	}
 
 	/**
@@ -180,9 +183,7 @@ class CoreController extends YuppController
 	{
 		$id = $this->params['id'];
 		$clazz = $this->params['class']; // Lo necesito porque no puedo saber por el nombre del controller!
-
 		eval ('$obj' . " = $clazz::get( $id );");
-
 		$obj->setProperties($this->params);
 
 		if (!$obj->save()) // Con validacion de datos!
@@ -191,29 +192,28 @@ class CoreController extends YuppController
 			$this->params['object'] = $obj;
 //       $this->params['mode'] = "edit"; // Para saber que pagina es.
 //       return ViewCommand :: display(NULL, & $this->params);
-         return ViewCommand :: display("edit", & $this->params);
+         //return ViewCommand :: display("edit", & $this->params);
+         return $this->render("edit");
 		}
 
 		// show
 		$this->params['object'] = $obj;
 //		$this->params['mode'] = "show"; // Para saber que pagina es.
 //		return $this->render(NULL, & $this->params);
-      return $this->render("show", & $this->params);
+      //return $this->render("show", & $this->params);
+      return $this->render("show");
 	}
 
 	public function deleteAction()
 	{
 		$id = $this->params['id'];
 		$clazz = $this->params['class']; // Lo necesito porque no puedo saber por el nombre del controller!
-
 		eval ('$ins' . " = $clazz::get( $id );");
 		$ins->delete();
 
 		$this->flash['message'] = "Elemento [$clazz:$id] eliminado.";
 
-		return $this->redirect(array (
-			"action" => "list"
-		));
+		return $this->redirect( array("action" => "list") );
 	}
 
    /**
@@ -236,21 +236,24 @@ class CoreController extends YuppController
 				$this->params['object'] = $obj;
 				//$this->params['mode'] = "create"; // Para saber que pagina es.
 				//return $this->render(NULL, $this->params);
-            return $this->render("create", $this->params);
+            //return $this->render("create", $this->params);
+            return $this->render("create");
 			}
 
 			// show
 			$this->params['object'] = $obj;
 			//$this->params['mode'] = "show"; // Para saber que pagina es.
 			//return $this->render(NULL, $this->params);
-         return $this->render("show", $this->params);
+         //return $this->render("show", $this->params);
+         return $this->render("show");
 		}
 
 		// create
 		$this->params['object'] = $obj;
 		//$this->params['mode'] = "create"; // Para saber que pagina es.
 		//return $this->render(NULL, $this->params);
-      return $this->render("create", $this->params);
+      //return $this->render("create", $this->params);
+      return $this->render("create");
 	}
    
 
@@ -317,9 +320,7 @@ class CoreController extends YuppController
       
       //$view = ob_get_clean();
       
-      return $this->redirect(array (
-         'action' => 'index'
-      ));
+      return $this->redirect( array('action' => 'index'));
    }
    
    
@@ -330,12 +331,6 @@ class CoreController extends YuppController
       $stats = $stats->showStats();
       
       return $this->renderString( $stats );
-      
-      /*
-   	return $this->redirect(array (
-         'action' => 'index'
-      ));
-      */
    }
 }
 ?>
