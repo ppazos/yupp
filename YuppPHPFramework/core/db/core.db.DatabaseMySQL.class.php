@@ -81,13 +81,11 @@ class DatabaseMySQL {
 
       try
       {
-         //Logger::log("\tintenta ejecutar " . $this->connection);
          if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
-         //ogger::log("\tfin intenta ejecutar");
       }
       catch (Exception $e)
       {
-         echo "ERROR: " . $e->getMessage();
+         throw  new Exception("ERROR: " . $e->getMessage());
       }
 
       $this->queryCount++;
@@ -99,7 +97,19 @@ class DatabaseMySQL {
    // para tener api estandar, es para insert y update. EN mysql es igual a una consulta.
    public function execute( $query )
    {
-   	return $this->query( $query );
+      Logger::getInstance()->dbmysql_log("DatabaseMySQL::execute : " . $query);
+   	//return $this->query( $query ); // No tenia sentido que llamara a query si no tengo resultado.
+      
+      try
+      {
+         if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
+      }
+      catch (Exception $e)
+      {
+         throw  new Exception("ERROR: " . $e->getMessage());
+      }
+      
+      return true;
    }
 
    // EN LUGAR DE TENER ESTA PORQUE NO HAGO UNA QUE YA TIRE LOS RESULTADOS EN UNA MATRIZ??? xq tengo que armar la matriz afuera igual...
