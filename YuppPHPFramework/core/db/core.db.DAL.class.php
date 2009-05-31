@@ -99,13 +99,11 @@ class DAL {
             YuppLoader::load( "core.db", "DatabaseMySQL" );
             $this->db = new DatabaseMySQL();
          break;
-         
          case YuppConfig::DB_SQLITE:
             YuppLoader::load( "core.db", "DatabaseSQLite" );
             $this->db = new DatabaseSQLite();
          break;
       }
-      
       
       // TODO: que dmbs desde config, perfecto para factory pattern.
       //$this->db = new DatabaseSQLite();
@@ -293,6 +291,7 @@ class DAL {
     */
    public function addForeignKeys($tableName, $fks)
    {
+      // FIXME: las FKs dependen del DBMS, p.e. SQLite no tiene FKs, usa triggers para modelar esta restriccion.
       // Keys obligatorias: name, type, table, refName.
       
    	// ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
