@@ -4,6 +4,8 @@
  * core.config.YuppConfig.class.php
  */
  
+// TODO: mover a yupp/config (sacar de core)
+
 class YuppConfig {
 	
    private static $instance = NULL;
