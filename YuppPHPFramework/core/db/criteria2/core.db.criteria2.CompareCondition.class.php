@@ -13,7 +13,7 @@ class CompareCondition extends Condition {
 
    // OBS: pueden depender del DBMS, por ejemplo el ilike no todos lo tienen, en algunos casos hay que poner funciones como LOWER para el attr.
    // Por eso los valores deben tomarse desde archivos externos que definan estos valores para cara dbms, por ahora los dejo para MySQL.
-   const EQUALS    = "=";
+   const EQUALS    = "="; // FIXME: en MySQL se debe comparar con STRCMP porque = es case insensitive (http://dev.mysql.com/doc/refman/5.0/en/string-comparison-functions.html#function_strcmp) 
    const NOTEQUALS = "<>";
    const GT        = ">";
    const LT        = "<";
@@ -22,10 +22,8 @@ class CompareCondition extends Condition {
    const LIKE      = "LIKE"; // El segundo parametro debe ser un refValue con una patter del tipo "%dddd%"
    const ILIKE     = "LIKE";
 
-
    private $op;
 
-  
    public function __construct()
    {
    }
