@@ -28,7 +28,8 @@ class UsuarioController extends YuppController {
       $this->params['list']  = Usuario::listAll( $this->params );
       $this->params['count'] = Usuario::count(); // Maximo valor para el paginador.
 
-      return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
+      //return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
+      return $this->render("list");
    }
    
 
@@ -128,12 +129,13 @@ class UsuarioController extends YuppController {
    public function loginAction()
    {
        // OBS: si retorno NULL o modelo, desde la accion index, se intenta mostrar la vista index.view.php.
-       if ( array_key_exists( 'doit', $this->params) )
+       if ( isset($this->params['doit']) )
        {
-          if (!array_key_exists('email',$this->params) || !array_key_exists('clave', $this->params))
+          if (!isset($this->params['email']) || !isset($this->params['clave']))
           {
           	 $this->flash['message'] = "Por favor ingrese email y clave";
-             return $this->render("login", &$this->params);
+             //return $this->render("login", &$this->params);
+             return $this->render("login");
           }
           
           // Login
@@ -142,12 +144,13 @@ class UsuarioController extends YuppController {
                           ->add( Condition::EQ($tableName, "email", $this->params['email']) )
                           ->add( Condition::EQ($tableName, "clave", $this->params['clave']) );
           
-          $list = Usuario::findBy( $condition, &$this->params );
+          $list = Usuario::findBy( $condition, $this->params );
        
           if ( count($list) === 0 )
           {
           	 $this->flash['message'] = "El usuario no existe";
-             return $this->render("login", &$this->params);
+             //return $this->render("login", &$this->params);
+             return $this->render("login");
           }
           
           /**
@@ -157,10 +160,11 @@ class UsuarioController extends YuppController {
            * Gracias Shadow!
            */
           //SOLUCION AL PROBLEMA
-          if ( strcmp( $list[0]->getPassword(), $this->params['clave'] ) != 0 )
+          if ( strcmp( $list[0]->getClave(), $this->params['clave'] ) != 0 )
           {
              $this->flash['message'] = "La contrase&ntilde;a es incorrecta";
-             return $this->render("login", &$this->params);
+             //return $this->render("login", &$this->params);
+             return $this->render("login");
           }
           //FIN DE LA SOLUCION
           
@@ -173,14 +177,16 @@ class UsuarioController extends YuppController {
           return $this->redirect( array("controller" => "entradaBlog", "action" => "list") );
        }
        
-       return $this->render("login", &$this->params);
+       //return $this->render("login", &$this->params);
+       return $this->render("login");
    }
 
     public function logoutAction()
     {
        YuppSession::remove("user");
        $this->flash['message'] = "Vuelve a ingresar en otra ocasi&oacute;n!'";
-       return $this->render("login", &$this->params);
+       //return $this->render("login", &$this->params);
+       return $this->render("login");
     }
     
     public function deleteAction()
@@ -188,7 +194,6 @@ class UsuarioController extends YuppController {
        $id  = $this->params['id'];
        $ins = Usuario::get( $id );
        $ins->delete(true); // Eliminacion logica, si fuera fisica tendria que actualizar los links a las entradas, o borrar tambien las entradas del usuario.
-
        $this->flash['message'] = "Elemento [Usuario:$id] eliminado.";
        return $this->redirect( array("action" => "list") ); // FIXME: el redirect mata el flash!
     }

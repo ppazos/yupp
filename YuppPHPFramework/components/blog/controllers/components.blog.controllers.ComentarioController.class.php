@@ -33,7 +33,8 @@ class ComentarioController extends YuppController {
 
        //return ViewCommand::display( "comentario/list", $this->params ); // Id NULL para paginas de scaffolding
        //return $this->render("comentario/list", &$this->params);
-       return $this->render("list", &$this->params);
+       //return $this->render("list", &$this->params);
+       return $this->render("list");
     }
 
     public function showAction()
@@ -44,7 +45,8 @@ class ComentarioController extends YuppController {
 
        //return ViewCommand::display( "comentario/show", $this->params ); // Id NULL para paginas de scaffolding
        //return $this->render("comentario/show", &$this->params);
-       return $this->render("show", &$this->params);
+       //return $this->render("show", &$this->params);
+       return $this->render("show");
     }
 
     public function editAction()
@@ -55,7 +57,8 @@ class ComentarioController extends YuppController {
 
        //return ViewCommand::display( "comentario/edit", $this->params ); // Id NULL para paginas de scaffolding
        //return $this->render("comentario/edit", &$this->params);
-       return $this->render("edit", &$this->params);
+       //return $this->render("edit", &$this->params);
+       return $this->render("edit");
     }
 
     public function saveAction()
@@ -69,21 +72,22 @@ class ComentarioController extends YuppController {
        {
           $this->params['object'] = $obj;
           //return $this->render("entradaBlog/edit", &$this->params);
-          return $this->render("edit", &$this->params);
+          //return $this->render("edit", &$this->params);
+          return $this->render("edit");
        }
 
        // show
        $this->params['object'] = $obj;
        //return $this->render("comentario/show", &$this->params);
-       return $this->render("show", &$this->params);
+       //return $this->render("show", &$this->params);
+       return $this->render("show");
     }
 
     public function deleteAction()
     {
        $id  = $this->params['id'];
        $ins = Comentario::get( $id );
-       $ins->delete();
-
+       $ins->delete(); // TODO: si es delete fisico y no se pudo eliminar por alguna restriccion, devolver un mensaje en lugar de tirar un error de PHP.
        $this->flash['message'] = "Elemento [Comentario:$id] eliminado.";
 
        //return ViewCommand::execute( 'blog', 'comentario', 'list' ); // ($component, $controller, $action)
@@ -96,35 +100,45 @@ class ComentarioController extends YuppController {
 
        // View create, que es como edit pero la accion de salvar vuelve aqui.
 
-       if (array_key_exists('doit',$this->params)) // create
+       if (isset($this->params['doit'])) // create
        {
           // Setear entrada que se esta comentando.
           $entrada = EntradaBlog::get( $this->params['id'] );
           $obj->setEntrada( $entrada );
-          $entrada->addToComentarios( $obj );
-          
           $obj->setProperties( $this->params );
-          if ( !$obj->save() ) // Con validacion de datos!
+          
+          //print_r($entrada);
+          
+          if ( !$obj->validate() ) // Validacion de datos!
           {
              // create
              $this->params['object'] = $obj;
-             //return $this->render("comentario/create", &$this->params);
-             return $this->render("create", &$this->params);
+             //return $this->render("create", &$this->params);
+             return $this->render("create");
+          }
+          
+          //print_r($entrada);
+          $entrada->addToComentarios( $obj ); // FIXME: esto ya deberia salvar!
+
+          if (!$entrada->save()) // Salva comentarios en cascada
+          {
+             $this->flash['Hubo un problema al actualizar la entrada'];
+             $this->params['object'] = $obj;
+             return $this->render("create");
           }
 
           $this->flash['message'] = "Comentario creado con exito.";
 
           // show (podria hacer redirect pasandole el id)
-          return $this->redirect( array("controller" => "entradaBlog", 
-                                        "action" => "show", 
-                                        "params" => array("id" => $entrada->getId())
-                                       ));
+          return $this->redirect( array( "controller" => "entradaBlog", 
+                                         "action" => "show", 
+                                         "params" => array("id" => $entrada->getId()) ) );
        }
 
        // create
        $this->params['object'] = $obj;
-       //return $this->render("comentario/create", &$this->params);
-       return $this->render("create", &$this->params);
+       //return $this->render("create", &$this->params);
+       return $this->render("create");
     }
 
 }

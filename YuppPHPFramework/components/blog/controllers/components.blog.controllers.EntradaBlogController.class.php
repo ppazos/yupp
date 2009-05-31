@@ -20,7 +20,7 @@ class EntradaBlogController extends YuppController {
     public function listAction()
     {
        // paginacion
-       if ( !array_key_exists('max',$this->params) )
+       if ( !isset($this->params['max']) )
        {
           $this->params['max'] = 5;
           $this->params['offset'] = 0;
@@ -33,7 +33,8 @@ class EntradaBlogController extends YuppController {
        $this->params['count'] = $count; // Maximo valor para el paginador.
        
        //return $this->render("entradaBlog/list", &$this->params);
-       return $this->render("list", &$this->params);
+       //return $this->render("list", &$this->params);
+       return $this->render("list");
     }
 
     public function showAction()
@@ -42,7 +43,8 @@ class EntradaBlogController extends YuppController {
        $obj = EntradaBlog::get( $id );
        $this->params['object'] = $obj;
        //return $this->render("entradaBlog/show", &$this->params);
-       return $this->render("show", &$this->params);
+       //return $this->render("show", &$this->params);
+       return $this->render("show");
     }
     
     public function getCommentsJSONAction()
@@ -76,14 +78,14 @@ class EntradaBlogController extends YuppController {
        $obj = EntradaBlog::get( $id );
        $this->params['object'] = $obj;
        //return $this->render("entradaBlog/edit", &$this->params);
-       return $this->params; // Puedo retornar solo los params porque hay una vista llamada edi en entradaBlog.
+       //return $this->params; // Puedo retornar solo los params porque hay una vista llamada edi en entradaBlog.
+       return;
     }
 
     public function saveAction()
     {
        Logger::getInstance()->pm_log("EntradaBlogController::saveAction");
 
-      
        $id  = $this->params['id'];
        $obj = EntradaBlog::get( $id );
        $obj->setProperties( $this->params );
@@ -92,7 +94,8 @@ class EntradaBlogController extends YuppController {
        {
           $this->params['object'] = $obj;
           //return $this->render("entradaBlog/edit", &$this->params);
-          return $this->render("edit", &$this->params);
+          //return $this->render("edit", &$this->params);
+          return $this->render("edit");
        }
 
        // show
@@ -100,7 +103,8 @@ class EntradaBlogController extends YuppController {
        
        // Con esta accion no puedo retornar solo los params porque no hay vista llamada "save".
        //return $this->render("entradaBlog/show", &$this->params);
-       return $this->render("show", &$this->params);
+       //return $this->render("show", &$this->params);
+       return $this->render("show");
     }
 
     public function deleteAction()
@@ -108,7 +112,6 @@ class EntradaBlogController extends YuppController {
        $id  = $this->params['id'];
        $ins = EntradaBlog::get( $id );
        $ins->delete(true); // Eliminacion logica.
-
        $this->flash['message'] = "Elemento [EntradaBlog:$id] eliminado.";
        return $this->redirect( array("action" => "list") );
     }
@@ -118,7 +121,7 @@ class EntradaBlogController extends YuppController {
        $obj = new EntradaBlog(); // Crea instancia para mostrar en la web los valores por defecto para los atributos que los tengan.
 
        // View create, que es como edit pero la accion de salvar vuelve aqui.
-       if (array_key_exists('doit',$this->params)) // create
+       if (isset($this->params['doit'])) // create
        {
           $obj->setProperties( $this->params );
           if ( !$obj->save() ) // Con validacion de datos!
@@ -127,22 +130,23 @@ class EntradaBlogController extends YuppController {
              $this->params['object'] = $obj;
              
              //return $this->render("entradaBlog/create", &$this->params);
-             return $this->params;
+             //return $this->params;
+             return;
           }
 
           $this->flash['message'] = "Entrada creada con exito.";
 
           // redirect show
-          return $this->redirect( array('action' => 'show',
-                                        'params' => array('id' => $obj->getId())
-                                       ));
+          return $this->redirect( array( 'action' => 'show',
+                                         'params' => array('id' => $obj->getId()) ) );
        }
 
        // create
        $this->params['object'] = $obj;
        
        //return $this->render("entradaBlog/create", &$this->params);
-       return $this->params;
+       //return $this->params;
+       return;
     }
 
 }
