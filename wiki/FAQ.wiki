@@ -1,6 +1,22 @@
 #labels faq,yupp,preguntas,consultas,problemas,soluciones,consejos
 = Preguntas Frecuentes =
 
+== Pregunta 0 ==
+
+  * *Estoy corriendo por primera vez el framework en AppServ (un compilado con Apache, PHP  y MySQL), y me sale este error:*
+{{{
+Internal Server Error
+
+The server encountered an internal error or misconfiguration and was unable to complete your request.
+
+Please contact the server administrator, admin@admin.com and inform them of the time the error occurred, and anything you might have done that may have caused the error.
+
+More information about this error may be available in the server error log.
+}}}
+
+  * Verifica que tienes activo el módulo "rewrite_module" de Apache. Esto lo haces verificando que la línea *LoadModule rewrite_module modules/mod_rewrite.so* está descomentada en el archivo de configuración de Apache (httpd.conf).
+
+
 == Pregunta 1 ==
 
   * *Obtengo el siguiente error al ejecutar el framework*
