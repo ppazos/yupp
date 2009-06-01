@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
+ */
+ 
 YuppLoader :: load("blog.model", "Entrada"); // Si no esta me tira error de que no encuentra Entrada cuando hago un YuppLoader.loadModel.
 
 class EntradaBlog extends Entrada

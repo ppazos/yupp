@@ -18,8 +18,8 @@ Logger::show( "Cantidad de usuarios: $cantidadUsuarios" );
 if ( $cantidadUsuarios == 0 )
 {
    $user = new Usuario( array(
-                           "nombre" => "Pablo Pazos",
-                           "email" => "pablo.swp@gmail.com",
+                           "nombre" => "Admin Nimda",
+                           "email" => "admin@admin.com",
                            "clave" => "abcd1234",
                            "fechaNacimiento" => "1981-10-24 09:59:00",
                            "edad" => "27",

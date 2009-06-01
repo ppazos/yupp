@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
+ */
+
 class Entrada extends PersistentObject
 {
 	protected $withTable = "entradas"; // si lo seteo en el contructor se setea para los hijos aunque se defina un wt para ellos (xq se llama en el constructor...)

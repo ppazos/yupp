@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
+ */
+ 
 class UsuarioController extends YuppController {
 
     /**
