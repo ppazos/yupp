@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
+ */
+ 
 class Persona extends PersistentObject
 {
    function __construct($args = array (), $isSimpleInstance = false)
