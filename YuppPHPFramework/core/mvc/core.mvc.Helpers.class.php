@@ -98,10 +98,13 @@ class Helpers {
      */
     public static function pager($paramsMap)
     {
-       //echo "A: ";
        //print_r($paramsMap);
        
-       // TODO: considerar ordenamiento para crear los links !!!
+       // Agrega params de ordenamiento al paginador.
+       $model = Model::getInstance();
+       $paramsMap['dir']  = $model->get('dir'); // puede no estar
+       $paramsMap['sort'] = $model->get('sort'); // puede no estar
+      
       
        $bodyPrev = (isset($paramsMap['bodyPrev'])) ? $paramsMap['bodyPrev'] : "Previo";
        $paramsMap['bodyPrev'] = NULL;
