@@ -352,11 +352,10 @@ function $func {
        	 $res .= '<option value="' . $locale . '" '. (($locale === $ctx->getLocale())?'selected="true"':'') .'>'. $locale . '</option>';
        }
        
+       $res .= '</select>';
        $res .= '<input type="hidden" name="back_component"  value="'. $ctx->getComponent() .'" />';
        $res .= '<input type="hidden" name="back_controller" value="'. $ctx->getController() .'" />';
        $res .= '<input type="hidden" name="back_action"     value="'. $ctx->getAction() .'" />';
-       
-       $res .= '</select>';
        
        $res .= '<input type="submit" value="Cambiar" />';
        $res .= '</form>';
