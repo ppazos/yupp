@@ -25,7 +25,7 @@ Framework, la cual contiene cambios y correcciones con respecto a v0.1.6.3.
 
   # Se corrigió y mejoró el web flow.
   # Se agrego el metodo 'validateOnly' a la clase PersistentObject.
-  # Correcciones para DRUD y vistas dinamicas.
+  # Correcciones para CRUD y vistas dinamicas.
   # Cambia el nombre de la clase ControllerFilter2 por YuppControllerFilter.
   # Se agregó addslashes en los métodos insert_query y update_query de DAL y stripslashes en PersistentManager, para resolver problemas con caracteres de control de MySQL.
   # Se agregó el helper "pager" para crear links de paginación de registros para los listados.
