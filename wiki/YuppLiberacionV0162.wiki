@@ -1,18 +1,18 @@
 #labels notas,version,liberacion,v0.1.6.2
-=Notas de la version:=
+=Notas de la versión:=
 
-Version 0.1.6.2 del Yupp Framework PHP
+Versión 0.1.6.2 del Yupp Framework PHP
 
 
 =Incluye los siguientes componentes:=
 
-  * version 0.6 del YORM (Yupp Object Relational Mapping)
-  * version 0.1.6 del YMVC (Yupp Model View Controller)
+  * versión 0.6 del YORM (Yupp Object Relational Mapping)
+  * versión 0.1.6 del YMVC (Yupp Model View Controller)
 
 
 =Requisitos:=
 
-  * Version de PHP: 5.2.x (nosotros utilizamos 5.2.3)
+  * Versión de PHP: 5.2.x (nosotros utilizamos 5.2.3)
     * Probado en 5.2.0, 5.2.4 y 5.2.8 (versión de Windows)
   * Motor de bases de datos: MySQL 5.x o superior (nosotros utilizamos 5.0.41)
   * Tener el modulo de Apache MOD_REWRITE instalado y activado.
@@ -23,9 +23,9 @@ Version 0.1.6.2 del Yupp Framework PHP
   # Correccion en PersistentManager.generate(), para que genere todas las tablas intermedias de relaciones hasMany con la columna "ord", que se utiliza cuando el atributo hasMany es de tipo LIST, cuando es de tipo SET o COLLECTION, no se toma en cuenta.
   # Agregado el soporte para incluir CSS o imagenes desde un componente especifico. Para esto se modificó el helper "css" y se agregó el helper "img". Esto sirve para que cada componente contenga su propios CSS e imágenes.
   # Corrección al helper "errors", lanzaba una excepción si el elemento no tenía errores.
-  # Correcciön al método "hasErrors" de PersistentObject, que no verificaba que el campo errors fuera NULL.
+  # Corrección al método "hasErrors" de PersistentObject, que no verificaba que el campo errors fuera NULL.
   # Se agrega el constructor para la condicion Not Equal a la clase Condition.
-  # Correccion del metodo addOrder de la clase Criteria2.
+  # Corrección del metodo addOrder de la clase Criteria2.
   # Corrección en clase Filters para que tome los params de la url.
   # Varias correcciones para compatibilizar Yupp con versiones anteriores de PHP (PHP 5.2.0 y 5.2.1).
   # Se agregó el método firstToUpper a core.basic.String.
@@ -43,14 +43,14 @@ Esta liberación contiene un ejemplo de un sistema de Blog sencillo donde
 se pueden crear entradas y comentarios, mostrando el funcionamiento básico
 del framework, con funcionalidades como:
 
-  * Definicion de modelo persistente
+  * Definición de modelo persistente
   * Crear modelo
   * Modificar modelo
   * Obtener modelo
-  * Definicion de controladores
-  * Definicion de vistas
-  * Uso de helpers basicos
-  * Validacion automatica de informacion
+  * Definición de controladores
+  * Definición de vistas
+  * Uso de helpers básicos
+  * Validación automática de información
 
 
 =Para correr el ejemplo=
@@ -64,9 +64,9 @@ en un directorio de tu servidor Apache, accesible desde un browser,
 por ejemplo /www o /public_html.
 
 
-==Configuracion de la base de datos y creacion de la base:==
+==Configuración de la base de datos y creación de la base:==
 
-  * Para configurar los datos de conexion a la base de datos MySQL se debe editar la informacion presente en el archivo: "/core/config/core.config.YuppConfig.class.php", modificando el campo $dev_datasource, estableciendo los valores correctos para cada clave de dicho array: url, user, pass y database. Y se debe crear la base de datos con el nombre que hayas configurado en "/core/config/core.config.YuppConfig.class.php" en el campo "database".
+  * Para configurar los datos de conexion a la base de datos MySQL se debe editar la información presente en el archivo: "/core/config/core.config.YuppConfig.class.php", modificando el campo $dev_datasource, estableciendo los valores correctos para cada clave de dicho array: url, user, pass y database. Y se debe crear la base de datos con el nombre que hayas configurado en "/core/config/core.config.YuppConfig.class.php" en el campo "database".
 
 
 ==Acceder al ejemplo:==
@@ -78,7 +78,7 @@ por ejemplo /www o /public_html.
   crear entradas para el blog.
 
 
-==Generacion de las tablas:==
+==Generación de las tablas:==
 
   Desde la pantalla de administración que aparece al instalar Yupp y accederlo
   mediante un navegador web, existe una sección llamada "Información del modelo",
@@ -93,8 +93,8 @@ por ejemplo /www o /public_html.
 
 
 ==CONTACTO:==
-Cualquier duda o sugerencia, envianos un mail desde http://www.SimpleWebPortal.net > contacto.
-Tambien puedes contactarnos a por nuestro blog: http://YuppFramework.blogspot.com.
+Cualquier duda o sugerencia, publica tu comentario en nuestro grupo: 
+http://groups.google.com/group/yuppframeworkphp
 
 {{{
 Pablo Pazos
