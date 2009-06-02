@@ -93,8 +93,8 @@ por ejemplo /www o /public_html.
 
 
 ==CONTACTO:==
-Cualquier duda o sugerencia, envianos un mail desde http://www.SimpleWebPortal.net > contacto.
-Tambien puedes contactarnos a por nuestro blog: http://YuppFramework.blogspot.com.
+Cualquier duda o sugerencia, publica tu comentario en nuestro grupo: 
+http://groups.google.com/group/yuppframeworkphp
 
 {{{
 Pablo Pazos
