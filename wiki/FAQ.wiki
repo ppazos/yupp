@@ -54,3 +54,26 @@ Instalo el framework correctamente y al acceder a la aplicación un mensaje me d
 }}}
 
   * Antes de intentar acceder a la aplicación debes configurar la base de datos en el archivo "core.config.YuppConfig.class.php", cambiando el nombre de la base de datos, el usuario y password para ingresar a ella. Por defecto la base de datos se llama "carlitos". Luego de configurar correctamente estos datos, debes crear la base (por ejemplo si usas MySQL puedes crearla mediante el PHPMyAdmin), y debe llamarse igual al nombre configurado en YuppConfig.
+
+== Pregunta 4 ==
+
+  * *Al acceder al framework obtengo el siguiente mensaje:*
+{{{
+mysql_connect() [function.mysql-connect]: Access denied for user 'root'@'localhost' (using password: NO) [C:\AppServ\www\YuppPHPFramework\index.php : 20]
+}}}
+
+  * Tienes los datos de acceso de la base de datos mal configurados, verifica que el usuario y clave de acceso a la base están correctamente establecidos en el archivo YuppConfig. Lo que debes configurar es el campo $dev_datasource:
+{{{
+   private $dev_datasource = array(
+                               self::DB_MYSQL =>
+                                  array( 'url' => 'localhost',
+                                         'user' => 'root',
+                                         'pass' => '',
+                                         'database' => 'carlitos'),
+                               self::DB_SQLITE =>
+                                  array( 'url'  => '',
+                                         'user' => '',
+                                         'pass' => '',
+                                         'database' => 'C:\\wamp\\sqlitemanager\\test.sqlite')
+                             );
+}}}
