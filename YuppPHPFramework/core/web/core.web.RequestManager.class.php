@@ -55,18 +55,15 @@ class RequestManager {
       
       if ( $lr['controller'] === NULL || $lr['controller'] === "" ) // Si me pone el componente pero no el controller, entonces no se que hago... (poner core/core es un FIX nomas)
       {
-         throw new Exception("ERROR: Se especifica el componente pero no el controlador, el controlador es obligatorio y es el segundo argumento de la url: componente/controlador/accion/params " . __FILE__ . " " . __LINE__);
+         //throw new Exception("ERROR: Se especifica el componente pero no el controlador, el controlador es obligatorio y es el segundo argumento de la url: componente/controlador/accion/params " . __FILE__ . " " . __LINE__);
          // FIXME: tirar 404
-      }
-      
-      /*
-      if ( $lr['component']  === NULL ) $lr['component'] = "core";
-      if ( $lr['controller'] === NULL || $lr['controller'] === "" ) // Si me pone el componente pero no el controller, entonces no se que hago... (poner core/core es un FIX nomas)
-      {
-         $lr['component']  = "core"; // no puede ser controller core sin ser el componente core.
+         
+         // Si la ruta en la URL llega hasta el componente, se muestran los controladores del componente.
+         $filter->addCustomParams( array('component'=>$lr['component']) );
+         $lr['component'] = "core";
          $lr['controller'] = "core";
+         $lr['action'] = "componentControllers";
       }
-      */
          
       // Prefiero el parametro por url "_action_nombreAccion", a la accion que viene en la URL (componente/controlador/accion).
       // Esto es porque los formularios creados con YuppForm generan acciones distintas para botones de 
@@ -83,7 +80,6 @@ class RequestManager {
       {
          $lr['action'] = $actionParam;
       }
-      
            
       // *******************************************************************************
       // FIXME: puedo tener componente, controlador y accion, pero pueden ser nombres
@@ -100,8 +96,8 @@ class RequestManager {
       $controllerFileName  = "components.".$lr['component'].".controllers.".$controllerClassName.".class.php";
       $controllerPath      = "components/".$lr['component']."/controllers/".$controllerFileName;
       
-//      print_r( $lr );
-//      echo "<hr/>PATH: $controllerPath<br/>";
+      //print_r( $lr );
+      //echo "<hr/>PATH: $controllerPath<br/>";
       
       if ( !file_exists($componentPath) )
       {
@@ -150,6 +146,8 @@ class RequestManager {
       $executer = new Executer( $filter->getParams() );
       $command = $executer->execute( $controllerFiltersInstance ); // $controllerFiltersInstance puede ser null!
 
+
+//print_r( $command );
 //    echo "SSS"; // OK tiene el flash.
 //    $command->show();
 //    echo "SSS";
@@ -293,7 +291,7 @@ class RequestManager {
       if ( !file_exists($pagePath) ) // Si la pagina NO es fisica
       {
          // Si puedo mostrar la vista dinamica:
-         if ( in_array($command->viewName(), array("show","list","edit","create","index")) )
+         if ( in_array($command->viewName(), array("show","list","edit","create","index","componentControllers")) )
          {
             $pagePath = "core/mvc/view/scaffoldedViews/".$command->viewName().".view.php"; // No puede no existir, es parte del framework!
          }
