@@ -63,9 +63,7 @@ class Executer {
            $controllerInstance = new $controllerClassName($controller, $action, $this->params); // Se usa abajo!!!
    
 
-
            // Si hay except la agarra en el try del index.php
-
            if ( $controllerInstance->flowExists($action) ) // Si es un web flow
            {
               //Logger::show("ES FLOW " . __FILE__ . " " . __LINE__);
@@ -80,10 +78,7 @@ class Executer {
               // Get Flow from controller
            	  $flow = $controllerInstance->getFlow($action); // La accion es el nombre del flow.
               
-              if (!$flow->isInitialized())
-              {
-              	  $flow->init();
-              }
+              if (!$flow->isInitialized()) $flow->init();
               
               // ===============================================================================
               // Execute Controller Flow Action

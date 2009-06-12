@@ -107,16 +107,18 @@ class Filter {
     
     public function getParams()
     {
-       // FIXME: falta procesar FILES (similar a POST y GET pero tiene los archivos submiteados).
-       
        $tempArr = array();
        if ($this->urlParams !== NULL && count($this->urlParams)>0) // Merge de POST, GET y urlParams.
        {
           $tempArr = array_merge( $this->urlParams, $_GET);
-          return array_merge( $_POST, $tempArr);
+          //return array_merge( $_POST, $tempArr);
+          $tempArr = array_merge( $_POST, $tempArr);
+          return array_merge( $_FILES, $tempArr);
        }
        
-    	 return array_merge( $_POST, $_GET ); // Solo merge de POST y GET.
+    	 //return array_merge( $_POST, $_GET ); // Solo merge de POST y GET.
+       $tempArr = array_merge( $_POST, $_GET);
+       return array_merge( $_FILES, $tempArr);
     }
     
     public function getGetParams()
