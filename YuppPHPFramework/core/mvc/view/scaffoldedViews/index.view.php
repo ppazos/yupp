@@ -10,12 +10,6 @@ $m = Model::getInstance();
    <body>
       <h1>Index</h1>
 
-      <!-- NO ES UTIL EL SELECTOR DE MODO, AHORA SE CAMBIA DESDE LA CONFIG.
-      <h2>Seleccion del modo de ejecucion</h2>
-      <?php /* echo h('mode_chooser'); */ ?><hr/>
-      -->
-
-
       <!-- fixme: no deberia mostrarse si el modo es produccion, esto es solo para dev -->
       <h2>Informacion del modelo</h2>
       Muestra que tablas fueron generadas para el modelo y que tablas falta generar, 
@@ -27,8 +21,6 @@ $m = Model::getInstance();
             if (!$allTablesCreated)
             {
                echo "Existe modelo para el que no se generaron las tablas, ¿desea crear las tablas ahora?<br/>";
-               // TODO: link a una accion que genere las tablas.
-               
                echo "<h3>";
                echo h("link",
                       array("action" => "createModelTables",
@@ -65,13 +57,11 @@ $m = Model::getInstance();
          */
       ?>
 
-
-<?php
-/**
- * TODO: verificar si el componente tiene un archivo de Bootstrap, de no tener, no mostrarlo en la lista.
- */
-?>
-
+      <?php
+      /**
+       * TODO: verificar si el componente tiene un archivo de Bootstrap, de no tener, no mostrarlo en la lista.
+       */
+      ?>
 
       <h2>Componentes</h2>
       Esta secci&oacute;n le permite ejecutar scripts de inicializaci&oacute;n 
