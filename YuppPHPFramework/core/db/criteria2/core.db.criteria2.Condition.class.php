@@ -62,14 +62,19 @@ abstract class Condition {
    	return (is_string($this->referenceValue)) ? "'" . $this->referenceValue . "'" : $this->referenceValue;
    }
 
-
    public abstract function evaluate($humanReadable = false);
 
+   // VERIFY: como se usa "between" ?
 
    // Fabricas de condiciones conocidas
    public static function EQ( $alias, $attr, $refValue )
    {
       return CompareCondition::createARV( $alias, $attr, $refValue, CompareCondition::EQUALS );
+   }
+   
+   public static function STREQ( $alias, $attr, $refValue )
+   {
+      return CompareCondition::createARV( $alias, $attr, $refValue, CompareCondition::STREQ );
    }
    
    public static function NEQ( $alias, $attr, $refValue )
@@ -80,6 +85,11 @@ abstract class Condition {
    public static function EQA( $alias, $attr, $alias2, $attr2 )
    {
       return CompareCondition::createAA( $alias, $attr, $alias2, $attr2, CompareCondition::EQUALS );
+   }
+   
+   public static function STREQA( $alias, $attr, $alias2, $attr2 )
+   {
+      return CompareCondition::createAA( $alias, $attr, $alias2, $attr2, CompareCondition::STREQ );
    }
 
    public static function GT( $alias, $attr, $refValue )

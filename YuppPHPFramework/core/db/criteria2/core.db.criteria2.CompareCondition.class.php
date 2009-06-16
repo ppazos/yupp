@@ -13,6 +13,7 @@ class CompareCondition extends Condition {
 
    // OBS: pueden depender del DBMS, por ejemplo el ilike no todos lo tienen, en algunos casos hay que poner funciones como LOWER para el attr.
    // Por eso los valores deben tomarse desde archivos externos que definan estos valores para cara dbms, por ahora los dejo para MySQL.
+   // Estas condiciones son directas, hay otras que se deben verificar invocando una funcion, como STRCMP de MySQL.
    const EQUALS    = "="; // FIXME: en MySQL se debe comparar con STRCMP porque = es case insensitive (http://dev.mysql.com/doc/refman/5.0/en/string-comparison-functions.html#function_strcmp) 
    const NOTEQUALS = "<>";
    const GT        = ">";
@@ -22,16 +23,16 @@ class CompareCondition extends Condition {
    const LIKE      = "LIKE"; // El segundo parametro debe ser un refValue con una patter del tipo "%dddd%"
    const ILIKE     = "LIKE";
 
+   // Condiciones que se verifican invocando a una funcion del DBMS.
+   const STREQ    = "STRCMP=0";
+
    private $op;
 
-   public function __construct()
-   {
-   }
-   
+   public function __construct() { }
    
    /**
-   Crea instancia para comparar 2 atributos.
-   */
+    *Crea instancia para comparar 2 atributos.
+    */
    public static function createAA( $alias1, $attr1, $alias2, $attr2, $compareFunction )
    {
       $c = new CompareCondition();
@@ -52,9 +53,9 @@ class CompareCondition extends Condition {
    }
    
    /**
-   Crea instancia para comparar un atributo y un valor de referencia.
-   Si refValue es un string, por ahora me lo tienen que pasar con comillas simples incluidas.
-   */
+    * Crea instancia para comparar un atributo y un valor de referencia.
+    * Si refValue es un string, por ahora me lo tienen que pasar con comillas simples incluidas.
+    */
    public static function createARV( $alias1, $attr1, $refValue, $compareFunction )
    {
       $c = new CompareCondition();
@@ -63,25 +64,31 @@ class CompareCondition extends Condition {
       $a1->alias = $alias1;
       $a1->attr  = $attr1;
       
-      //echo "CompCond.refValue: " . $refValue . "<hr/>";
-
       $c->op = $compareFunction;
       $c->attribute      = $a1;
       $c->referenceValue = $refValue;
       
-      //print_r($c); // OK
-      
       return $c;
    }
    
-
+   // FIXME: DEPENDE DE MySQL> arreglarlo para que la consulta se genere en el modulo correspondiente (p.e. un condition por DBMS)
    public function evaluate($humanReadable = false)
    {
+      // El strcmp con case sensitive se resuelve tambien como LIKE> select 'A' like binary 'a'
+      
       if ( $this->referenceValue !== NULL )
+      {
+         if ( strcmp( $this->op, self::STREQ) == 0 ) return "STRCMP(".$this->evaluateAttribute() .", BINARY(". $this->evaluateReferenceValue().")) = 0"; // FIXME: BINARY es de MySQL.
+         
          return $this->evaluateAttribute() . $this->op . $this->evaluateReferenceValue();
-
+      }
+      
       if ( $this->referenceAttribute !== NULL )
+      {
+         if ( strcmp( $this->op, self::STREQ) == 0 ) return "STRCMP(".$this->evaluateAttribute() .", BINARY(". $this->evaluateReferenceAttribute().")) = 0"; // FIXME: BINARY es de MySQL.
+         
          return $this->evaluateAttribute() . $this->op . $this->evaluateReferenceAttribute();
+      }
 
       // Si llega aca no le setearon ni referenceValue ni referenceAttribute ...
    }

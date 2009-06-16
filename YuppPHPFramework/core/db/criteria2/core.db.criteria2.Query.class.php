@@ -40,6 +40,9 @@ class Query
 	//SELECT COUNT(DISTINCT store_name)
 	//FROM Store_Information
 
+   /**
+    * Constructor.
+    */
 	function Query()
 	{
 	}

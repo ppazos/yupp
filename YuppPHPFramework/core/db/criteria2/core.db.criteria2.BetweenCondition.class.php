@@ -1,6 +1,7 @@
 <?php
 
 // FIXME: el nombre de la clase no es del todo correcto.
+// Ademas define lo mismo que "CompareCondition!" en metodos y constantes!
 
 class BetweenCondition extends Condition {
 
@@ -14,15 +15,13 @@ class BetweenCondition extends Condition {
    const LE        = "<=";
    const LIKE      = "LIKE"; // El segundo parametro debe ser un refValue con una patter del tipo "%dddd%"
    const ILIKE     = "LIKE";
-
+   
+   // Condiciones que se verifican invocando a una funcion del DBMS.
+   const STREQ    = "STRCMP=0";
 
    private $op;
 
-  
-   public function __construct()
-   {
-   }
-   
+   public function __construct() {}
    
    /**
    Crea instancia para comparar 2 atributos.
