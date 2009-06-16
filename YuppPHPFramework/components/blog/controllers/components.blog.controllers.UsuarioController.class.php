@@ -20,8 +20,6 @@ class UsuarioController extends YuppController {
 
    public function listAction()
    {
-      //Logger::struct( $this );
-      
       // paginacion
       if (!array_key_exists('max', $this->params))
       {
@@ -32,7 +30,6 @@ class UsuarioController extends YuppController {
       $this->params['list']  = Usuario::listAll( $this->params );
       $this->params['count'] = Usuario::count(); // Maximo valor para el paginador.
 
-      //return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
       return $this->render("list");
    }
    
@@ -138,22 +135,25 @@ class UsuarioController extends YuppController {
           if (!isset($this->params['email']) || !isset($this->params['clave']))
           {
           	 $this->flash['message'] = "Por favor ingrese email y clave";
-             //return $this->render("login", &$this->params);
              return $this->render("login");
           }
           
           // Login
        	 $tableName = YuppConventions::tableName( 'Usuario' ); // Se le pasa la clase, para saber la tabla donde se guardan sus instancias.
+          /*
           $condition = Condition::_AND()
                           ->add( Condition::EQ($tableName, "email", $this->params['email']) )
                           ->add( Condition::EQ($tableName, "clave", $this->params['clave']) );
+          */
+          $condition = Condition::_AND()
+                          ->add( Condition::EQ($tableName, "email", $this->params['email']) )
+                          ->add( Condition::STREQ($tableName, "clave", $this->params['clave']) ); // Nueva solucion: se usa STREQ
           
           $list = Usuario::findBy( $condition, $this->params );
        
           if ( count($list) === 0 )
           {
           	 $this->flash['message'] = "El usuario no existe";
-             //return $this->render("login", &$this->params);
              return $this->render("login");
           }
           
@@ -164,12 +164,13 @@ class UsuarioController extends YuppController {
            * Gracias Shadow!
            */
           //SOLUCION AL PROBLEMA
+          /*
           if ( strcmp( $list[0]->getClave(), $this->params['clave'] ) != 0 )
           {
              $this->flash['message'] = "La contrase&ntilde;a es incorrecta";
-             //return $this->render("login", &$this->params);
              return $this->render("login");
           }
+          */
           //FIN DE LA SOLUCION
           
           // Uusario logueado queda en session
@@ -181,7 +182,6 @@ class UsuarioController extends YuppController {
           return $this->redirect( array("controller" => "entradaBlog", "action" => "list") );
        }
        
-       //return $this->render("login", &$this->params);
        return $this->render("login");
    }
 
@@ -189,7 +189,6 @@ class UsuarioController extends YuppController {
     {
        YuppSession::remove("user");
        $this->flash['message'] = "Vuelve a ingresar en otra ocasi&oacute;n!'";
-       //return $this->render("login", &$this->params);
        return $this->render("login");
     }
     
