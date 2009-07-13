@@ -7,19 +7,14 @@ class CoreController extends YuppController
 	 */
 	public function indexAction()
 	{
-//		$this->params['mode'] = "index";
-
 		// Si estoy en mode DEV quiero mosrar informacion sobre lo 
 		// que hay en la base, y lo que falta crear, y dar opcion 
 		// a que genere las tablas desde la vista.
 
-		//Logger::struct( YuppContext::getInstance()->getMode() );
-		//Logger::struct( YuppConfig::MODE_DEV );
-
       $dal = DAL::getInstance();
 		if (YuppContext :: getInstance()->getMode() === YuppConfig :: MODE_DEV)
 		{
-         $createdTables = array(); // array de clase / array tabla /creada o no creada.
+         $createdTables = array(); // array de clase / array tabla / creada o no creada.
          $allTablesCreated = true;
          
 			$loadedClasses = YuppLoader :: getLoadedModelClasses();
@@ -49,10 +44,19 @@ class CoreController extends YuppController
       $this->params['components'] = $components;
       
 
-      //return $this->render("index", $this->params);
       return $this->render("index");
       
 	} // index
+   
+   /**
+    * Sirve para listar los controladores de un componente cuando se ingresa la URL hasta el componente.
+    * TODO: en produccion no se deberia mostrar esta lista, tampoco si hay algun mapeo predefinido que matchee con la url dada.
+    */
+   public function componentControllersAction()
+   {
+      //print_r( $this->params );
+      return;
+   }
    
    
    /**
