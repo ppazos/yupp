@@ -20,7 +20,7 @@ $m = Model::getInstance();
          {
             if (!$allTablesCreated)
             {
-               echo "Existe modelo para el que no se generaron las tablas, ¿desea crear las tablas ahora?<br/>";
+               echo "Existe modelo para el que no se generaron las tablas ¿desea crear las tablas ahora?<br/>";
                echo "<h3>";
                echo h("link",
                       array("action" => "createModelTables",
@@ -89,18 +89,19 @@ $m = Model::getInstance();
          $dir = dir("./components");
          $suffix = "Controller.class.php";
       
-         while (false !== ($component = $dir->read())) :
-
-            if (!String::startsWith($component, ".") && $component !== "core") :
-            
+         while (false !== ($component = $dir->read()))
+         {
+            if ( !String::startsWith($component, ".") && $component !== "core" && is_dir("./components/".$component) )
+            {
                echo "<h3>$component:</h3>";
                
                $component_dir  = dir("./components/".$component."/controllers");
                
                echo "<ul>";
-               while (false !== ($controller = $component_dir->read())) :
-                  //if ($controller !== "." && $controller !== "..") :
-                  if ( !String::startsWith( $controller, ".") ) : // No quiero los archivos que empiezan con "."
+               while (false !== ($controller = $component_dir->read()))
+               {
+                  if ( !String::startsWith( $controller, ".") ) // No quiero los archivos que empiezan con "." por el . y el ..
+                  {
                      $prefix = "components.".$component.".controllers.";
                      
                      $controller = substr($controller, strlen($prefix), -strlen($suffix));
@@ -116,13 +117,11 @@ $m = Model::getInstance();
                      else
                         echo '<li>[ <a href="'.$component.'/'.$logic_controller.'/list">'. $controller .'</a> ]</li>';
                      */
-                     
-                  endif;
-               endwhile;
+                  }
+               }
                echo "</ul>";
-               
-            endif;
-         endwhile;
+            }
+         }
       ?>
       <hr/>
       
