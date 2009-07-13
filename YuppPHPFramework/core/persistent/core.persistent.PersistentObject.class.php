@@ -596,6 +596,11 @@ class PersistentObject {
    {
    	return ($this->errors !== NULL) && (count($this->errors) !== 0);
    }
+   
+   public function hasFieldErrors( $attr )
+   {
+      return ($this->errors !== NULL) && (count($this->errors) !== 0) && (array_key_exists($attr, $this->errors));
+   }
 
    // Utilizada por PersistentManager para crear tablas intermedias para las asociaciones *..*
    public function getHasMany()
