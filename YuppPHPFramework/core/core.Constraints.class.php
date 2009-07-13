@@ -16,6 +16,8 @@ abstract class Constraint {
    public static function minLength( $min ) { return new MinLengthConstraint($min); }
    public static function nullable( $nullable ) { return new Nullable($nullable); }
    public static function blank( $blank ) { return new BlankContraint($blank); }
+   
+   public static function inList( $array ) { return new InList($array); }
 
    public function __toString()
    {
@@ -94,6 +96,11 @@ class MaxConstraint extends Constraint {
       return ((float)$value <= $this->max);
    }
    
+   public function getValue()
+   {
+      return $this->max;
+   }
+   
    public function __toString()
    {
       return "" . $this->max;
@@ -120,6 +127,11 @@ class MinConstraint extends Constraint {
       //if (!is_int($value)) throw new Exception("La restriccion Min no se aplica al valor: " . $value);
 
       return ((float)$value >= $this->min);
+   }
+   
+   public function getValue()
+   {
+      return $this->min;
    }
    
    public function __toString()
@@ -275,7 +287,7 @@ class Nullable extends Constraint {
    }
 }
 
-// PAra strings...
+// Para strings...
 class BlankContraint extends Constraint {
 
    private $blank;
@@ -294,6 +306,21 @@ class BlankContraint extends Constraint {
    }
 }
 
+class InList extends Constraint {
+
+   private $array;
+   
+   public function __construct( $array )
+   {
+      $this->array = $array;
+   }
+
+   public function evaluate( $value )
+   {
+      return in_array($value, $this->array);
+   }
+}
+
 
 /*  perfecto.
 $email = new Email();
@@ -301,4 +328,5 @@ echo $email->evaluate("pablo@pablo.com");
 echo $email->evaluate("pablopablo.com");
 echo $email->evaluate(23);
 */
+
 ?>
