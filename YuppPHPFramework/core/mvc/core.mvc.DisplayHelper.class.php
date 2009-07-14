@@ -207,6 +207,8 @@ class DisplayHelper {
              	 if ($maxStringLength > 100) $res = '<textarea name="'. $fieldName .'">'. $value .'</textarea>';
                 else $res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
              }
+             else
+                $res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
           break;
           case Datatypes::INT_NUMBER:   $res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
           break;
@@ -268,6 +270,33 @@ class DisplayHelper {
        return $res;
     }
 
+    public static function yupp_select( $name, $options, $value = NULL, $id = NULL )
+    {    
+      if ($name === NULL)
+         throw new Exception("El argumento 'name' no puede ser nulo. " . __FILE__ . " " . __LINE__);
+      
+      if ($options === NULL)
+         throw new Exception("El argumento 'options' no puede ser nulo. " . __FILE__ . " " . __LINE__);
+      
+      if ( !is_array($options))
+         throw new Exception("El argumento 'options' debe ser un Array. " . __FILE__ . " " . __LINE__);
+      
+      $fieldHTML = '';
+      $fieldHTML .= '<select name="'.$name.'" '. (($id!==NULL)?'id="'.$id.'"':'') .'>';
+      
+      foreach ( $options as $opt_value => $text )
+      {
+         //echo "val: ".gettype($value) . "<br/>";
+         //echo "option: ".gettype($opt_value) . "<br/>";
+         if ( (string)$opt_value === (string)$value )
+            $fieldHTML .= '<option value="'. $opt_value .'" selected="true">'. $text .'</option>';
+         else
+            $fieldHTML .= '<option value="'. $opt_value .'">'. $text .'</option>';
+      }
+      $fieldHTML .= '</select>';
+      
+      return $fieldHTML;
+    }
 
 }
 ?>
