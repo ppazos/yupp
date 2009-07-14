@@ -858,27 +858,48 @@ class PersistentObject {
 
       // TODO: Verificar restricciones sobre asociaciones (p.ej. NotNull)  (*****)
 
+      // Si tiene restriccion nullable(true) o blank(true) y el valor es nulo o vacio,
+      // deberia dar que valida aunque haya otra restriccion que falle para el valor.
+
       $valid = true;
       $this->errors = NULL; // Reset
 
-      if ($this->constraints)
+      if ( is_array($this->constraints) )
       {
         // Para cada campo
         foreach ( $this->constraints as $attr => $constraintArray )
         {
            foreach ( $constraintArray as $constraint )
            {
+              $value = $this->attributeValues[$attr];
+              if ( get_class($constraint) === 'Nullable' )
+              {
+                 if ( $value === NULL && $constraint->evaluate($value) ) // Si valor nulo y valida => nullable(true)
+                 {
+                    unset( $this->errors[$attr] );
+                     //return true;
+                    break;
+                 }
+              }
+              else if ( get_class($constraint) === 'BlankConstraint' )
+              {
+                 if ( $value === "" && $constraint->evaluate($value) ) // Si valor vacio y valida => blank(true)
+                 {
+                    unset( $this->errors[$attr] );
+                    //return true;
+                    break;
+                 }
+              }
+              
               //if ( !$constraint->evaluate( $this->attributeValues[$attr] ) ) // NO PIDE HASONE...
-              if ( !$constraint->evaluate( $this->aGet($attr) ) )
+              //if ( !$constraint->evaluate( $this->aGet($attr) ) )
+              if ( !$constraint->evaluate($value) )
               {
                  $valid = false;
 
                  // TODO: Validar asociaciones hasOne !!!  (*****)
 
                  // Agrego el error a "errors"
-
-                 // Si no esta inicializada // NO ES NECESARIO, AHORA LO INICIALIZO CON UN ARRAY.
-                 //if (!$this->errors) $this->errors = array();
 
                  // Si no hay un vector de mensajes para este campo
                  if (!isset($this->errors[ $attr ])) $this->errors[$attr] = array();
@@ -896,10 +917,15 @@ class PersistentObject {
                  if ( !is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
                  else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
                  */
-
+                 /*
                  if ( is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
                  else if ( is_string($this->attributeValues[$attr]) && strcmp($this->attributeValues[$attr], "")==0 ) $err .= "EMPTY STRING";
                  else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
+                 */
+
+                 if ( is_null($value) ) $err .= (($value) ? $value : "NULL"); // OJO, esto puede ser null o cero!
+                 else if ( is_string($value) && strcmp($value, "")==0 ) $err .= "EMPTY STRING";
+                 else $err .= (($value) ? $value : "0");
 
                  $this->errors[$attr][] = $err;
               }
