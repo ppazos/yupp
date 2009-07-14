@@ -11,11 +11,12 @@ abstract class Constraint {
    public static function between( $min, $max ) { return new Between($min, $max); }
 
    public static function email() { return new EmailConstraint(); }
+   public static function matches($regexp) { return new Matches($regexp); }
 
    public static function maxLength( $max ) { return new MaxLengthConstraint($max); }
    public static function minLength( $min ) { return new MinLengthConstraint($min); }
    public static function nullable( $nullable ) { return new Nullable($nullable); }
-   public static function blank( $blank ) { return new BlankContraint($blank); }
+   public static function blank( $blank ) { return new BlankConstraint($blank); }
    
    public static function inList( $array ) { return new InList($array); }
 
@@ -288,7 +289,7 @@ class Nullable extends Constraint {
 }
 
 // Para strings...
-class BlankContraint extends Constraint {
+class BlankConstraint extends Constraint {
 
    private $blank;
    
@@ -300,7 +301,7 @@ class BlankContraint extends Constraint {
    public function evaluate( $value )
    {
       if (is_null($value)) return true; //blank o no blank no dice nada de si es null o no null, ese chekeo se debe hacer en otro lado.
-      if (!is_string($value)) throw new Exception("BlankContraint.evaluate: el tipo de ($value) debe ser string");
+      if (!is_string($value)) throw new Exception("BlankConstraint.evaluate: el tipo de ($value) debe ser string");
       if ($this->blank) return true; // Si lleog aca es que es string y no es null, asi que cualquier string debe cumplir, hasta el vacio.
       return ( strcmp($value, "") != 0 ); // Not blank, cumplen todos menos el vacio....
    }
