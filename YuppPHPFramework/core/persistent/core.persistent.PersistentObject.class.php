@@ -506,7 +506,7 @@ class PersistentObject {
             // TODO: Chekeos de tipos...
             // WARNING: Esto solo setea atributos simples! Hay que ver si puedo hacer el tema de setear atributos de clases asociadas... (depende de la notacion de las keys de params)
             // SI HAGO TODO EL CHEKEO EN setAttributeValue, solo llamo a esa y listo...
-            $this->attributeValues[ $attr ] = $params[$attr];
+            $this->attributeValues[ $attr ] = trim( $params[$attr] );
          }
       }
    }
