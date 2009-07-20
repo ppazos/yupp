@@ -871,7 +871,11 @@ class PersistentObject {
         {
            foreach ( $constraintArray as $constraint )
            {
-              $value = $this->attributeValues[$attr];
+              // FIXME: para no tener que verificar si un atributo que es de la clase tenga un valor,
+              //        al inicializar la clase pasandole un array con algunos valores, deberia poner
+              //        en NULL los valores de los demas atributos que son de la clase pero que no se
+              //        les esta asignando valor en el construct.
+              $value = ( (array_key_exists($attr, $this->attributeValues)) ? $this->attributeValues[$attr] : NULL );
               if ( get_class($constraint) === 'Nullable' )
               {
                  if ( $value === NULL && $constraint->evaluate($value) ) // Si valor nulo y valida => nullable(true)
