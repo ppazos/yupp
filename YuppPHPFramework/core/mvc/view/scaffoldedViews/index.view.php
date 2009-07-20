@@ -20,7 +20,7 @@ $m = Model::getInstance();
          {
             if (!$allTablesCreated)
             {
-               echo "Existe modelo para el que no se generaron las tablas ¿desea crear las tablas ahora?<br/>";
+               echo "Existe modelo para el que no se generaron las tablas &iquest;desea crear las tablas ahora?<br/>";
                echo "<h3>";
                echo h("link",
                       array("action" => "createModelTables",
