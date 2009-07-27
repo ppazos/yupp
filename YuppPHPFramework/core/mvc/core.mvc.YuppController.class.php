@@ -157,8 +157,8 @@ class YuppController {
       eval ('$list  = '. $clazz .'::listAll( $this->params );');
       eval ('$count = '. $clazz .'::count();');
 
-      $this->params['class']  = $clazz;
-      $this->params['list'] = $list;
+      $this->params['class'] = $clazz;
+      $this->params['list']  = $list;
       $this->params['count'] = $count;
 
       //return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
@@ -216,7 +216,8 @@ class YuppController {
          $this->params['object'] = $obj;
          //$this->params['mode'] = "show"; // Para saber que pagina es.
          //return $this->render("show", $this->params);
-         return $this->render("show");
+         //return $this->render("show");
+         return $this->redirect( array('action'=>'show', 'params'=>array('id'=>$obj->getId())) );
       }
 
       // create
