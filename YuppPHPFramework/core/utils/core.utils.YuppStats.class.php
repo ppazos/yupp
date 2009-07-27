@@ -4,10 +4,7 @@
 
 class YuppStats
 {
-
-	function YuppStats()
-	{
-	}
+	function YuppStats() {}
 
 	/**
 	* lineStatisticsByFile
@@ -73,16 +70,6 @@ class YuppStats
       /*
 		// Sort the array
 		arsort($LineArray);
-
-		// Create a new readable array for the output file
-		$NewLineArray = array ();
-		while (list ($LineKey, $LineValue) = each($LineArray))
-		{
-			$NewLineArray[] = $LineKey . ': ' . $LineValue;
-		}
-
-		// Return how many lines were counted
-		return implode("\n", $NewLineArray);
       */
       
       return $LineArray;
@@ -151,18 +138,14 @@ class YuppStats
          {
             $filePath = $dir . "/" . $file;
             $fileCounter++;
-            //echo "FILE: $filePath<br/>";
-            
-            //$res = $stats->lineStatisticsByFile("./core/core.Constraints.class.php");
+
             $res = $stats->lineStatisticsByFile( $filePath );
-            //$res = $stats->lineStatisticsByFile("./index.php");
-            //print_r($res);
             $lineCount = $stats->lineCount( $res );
             
+            // Estoy buffereando el output!
             echo $fileCounter .") ". $filePath .": ".$lineCount . "<br/>";
             
             $totalLines += $lineCount;
-            
          }
       }
       
