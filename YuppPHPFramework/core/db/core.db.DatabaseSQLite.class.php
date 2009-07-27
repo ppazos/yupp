@@ -95,27 +95,18 @@ class DatabaseSQLite {
 //      }
    }
 
-   // OJO! lo que devuelve es un recurso mysql... el resultado deberia tratarse internamente...
-   // Y devolver true o false por si se pudo o no hacer la consulta...
-// SQLite
+   // TODO: devolver true o false por si se pudo o no hacer la consulta...
+   // SQLite
    public function query( $query )
    {
       Logger::getInstance()->dbmysql_log("DatabaseSQLite::query : " . $query);
 
       $this->lastQuery = $query;
+      $result = NULL;
 
-      try
-      {
-         //Logger::log("\tintenta ejecutar " . $this->connection);
-         //if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
-         if (!$result = @$this->connection->query($query)) throw new Exception('La consulta fall&oacute;: ' . sqlite_error_string($this->connection->lastError()) );
-         //Logger::log("\tfin intenta ejecutar");
-      }
-      catch (Exception $e)
-      {
-         echo "ERROR: " . $e->getMessage();
-      }
-
+      // Si hay excepciones, se tiran para la capa de arriba donde se agarran.
+      if (!$result = @$this->connection->query($query)) throw new Exception('La consulta fall&oacute;: ' . sqlite_error_string($this->connection->lastError()) );
+      
       $this->queryCount++;
       $this->lastResult = $result;
 
@@ -130,21 +121,11 @@ class DatabaseSQLite {
       
    	$this->lastQuery = $query;
       
-      try
-      {
-         //Logger::log("\tintenta ejecutar " . $this->connection);
-         //if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
-         $this->connection->queryExec($query);
-         //Logger::log("\tfin intenta ejecutar");
-      }
-      catch (Exception $e)
-      {
-         echo "ERROR: " . $e->getMessage();
-      }
+      // Si hay excepciones, se tiran para la capa de arriba donde se agarran.
+      $this->connection->queryExec($query);
 
       $this->queryCount++;
       //$this->lastResult = $result; exec no tiene result
-      //return $result;
    }
 
 
@@ -158,6 +139,26 @@ class DatabaseSQLite {
       {
          $row = $this->lastResult->current(SQLITE_ASSOC);
          $this->lastResult->next();
+         
+         // Hay un problema con SQLite y es que los nombres de las columnas las devuelve
+         // con el alias de la tabla. Si hago select * from a,b, tira a.id, b.pepe, etc.
+         // Quiero los atributos SIN alias, para que pueda encontrar los atributos que busco
+         // como id, class y deleted. Si no hago esto, deberia cambiar la capa de arriba para
+         // que sepa que le pueden venir columnas con prefijos.
+         //
+         // Saca el alias del nombre de la columna.
+         foreach ($row as $key => $value)
+         {
+            $ipunto = strpos($key, '.');
+            if ($ipunto !== false)
+            {
+               unset($row[$key]);
+               $key = substr($key, $ipunto+1);
+               $row[$key] = $value;
+            }
+         }
+         
+         
          return $row;
       }
       return false;
@@ -166,14 +167,14 @@ class DatabaseSQLite {
    
 
    // Devuelve el numero de resultados (registros) que se obtuvieron con la ultima consulta.
-// SQLite
+   // SQLite
    public function resultCount()
    {
       //return mysql_num_rows($this->lastResult);
       return $this->lastResult->numRows(); // ??? sqlite_num_rows($resultado)
    }
 
-// SQLite
+   // SQLite
    public function showLastQuery()
    {
       if ($this->lastResult->numRows() > 0) // (mysql_num_rows($this->lastQuery) > 0)
@@ -248,7 +249,7 @@ class DatabaseSQLite {
       $dbms_type = NULL;
       if ( Datatypes::isText( $type ) )
       {
-         $maxLength = NULL; // TODO: Falta ver si tengo restricciones de maxlength!!!
+         $maxLength = NULL;
          
          $maxLengthConstraint = NULL;
          
@@ -264,6 +265,7 @@ class DatabaseSQLite {
             }
          }
          
+         // FIXME: no tengo este metodo? para que se hace la busqueda aca? En MySQL debe estar igual...
          //$maxLengthConstraint = $obj->getConstraintOfClass( $attr, MaxLengthConstraint );
 
          if ($maxLengthConstraint !== NULL) $maxLength = $maxLengthConstraint->getValue();
@@ -286,7 +288,38 @@ class DatabaseSQLite {
       return $dbms_type;
       
    } // getDBType
-
+   
+   // Operaciones para manipular DBMSs particulares
+   
+   /**
+    * addForeignKeys
+    * Se llama luego de crear todas las tablas, sirve para agregar las FKs de una tabla a otras.
+    * 
+    * @param $tableName nombre de la tabla a agregarle las fks.
+    * 
+    * @param $fks       claves externas a otras tablas. Array de arrays, cada array interno 
+    *                   tiene claves: requeridas(name(string), type(string), table(string), refName(string)),
+    *                   "table" es la tabla referenciada por la FK y "refName" es la columna referenciada por la FK.
+    * 
+    */
+   public function addForeignKeys($tableName, $fks)
+   {
+      // TODO: SQLite no soporta FKs, se deberia implementar con triggers...
+      return;
+      
+   } // addForeignKeys
+   
+   /**
+    * Verifica si una tabla existe en la base de datos.
+    * @param string tableName nombre de la tabla.
+    * @return true si existe la tabla tableName en la base de datos.
+    */
+   public function tableExists( $tableName ) //: boolean
+   {
+      $res = $this->query( "select name from sqlite_master where name='$tableName'" );
+      return $res->numRows() > 0;
+   }
+   
 }
 
 ?>

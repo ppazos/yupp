@@ -199,22 +199,22 @@ class DAL {
       // Keys obligatorias: name, type.
       // Keys opcionales: default.
       
-      //$q_pks = "PRIMARY KEY ( id )";
       $q_pks = "";
+
+      //$q_pks = "PRIMARY KEY ( id )";
       foreach ( $pks as $pk )
       {
          // $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
                   
          // =============================================================================================================
          // FIXME: arreglo rapido porque no hay constraints para id, ver el sig. FIXME en PersistentManager en linea 2203
-         //    FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
+         // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
          $constraintsOrNull = (isset($constraints[$pk['name']])) ? $constraints[$pk['name']] : NULL;
       	$q_pks .= $pk['name'] . " " . 
                    $this->db->getDBType($pk['type'], $constraintsOrNull ) . " " .
                    ((array_key_exists('default', $pk)) ? "DEFAULT " . $pk['default'] : '') . // si hay default lo pone 
                    " PRIMARY KEY, "; // TODO!
       }
-      
       
       // Keys obligatorias: name, type.
       // Keys opcionales: default, nullable.
@@ -238,7 +238,7 @@ class DAL {
       
       // Keys obligatorias: name, type, table, refName.
       
-      // Esta forma no funciona...
+      // Esta forma no funciona para MYSQL
       /*
       $q_fks = "";
       foreach ( $fks as $fk )
@@ -264,18 +264,10 @@ class DAL {
       */
       
       $q = $q_ini . $q_pks . substr($q_cols,0,-2) . $q_end; // substr para sacar ", " del final.
+
+      //Si hay una excepcion, va a la capa superior.
+      $this->db->execute( $q );
       
-      //Logger::getInstance()->log( $q );
-      
-      try
-      {
-         $this->db->execute( $q );
-      }
-      catch (Exception $e)
-      {
-         echo $e->getMessage();
-         echo $this->db->getLastError();
-      }
    } // createTable2
    
    /**
@@ -291,31 +283,30 @@ class DAL {
     */
    public function addForeignKeys($tableName, $fks)
    {
-      // FIXME: las FKs dependen del DBMS, p.e. SQLite no tiene FKs, usa triggers para modelar esta restriccion.
-      // Keys obligatorias: name, type, table, refName.
+      // Lo resuelve cada DBMS particular.
+      $this->db->addForeignKeys($tableName, $fks);
       
-   	// ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
-      //
-      //$q_fks = ""; // Acumula consultas. ACUMULAR CONSULTAS ME TIRA ERROR, VOY A EJECUTARLAS INDEPENDIENTEMENTE, IGUAL PODRIAN ESTAR RODEADAS DE BEGIN Y COMMIT!
-      foreach ( $fks as $fk )
+      /*
+      // FIXME: generar FKs depende del DBMS, p.e. SQLite no las soporta...
+      if ( $this->dbms_metadata[ YuppConfig::getInstance()->getDatabaseType() ]['fk_support'] )
       {
-         // FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`)
-         $q_fks = "ALTER TABLE $tableName " .
-                  "ADD FOREIGN KEY (" . $fk['name'] . ") " .
-                  "REFERENCES " . $fk['table'] . "(". $fk['refName'] .");";
-                  
-         //Logger::getInstance()->log( $q_fks );
-      
-         try
+         // FIXME: las FKs dependen del DBMS, p.e. SQLite no tiene FKs, usa triggers para modelar esta restriccion.
+         // Keys obligatorias: name, type, table, refName.
+         
+      	// ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
+         //
+         //$q_fks = ""; // Acumula consultas. ACUMULAR CONSULTAS ME TIRA ERROR, VOY A EJECUTARLAS INDEPENDIENTEMENTE, IGUAL PODRIAN ESTAR RODEADAS DE BEGIN Y COMMIT!
+         foreach ( $fks as $fk )
          {
+            // FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`)
+            $q_fks = "ALTER TABLE $tableName " .
+                     "ADD FOREIGN KEY (" . $fk['name'] . ") " .
+                     "REFERENCES " . $fk['table'] . "(". $fk['refName'] .");";
+
             $this->db->execute( $q_fks );
          }
-         catch (Exception $e)
-         {
-            echo $e->getMessage();
-            echo $this->db->getLastError();
-         }
       }
+      */
    } // addForeignKeys
 
    /**
@@ -330,7 +321,6 @@ class DAL {
    // SQLite> CREATE TABLE ggg (id int, name CHAR(255), email CHAR(255), PRIMARY KEY (id));
    // MySQL> aca le pongo ` y funciona, pero en la doc de la web no le pone, y esas comillas hacen q no me ande el lite.
    public function createTable( $tableName, &$obj )
-   //public function createTable( $tableName, $data, $constraints, $fks = null )
    {
       Logger::getInstance()->log("DAL::createTable " . $tableName);
 
@@ -569,11 +559,19 @@ class DAL {
       $limit = "";
       $orderBy = "";
 
-      if ($params && !is_array( $params )) throw new Exceprion("DAL.getAll: params no es un array.");
+      if ($params && !is_array( $params )) throw new Exception("DAL.getAll: params no es un array.");
       else
       {
          // SELECT column FROM table
          // LIMIT 10 OFFSET 10
+         
+         /*
+           FROM "nombre_tabla"
+           [WHERE "condición"]
+           ORDER BY "nombre_columna" [ASC, DESC]
+           ...
+           ORDER BY "nombre1_columna" [ASC, DESC], "nombre2_columna" [ASC, DESC]
+         */
 
          // No puede tener offset sin limit! se chekea arriba.
          // Si viene max siempre viene offset, se chekea arriba.
@@ -583,18 +581,11 @@ class DAL {
             if (array_key_exists("offset", $params)) $limit .= " OFFSET " . $params["offset"];
          }
 
-         /*
-           FROM "nombre_tabla"
-           [WHERE "condición"]
-           ORDER BY "nombre_columna" [ASC, DESC]
-           ...
-           ORDER BY "nombre1_columna" [ASC, DESC], "nombre2_columna" [ASC, DESC]
-         */
-
          if (array_key_exists("sort", $params) && $params['sort'])
          {
          	$orderBy = " ORDER BY ". $params["sort"] ." ". $params["dir"] ."";
          }
+         
       }
 
       // Where siempre viene porque en PM se inyecta las condicioens sobre las subclases (soporte de herencia)
@@ -847,7 +838,6 @@ class DAL {
       // Si el objeto no tiene mti simplemente se devuelve un array con el mismo objeto de entrada.
       $pinss = MultipleTableInheritanceSupport::getPartialInstancesToSave( $obj );
       
-      
       if ( count($pinss) == 1 ) // si no es mti, salva el caso de ObjectReference.
       {
          //Logger::struct( $pinss, "DAL.insert 1 ($tableName)" ); // OBS: si obj es comentario, pinss tiene un objeto que es Entrada, no Comentario.
@@ -952,24 +942,19 @@ class DAL {
       {
          if ( strcmp($attr, "id") != 0 ) // No updateo el id...
          {
-            if ( is_null($value) ) $tableAttrs .= DatabaseNormalization::col( $attr ) ."=NULL,"; // Si no se pone esto ponia '' y se guardaba 0, mientras necesito que se guarde NULL.
-            else if ( is_string($value) ) $tableAttrs .= DatabaseNormalization::col( $attr ) ."='". addslashes($value) ."' ,"; // Debe agregar slashes solo si el valor es string, esto es por si guardo "'" dentro del propio string donde mysql me da error.
-            else $tableAttrs .= DatabaseNormalization::col( $attr ) ."='". $value ."',"; // FIXME: Ver si el value es literal...
+            $tableAttrs .= DatabaseNormalization::col( $attr ) ."=";
+            if ( is_null($value) ) $tableAttrs .= "NULL ,"; // Si no se pone esto ponia '' y se guardaba 0, mientras necesito que se guarde NULL.
+            else if ( is_string($value) ) $tableAttrs .= "'". addslashes($value) ."' ,"; // Debe agregar slashes solo si el valor es string, esto es por si guardo "'" dentro del propio string donde mysql me da error.
+            else if ( is_bool($value) ) $tableAttrs .= "'". (($value===true)?"1":"0")  ."' ,"; // Pone '1' si es true, '0' si no.
+            else $tableAttrs .= "'". $value ."' ,"; // FIXME: Ver si el value es literal...
          }
       }
       $tableAttrs = substr($tableAttrs, 0, sizeof($tableAttrs)-2);
       $q .= $tableAttrs;
       $q .= " WHERE id=" . $data['id'];
 
-      try
-      {
-         $this->db->execute( $q );
-      }
-      catch (Exception $e)
-      {
-          echo $e->getMessage();
-          echo $this->db->getLastError();
-      }
+      // Si hay una excepcion, llega hasta la capa superior.
+      $this->db->execute( $q );
       
    } // update_query2
 
@@ -1042,21 +1027,17 @@ class DAL {
          $value = $object->aGet( $attr ); // Valor del atributo simple.
          if ( is_null($value) ) $tableVals .= "NULL ,";
          else if ( is_string($value) ) $tableVals .= "'". addslashes($value) ."' ,"; // Debe agregar slashes solo si el valor es string, esto es por si guardo "'" dentro del propio string donde mysql me da error.
+         else if ( is_bool($value) ) $tableVals .= "'". (($value===true)?"1":"0")  ."' ,"; // Pone '1' si es true, '0' si no.
          else $tableVals .= "'". $value ."' ,"; // FIXME: OJO, si no es literal no deberia poner comillas !!!!  y si es null deberia guardar null
+         
+         //echo $attr . " tiene tipo: " . gettype($value) . " y valor '" . $value . "'<br/>";
       }
       $tableVals = substr($tableVals, 0, sizeof($tableVals)-2);
       $q .= $tableVals;
       $q .= ");";
 
-      try
-      {
-         $this->db->execute( $q );
-      }
-      catch (Exception $e)
-      {
-         echo $e->getMessage();
-         echo $this->db->getLastError();
-      }
+      // Si hay una excepcion, llega hasta la capa superior.
+      $this->db->execute( $q );
 
    } // insert_query
 
@@ -1112,12 +1093,12 @@ class DAL {
 
    public function backup ( $tableName )
    {
-      // todo
+      // TODO
    }
 
    public function deleteTable( $tableName )
    {
-      // todo
+      // TODO
    }
 
    /* TODO: Respaldo de la base actual
@@ -1144,8 +1125,14 @@ class DAL {
    // TODO: eliminacion del esquema actual (todas las tablas)
    
    // DBInspector
+   /**
+    * Verifica si una tabla existe en la base de datos.
+    * @param string tableName nombre de la tabla.
+    * @return true si existe la tabla tableName en la base de datos.
+    */
    public function tableExists( $tableName ) //: boolean
    {
+      Logger::getInstance()->dal_log("DAL::tableExists $tableName");
    	/* MySQL:
        * SHOW TABLES [[FROM dbname] LIKE 'tablename']
        *
@@ -1155,21 +1142,27 @@ class DAL {
        * show tables;
    	 */
        
-       $q = "show tables like '$tableName'"; // FUNCIONA EN MySQL
-       //$q = "show tables like $tableName"; // NO FUNCIONA EN MySQL
-       $res = $this->query( $q );
-       
-       /* Lo que retorna si existe la tabla:
-        * Array
-        * (
-        *     [0] => Array
-        *         (
-        *             [Tables_in_carlitos (tabla_e)] => tabla_e
-        *         )
-        * )
-        */
-       
-       return count( $res ) > 0;
+      //$q = "show tables like '$tableName'"; // FUNCIONA EN MySQL
+      //$q = "show tables like $tableName"; // NO FUNCIONA EN MySQL
+     
+      /*
+      $cfg = YuppConfig::getInstance();
+      switch( $cfg->getDatabaseType() )
+      {
+         case YuppConfig::DB_MYSQL:
+            $q = "show tables like '$tableName'";
+         break;
+         case YuppConfig::DB_SQLITE:
+            $q = "select name from sqlite_master where name='$tableName'";
+         break;
+      }
+      
+      $res = $this->query( $q );    
+      return count( $res ) > 0;
+      */
+      
+      // Lo resuelve cada DBMS.
+      return $this->db->tableExists($tableName);
    }
    
    public function tableColNames( $tableName ) //: string[]

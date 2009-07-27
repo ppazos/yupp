@@ -35,13 +35,8 @@ class DatabaseMySQL {
 
       if ( !$this->connection )
       {
-         echo "No pudo conectarse : " . mysql_error();
-         //exit();
-         return;
+         throw new Exception( "No pudo conectarse a MySQL: " . mysql_error() );
       }
-
-      //echo "<br />";
-      //echo "Connect: ". $this->connection . "<br />";
 
       $this->selectDB( $dbName );
    }
@@ -54,9 +49,7 @@ class DatabaseMySQL {
       //echo "Select DB: " . $dbName . " " . $this->connection . "<br />";
       if ( ! mysql_select_db ($dbName, $this->connection) ) // Por si estoy trabajando con muchas conecciones
       {
-         echo "Error seleccionando la tabla <b>$dbName</b> de la base de datos.";
-         //exit();
-         return;
+         throw new Exception("Error seleccionando la tabla <b>$dbName</b> de la base de datos.");
       }
    }
 
@@ -79,14 +72,8 @@ class DatabaseMySQL {
 
       $this->lastQuery = $query;
 
-      try
-      {
-         if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
-      }
-      catch (Exception $e)
-      {
-         throw  new Exception("ERROR: " . $e->getMessage());
-      }
+      // Si hay excepciones, se tiran para la capa de arriba donde se agarran.
+      if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
 
       $this->queryCount++;
       $this->lastResult = $result;
@@ -98,16 +85,12 @@ class DatabaseMySQL {
    public function execute( $query )
    {
       Logger::getInstance()->dbmysql_log("DatabaseMySQL::execute : " . $query);
-   	//return $this->query( $query ); // No tenia sentido que llamara a query si no tengo resultado.
       
-      try
-      {
-         if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
-      }
-      catch (Exception $e)
-      {
-         throw  new Exception("ERROR: " . $e->getMessage());
-      }
+      $this->lastQuery = $query;
+      
+      if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
+      
+      $this->queryCount++;
       
       return true;
    }
@@ -249,6 +232,76 @@ class DatabaseMySQL {
       return $dbms_type;
       
    } // getDBType
+   
+   // Operaciones para manipular DBMSs particulares
+   
+   /**
+    * addForeignKeys
+    * Se llama luego de crear todas las tablas, sirve para agregar las FKs de una tabla a otras.
+    * 
+    * @param $tableName nombre de la tabla a agregarle las fks.
+    * 
+    * @param $fks       claves externas a otras tablas. Array de arrays, cada array interno 
+    *                   tiene claves: requeridas(name(string), type(string), table(string), refName(string)),
+    *                   "table" es la tabla referenciada por la FK y "refName" es la columna referenciada por la FK.
+    * 
+    */
+   public function addForeignKeys($tableName, $fks)
+   {
+      // TODO: Keys obligatorias: name, type, table, refName.
+      
+      // ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
+      //
+      //$q_fks = ""; // Acumula consultas. ACUMULAR CONSULTAS ME TIRA ERROR, VOY A EJECUTARLAS INDEPENDIENTEMENTE, IGUAL PODRIAN ESTAR RODEADAS DE BEGIN Y COMMIT!
+      foreach ( $fks as $fk )
+      {
+         // FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`)
+         $q_fks = "ALTER TABLE $tableName " .
+                  "ADD FOREIGN KEY (" . $fk['name'] . ") " .
+                  "REFERENCES " . $fk['table'] . "(". $fk['refName'] .");";
+                  
+         $this->execute( $q_fks );
+      }
+   } // addForeignKeys
+   
+   /**
+    * Verifica si una tabla existe en la base de datos.
+    * @param string tableName nombre de la tabla.
+    * @return true si existe la tabla tableName en la base de datos.
+    */
+    public function tableExists( $tableName ) //: boolean
+   {
+      /* MySQL:
+       * SHOW TABLES [[FROM dbname] LIKE 'tablename']
+       *
+       * example:
+       * show tables from mysql like 'user';
+       * show tables like 'user';
+       * show tables;
+       */
+       
+      //$q = "show tables like '$tableName'"; // FUNCIONA EN MySQL
+      //$q = "show tables like $tableName"; // NO FUNCIONA EN MySQL
+  
+      $res = $this->query( "show tables like '$tableName'" );
+      
+      //print_r(  mysql_num_rows($res) );
+      //print_r( $res );
+      
+      return mysql_num_rows($res) > 0;
+       
+      /* Lo que retorna si existe la tabla:
+       * Array
+       * (
+       *     [0] => Array
+       *         (
+       *             [Tables_in_carlitos (tabla_e)] => tabla_e
+       *         )
+       * )
+       */
+       
+      //return count( $res ) > 0;
+   }
 
 } // DatabaseMySQL
 
