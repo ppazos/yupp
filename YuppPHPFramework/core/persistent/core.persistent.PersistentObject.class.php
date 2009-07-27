@@ -313,6 +313,9 @@ class PersistentObject {
       $this->attributeTypes[ "class" ]  = Datatypes::TEXT; // Los tipos de los deleted son boolean.
       $this->attributeValues[ "class" ] = get_class($this); // No esta borrado.
 
+      // 4: Inyecta el atributo deleted de tipo boolean.
+      $this->attributeTypes[ "deleted" ]  = Datatypes::BOOLEAN; // Los tipos de los deleted son boolean.
+      $this->attributeValues[ "deleted" ] = false; // No esta borrado.
 
       // Si es simple, no hago nada.
       if ( $isSimpleInstance ) return;
@@ -368,9 +371,7 @@ class PersistentObject {
       $this->attributeTypes[ "id" ]  = Datatypes::INT_NUMBER; // Los tipos de los ids son int.
       $this->attributeValues[ "id" ] = NULL; // No tengo ningun objeto asociado.
 
-      // 4: Inyecta el atributo deleted de tipo boolean.
-      $this->attributeTypes[ "deleted" ]  = Datatypes::BOOLEAN; // Los tipos de los deleted son boolean.
-      $this->attributeValues[ "deleted" ] = false; // No esta borrado.
+      
 
 
 

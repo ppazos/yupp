@@ -240,6 +240,7 @@ class PersistentManager {
 
       if ( !$obj->getId() ) // || !$dal->exists( $tableName, $obj->getId() ) ) // Si no tiene id, hago insert, si no update.
       {
+         // FIXME: PO no se le deberia pasar a DAL, deberia transformarse a datos aqui.
          $dal->insert( $tableName, $obj ); // Salva los objetos, con sus datos simples.
       }
       else
@@ -1084,7 +1085,7 @@ class PersistentManager {
 
       // TODO: tengo que cargar solo si tiene deleted en false en la tabla de join.
 
-      $dal = DAL::getInstance();
+      $dal = DAL::getInstance(); // TODO: guardarme la instancia de DAL en el constructor.
 
       $hmattrClazz = $obj->getType( $hmattr );
       
@@ -1092,6 +1093,7 @@ class PersistentManager {
       // (***)
       $_obj = new $hmattrClazz(); // Intancia para hallar nombre de tabla.
       $relObjTableName = YuppConventions::tableName( $_obj );
+
 
 
       // FIXME: el problema de hacer el fetch con una consulta es que no puedo saver
@@ -1107,7 +1109,6 @@ class PersistentManager {
       $obj_is_owner = false;
       if( $obj->isOwnerOf( $hmattr ) )
       {
-         //$relTableName = $this->relTableName( $obj, $hmattr, new $hmattrClazz() ); // Si yo soy owner, el atributo es mio...
          $relTableName =  YuppConventions::relTableName( $obj, $hmattr, new $hmattrClazz() );
          $obj_is_owner = true;
       }
@@ -1116,7 +1117,6 @@ class PersistentManager {
          // Si no soy owner tengo que pedir el atributo...
          $ownerInstance = new $hmattrClazz();
          $ownerAttrNameOfSameAssoc = $ownerInstance->getHasManyAttributeNameByAssocAttribute( get_class($obj), $hmattr );
-         //$relTableName = $this->relTableName( $ownerInstance, $ownerAttrNameOfSameAssoc, $obj );
          $relTableName =  YuppConventions::relTableName( $ownerInstance, $ownerAttrNameOfSameAssoc, $obj );
       }
 
@@ -1135,9 +1135,15 @@ class PersistentManager {
       $q = new Query();
       $q->addFrom( $relTableName, "ref" );  // person_phone ref // FIXME: ESTO ES addFrom.
       
-      
       // (***)
       $q->addFrom( $relObjTableName, "obj" );
+      
+      
+      // Solo quiero los atributos de OBJ, agrego sus atributos como proyecciones de la consulta.
+      foreach( $_obj->getAttributeTypes() as $attr => $type )
+      {
+         $q->addProjection("obj", $attr);
+      }
       
 
       // Necesito saber el nombre del atributo de los ids asociados.
@@ -1181,26 +1187,28 @@ class PersistentManager {
       $data = $dal->query( $q->evaluate() ); // Trae todos los objetos linkeados... (solo sus atributos simples)
 
       // FIN QUERY...
+      
+      //echo "PM.get_many_assoc_lazy<br/>";
+      //print_r( $data );
 
       $obj->aSet( $hmattr, array() ); // Inicalizo lista xq seguramente estaba en NOT_LOADED.
 
       foreach ( $data as $many_attrValues ) // $many_attrValues es un array asociativo de atributo/valor (que son los atributos simples de una instancia de la clase)
       {
-         $rel_obj_id = $many_attrValues[ $hm_assoc_attr ];
-         $rel_obj = NULL;
+         //$rel_obj = NULL;
 
-         /*
-         // Esta cargado?
-         if ( ArtifactHolder::getInstance()->existsModel( $hmattrClazz, $rel_obj_id ) )
-         {
-            $rel_obj = ArtifactHolder::getInstance()->getModel( $hmattrClazz, $rel_obj_id );
-         }
-         else
-         {
-            $rel_obj = $this->get_object( $hmattrClazz, $rel_obj_id ); // Carga solo el objeto, sin asociaciones.
-            ArtifactHolder::getInstance()->addModel( $rel_obj ); // FIXME: ArtHolder deberia referenciarse solo del PM!!!!!
-         }
-         */
+         /* Esta cargado?
+          * $rel_obj_id = $many_attrValues[ $hm_assoc_attr ]; // El codigo que usa esta linea esta comentado...
+          * if ( ArtifactHolder::getInstance()->existsModel( $hmattrClazz, $rel_obj_id ) )
+          * {
+          *    $rel_obj = ArtifactHolder::getInstance()->getModel( $hmattrClazz, $rel_obj_id );
+          * }
+          * else
+          * {
+          *    $rel_obj = $this->get_object( $hmattrClazz, $rel_obj_id ); // Carga solo el objeto, sin asociaciones.
+          *    ArtifactHolder::getInstance()->addModel( $rel_obj ); // FIXME: ArtHolder deberia referenciarse solo del PM!!!!!
+          * }
+          */
          
          // (***)
          $rel_obj = $this->createObjectFromData( $hmattrClazz, $many_attrValues );
@@ -1322,6 +1330,7 @@ class PersistentManager {
          $params['dir'] = 'asc';
       }
 
+
       // Quiero solo los registros de las subclases y ella misma.
       $class = get_class( $ins );
       $scs = ModelUtils::getAllSubclassesOf( $class );
@@ -1346,8 +1355,13 @@ class PersistentManager {
       }
 
       // OBS: No devuelve elementos eliminados (deleted=false)
-      // FIXME: deberia tener un parametro "loadDeletedTo" que indique si quiere cargar las instancias eliminadas de forma logica, pueden haber aplicaciones que les interese acceder a las instancias eliminadas de forma logica.
-      $cond->add( Condition::EQ($objTableName, "deleted", 0) ); // FIXME: Si le pongo false a la RV no aparece nada y me tira consulta erronea. Tendria que ponerle un convertidor de true/false a 1/0...
+      // FIXME: deberia tener un parametro "loadDeletedTo" que indique si quiere
+      // cargar las instancias eliminadas de forma logica, pueden haber aplicaciones
+      // que les interese acceder a las instancias eliminadas de forma logica.
+      //
+      // FIXME: Si le pongo false a la RV no aparece nada y me tira consulta erronea.
+      // Tendria que ponerle un convertidor de true/false a 1/0...
+      $cond->add( Condition::EQ($objTableName, "deleted", 0) ); 
 
 
       $params['where'] = $cond;
@@ -1422,7 +1436,6 @@ class PersistentManager {
    	$dal = DAL::getInstance();
       $tableName = YuppConventions::tableName( $instance );
 
-
       // Quiero solo los registros de las subclases y ella misma.
       $class = get_class( $instance );
       $scs = ModelUtils::getAllSubclassesOf( $class );
@@ -1449,7 +1462,10 @@ class PersistentManager {
       }
 
       // NO_ELIMINADO
-      $cond_total->add( Condition::EQ($tableName, "deleted", 0) ); // FIXME: Si le pongo false a la RV no aparece nada y me tira consulta erronea. Tendria que ponerle un convertidor de true/false a 1/0...
+      // FIXME: Si le pongo false a la RV no aparece nada y me tira consulta erronea.
+      // Tendria que ponerle un convertidor de true/false a 1/0...
+      $cond_total->add( Condition::EQ($tableName, "deleted", 0) );
+
 
       // CRITERIO DE BUSQUEDA
       $cond_total->add( $condition );
@@ -1995,8 +2011,7 @@ class PersistentManager {
       // SOLUCION!: Lo resuelvo fijandome si es un atributo de referencia, lo hago 
       // nullable, si no me fijo en si es nullable en el PO.
       
-      // ====================================================================================================
-      
+      // =========================================================
       //Logger::struct( $cols, "=== COLS ===" );
       
       /*
@@ -2010,19 +2025,16 @@ class PersistentManager {
                    );
       }
       */
-      
       // =========================================================
 
       // $dal->createTable2($tableName, $pks, $cols, $constraints)
       $dal->createTable2($tableName, $pks, $cols, $ins->getConstraints());
-      //$dal->createTable( $tableName, $ins );
       
       // =========================================================
 
-      // TODO: crear tablas intermedias para las relaciones hasMany.
+      // Crea tablas intermedias para las relaciones hasMany.
       // Estas tablas deberan ser creadas por las partes que no tienen el belongsTo, o sea la clase duenia de la relacion.
       $hasMany = $ins->getHasMany();
-
       foreach ( $hasMany as $attr => $assocClassName )
       {
          Logger::getInstance()->pm_log("AssocClassName: $assocClassName, attr: $attr");
@@ -2033,10 +2045,8 @@ class PersistentManager {
 
             //Logger::struct($this->getDataFromObject( new ObjectReference() ), "ObjRef ===");
             
-            
             // "owner_id", "ref_id" son FKs.
             // Aqui se generan las columnas, luego se insertan las FKs
-
             // =========================================================
 
             $pks = array(
@@ -2058,25 +2068,21 @@ class PersistentManager {
                        'type' => Datatypes::INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
                        'nullable' => false
                       );
-
             $cols[] = array(
                        'name' => "ref_id",
                        'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
                        'nullable' => false
                       );
-                      
             $cols[] = array(
                        'name' => "type",
                        'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
                        'nullable' => false
                       );
-                      
              $cols[] = array(
                        'name' => "deleted",
                        'type' => Datatypes :: BOOLEAN, // Se de que tipo, esta definido asien PO.
                        'nullable' => false
                       );
-                      
              $cols[] = array(
                        'name' => "class",
                        'type' => Datatypes :: TEXT, // Se de que tipo, esta definido asien PO.
@@ -2092,7 +2098,8 @@ class PersistentManager {
                        'name' => "ord",
                        'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien PO.
                        'nullable' => true
-                      ); 
+                      );
+            
             // Si es una lista se genera la columna "ord".
             /*
             $hmattrType = $ins->getHasManyType( $attr );
@@ -2105,12 +2112,10 @@ class PersistentManager {
                       );
             }
             */
-
             // =========================================================
                   
             // $dal->createTable2($tableName, $pks, $cols, $constraints)
-            $dal->createTable2($tableName, $pks, $cols, array());
-            //$dal->createTable( $tableName, new ObjectReference() ); // El objeto que modela la tabla es ObjectReference, un objeto persistente especial para este fin: modelar relaciones.
+            $dal->createTable2( $tableName, $pks, $cols, array() );
          }
       }
 
@@ -2365,7 +2370,6 @@ class PersistentManager {
                }
                // ===============================================================================
                
-   
                $hm_fks[] = array(
                          'name'    => "owner_id",
                          'table'   => YuppConventions::tableName( $instConElAtributoHasMany->getClass() ), // FIXME: Genera link a gs (tabla de G1) aunque el atributo sea declarado en cs (tabla de C1). Esto puede generar problemas al cargar (NO PASA NADA AL CARGAR, ANDA FENOMENO!), aunque la instancia es la misma, deberia hacer la referencia a la tabla correspondiente a la instancia que declara el atributo, solo por consistencia y correctitud.
@@ -2383,13 +2387,9 @@ class PersistentManager {
             }
          } // foreach hasMany
          
-         
          // Genera FKs
          DAL::getInstance()->addForeignKeys($tableName, $fks);
       }
-      
-      // ======================================================================
-
    } // generateAll
    
    
