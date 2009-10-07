@@ -25,10 +25,6 @@
 
 class FileNames {
 
-    function FileNames()
-    {
-    }
-
     public static function getClassFilename( $package, $clazz )
     {
        // Si no me viene package, igual tiro el nombre bien.
