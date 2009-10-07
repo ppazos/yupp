@@ -65,14 +65,9 @@ class YuppController {
     public function getFlash($key = NULL)
     {
        if ($key)
-       {
-          // TODO: verificar key existe...
-    	    return $this->flash[$key];
-       }
+          return ( (isset($this->flash[$key])) ?  $this->flash[$key]: NULL);
        else
-       {
        	 return $this->flash;
-       }
     }
     
     public function getParams()
@@ -91,14 +86,7 @@ class YuppController {
     }
 
    /**
-    * @param String view (comentario/list)
-    * @param array params
-    */
-    /*
-    public function render( $view, &$params ) // FIXME: puedo crearlo sin pasarle los params, xq es un atributo mio.
-    {
-    	 return ViewCommand::display( $view, $params, $this->flash );
-    }
+    * @param String view nombre de la vista a mostrar. Se busca entre las vistas del componente y el controller actuales.
     */
     public function render( $view )
     {
@@ -161,7 +149,6 @@ class YuppController {
       $this->params['list']  = $list;
       $this->params['count'] = $count;
 
-      //return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
       return $this->render("list");
    }
     
@@ -181,9 +168,7 @@ class YuppController {
       eval ('$obj' . " = $clazz::get( $id );");
 
       $this->params['object'] = $obj;
-      //$this->params['mode']   = "show"; // Para saber que pagina es.
 
-      //return $this->render("show", & $this->params); // Id NULL para paginas de scaffolding
       return $this->render("show");
    }
    
@@ -207,16 +192,13 @@ class YuppController {
          {
             // create
             $this->params['object'] = $obj;
-            //$this->params['mode'] = "create"; // Para saber que pagina es.
-            //return $this->render("create", $this->params);
+
             return $this->render("create");
          }
 
          // show
          $this->params['object'] = $obj;
-         //$this->params['mode'] = "show"; // Para saber que pagina es.
-         //return $this->render("show", $this->params);
-         //return $this->render("show");
+
          return $this->redirect( array('action'=>'show', 'params'=>array('id'=>$obj->getId())) );
       }
 
@@ -234,7 +216,6 @@ class YuppController {
       eval ('$obj = '. $clazz .'::get( $this->params["id"] );');
       $this->params['object'] = $obj;
       
-      //return $this->params;
       return;
    }
    
@@ -250,7 +231,6 @@ class YuppController {
       if ( !$obj->save() ) // Con validacion de datos!
       {
          $this->params['object'] = $obj;
-         //return $this->render("edit", &$this->params);
          return $this->render("edit");
       }
 
