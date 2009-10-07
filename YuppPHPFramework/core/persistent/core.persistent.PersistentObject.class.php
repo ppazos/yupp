@@ -166,6 +166,32 @@ class PersistentObject {
       	$this->constraints[$attr] = $constraints;
       }
    }
+   
+   /**
+    * True si el atributo es declarado en esta clase, false en otro caso
+    * (p.e. el atributos es declarado en una superclase y esta lo hereda).
+    */
+   public function attributeDeclaredOnThisClass( $attr )
+   {
+      //echo "<h1>xx" . get_parent_class( $this ) ."xx</h1>";
+      
+      
+      // Si la instancia ni siquiera tiene el atributo, retorna false.
+      if ( $this->getType( $attr ) === NULL ) return false;
+      
+      $_super = get_parent_class( $this );
+      
+      // Si la instancia tiene el atributo y el padre es PO, el atributo se declaro en ella.
+      if ( $_super === 'PersistenObject' ) return true;
+      
+      // Si la instancia tiene el atributo y el padre no es PO, tengo que ver si el padre tiene el atributo.
+      $_superInstance = new $_super(NULL, true);
+      
+      // Si el padre NO tiene el atributo, esta declarado en 'esta' clase.
+      if ( $_superInstance->getType( $attr ) === NULL ) return true;
+      
+      return false;
+   }
 
    /**
     * Agrega un atributo a la clase. Es utilizado en la definicion del 
@@ -1169,7 +1195,7 @@ class PersistentObject {
 
       $ins = new self::$thisClass();
 
-      return $pm->findBy( $ins, $condition, &$params );
+      return $pm->findBy( $ins, $condition, $params );
 
    }
 
@@ -1449,7 +1475,6 @@ class PersistentObject {
       }
       return false;
    }
-
    // /OPERACIONES DEL MODELO //
    // ======================= //
 
@@ -1561,6 +1586,12 @@ class PersistentObject {
          // Soporte para lazy loading par ahasOne y hasMany
          if ( isset($this->attributeValues[$attr]) && $this->attributeValues[$attr] === self::NOT_LOADED_ASSOC )
          {
+             // Si no tiene ID todavia no se guardo, entonces no puede cargar lazy algo que no se ha guardado.
+            if ( !isset($this->attributeValues['id']) )
+            {
+               return NULL;
+            }
+            
             if ( array_key_exists($attr, $this->hasMany) )
             {
                // VERIFY: en otros lados hago este chekeo: // Si el objeto esta guardado, trae las clases ya asociadas...
