@@ -38,10 +38,13 @@ class YuppConventions {
    	return String::startsWith($ref, "super_id_");
    }
    
-   
-   public static function getModelPath( $component )
+   /**
+    * @pre: isModelPackage($package)
+    */
+   public static function getModelPath( $package ) //( $component )
    {
-   	return "./components/$component/model/";
+   	//return "./components/$component/model";
+      return "./components/" . strtr($package, ".", "/"); // Correccion para poder poner subdirectorios en /model.
    }
    
     
@@ -114,6 +117,18 @@ class YuppConventions {
       // para el que se quiere generar la tabla intermedia de referencias, si no la encuentra, 
       // es que el atributo hasMany se declaro en $ins1.
       
+      // Tambien hay un problema cuando hay composite>
+      // Si ins1->hasMany[ins1Attr] es a una superclase de ins2, genera mal el nombre de la tabla de join.
+      // El nombre se tiene que generar a la clase para la que se declara le hasMany,
+      // no para el nombre de tabla de ins2 (porque ins2 puede guardarse en otra tabla
+      // que no sea la que se guarda su superclase a la cual fue declarado el hasMany
+      // ins1->hasMany[inst1Attr]).
+      // Solucion: ver si la clase a la que se declara el hasMany no es la clase de ins2,
+      //           y verificar si ins2 se guarda en otra tabla que la clase a la que se 
+      //           declara el hasMany en ins1. Si es distinta, el nombre debe apuntar al
+      //           de la clase declarada en el hasMany. (aunque en ambos casos es a esto,
+      //           asi que no es necesario verificar).
+      
       $classes = ModelUtils::getAllAncestorsOf( $ins1->getClass() );
       
       //Logger::struct( $classes, "Superclases de " . $ins1->getClass() );
@@ -121,8 +136,10 @@ class YuppConventions {
       $instConElAtributoHasMany = $ins1; // En ppio pienso que la instancia es la que tiene el atributo masMany.
       foreach ( $classes as $aclass )
       {
-      	$ins = new $aclass();
-         if ( $ins->hasManyOfThis( $ins2->getClass() ) )
+      	//$ins = new $aclass();
+         $ins = new $aclass(NULL, true);
+         //if ( $ins->hasManyOfThis( $ins2->getClass() ) ) // la clase no es la que tenga el atributo, debe ser en la que se declara el atributo
+         if ( $ins->attributeDeclaredOnThisClass($inst1Attr) )
          {
             //Logger::getInstance()->log("TIENE MANY DE " . $ins2->getClass());
             $instConElAtributoHasMany = $ins;
@@ -132,38 +149,19 @@ class YuppConventions {
          //Logger::struct( $ins, "Instancia de $aclass" );
       }
       
-  
-/*    
-      if ( $ins1->getWithTable() != NULL && strcmp($ins1->getWithTable(), "") != 0 ) // Me aseguro que haya algo.
-      {
-         $tableName1 = $ins1->getWithTable();
-      }
-
-      if ( $ins2->getWithTable() != NULL && strcmp($ins2->getWithTable(), "") != 0 ) // Me aseguro que haya algo.
-      {
-         $tableName2 = $ins2->getWithTable();
-      }
       
-      // FIXME: si no tiene withTable seteado deberia tomar el nombre de la clase, como se hace en "tableName()".
-
-      $tableName1 = DatabaseNormalization::table( $tableName1 );
-      $tableName2 = DatabaseNormalization::table( $tableName2 );
-*/
-
-      /*
-      if ($instConElAtributoHasMany->getClass() === $ins1->getClass())
-         $tableName1 = self::tableName( $ins1 );
-      else
-         $tableName1 = self::tableName( $instConElAtributoHasMany );
-      */
-      
-      // Esto es igual a hacer lo anterior que esta comentado:
       $tableName1 = self::tableName( $instConElAtributoHasMany );
       
-      $tableName2 = self::tableName( $ins2 );
+      //echo "=== "  .  $ins1->getType( $inst1Attr ) . " ==== <br/>";
       
+      // La tabla de join considera la tabla en la que se guardan las instancias del tipo 
+      // declarado en el hasMany, NO A LOS DE SUS SUBCLASES!!! (como podia ser ins2)
+      $tableName2 = self::tableName( $ins1->getType( $inst1Attr ) );
+      // $tableName2 = self::tableName( $ins2 );
 
       // TODO: Normalizar $inst1Attr ?
+      
+      //echo "Nombre tabla: ". $tableName1 . "_" . $inst1Attr . "_" . $tableName2 ."<br/>";
 
       return $tableName1 . "_" . $inst1Attr . "_" . $tableName2; // owner_child
    }
