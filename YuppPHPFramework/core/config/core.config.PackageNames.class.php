@@ -10,7 +10,8 @@ class PackageNames {
     const MODEL_CLASS_GROUP    = 4;
 
     // Solo se usa localmente
-    const MODEL_PACKAGE_REGEXP = '/(((.*)\.)?model)$/i';
+    //const MODEL_PACKAGE_REGEXP = '/(((.*)\.)?model)$/i';
+    const MODEL_PACKAGE_REGEXP = '/(((.*)\.)?model(\.(.*))?)$/i'; // Correcion para poder poner subdirectorios en /model
 
 
     public static function isModelPackage( $package )
