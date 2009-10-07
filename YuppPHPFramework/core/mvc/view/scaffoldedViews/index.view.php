@@ -33,8 +33,8 @@ $m = Model::getInstance();
             }
          }
 
-         $modelTables = &$m->get('modelTables');
-         if ( $modelTables = &$m->get('modelTables') !== NULL )
+         $modelTables = $m->get('modelTables');
+         if ( $modelTables !== NULL )
          {
             echo "<ul>";
             foreach ( $modelTables as $class => $info )
@@ -95,31 +95,37 @@ $m = Model::getInstance();
             {
                echo "<h3>$component:</h3>";
                
-               $component_dir  = dir("./components/".$component."/controllers");
+               $dirpath = "./components/".$component."/controllers";
                
-               echo "<ul>";
-               while (false !== ($controller = $component_dir->read()))
+               if ( file_exists($dirpath) )
                {
-                  if ( !String::startsWith( $controller, ".") ) // No quiero los archivos que empiezan con "." por el . y el ..
+                  $component_dir  = dir($dirpath);
+                  
+                  echo "<ul>";
+                  while (false !== ($controller = $component_dir->read()))
                   {
-                     $prefix = "components.".$component.".controllers.";
-                     
-                     $controller = substr($controller, strlen($prefix), -strlen($suffix));
-                     //$logic_controller = strtolower( substr($controller, 0, 1) ) . substr($controller, 1, strlen($controller));
-                     $logic_controller = String::firstToLower( $controller );
-
-                     echo '<li>[ <a href="'.Helpers::url( array("component"=>$component, "controller"=>$logic_controller, "action"=>"index") ).'">'. $controller .'</a> ]</li>';
-                     
-                     /*
-                     $ctx = YuppContext::getInstance();
-                     if ($ctx->getComponent() !== NULL && $ctx->getComponent() !== "core") // Si entro por http://localhost:8081/Persistent/blog/ y no tengo controller me repite el /blog en el link.
-                        echo '<li>[ <a href="'.$logic_controller.'">'. $controller .'</a> ]</li>';
-                     else
-                        echo '<li>[ <a href="'.$component.'/'.$logic_controller.'/list">'. $controller .'</a> ]</li>';
-                     */
+                     if ( !String::startsWith( $controller, ".") ) // No quiero los archivos que empiezan con "." por el . y el ..
+                     {
+                        $prefix = "components.".$component.".controllers.";
+                        
+                        $controller = substr($controller, strlen($prefix), -strlen($suffix));
+                        //$logic_controller = strtolower( substr($controller, 0, 1) ) . substr($controller, 1, strlen($controller));
+                        $logic_controller = String::firstToLower( $controller );
+   
+                        echo '<li>[ <a href="'.Helpers::url( array("component"=>$component, "controller"=>$logic_controller, "action"=>"index") ).'">'. $controller .'</a> ]</li>';
+                        
+                        /*
+                        $ctx = YuppContext::getInstance();
+                        if ($ctx->getComponent() !== NULL && $ctx->getComponent() !== "core") // Si entro por http://localhost:8081/Persistent/blog/ y no tengo controller me repite el /blog en el link.
+                           echo '<li>[ <a href="'.$logic_controller.'">'. $controller .'</a> ]</li>';
+                        else
+                           echo '<li>[ <a href="'.$component.'/'.$logic_controller.'/list">'. $controller .'</a> ]</li>';
+                        */
+                     }
                   }
+                  echo "</ul>";
                }
-               echo "</ul>";
+               else echo "No se ha creado el directorio de controladores<br/>";
             }
          }
       ?>
