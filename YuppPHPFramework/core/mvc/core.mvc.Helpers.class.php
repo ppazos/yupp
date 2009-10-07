@@ -255,10 +255,6 @@ function $func {
              $controller = $params['controller'];
           else
              $controller = $ctx->getController();
-           
-           
-          //$action = $params['action'];     // Obligatorio, si no, no se que hacer, o voy a la accion por defecto.
-
 
           // Saco los que ya use...
           $params['component']  = NULL;
@@ -272,15 +268,12 @@ function $func {
           
        } // template
 
-       
        $params_url = "";
        foreach ($params['args'] as $argname => $argvalue)
        {
           $$argname = $argvalue; // Declaro variables con los nombres pasados en los args.
        }
        
-       //echo "URL: " . $url;
-          
        include($url . "/" . $params['name'] . ".template.php");
     }
  
