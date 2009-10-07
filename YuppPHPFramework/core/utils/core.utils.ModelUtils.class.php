@@ -8,7 +8,6 @@
 
 /*
  * Created on 24/02/2008
- *
  */
 
 chdir('core/utils');
@@ -24,7 +23,7 @@ class ModelUtils {
     /**
      * Devuelve la lista de los nombres de todas las clases de modelo.
      */
-    public static function &getModelClasses()
+    public static function getModelClasses()
     {
     	  // el directorio del modelo es fijo, pero lo tengo que sacar de una configuracion, no hardcoded aca.
         $components = $packNames->getComponentNames();
@@ -32,31 +31,22 @@ class ModelUtils {
         $classNames = array();
         foreach ( $components as $component )
         {
-            $model_path = YuppConventions::getModelPath( $component );
+            $package = "$component/model"; // TODO: si hay subdirectorios, devolverlos tambien.
+            $model_path = YuppConventions::getModelPath( $package );
+            //$model_path = YuppConventions::getModelPath( $component );
             $_classNames = FileSystem::getFileNames($model_path, PackageNames::MODEL_FILE_REGEXP, array( PackageNames::MODEL_CLASS_GROUP )); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
             $classNames = array_merge($classNames, $_classNames);
         }
         
-        
-        //$packNames->getModelPackagePath();
-
         // LEvanta el directorio y los nombres de las clases.
         // Grupo 1 es el nombre del componente
         // Grupo 2 es el nombre de la clase
 
         // TODO: LA REGEXP DEL PAQUETE DE MODELO ME LO DEBERIA DAR UNA CLASE RESPONSABLE DE SABER CUALES SON LAS REGEXPS DE LOS PAQUETES DESTACADOS Y DADO UNA RUTA DE PAQUETES SABER DE QUE TIPO ES (modulos, core, modelo, vistas, acciones, etc.)
 
-//        $classNames = FileSystem::getFileNames($model_path, PackageNames::MODEL_FILE_REGEXP, array( PackageNames::MODEL_CLASS_GROUP )); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
-
-
-        //$classNames = FileSystem::getFileNames($model_path, "/(.*)\.model\.(.*)\.class\.php$/i", array(2)); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
-        // omp.model.Class.class.php
-        //$classNames = FileSystem::getFileNames($model_path, "/(.*)\.php$/i", array(1)); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
-
         // Los nombres estan codificados segun algun estandar (a definir) y se puede sacar el nombre de la clase del nombre del archivo.
         // NOMBRES: modelDir/componente.ClassName.php
 
-        // .......
         return $classNames;
     }
 
