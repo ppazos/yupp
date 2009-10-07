@@ -14,6 +14,10 @@
  * @link ... (PHPDoc)
  */
 
+//YuppLoader::load( "core.db.criteria3", "Condition" );
+//YuppLoader::load( "core.db.criteria3", "Query" );
+
+
 YuppLoader::load( "core.db.criteria2", "Condition" );
 
 YuppLoader::load( "core.db.criteria2", "ComplexCondition" );
@@ -23,6 +27,8 @@ YuppLoader::load( "core.db.criteria2", "UnaryPrefixCondition" );
 YuppLoader::load( "core.db.criteria2", "Condition" );
 
 YuppLoader::load( "core.db.criteria2", "Query" );
+
+
 YuppLoader::load( "core.utils",       "Callback" );
 YuppLoader::load( "core.persistent",  "ArtifactHolder" );
 
@@ -72,9 +78,6 @@ class PersistentManager {
 
    public static function getInstance( $load_estragegy = NULL )
    {
-      //if ( $instance == NULL ) $instance = new PersistentManager();
-      //return $instance;
-
       $instance = NULL;
       if ( !YuppSession::contains("_persistent_manager_singleton_instance") )
       {
@@ -197,8 +200,7 @@ class PersistentManager {
       // se pasan instancias... para poder pedir el withtable q se setea en tiempo de ejecucion!!!!
       $tableName =  YuppConventions::relTableName( $owner, $ownerAttr, $child );
 
-      //echo "--- REL TABLE NAME: " . $tableName . " ---<br/>";
-      //$tableName = $this->relTableName( get_class($owner), get_class($child) );
+//      echo "--- REL TABLE NAME: " . $tableName . " ---<br/>";
 
       // ========================================================================
       // VERIFICA DE QUE LA RELACION NO EXISTE YA.
@@ -246,11 +248,7 @@ class PersistentManager {
       else
       {
          // CODIGO QUE ANTES ESTABA EN DAL:
-         
          $pinss = MultipleTableInheritanceSupport::getPartialInstancesToSave( $obj ); 
-      
-         // Logger::struct( $pinss, "PARTIAL INSTANCES");
-         
          foreach ( $pinss as $partialInstance )
          {
             $tableName = YuppConventions::tableName( $partialInstance );
@@ -258,16 +256,13 @@ class PersistentManager {
             // Saco el id de la instancia parcial del $multipleTableIds
             // El id se usa para hacer el update de cada instancia parcial.
             $id = NULL;
-            //if ( $partialInstance->getClass() === get_class($obj) ) // Si es de la misma clase que el objeto a salvar => tiene el id seteado!
             if ( PersistentManager::isMappedOnSameTable( $partialInstance->getClass(), get_class($obj)) )
             {
                Logger::add( Logger::LEVEL_PM, "SACO ID DEL OBJ" );
                $id = $obj->getId();
             }
-            else
+            else // SACO ID DE LA PARTIAL INSTANCE
             {
-               //Logger::add( Logger::LEVEL_PM, "SACO ID DE LA PARTIAL INSTANCE" );
-               
                $id = $obj->getMultipleTableId( $partialInstance->getClass() ); // pi->getClass da la clase real, luego se sobreescribe por la clase de obj para guardar ese valor.
                                                                             // La necesidad de tener el nombre de la clase en todas las tablas donde se guarde la instancia,
                                                                             // es de poder cargar la instancia total cuando se hace un get de una instancia parcial.
@@ -286,14 +281,12 @@ class PersistentManager {
             // 2: Si existe, hace update
             if ( $dal->exists( $tableName, $id ) ) // VERIFY: este chekeo se hace en save del PM...
             {
-               //$this->update_query($partialInstance, $tableName);
                $dal->update( $tableName, $this->getDataFromObject($partialInstance) );
             }
             else
             {
                Logger::getInstance()->dal_log("DAL::update NO EXISTE " . $tableName . " " . $id . " " . __LINE__);
             }
-            
          } // foreach ( $pinss as $partialInstance )
          
          // / CODIGO QUE ANTES ESTABA EN DAL ...
@@ -820,11 +813,7 @@ class PersistentManager {
          }
       }
       
-      //Logger::struct( $obj, "createObjectFromData 1 ======================" );
-      
       $obj->updateMultipleTableIds();
-      
-      //Logger::struct( $obj, "createObjectFromData 2 ======================" );
 
       return $obj;
    }
@@ -1161,6 +1150,12 @@ class PersistentManager {
              
              // (***)
              ->add( Condition::EQA("obj", "id", "ref", "ref_id") ) // JOIN
+           
+           
+//           Condition::_AND( array(
+//              Condition::EQ("ref", "owner_id", $obj->getId()), // ref.owner_id = el id del duenio (person_phone.owner_id = obj->getId)
+//              Condition::EQA("obj", "id", "ref", "ref_id") // JOIN
+//           ))
          );
       }
       else // Aca obj es ref_id y class es owner_id !!! (soy el lado debil)
@@ -1172,6 +1167,12 @@ class PersistentManager {
                  
                  // (***)
                  ->add( Condition::EQA("obj", "id", "ref", "owner_id") ) // JOIN
+            
+//            Condition::_AND( array(
+//                Condition::EQ("ref", "ref_id", $obj->getId()), // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
+//                Condition::EQ("ref", "type",   ObjectReference::TYPE_BIDIR), // type = bidir
+//                Condition::EQA("obj", "id", "ref", "owner_id") // JOIN
+//            ))
          );
       }
       
@@ -1363,7 +1364,6 @@ class PersistentManager {
       // Tendria que ponerle un convertidor de true/false a 1/0...
       $cond->add( Condition::EQ($objTableName, "deleted", 0) ); 
 
-
       $params['where'] = $cond;
 
       //echo "<h1>A:". Condition::EQ($objTableName, "deleted", '0')->evaluate() . "</h1>";
@@ -1445,11 +1445,13 @@ class PersistentManager {
 
       // Definicion de la condicion.
       $cond_total = Condition::_AND();
+//      $cond_total = Condition::_AND( array() );
 
       // CONDICION_DE_NOMBRES_DE_SUBCLASES
       if ( count($scs) == 1 )
       {
          $cond_total->add( Condition::EQ($tableName, "class", $scs[0]) );
+//         $cond_total->addSubcondition( Condition::EQ($tableName, "class", $scs[0]) );
       }
       else
       {
@@ -1457,20 +1459,26 @@ class PersistentManager {
          foreach ($scs as $subclass)
          {
             $cond_or->add( Condition::EQ($tableName, "class", $subclass) );
+//            $cond_or->addSubcondition( Condition::EQ($tableName, "class", $subclass) );
          }
          $cond_total->add( $cond_or );
+//         $cond_total->addSubcondition( $cond_or );
       }
 
       // NO_ELIMINADO
       // FIXME: Si le pongo false a la RV no aparece nada y me tira consulta erronea.
       // Tendria que ponerle un convertidor de true/false a 1/0...
       $cond_total->add( Condition::EQ($tableName, "deleted", 0) );
+//      $cond_total->addSubcondition( Condition::EQ($tableName, "deleted", 0) );
 
 
       // CRITERIO DE BUSQUEDA
       $cond_total->add( $condition );
+//      $cond_total->addSubcondition( $condition );
 
       $params['where'] = $cond_total;
+      
+      //print_r( $params['where'] );
 
       $allAttrValues = $dal->listAll( $tableName, $params ); // FIXME: AHORA TIRA TODOS LOS ATRIBUTOS Y NECESITO SOLO CLASS e ID.
       
@@ -1596,9 +1604,6 @@ class PersistentManager {
    public function exists( $persistentClass, $id )
    {
       $dal = DAL::getInstance();
-
-      //return $dal->exists( $this->tableName( new $persistentClass() ), $id );
-      
       return $dal->exists( YuppConventions::tableName( new $persistentClass() ), $id );
    }
 
@@ -1608,7 +1613,6 @@ class PersistentManager {
    public function count( $ins )
    {
       $dal = DAL::getInstance();
-      //$objTableName = $this->tableName( $ins );
       $objTableName = YuppConventions::tableName( $ins );
       $params = array();
 
@@ -1649,7 +1653,6 @@ class PersistentManager {
    public function countBy( $ins, $condition )
    {
       $dal = DAL::getInstance();
-
       $objTableName = YuppConventions::tableName( $ins );
 
       $params = array();
@@ -1714,7 +1717,6 @@ class PersistentManager {
       {
          Logger::add( Logger::LEVEL_PM, "No es MTI " . __LINE__ );
          
-         //$dal->delete( YuppConventions::tableName( $persistentInstance ), $id, $logical ); // OLD
          $dal->delete2( $persistentInstance->getClass(), $id, $logical );
       }
       else
@@ -1906,11 +1908,13 @@ class PersistentManager {
       
       $dal = DAL::getInstance();
 
-      // Si la tabla existe deberia hacer un respaldo y borrarla y generarla de nuevo.
+      // TODO: Si la tabla existe deberia hacer un respaldo y borrarla y generarla de nuevo.
       //DROP TABLE IF EXISTS `acceso`;
 
       // Si la clase tiene un nombre de tabla, uso ese, si no el nombre de la clase.
       $tableName = YuppConventions::tableName( $ins );
+      
+      Logger::show("Crear tabla: $tableName", "h2");
 
       // =========================================================
       
@@ -1926,9 +1930,6 @@ class PersistentManager {
                      array('name'     => 'name',
                            'type'     => Datatypes :: TEXT,
                            'nullable' => false),
-                     array('name'     => 'birth',
-                           'type'     => Datatypes :: DATETIME,
-                           'nullable' => true),
                      // FK
                      array('name'     => 'ent_id',
                            'type'     => Datatypes :: INT_NUMBER,
@@ -1939,8 +1940,6 @@ class PersistentManager {
       // Generar columnas para atributos, menos el id, y para las referencias de MTI (super_id_XXX).
       // Luego, para las referencias de MTI se generan FKs.
       
-      
-      // =====================================================================================================
       // =====================================================================================================
 //      $nullable = NULL; // Hay que determinar si el atributo es nullable.
       
@@ -1948,7 +1947,6 @@ class PersistentManager {
       // todos sus atributos (declarados en ella) deben ser nullables.
       // TODO: ahora no tengo una funcionalidad que me diga que atributos estan declarados en que
       // clase, por ahora le pongo que todos sus atributos sean nullables.
-      
       
       // =====================================================================================================
       // FIXME: no sirve chekear por la clase porque la instancia que me pasan es un merge de todas las 
@@ -1969,8 +1967,6 @@ class PersistentManager {
 //         $nullable = true;
 //      }
       // =====================================================================================================
-      // =====================================================================================================
-      
       
       $cols  = array();
       $attrs = $ins->getAttributeTypes(); // Ya tiene los MTI attrs!
@@ -2032,96 +2028,138 @@ class PersistentManager {
       
       // =========================================================
 
+      
+
       // Crea tablas intermedias para las relaciones hasMany.
       // Estas tablas deberan ser creadas por las partes que no tienen el belongsTo, o sea la clase duenia de la relacion.
+      // FIXME: si la relacion hasMany esta declarada en una superClase, la clase actual tiene la 
+      //        relacion pero no deberia generar la tabla de JOIN a partir de ella, si no de la 
+      //        tabla en la que se declara la relacion.
       $hasMany = $ins->getHasMany();
       foreach ( $hasMany as $attr => $assocClassName )
       {
          Logger::getInstance()->pm_log("AssocClassName: $assocClassName, attr: $attr");
          
-         if ( $ins->isOwnerOf( $attr ) ) // VERIFY, FIXME, TODO: Toma la asuncion de que el belongsTo es por clase. Podria generar un problema si tengo dos atributos de la misma clase pero pertenezco a uno y no al otro porque el modelo es asi.
+         if ($ins->isOwnerOf( $attr )) Logger::show("isOwner: $attr", "h3");
+         if ($ins->attributeDeclaredOnThisClass( $attr )) Logger::show("attributeDeclaredOnThisClass: $attr", "h3");
+         
+         
+         // VERIFY, FIXME, TODO: Toma la asuncion de que el belongsTo es por clase.
+         // Podria generar un problema si tengo dos atributos de la misma clase pero
+         // pertenezco a uno y no al otro porque el modelo es asi.
+         
+         // Para casos donde no es n-n el hasMany, lo que importa es donde se declara la relacion,
+         // no que lado es el owner. Para la n-n si es importante el owner.
+         
+         // Verifico si la relacion es hasMany n-n
+         if ( $ins->getClass() !== $assocClassName ) // Verifico que no tenga un hasMany hacia mi mismo. Si tengo una relacion hasMany con migo, al verificar si es n-n siempre da true (porque verifica un bucle).
          {
-            $tableName = YuppConventions::relTableName( $ins, $attr, new $assocClassName() );
-
-            //Logger::struct($this->getDataFromObject( new ObjectReference() ), "ObjRef ===");
-            
-            // "owner_id", "ref_id" son FKs.
-            // Aqui se generan las columnas, luego se insertan las FKs
-            // =========================================================
-
-            $pks = array(
-                    array(
-                     'name'    => 'id',
-                     'type'    => Datatypes :: INT_NUMBER,
-                     'default' => 1
-                    )
-                   );
-
-            $cols = array();
-      
-            // FIXME: todo lo declarado aqui esta declarado en la clase ObjectReference, 
-            //        deberia hacerse referencia a eso en lugar de redeclarar todo 
-            //        (como los atributos y restricciones).
-      
-            $cols[] = array(
-                       'name' => "owner_id",
-                       'type' => Datatypes::INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
-                       'nullable' => false
-                      );
-            $cols[] = array(
-                       'name' => "ref_id",
-                       'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
-                       'nullable' => false
-                      );
-            $cols[] = array(
-                       'name' => "type",
-                       'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
-                       'nullable' => false
-                      );
-             $cols[] = array(
-                       'name' => "deleted",
-                       'type' => Datatypes :: BOOLEAN, // Se de que tipo, esta definido asien PO.
-                       'nullable' => false
-                      );
-             $cols[] = array(
-                       'name' => "class",
-                       'type' => Datatypes :: TEXT, // Se de que tipo, esta definido asien PO.
-                       'nullable' => false
-                      );
-                      
-             // El tema con la columna ord es que igual esta declarada en la clase ObjectReference,
-             // entonces las consultas que se basen en los atributos que tenga la clase van a hacer
-             // referencia a "ord" aunque la coleccion hasMany no sea una lista. 
-             // Entonces lo que hago es generar igual la columna ord aunque la coleccion no sea lista,
-             // y queda nullable, asi si es SET o COLLECTION no se da bola a ord.
-             $cols[] = array(
-                       'name' => "ord",
-                       'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien PO.
-                       'nullable' => true
-                      );
-            
-            // Si es una lista se genera la columna "ord".
-            /*
-            $hmattrType = $ins->getHasManyType( $attr );
-            if ( $hmattrType === PersistentObject::HASMANY_LIST )
+            $hmRelObj = new $assocClassName(NULL, true);
+            if ( $hmRelObj->hasManyOfThis($ins->getClass()) )
             {
-            	$cols[] = array(
-                       'name' => "ord",
-                       'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien PO.
-                       'nullable' => true
-                      );
+               if ( $ins->isOwnerOf( $attr ) )
+               {
+                  $this->generateHasManyJoinTable($ins, $attr, $assocClassName);
+               }
             }
-            */
-            // =========================================================
-                  
-            // $dal->createTable2($tableName, $pks, $cols, $constraints)
-            $dal->createTable2( $tableName, $pks, $cols, array() );
+            else if ( $ins->attributeDeclaredOnThisClass( $attr ) ) // Para generar la tabla de JOIN debo tener al atributo declarado en mi.
+            {
+               $this->generateHasManyJoinTable($ins, $attr, $assocClassName);
+            }
+         } // si el hasMany no es con migo mismo.
+         else if ( $ins->attributeDeclaredOnThisClass( $attr ) ) // Para generar la tabla de JOIN debo tener al atributo declarado en mi.
+         {
+            $this->generateHasManyJoinTable($ins, $attr, $assocClassName);          
          }
       }
 
       // hasOne no necesita tabla intermedia...
       
    } // generate
+   
+   private function generateHasManyJoinTable($ins, $attr, $assocClassName)
+   {
+      $dal = DAL::getInstance();
+echo "A<br/>";
+      $tableName = YuppConventions::relTableName( $ins, $attr, new $assocClassName() );
+
+      //Logger::struct($this->getDataFromObject( new ObjectReference() ), "ObjRef ===");
+      
+      // "owner_id", "ref_id" son FKs.
+      // Aqui se generan las columnas, luego se insertan las FKs
+      // =========================================================
+
+echo "B<br/>";
+
+      $pks = array(
+               array(
+                 'name'    => 'id',
+                 'type'    => Datatypes :: INT_NUMBER,
+                 'default' => 1
+               )
+             );
+
+      $cols = array();
+
+      // FIXME: todo lo declarado aqui esta declarado en la clase ObjectReference, 
+      //        deberia hacerse referencia a eso en lugar de redeclarar todo 
+      //        (como los atributos y restricciones).
+      
+echo "C<br/>";
+
+      $cols[] = array(
+                 'name' => "owner_id",
+                 'type' => Datatypes::INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
+                 'nullable' => false );
+      $cols[] = array(
+                 'name' => "ref_id",
+                 'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
+                 'nullable' => false );
+      $cols[] = array(
+                 'name' => "type",
+                 'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
+                 'nullable' => false );
+       $cols[] = array(
+                 'name' => "deleted",
+                 'type' => Datatypes :: BOOLEAN, // Se de que tipo, esta definido asien PO.
+                 'nullable' => false );
+       $cols[] = array(
+                 'name' => "class",
+                 'type' => Datatypes :: TEXT, // Se de que tipo, esta definido asien PO.
+                 'nullable' => false );
+                      
+echo "D<br/>";
+       
+       // El tema con la columna ord es que igual esta declarada en la clase ObjectReference,
+       // entonces las consultas que se basen en los atributos que tenga la clase van a hacer
+       // referencia a "ord" aunque la coleccion hasMany no sea una lista. 
+       // Entonces lo que hago es generar igual la columna ord aunque la coleccion no sea lista,
+       // y queda nullable, asi si es SET o COLLECTION no se da bola a ord.
+       $cols[] = array(
+                 'name' => "ord",
+                 'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien PO.
+                 'nullable' => true );
+            
+   echo "E<br/>";
+            
+      // Si es una lista se genera la columna "ord".
+      /*
+      $hmattrType = $ins->getHasManyType( $attr );
+      if ( $hmattrType === PersistentObject::HASMANY_LIST )
+      {
+         $cols[] = array(
+                 'name' => "ord",
+                 'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien PO.
+                 'nullable' => true
+                );
+      }
+      */
+  
+         //    createTable2( $tableName, $pks, $cols, $constraints )
+      $dal->createTable2( $tableName, $pks, $cols, array() );
+echo "F<br/>";
+
+   } // generateHasManyJoinTable
 
    /**
     * generateAll
@@ -2134,7 +2172,7 @@ class PersistentManager {
       Logger::getInstance()->pm_log("PersistentManager::generateAll ======");
       
    	// Todas las clases del primer nivel del modelo.
-      $A = ModelUtils::getSubclassesOf( 'PersistentObject' );
+      $A = ModelUtils::getSubclassesOf( 'PersistentObject' ); // FIXME> no es recursiva!
 
       // Se utiliza luego para generar FKs.
       $generatedPOs = array();
@@ -2178,9 +2216,7 @@ class PersistentManager {
                {
                   // FIXME: esta parte seria mas facil si simplemente cuando la clase tiene la constraint 
                   // y le seteo otra del mismo tipo para el mismo atributo, sobreescriba la anterior.
-                  
-                  //Logger::getInstance()->log( "ATTR: " . $attr );
-                  //Logger::getInstance()->pm_log( "ATTR: $attr " . __FILE__ . " " . __LINE__);
+
                   $constraint = $sc_ins->getConstraintOfClass( $attr, 'Nullable' );
                   if ($constraint !== NULL)
                   {
@@ -2245,13 +2281,19 @@ class PersistentManager {
             // /Inyecto FKs
             
             
-            // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
-            $this->generate( $c_ins );
             
+            $tableName = YuppConventions::tableName( $c_ins );
+//            echo __FILE__ . ' ' . __LINE__ . " $tableName<br/>";
             
-            // Para luego generar FKs.
-            $generatedPOs[] = $c_ins;
+            // Si la tabla ya existe, no la crea.
+            if ( !DAL::getInstance()->tableExists( $tableName ) )
+            {
+               // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
+               $this->generate( $c_ins );
             
+               // Para luego generar FKs.
+               $generatedPOs[] = $c_ins;
+            }
          } // foreach ($struct as $class => $subclassesOnSameTable)
       } // foreach( $A as $clazz )
       
@@ -2584,7 +2626,6 @@ class SWPString {
      // Podemos usar conversiones e nlo que refiere a los atributos por ejemplo empiezan con minusculas!!!
 
      $busca = array("_a", "_b", "_c", "_d", "_e", "_f", "_g", "_h", "_i", "_j", "_k", "_l", "_m", "_n", "_o", "_p", "_q", "_r", "_s", "_t", "_u", "_v", "_w", "_x", "_y", "_z");
-     //$cambia = array("_A", "_B", "_C", "_D", "_E", "_F", "_G", "_H", "_I", "_J", "_K", "_L", "_M", "_N", "_O", "_P", "_Q", "_R", "_S", "_T", "_U", "_V", "_W", "_X", "_Y", "_Z");
      $cambia = array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
      $string = str_replace($busca, $cambia, $string);
