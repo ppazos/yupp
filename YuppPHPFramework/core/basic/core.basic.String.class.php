@@ -38,7 +38,7 @@ class String {
     * Quita los caracteres que tengan tildes o las enies o dieresis, 
     * transformandolas en las mismas letras sin tildes o enies.
     */
-   function filterCharacters($string)
+   public static function filterCharacters($string)
    {
       // Si se ve raro es porque el visor esta mal configurado en su enconding type, este string tiene
       // primero las vocales acentuadas, luego las vocales con dieresis y por ultimo la enie.
@@ -61,7 +61,7 @@ class String {
        return strtr($string, $table);
    }
    
-   function toUnderscore($string)
+   public static function toUnderscore($string)
    {
      //return preg_replace("/[A-Z ]/", "/[a-z_]/", $string);
     return strtr($string,
@@ -95,4 +95,5 @@ class String {
    }
 
 }
+
 ?>
