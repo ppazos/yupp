@@ -18,7 +18,7 @@ class CoreController extends YuppController
          $allTablesCreated = true;
          
 			$loadedClasses = YuppLoader :: getLoadedModelClasses();
-			$this->params['loadedClasses'] = &$loadedClasses;
+			$this->params['loadedClasses'] = $loadedClasses;
 
 			foreach ($loadedClasses as $class)
 			{
@@ -34,7 +34,7 @@ class CoreController extends YuppController
             }
 			}
          
-         $this->params['modelTables']      = &$createdTables;
+         $this->params['modelTables']      = $createdTables;
          $this->params['allTablesCreated'] = $allTablesCreated;
 		}
       
