@@ -104,6 +104,7 @@ class YuppLoader {
          {
          	$res[] = $fileInfo['class'];
          }
+         //else print_r($fileInfo);
       }
       return $res;
    }
@@ -120,30 +121,15 @@ class YuppLoader {
 	 */
 	public function _loadModel()
 	{
-      //echo "<h1>" . __FILE__ . " (". __LINE__ .") _loadModel</h1>";
-      
-      
-      $components = FileSystem::getSubdirNames("./components");
-      
-      /*
-      print_r( FileSystem::getSubdirNames("./components") );
-      foreach ($components as $component)
-      {
-      	echo YuppConventions::getModelPath($component) . "<br/>";
-         if (file_exists(YuppConventions::getModelPath($component))) echo "EXISTE<br/>";
-         else echo "NO EXISTE<br/>";
-      }
-      */
-      
-      
+      $components = FileSystem::getSubdirNames("./components");      
 		$packs = new PackageNames();
-		//$path = $packs->getModelPackagePath(); // ./model
-		//$dir = dir($path);
-
 		$fn = new FileNames();
+
+//print_r($this);
 
 		if (!$this->modelLoaded)
 		{
+         //echo "NO CARGADO";
 			// FIXME: Si el modelo ya esta cargado no deberia leer el disco para cargarlo, deberia fijarme la estructura que tengo en memoria y hacer el include de eso de nuevo...
 			// Esto es porque la lectura de disco tarda pila, y eso que hay pocas clases.
          /*
@@ -171,36 +157,12 @@ class YuppLoader {
          // Carga: component/elComponent/model, para todos los componentes
          foreach ($components as $component)
          {
-            //echo "<h1>" . YuppConventions::getModelPath($component) . "</h1><br/>";
-            $path = YuppConventions::getModelPath($component);
+            //$path = YuppConventions::getModelPath($component);
+            $package = "$component.model";
+            $path = YuppConventions::getModelPath($package);
             if (file_exists($path))
             {
-               $dir = dir($path);
-               while (false !== ($entry = $dir->read()))
-               {
-                  //echo "ENTRY: $entry<br/>";
-                  if ($entry != "." && $entry != "..")
-                  {
-                     $finfo = $fn->getFilenameInfo($entry);
-                     if ($finfo)
-                     {
-                        //print_r( $finfo );
-      
-                        //echo "PACKAGE: " . $finfo['package'] . "</br>";
-                        //echo "NAME: "    . $finfo['name'] . "</br>";
-                        //echo "<br/>LOAD (1)<br/>";
-                        
-                        // TODO: cargar una clase podria cargar otras, si se declaran loads en esa clase,
-                        //       por lo que estaria bueno poder verificar aqui si la clase ya esta cargada 
-                        //       antes de intentar cargarla de nuevo.
-                        $this->_load($finfo['package'], $finfo['name']);
-                        //echo "LOAD (2)<br/>";
-      
-                        //echo $entry."\n";
-                     }
-                  }
-               }
-               $dir->close();
+               $this->_loadModelRecursive( $path );
             }
          }
 
@@ -212,6 +174,8 @@ class YuppLoader {
 		}
 		else
 		{
+         //echo "CARGADO";
+         
          //echo "<h2>" . __FILE__ . " (". __LINE__ .") REFRESH</h2>";
 			self :: refresh();
 		}
@@ -219,6 +183,40 @@ class YuppLoader {
       //echo "<h1>" . __FILE__ . " (". __LINE__ .") _loadModel TERMINA</h1>";
       
 	} // _loadModel
+   
+   private function _loadModelRecursive( $model_path )
+   {
+      echo __FILE__ . ' ' . __LINE__ . " $model_path<br/>";
+      
+      $fn = new FileNames();
+      
+      $dir = dir($model_path);
+      while (false !== ($entry = $dir->read()))
+      {
+         if ( is_dir($model_path.'/'.$entry) && !String::startsWith($entry, ".") )
+         {
+            self :: _loadModelRecursive( $model_path . "/" . $entry ); // recursivo
+         }
+         else if ( !String::startsWith($entry, ".") )
+         {
+            //echo "<h1>$entry</h1>";
+            
+            $finfo = $fn->getFilenameInfo($entry);
+            if ($finfo)
+            {
+               //echo "PACKAGE: " . $finfo['package'] . "</br>";
+               //echo "NAME: "    . $finfo['name'] . "</br>";
+
+               // TODO: cargar una clase podria cargar otras, si se declaran loads en esa clase,
+               //       por lo que estaria bueno poder verificar aqui si la clase ya esta cargada 
+               //       antes de intentar cargarla de nuevo.
+               $this->_load($finfo['package'], $finfo['name']);
+            }
+         }
+      }
+      $dir->close();
+   }
+
 
 	// Funcion para ahorrarse tener que llamar al getInstance dedse afuera...
 	public static function load($package, $clazz)
@@ -246,13 +244,7 @@ class YuppLoader {
 		$path = ".";
 		if (PackageNames::isModelPackage($package))
 		{
-         $component = PackageNames::getModelPackageComponent( $package );
-         
-//			echo "<br/>ES MODEL PACKAGE!!! $package, $clazz, compo: $component<br/>";
-			//$path = $packs->getModelPackagePath(); // FIXME: ahora el modelo depende del componente.
-         $path = YuppConventions::getModelPath($component);
-         
-//         echo "Path: $path<br/>";
+         $path = YuppConventions::getModelPath($package); // "./components/component/model/package"
 		}
 		else // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
 		{
@@ -395,10 +387,11 @@ class YuppLoader {
 		{
 			//echo "ES MODEL PACKAGE!!!<br/>";
 			//$path = $packs->getModelPackagePath();
-         $path = YuppConventions::getModelPath( PackageNames::getModelPackageComponent( $package ) );
+         //$path = YuppConventions::getModelPath( PackageNames::getModelPackageComponent( $package ) );
+         $path = YuppConventions::getModelPath( $package );
 		}
 		else // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
-			{
+      {
 			$path = strtr($package, ".", "/");
 		}
 
@@ -409,25 +402,35 @@ class YuppLoader {
 
 	/**
 	 * Hace el include en las clases ya cargadas.
+    * En ludar de tener que ir al filesystem para cargar las clases del modelo,
+    * las carga de la memoria.
 	 */
 	public static function refresh()
 	{
 		$cl = YuppLoader :: getInstance();
+
+// ERROR: no recarga las clases del modelo que estan en subdirectorios!
+
+//print_r( $cl->loadedClasses );
 
 		foreach ($cl->loadedClasses as $classInfo)
 		{
 			$package = $classInfo['package'];
 			$path = ".";
          
-			if (PackageNames::isModelPackage($package))
+         if (PackageNames::isModelPackage($package))
 			{
-				$path = YuppConventions::getModelPath(PackageNames::getModelPackageComponent( $package ));
+				//$path = YuppConventions::getModelPath(PackageNames::getModelPackageComponent( $package ));
+            $path = YuppConventions::getModelPath( $package );
 			}
 			else // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
-				{
-				$path = strtr($package, ".", "/");
-			}
+         {
+            $path = strtr($package, ".", "/");
+         }
+         
 			$incPath = $path . "/" . $classInfo['filename'];
+         
+//         echo "refresh: $incPath<br/>";
 
 			if (!is_file($incPath))
 				throw new Exception("YuppLoader::refresh() - ruta de inclusion errada ($incPath)");
