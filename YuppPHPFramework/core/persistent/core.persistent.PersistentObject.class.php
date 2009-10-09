@@ -175,7 +175,6 @@ class PersistentObject {
    {
       //echo "<h1>xx" . get_parent_class( $this ) ."xx</h1>";
       
-      
       // Si la instancia ni siquiera tiene el atributo, retorna false.
       if ( $this->getType( $attr ) === NULL ) return false;
       
@@ -191,6 +190,38 @@ class PersistentObject {
       if ( $_superInstance->getType( $attr ) === NULL ) return true;
       
       return false;
+   }
+   
+   /**
+    * Obtiene la superclase de esta donde fue declarado el atributo.
+    * Si no encuentra el atributo, devuelve null.
+    */
+   public function getSuperClassWithDeclaredAttribute( $attr )
+   {
+//      echo "getSuperClassWithDeclaredAttribute( $attr )<br/>";
+      //Si el atributo esta declarado en esta clase, se deberia llamar a attributeDeclaredOnThisClass para saberlo.
+      //if ( $this->attributeDeclaredOnThisClass( $attr ) )
+      //{
+      //   return self::$thisClass;
+      //}
+      
+//      echo "thisClass: ".$this->getClass()."<br/>";
+      
+      $superClasses = ModelUtils :: getAllAncestorsOf( $this->getClass() );
+      
+//      print_r($superClasses);
+      
+      foreach ($superClasses as $superClass)
+      {
+         $superInstance = new $superClass(NULL, true);
+         if ( $superInstance->attributeDeclaredOnThisClass( $attr ) )
+         {
+            return $superClass;
+         }
+      }
+      
+//      echo "tira null<br/>";
+      return NULL; // El atributo no fue declarado en ninguna superclase.
    }
 
    /**
@@ -788,7 +819,6 @@ class PersistentObject {
          $attr = DatabaseNormalization::getSimpleAssocName( $attr );
       }
       
-
       //Logger::getInstance()->log("Nullable ATTR2? $attr");
 
       if ( isset($this->constraints[ $attr ]) )
@@ -801,7 +831,7 @@ class PersistentObject {
             }
          }
       }
-      //return false; // Por defecto no es nullable.
+
       return true; // Por defecto es nullable. Es mas facil para generar las tablas, ahora se pone en not null solo si hay una restriccion que lo diga.
    }
    // ===================================================================
@@ -1065,8 +1095,20 @@ class PersistentObject {
             $refAttrName = DatabaseNormalization::simpleAssoc( $attr );
             if ($obj)
             {
+               // Tengo que encontrar el id de la clase declarada en el atributo, porque
+               // obj puede ser una subclase de la clase del atributo, pero para cargar
+               // correctamente de la base, debo guardarme el id de la superclase de $obj
+               // que es la clase del atributo hasOne $attr.
+               $refId = $obj->getId();
+               if ( $type !== $obj->getClass() ) // Si el tipo del atributo declarado no es el del objeto relacionado (el de el objeto debe ser una subclase del declarado).
+               {
+                  //$superClass = $obj->getSuperClassWithDeclaredAttribute($attr);
+                  $refId = $obj->getMultipleTableId( $type ); // $obj->super_id_SuperClass
+               }
+               
                // seteo "email_id"
-               $this->attributeValues[ $refAttrName ] = $obj->getId(); // Seteo tambien "email_id", puede ser NULL !!!
+               //$this->attributeValues[ $refAttrName ] = $obj->getId(); // Seteo tambien "email_id", puede ser NULL !!!
+               $this->attributeValues[ $refAttrName ] = $refId;
             }
             else
             {
@@ -1332,12 +1374,8 @@ class PersistentObject {
       // Es para salvar relaciones n-n bidireccionales y saber el tipo de la instancia, si es uni o bi direccional.
       $hmattrs = $this->hasManyAttributesOfClass( $assocClass );
 
-      //print_r( $this->hasMany );
-      //print_r( $hmattrs );
-
       $tam = sizeof($hmattrs);
       if ( $tam == 0 ) return NULL; // throw new Exception("PO.getHasManyAttributeNameByAssocAttribute: no tiene un atributo hasMany a " . $assocClass);
-
       if ( $tam == 1 ) return $hmattrs[0]; // Si hay uno, es ese!
 
       // Si hay muchos, tengo que ver por el nombre de asociacion codificado en el nombre de los atributos.

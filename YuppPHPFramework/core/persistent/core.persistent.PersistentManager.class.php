@@ -176,14 +176,55 @@ class PersistentManager {
 
       // FIXME: (owner_id, ref_id) debe ser clave, o sea, unique porque primary key es "id". 
       // (en varios lugares como aca abajo y en remove_assoc considero que la relacion entre 2 objetos es unica en la misma tabla.)
+      
+      // ====================================================================
+      // FIXME: el id que se guarda en ref deberia ser del objeto declarado
+      //        como tipo en la relacion hasMany, o sea $ownerAttr en $owner.
+      //        Esto es para solucionar el caso de autorrelacion con herencia.
+      //        donde tengo A(hasMany)A y B(heredaDe)A, si una instancia de B
+      //        tiene varias instancias de B asociadas (B1, B2), en la tabla
+      //        intermedia deberia guardarse como ref_id el B1.super_id_A y
+      //        B2.super_id_A, porque A es la clase donde se define la 
+      //        relacion hasMany y para la cual se crea la tabla intermedia
+      //        a_as_a. 
+      
+      // Si la clase del atributo hasMany no coincide con el objeto
+      // relacionado, es que el objeto relacionado es una subclase
+      // de la clase declarada en el hasMany.
+      // Yo quiero el id de ese elemento, lo encuentro en el 
+      // atributo super_id_$hasManyAttrs[$ownerAttr]
+      $ref_id = $child->getId();
+      $hasManyAttrs = $owner->getHasMany();
+      if ( $hasManyAttrs[$ownerAttr] !== $child->getClass() )
+      {
+         $ref_id = $child->aGet('super_id_'.$hasManyAttrs[$ownerAttr]);
+         // FIXME: se resuelve igual con getMultipleTableId( $superClass )
+      }
+      
+      // El owner id debe ser el de la clase donde se declara la relacion hasmany
+      $owner_id = $owner->getId();
+      if ( !$owner->attributeDeclaredOnThisClass($ownerAttr) )
+      {
+         $ownerSuperClass = $owner->getSuperClassWithDeclaredAttribute($ownerAttr);
+         
+//         echo "ownerSuperClass: $ownerSuperClass<br/>";
+         
+         $owner_id = $owner->aGet('super_id_'.$ownerSuperClass);
+         // FIXME: se resuelve igual con getMultipleTableId( $superClass )
+      }
+      
+//      echo "OwnerId: $owner_id<br/>";
+      
       $refObj = NULL;
       if ( $owner->getHasManyType($ownerAttr) === PersistentObject::HASMANY_LIST )
       {
          Logger::getInstance()->pm_log("ES LISTA" . __FILE__ . " ". __LINE__);
          
       	$refObj = new ObjectReference( array(
-                                          "owner_id" => $owner->getId(),
-                                          "ref_id"   => $child->getId(),
+                                          //"owner_id" => $owner->getId(),
+                                          "owner_id" => $owner_id,
+                                          "ref_id"   => $ref_id,
+                                          //"ref_id"   => $child->getId(),
                                           "type"     => $relType,
                                           "ord"      => $ord ) );
       }
@@ -192,8 +233,10 @@ class PersistentManager {
          Logger::getInstance()->pm_log("NO ES LISTA" . __FILE__ . " ". __LINE__);
          
          $refObj = new ObjectReference( array(
-                                          "owner_id" => $owner->getId(),
-                                          "ref_id"   => $child->getId(),
+                                          //"owner_id" => $owner->getId(),
+                                          "owner_id" => $owner_id,
+                                          "ref_id"   => $ref_id,
+                                          //"ref_id"   => $child->getId(),
                                           "type"     => $relType ) );
       }
 
@@ -207,8 +250,10 @@ class PersistentManager {
       // FIXME: ojo ahora tendria que tener en cuenta la direccion tambien!
 
       $params['where'] = Condition::_AND()
-                           ->add( Condition::EQ($tableName, "owner_id", $owner->getId()) )
-                           ->add( Condition::EQ($tableName, "ref_id",   $child->getId()) );
+                           //->add( Condition::EQ($tableName, "owner_id", $owner->getId()) )
+                           ->add( Condition::EQ($tableName, "owner_id", $owner_id ) )
+                           ->add( Condition::EQ($tableName, "ref_id",   $ref_id) );
+                           //->add( Condition::EQ($tableName, "ref_id",   $child->getId()) );
 
       // FIXME: llamar a exists de DAL
       if ( $dal->count($tableName, $params) == 0 )
@@ -269,7 +314,6 @@ class PersistentManager {
                
                // Seteo la clase real en cada una de las instancias parciales, para poder cargar (get, list, find) desde una instancia parcial.
                // Tiene la clase de la instancia seteada y quiero que el atributo class sea de la ultima instancia de la estructura de herencia.
-               
             }
             
             $partialInstance->setId( $id );
@@ -368,8 +412,8 @@ class PersistentManager {
                   {                                                              // VERIFY: Salva en cascada solo si soy el duenio de la relacion.. esto esta bien para 1..* ??
                      Logger::getInstance()->pm_log("PM::save_assoc save_cascade de ". $assocObj->getClass() .__LINE__);
                      
+                     // hasOne no necesita tablas intermedias (salvar la referencia)
                      $this->save_cascade( $assocObj, $sessId ); // salva objeto y sus asociaciones.
-                     //PersistentManager::save_assoc( $obj, $assocObj ); // hasOne no necesita tablas intermedias (salvar la referencia)
                   }
                }
             } // si esta cargado
@@ -389,12 +433,11 @@ class PersistentManager {
          
          //Logger::struct( $obj , "PRE PM.save_object en PM.save_cascade");
          
-         Logger::getInstance()->pm_log("PM::save_assoc save_object ". $obj->getClass() .__LINE__);
+         Logger::getInstance()->pm_log("PM::save_assoc save_object ". $obj->getClass() ." @".__LINE__);
          $this->save_object( $obj, $sessId ); // salva el objeto
 
 
          $massoc = $obj->getManyAssocValues(); // Es una lista de listas de objetos.
-         //print_r( $massoc ); // OK
          foreach ($massoc as $attrName => $objList)
          {
             $ord = 0;
@@ -404,8 +447,6 @@ class PersistentManager {
             //Logger::warn("HAS MANY ATTR: " . $attrName);
             foreach ( $objList as $assocObj )
             {
-               //print_r( $assocObj ); // OK
-
                // Problema con cascada hasMany: a1 -> b1 -> c1 -> a1
                // cuando c1 quiere salvar a a1 no entra aca, eso esta bien, pero deberia salvarse la relacion c1 -> a1...
                // No se cual es la condicion para salvar la relacion solo, voy a intentar solo decir que c1 es owner de a1 a ver que pasa...
@@ -680,7 +721,6 @@ class PersistentManager {
              
             // OJO! no es instance, es una matriz con datos!
             $sc_partial_row = $list[0]; // FIXME: $sc_partial_instance no es un array !!!! ES UN PO instanciado!!! porque la consulta es sobre PO!!!!!!!!!!!!!!!!!
-         
          }
          
          //Logger::struct($sc_partial_row, "Ultima instancia " . __FILE__ . " " . __LINE__);
@@ -726,8 +766,7 @@ class PersistentManager {
               
             $attrValues = array_merge( $attrValues, $scAttrValues );
          }
-          
-          
+         
          // $attrValues deberia tener todos los atributos simples de las instancias parciales cargadas y el id de la ultima instancia de la estructura de herencia.   
           
          $attrValues["id"] = $real_id; // id real de la instancia
@@ -1070,20 +1109,21 @@ class PersistentManager {
 // obtiene solo uan asociacion.
    public function get_many_assoc_lazy( PersistentObject &$obj, $hmattr )
    {
-      Logger::getInstance()->pm_log("PersistentManager.get_many_assoc_lazy " . get_class( $obj ));
+      Logger::getInstance()->pm_log("PersistentManager.get_many_assoc_lazy " . get_class( $obj ) . " " . $hmattr);
 
       // TODO: tengo que cargar solo si tiene deleted en false en la tabla de join.
 
       $dal = DAL::getInstance(); // TODO: guardarme la instancia de DAL en el constructor.
 
+      // FIXME: esta clase podria ser superclase de la subclase que quiero cargar.
+      //        tengo que ver en la tabla de que tipo es realmente y cargar una instancia de eso. 
       $hmattrClazz = $obj->getType( $hmattr );
-      
-      
+            
       // (***)
       $_obj = new $hmattrClazz(); // Intancia para hallar nombre de tabla.
       $relObjTableName = YuppConventions::tableName( $_obj );
-
-
+      
+//      echo "   relObjTableName = $relObjTableName<br/>";
 
       // FIXME: el problema de hacer el fetch con una consulta es que no puedo saver
       // si el/los objetos ya estan cargados en el ArtifactHolder, no se si esto
@@ -1098,15 +1138,17 @@ class PersistentManager {
       $obj_is_owner = false;
       if( $obj->isOwnerOf( $hmattr ) )
       {
-         $relTableName =  YuppConventions::relTableName( $obj, $hmattr, new $hmattrClazz() );
+//         echo "   obj isOwnerOf hmattr<br/>";
+         $relTableName = YuppConventions::relTableName( $obj, $hmattr, new $hmattrClazz() );
          $obj_is_owner = true;
       }
       else
       {
+//         echo "   obj !isOwnerOf hmattr<br/>";
          // Si no soy owner tengo que pedir el atributo...
          $ownerInstance = new $hmattrClazz();
          $ownerAttrNameOfSameAssoc = $ownerInstance->getHasManyAttributeNameByAssocAttribute( get_class($obj), $hmattr );
-         $relTableName =  YuppConventions::relTableName( $ownerInstance, $ownerAttrNameOfSameAssoc, $obj );
+         $relTableName = YuppConventions::relTableName( $ownerInstance, $ownerAttrNameOfSameAssoc, $obj );
       }
 
       // =================================================================================
@@ -1123,7 +1165,6 @@ class PersistentManager {
 
       $q = new Query();
       $q->addFrom( $relTableName, "ref" );  // person_phone ref // FIXME: ESTO ES addFrom.
-      
       // (***)
       $q->addFrom( $relObjTableName, "obj" );
       
@@ -1134,45 +1175,46 @@ class PersistentManager {
          $q->addProjection("obj", $attr);
       }
       
-
       // Necesito saber el nombre del atributo de los ids asociados.
       $hm_assoc_attr = "owner_id";
+
+      // como id del obj necesito el id del objeto donde se declara el atributo HM con
+      // nombre hmattr.
+      $obj_id = $obj->getId();
+      if ( !$obj->attributeDeclaredOnThisClass($hmattr) )
+      {
+         // Busco la superclase donde se declara el atributo.
+         $ownerSuperClass = $obj->getSuperClassWithDeclaredAttribute($hmattr);
+         
+//         echo "ownerSuperClass: $ownerSuperClass<br/>";
+         
+         $obj_id = $obj->aGet('super_id_'.$ownerSuperClass);
+      }
+      
+//      echo "obj_id $obj_id<br/>";
 
       // Tengo que ver el objeto en la tabla de referehcia si es el owner_id o el ref_id
       if ( $obj_is_owner )
       {
          $hm_assoc_attr = "ref_id"; // yo soy el owner entonces el asociado es ref.
          $q->setCondition(
-           
            // (***)
            Condition::_AND()
-             ->add( Condition::EQ("ref", "owner_id", $obj->getId()) ) // ref.owner_id = el id del duenio (person_phone.owner_id = obj->getId)
-             
+             ->add( Condition::EQ("ref", "owner_id", $obj_id) )
+             //->add( Condition::EQ("ref", "owner_id", $obj->getId()) ) // ref.owner_id = el id del duenio (person_phone.owner_id = obj->getId)
              // (***)
              ->add( Condition::EQA("obj", "id", "ref", "ref_id") ) // JOIN
-           
-           
-//           Condition::_AND( array(
-//              Condition::EQ("ref", "owner_id", $obj->getId()), // ref.owner_id = el id del duenio (person_phone.owner_id = obj->getId)
-//              Condition::EQA("obj", "id", "ref", "ref_id") // JOIN
-//           ))
          );
       }
       else // Aca obj es ref_id y class es owner_id !!! (soy el lado debil)
       {
          $q->setCondition(
             Condition::_AND()
-                 ->add( Condition::EQ("ref", "ref_id", $obj->getId()) ) // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
-                 ->add( Condition::EQ("ref", "type",   ObjectReference::TYPE_BIDIR) ) // type = bidir
-                 
-                 // (***)
-                 ->add( Condition::EQA("obj", "id", "ref", "owner_id") ) // JOIN
-            
-//            Condition::_AND( array(
-//                Condition::EQ("ref", "ref_id", $obj->getId()), // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
-//                Condition::EQ("ref", "type",   ObjectReference::TYPE_BIDIR), // type = bidir
-//                Condition::EQA("obj", "id", "ref", "owner_id") // JOIN
-//            ))
+              ->add( Condition::EQ("ref", "ref_id", $obj_id) ) 
+              //->add( Condition::EQ("ref", "ref_id", $obj->getId()) ) // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
+              ->add( Condition::EQ("ref", "type",   ObjectReference::TYPE_BIDIR) ) // type = bidir
+              // (***)
+              ->add( Condition::EQA("obj", "id", "ref", "owner_id") ) // JOIN
          );
       }
       
@@ -1196,8 +1238,6 @@ class PersistentManager {
 
       foreach ( $data as $many_attrValues ) // $many_attrValues es un array asociativo de atributo/valor (que son los atributos simples de una instancia de la clase)
       {
-         //$rel_obj = NULL;
-
          /* Esta cargado?
           * $rel_obj_id = $many_attrValues[ $hm_assoc_attr ]; // El codigo que usa esta linea esta comentado...
           * if ( ArtifactHolder::getInstance()->existsModel( $hmattrClazz, $rel_obj_id ) )
@@ -1211,8 +1251,27 @@ class PersistentManager {
           * }
           */
          
+         // Esto soluciona la carga de autorrelacion desde una subclase.
+         // B(heredaDe)A y A(hasMany)A, y quiero cargar B que a su vez tiene asociados varios Bs.
+         
+         // FIXME: esta clase podria ser superclase de la subclase que quiero cargar.
+         //        tengo que ver en la tabla de que tipo es realmente y cargar una instancia de eso. 
          // (***)
-         $rel_obj = $this->createObjectFromData( $hmattrClazz, $many_attrValues );
+         //$rel_obj = $this->createObjectFromData( $hmattrClazz, $many_attrValues );
+         
+         if ( $many_attrValues['class']===$hmattrClazz )
+         {
+//            echo "   la clase es la misma que la declarada<br/>";
+            $rel_obj = $this->createObjectFromData( $hmattrClazz, $many_attrValues );
+         }
+         else
+         {
+//            echo "   la clase NO es la misma que la declarada<br/>";
+            // TODO: deberia cargar los atributos declarados en la clase $many_attrValues['class'], que estan en otra tabla que la que acabo de cargar.
+            //       por ejemplo el id cargado es el de una superclase no el de la clase que deberia ser la instancia.
+            //$rel_obj = $this->createObjectFromData( $many_attrValues['class'], $many_attrValues );
+            $rel_obj = $this->get_mti_object_byData( $hmattrClazz, $many_attrValues );
+         }
 
          $obj->aAddTo( $hmattr, $rel_obj );
       }
@@ -2040,8 +2099,8 @@ class PersistentManager {
       {
          Logger::getInstance()->pm_log("AssocClassName: $assocClassName, attr: $attr");
          
-         if ($ins->isOwnerOf( $attr )) Logger::show("isOwner: $attr", "h3");
-         if ($ins->attributeDeclaredOnThisClass( $attr )) Logger::show("attributeDeclaredOnThisClass: $attr", "h3");
+         //if ($ins->isOwnerOf( $attr )) Logger::show("isOwner: $attr", "h3");
+         //if ($ins->attributeDeclaredOnThisClass( $attr )) Logger::show("attributeDeclaredOnThisClass: $attr", "h3");
          
          
          // VERIFY, FIXME, TODO: Toma la asuncion de que el belongsTo es por clase.
@@ -2080,7 +2139,7 @@ class PersistentManager {
    private function generateHasManyJoinTable($ins, $attr, $assocClassName)
    {
       $dal = DAL::getInstance();
-echo "A<br/>";
+//echo "A<br/>";
       $tableName = YuppConventions::relTableName( $ins, $attr, new $assocClassName() );
 
       //Logger::struct($this->getDataFromObject( new ObjectReference() ), "ObjRef ===");
@@ -2089,7 +2148,7 @@ echo "A<br/>";
       // Aqui se generan las columnas, luego se insertan las FKs
       // =========================================================
 
-echo "B<br/>";
+//echo "B<br/>";
 
       $pks = array(
                array(
@@ -2105,7 +2164,7 @@ echo "B<br/>";
       //        deberia hacerse referencia a eso en lugar de redeclarar todo 
       //        (como los atributos y restricciones).
       
-echo "C<br/>";
+//echo "C<br/>";
 
       $cols[] = array(
                  'name' => "owner_id",
@@ -2128,7 +2187,7 @@ echo "C<br/>";
                  'type' => Datatypes :: TEXT, // Se de que tipo, esta definido asien PO.
                  'nullable' => false );
                       
-echo "D<br/>";
+//echo "D<br/>";
        
        // El tema con la columna ord es que igual esta declarada en la clase ObjectReference,
        // entonces las consultas que se basen en los atributos que tenga la clase van a hacer
@@ -2140,7 +2199,7 @@ echo "D<br/>";
                  'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien PO.
                  'nullable' => true );
             
-   echo "E<br/>";
+//echo "E<br/>";
             
       // Si es una lista se genera la columna "ord".
       /*
@@ -2157,7 +2216,7 @@ echo "D<br/>";
   
          //    createTable2( $tableName, $pks, $cols, $constraints )
       $dal->createTable2( $tableName, $pks, $cols, array() );
-echo "F<br/>";
+//echo "F<br/>";
 
    } // generateHasManyJoinTable
 

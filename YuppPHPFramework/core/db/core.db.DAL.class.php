@@ -167,6 +167,7 @@ class DAL {
     */
    public function createTable2($tableName, $pks, $cols, $constraints)
    {
+      Logger::getInstance()->dal_log("DAL::createTable2 : " . $tableName);
       // TODO:
       // ESTA LLAMADA: $dbms_type = $this->db->getTextType( $type, $maxLength );
       // Deberia cambiarse por: $this->db->getDBType( $attrType, $attrConstraints ); // Y todo el tema de ver el largo si es un string lo hace adentro.
@@ -204,8 +205,6 @@ class DAL {
       //$q_pks = "PRIMARY KEY ( id )";
       foreach ( $pks as $pk )
       {
-         // $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
-                  
          // =============================================================================================================
          // FIXME: arreglo rapido porque no hay constraints para id, ver el sig. FIXME en PersistentManager en linea 2203
          // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
@@ -588,8 +587,11 @@ class DAL {
          
       }
 
+//Logger::struct( $params, "PARAMS" );
+
       // Where siempre viene porque en PM se inyecta las condicioens sobre las subclases (soporte de herencia)
       $q = "SELECT * FROM " . $tableName . " WHERE " . ($params['where']->evaluate()) . $orderBy . $limit;
+//      $q = "SELECT * FROM ". $tableName ." ". $this->db->evaluateWhere( $params['where'] ) . $orderBy . $limit;
 
       //Logger::getInstance()->log( $q );
 
@@ -1145,22 +1147,6 @@ class DAL {
       //$q = "show tables like '$tableName'"; // FUNCIONA EN MySQL
       //$q = "show tables like $tableName"; // NO FUNCIONA EN MySQL
      
-      /*
-      $cfg = YuppConfig::getInstance();
-      switch( $cfg->getDatabaseType() )
-      {
-         case YuppConfig::DB_MYSQL:
-            $q = "show tables like '$tableName'";
-         break;
-         case YuppConfig::DB_SQLITE:
-            $q = "select name from sqlite_master where name='$tableName'";
-         break;
-      }
-      
-      $res = $this->query( $q );    
-      return count( $res ) > 0;
-      */
-      
       // Lo resuelve cada DBMS.
       return $this->db->tableExists($tableName);
    }
@@ -1206,6 +1192,7 @@ class DAL {
       return $res;
    }
    
+   // FIXME: depende del DBMS...
    ///public function tableColType( $tableName, $col ) //: string // tipo de dato de la columna de la tabla.
    public function tableColInfo( $tableName, $col )
    {
@@ -1227,6 +1214,16 @@ class DAL {
         * )
         */
    }
+   
+   // Evaluacion de consultas =========================================================
+   //
+   /*
+   public function evaluateQuery( Query $query )
+   {
+      // La evaluacion del where (Condition) se le pasa al DBMS correspondiente, ya se verifica el tipo de Condition aqui para adelantar procesamiento.
+      return $this->db->evaluateQuery( $query );  
+   }
+   */
    
 }
 

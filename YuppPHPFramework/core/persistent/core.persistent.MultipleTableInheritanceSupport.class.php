@@ -144,8 +144,6 @@ class MultipleTableInheritanceSupport {
       $e = array(); // array por clave la clase y valor lista de subclases directas de dicha clase
       foreach ($inheritanceClasses as $class)
       {
-         //$e[$class] = ModelUtils::getSubclassesOf( $class );
-         
          // Quiero poner solo las clases que esten en $inheritanceClasses, que pueden 
          // no ser todas las de la estructura de herencia, esto sirve para 
          // implementar getPartialInstancesToSave.
