@@ -103,7 +103,8 @@ class ModelUtils {
      * Devuelve una lista con todos los nombres de los ancestros de clazz hasta PersistentObject.
      * Obs: devuelve las clases en orden de herencia, desde la clase de nivel 1 (hereda directamente de PO) a la ultima subclase. (*)
      */
-    public function &getAllAncestorsOf( $clazz )
+    //public function &getAllAncestorsOf( $clazz )
+    public function getAllAncestorsOf( $clazz )
     {
         $res = array();
         $parent = get_parent_class( $clazz ); // tiene solo un parent...
