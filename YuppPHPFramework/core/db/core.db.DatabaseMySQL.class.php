@@ -9,13 +9,12 @@ class DatabaseMySQL {
    // TODO: Podria ser singleton para simpleficar.
 
    private $connection = NULL;
-   private $lastQuery  = NULL;
-   private $lastResult  = NULL;
+   private $lastQuery = NULL;
+   private $lastResult = NULL;
    private $queryCount; // Cantidad de consultas para un request (deberia ser singleton para poder saber)
 
    public function __construct()
    {
-      //Logger::getInstance()->log("DatabaseMySQL::construct");
       $this->queryCount = 0;
    }
 
@@ -128,7 +127,6 @@ class DatabaseMySQL {
          }
       }
    }
-   
    
    public function getLastError()
    {
@@ -288,8 +286,6 @@ class DatabaseMySQL {
       //print_r(  mysql_num_rows($res) );
       //print_r( $res );
       
-      return mysql_num_rows($res) > 0;
-       
       /* Lo que retorna si existe la tabla:
        * Array
        * (
@@ -300,8 +296,319 @@ class DatabaseMySQL {
        * )
        */
        
-      //return count( $res ) > 0;
+      return mysql_num_rows($res) > 0;
    }
+   
+   public function tableNames() //: string[] // nombres de todas las tablas de la db seleccionada.
+   {
+      $q = "show tables";
+      $res = $this->query( $q );
+      return $res;
+   }
+   
+   
+   // EVALUACION DE CONSULTAS ======================================================
+   //
+   public function evaluateQuery( Query $query )
+   {
+      $select = $this->evaluateSelect( $query->getSelect() ) . " ";
+      $from   = $this->evaluateFrom( $query->getFrom() )   . " ";
+      $where  = $this->evaluateWhere( $query->getWhere() )  . " ";
+      $order  = $this->evaluateOrder( $query->getOrder() )  . " ";
+      $limit  = ""; // TODO: no tengo limit??
+
+      return $select . $from . $where . $order . $limit;
+   }
+   
+   private function evaluateSelect( Select $select )
+   {
+      $projections = $select->getAll();
+      if (count($projections) == 0) return "SELECT *";
+      else
+      {
+         $res = "SELECT ";
+         foreach ($projections as $proj)
+         {
+            $res .= $proj->getAlias() . "." . $proj->getAttrName() . ", "; // Projection
+         }
+         return substr($res, 0, -2); // Saca ultimo "; "
+      }
+   }
+
+   private function evaluateFrom( $from )
+   {
+      if (count($from) == 0)
+      {
+         // ERROR! es olbigatorio por lo menos una!
+         throw new Exception("FROM no puede ser vacio");
+      }
+      else
+      {
+         $res = "FROM ";
+         foreach ($from as $table)
+         {
+            $res .= $table->name . " " . $table->alias . ", ";
+         }
+         return substr($res, 0, -2); // Saca ultimo "; "
+      }
+   }
+
+   public function evaluateWhere( Condition $condition )
+   {
+      $where = "";
+      if ($where !== NULL)
+      {
+         $where = "WHERE " . $this->evaluateAnyCondition( $condition );
+      }
+      return $where;
+   }
+   
+   public function evaluateAnyCondition( Condition $condition )
+   {
+      $where = "";
+      switch ( $condition->getType() )
+      {
+         case Condition::TYPE_EQ:
+            $where = $this->evaluateEQCondition( $condition );
+         break;
+         case Condition::TYPE_EEQ:
+            $where = $this->evaluateEEQCondition( $condition );
+         break;
+         case Condition::TYPE_NEQ:
+            $where = $this->evaluateNEQCondition( $condition );
+         break; 
+         case Condition::TYPE_ENEQ:
+            $where = $this->evaluateENEQCondition( $condition );
+         break;
+         case Condition::TYPE_LIKE:
+            $where .= $this->evaluateLIKECondition( $condition );
+         break;
+         case Condition::TYPE_ILIKE:
+            $where = $this->evaluateILIKECondition( $condition );
+         break;
+         case Condition::TYPE_GT:
+            $where = $this->evaluateGTCondition( $condition );
+         break;    
+         case Condition::TYPE_LT:
+            $where = $this->evaluateLTCondition( $condition );
+         break;    
+         case Condition::TYPE_GTEQ:
+            $where = $this->evaluateGTEQCondition( $condition );
+         break;  
+         case Condition::TYPE_LTEQ:
+            $where = $this->evaluateLTEQCondition( $condition );
+         break;  
+         case Condition::TYPE_NOT:
+            $where = $this->evaluateNOTCondition( $condition );
+         break;   
+         case Condition::TYPE_AND:
+            $where = $this->evaluateANDCondition( $condition );
+         break;   
+         case Condition::TYPE_OR:
+            $where = $this->evaluateORCondition( $condition );
+         break;
+      }
+      
+      return $where;
+   }
+   
+   private function evaluateOrder( $order )
+   {
+      if (count($order) > 0)
+      {
+         $res = "ORDER BY ";
+         foreach ($order as $order)
+         {
+            $res .= $order->alias . "." . $order->attr . " " . $order->dir . ", ";
+         }
+         return substr($res, 0, -2); // Saca ultimo "; "
+      }
+   }
+   
+//   private function evaluateReferenceAttribute(  )
+//   {
+//      return $this->referenceAttribute->alias . "." . $this->referenceAttribute->attr ;
+//   }
+   
+   private function evaluateReferenceValue( $refVal )
+   {
+      // Si es 0 me devuelve null...
+      if ( $refVal === 0 ) return "0";
+      return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
+   }
+   
+   public function evaluateEQCondition( Condition $condition )
+   {
+      $refVal = $condition->getReferenceValue();
+      $refAtr = $condition->getReferenceAttribute();
+      $atr    = $condition->getAttribute();
+      
+      if ( $refVal !== NULL )
+         return $atr->alias.".".$atr->attr ."=". $this->evaluateReferenceValue( $refVal ); // a.b = 666
+      
+      if ( $refAtr !== NULL )
+         return $atr->alias.".".$atr->attr ."=". $refAtr->alias.".".$refAtr->attr; // a.b = c.d
+
+      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+   }
+   
+   public function evaluateEEQCondition( Condition $condition )
+   {
+      $refVal = $condition->getReferenceValue();
+      $refAtr = $condition->getReferenceAttribute();
+      $atr    = $condition->getAttribute();
+      
+      if ( $refVal !== NULL )
+         return "STRCMP(". $atr->alias.".".$atr->attr .", BINARY(". $this->evaluateReferenceValue( $refVal ) .")) = 0";
+          
+      if ( $refAtr !== NULL )
+         return "STRCMP(". $atr->alias.".".$atr->attr .", BINARY(". $refAtr->alias.".".$refAtr->attr .")) = 0";
+         
+      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+   }
+   
+   public function evaluateNEQCondition( Condition $condition )
+   {
+      $refVal = $condition->getReferenceValue();
+      $refAtr = $condition->getReferenceAttribute();
+      $atr    = $condition->getAttribute();
+      
+      if ( $refVal !== NULL )
+         return $atr->alias.".".$atr->attr ."<>". $this->evaluateReferenceValue( $refVal ); // a.b <> 666
+      
+      if ( $refAtr !== NULL )
+         return $atr->alias.".".$atr->attr ."<>". $refAtr->alias.".".$refAtr->attr; // a.b <> c.d
+
+      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+   }
+   
+   public function evaluateENEQCondition( Condition $condition )
+   {
+      // TODO ???
+   }
+   public function evaluateLIKECondition( Condition $condition )
+   {
+      $refVal = $condition->getReferenceValue();
+      $refAtr = $condition->getReferenceAttribute();
+      $atr    = $condition->getAttribute();
+      
+      if ( $refVal !== NULL )
+         return $atr->alias.".".$atr->attr ." LIKE ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
+      
+      if ( $refAtr !== NULL )
+         return $atr->alias.".".$atr->attr ." LIKE ". $refAtr->alias.".".$refAtr->attr; // a.b LIKE c.d
+
+      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+   }
+   
+   public function evaluateILIKECondition( Condition $condition )
+   {
+      // TODO ???
+   }
+   public function evaluateGTCondition( Condition $condition )
+   {
+      $refVal = $condition->getReferenceValue();
+      $refAtr = $condition->getReferenceAttribute();
+      $atr    = $condition->getAttribute();
+      
+      if ( $refVal !== NULL )
+         return $atr->alias.".".$atr->attr ." > ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
+      
+      if ( $refAtr !== NULL )
+         return $atr->alias.".".$atr->attr ." > ". $refAtr->alias.".".$refAtr->attr; // a.b LIKE c.d
+
+      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+   }
+   
+   public function evaluateLTCondition( Condition $condition )
+   {
+      $refVal = $condition->getReferenceValue();
+      $refAtr = $condition->getReferenceAttribute();
+      $atr    = $condition->getAttribute();
+      
+      if ( $refVal !== NULL )
+         return $atr->alias.".".$atr->attr ." < ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
+      
+      if ( $refAtr !== NULL )
+         return $atr->alias.".".$atr->attr ." < ". $refAtr->alias.".".$refAtr->attr; // a.b LIKE c.d
+
+      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+   }
+   
+   public function evaluateGTEQCondition( Condition $condition )
+   {
+      $refVal = $condition->getReferenceValue();
+      $refAtr = $condition->getReferenceAttribute();
+      $atr    = $condition->getAttribute();
+      
+      if ( $refVal !== NULL )
+         return $atr->alias.".".$atr->attr ." >= ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
+      
+      if ( $refAtr !== NULL )
+         return $atr->alias.".".$atr->attr ." >= ". $refAtr->alias.".".$refAtr->attr; // a.b LIKE c.d
+
+      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+   }
+   
+   public function evaluateLTEQCondition( Condition $condition )
+   {
+      $refVal = $condition->getReferenceValue();
+      $refAtr = $condition->getReferenceAttribute();
+      $atr    = $condition->getAttribute();
+      
+      if ( $refVal !== NULL )
+         return $atr->alias.".".$atr->attr ." <= ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
+      
+      if ( $refAtr !== NULL )
+         return $atr->alias.".".$atr->attr ." <= ". $refAtr->alias.".".$refAtr->attr; // a.b LIKE c.d
+
+      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+   }
+   
+   public function evaluateNOTCondition( Condition $condition )
+   {
+      $conds = $condition->getSubconditions();
+      if ( count($conds) !== 1 ) throw new Exception("Not debe tener exactamente una condicion para evaluarse. ".__FILE__." ".__LINE__);
+
+      return "NOT (" . $this->evaluateAnyCondition( $conds[0] ) . ") ";
+   }
+   
+   public function evaluateANDCondition( Condition $condition )
+   {
+      $conds = $condition->getSubconditions();
+      $res = "(";
+      $i = 0;
+      $condCount = count( $conds );
+
+      foreach ( $conds as $cond )
+      {
+         $res .= $this->evaluateAnyCondition( $cond );
+         if ($i+1 < $condCount) $res .= " AND ";
+         $i++;
+      }
+
+      return $res . ")";
+   }
+   
+   public function evaluateORCondition( Condition $condition )
+   {
+      $conds = $condition->getSubconditions();
+      $res = "(";
+      $i = 0;
+      $condCount = count( $conds );
+
+      foreach ( $conds as $cond )
+      {
+         $res .= $this->evaluateAnyCondition( $cond );
+         if ($i+1 < $condCount) $res .= " OR ";
+         $i++;
+      }
+
+      return $res . ")";
+   }
+   //
+   // /EVALUACION DE CONSULTAS ======================================================
+   
 
 } // DatabaseMySQL
 

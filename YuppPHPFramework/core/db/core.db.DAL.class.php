@@ -119,15 +119,18 @@ class DAL {
 
    // Ejecuta una consulta y devuelve el resultado como una matriz asociativa.
    // FIXME: Devolver referencia para que no copie ?
-   public function query( $q )
+   //public function query( $q )
+   public function query( Query $query )
    {
-      Logger::getInstance()->dal_log("DAL::query : " . $q);
       $res = array();
       try
       {
-         //Logger::getInstance()->log("\tintento crear");
+         // new
+         $q = $this->db->evaluateQuery( $query );
+         Logger::getInstance()->dal_log("DAL::query : " . $q);
+         // /new
+         
          if ( !$this->db->query( $q ) ) throw new Exception("ERROR");
-         //Logger::getInstance()->log("\tfin intento crear");
 
          //echo "RES SIZE: " . $this->db->resultCount() . "<br/>";
 
@@ -590,7 +593,12 @@ class DAL {
 //Logger::struct( $params, "PARAMS" );
 
       // Where siempre viene porque en PM se inyecta las condicioens sobre las subclases (soporte de herencia)
-      $q = "SELECT * FROM " . $tableName . " WHERE " . ($params['where']->evaluate()) . $orderBy . $limit;
+      // new
+      //$q = "SELECT * FROM " . $tableName . " WHERE " . ($params['where']->evaluate()) . $orderBy . $limit;
+      $q = "SELECT * FROM " . $tableName . " WHERE " .
+           $this->db->evaluateAnyCondition( $params['where'] ) .
+           $orderBy . $limit;
+           
 //      $q = "SELECT * FROM ". $tableName ." ". $this->db->evaluateWhere( $params['where'] ) . $orderBy . $limit;
 
       //Logger::getInstance()->log( $q );
@@ -1050,7 +1058,9 @@ class DAL {
       $q = "SELECT count(id) as cant FROM " . $tableName;
       if (isset($params['where']))
       {
-   	   $q .= " WHERE " . ($params['where']->evaluate());
+         // new
+   	   //$q .= " WHERE " . ($params['where']->evaluate());
+         $q .= " WHERE " . ( $this->db->evaluateAnyCondition( $params['where'] ) );
       }
 
       $this->db->query( $q );
@@ -1135,19 +1145,6 @@ class DAL {
    public function tableExists( $tableName ) //: boolean
    {
       Logger::getInstance()->dal_log("DAL::tableExists $tableName");
-   	/* MySQL:
-       * SHOW TABLES [[FROM dbname] LIKE 'tablename']
-       *
-       * example:
-       * show tables from mysql like 'user';
-       * show tables like 'user';
-       * show tables;
-   	 */
-       
-      //$q = "show tables like '$tableName'"; // FUNCIONA EN MySQL
-      //$q = "show tables like $tableName"; // NO FUNCIONA EN MySQL
-     
-      // Lo resuelve cada DBMS.
       return $this->db->tableExists($tableName);
    }
    
@@ -1187,13 +1184,10 @@ class DAL {
    
    public function tableNames() //: string[] // nombres de todas las tablas de la db seleccionada.
    {
-      $q = "show tables";
-      $res = $this->query( $q );
-      return $res;
+      return $this->db->tableNames();
    }
    
    // FIXME: depende del DBMS...
-   ///public function tableColType( $tableName, $col ) //: string // tipo de dato de la columna de la tabla.
    public function tableColInfo( $tableName, $col )
    {
        $q = "show columns from `$tableName` LIKE `$col`"; // SOLO FUNCIONA CON ESTAS COMILLAS `, no con '.
@@ -1214,16 +1208,6 @@ class DAL {
         * )
         */
    }
-   
-   // Evaluacion de consultas =========================================================
-   //
-   /*
-   public function evaluateQuery( Query $query )
-   {
-      // La evaluacion del where (Condition) se le pasa al DBMS correspondiente, ya se verifica el tipo de Condition aqui para adelantar procesamiento.
-      return $this->db->evaluateQuery( $query );  
-   }
-   */
    
 }
 
