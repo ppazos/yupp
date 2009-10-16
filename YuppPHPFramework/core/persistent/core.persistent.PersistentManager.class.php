@@ -26,6 +26,7 @@ YuppLoader::load( "core.db.criteria2", "BinaryInfixCondition" );
 YuppLoader::load( "core.db.criteria2", "UnaryPrefixCondition" );
 YuppLoader::load( "core.db.criteria2", "Condition" );
 
+YuppLoader::load( "core.db.criteria2", "Select" ); // SelectItem y sus hijos tambien.
 YuppLoader::load( "core.db.criteria2", "Query" );
 
 
@@ -110,7 +111,7 @@ class PersistentManager {
 
    private function __construct( $po_loader )
    {
-      $po_loader->setManager( $this );
+      $po_loader->setManager( $this ); // Inversion Of Control
       $this->po_loader = $po_loader; // Siempre viene una estrategia, getInstance se encarga de eso.
    }
 
@@ -1227,7 +1228,9 @@ class PersistentManager {
       	$q->addOrder("ref", "ord", "ASC"); // Orden ascendente por atributo ORD de la tabla intermedia.
       }
       
-      $data = $dal->query( $q->evaluate() ); // Trae todos los objetos linkeados... (solo sus atributos simples)
+      // new
+      //$data = $dal->query( $q->evaluate() ); // Trae todos los objetos linkeados... (solo sus atributos simples)
+      $data = $dal->query( $q );
 
       // FIN QUERY...
       
@@ -2544,7 +2547,9 @@ class PersistentManager {
                  ->add( Condition::EQ("ref", "ref_id", $child->getId()) )
               );
 
-      $data = $dal->query( $q->evaluate() );
+      // new
+      //$data = $dal->query( $q->evaluate() );
+      $data = $dal->query( $q );
 
       $id = $data[0]['id']; // Se que hay solo un registro...
                             // TODO: podria no haber ninguno, OJO! hay que tener en cuenta ese caso.
