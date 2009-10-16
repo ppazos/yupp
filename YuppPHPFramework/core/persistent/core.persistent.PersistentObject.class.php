@@ -1144,33 +1144,6 @@ class PersistentObject {
       return true;
    }
 
-/*
-   // Dependencia con YuppLoader, para pedirle todas las clases padres.
-   private function getInheritanceStructurePersistentObject()
-   {
-      // OJO, EN REALIDAD ESTA INSTANCIA DEBERIA TENER TODOS LOS ATRIBUTOS YA CARGADOS!!! XQ LO QUE QUIERO SON LOS VALORES!!
-      // Y TIENE LOS QUE FUERON DECLARADOS EN ELLA Y LOS QUE FUERON DECLARADOS EN LOS ANCESTROS!!! O SEA QUE ESTO SE HACE
-      // CUANDO SE CREA UNA INSTANCIA Y NO CUANDO SE SALVA, Y COMO SE HACE AHI, NO HAY QUE PONER UN SOPORTE ESPECIAL PARA
-      // HERENCIA EN EL SAVE !!!!!...
-       *
-      // ESTO SI SE DEBERIA HACER PARA LA GENERACION DEL ESQUEMA, EN REALIDAD ALGO PARECIDO...
-
-      $ancestors = ModelUtils::getAllAncestorsOf( get_class($this) );
-
-      // creo nueva clase, sin atributos y le voy poniendo los atributos de todas las clases,
-
-      foreach ($ancestors as $parentClass)
-      {
-         // pide atributos
-
-      }
-
-      // le agrego los atributos de esta clase
-
-      // retorno todo.
-   }
-*/
-
    // Intento solucion TICKET #4.1
    // save_object no se fija en si el objeto esta o no salvado (no considera el sess id) que es justo lo que quiero, que salve sea como sea.
    public function single_save()
