@@ -3,15 +3,15 @@ class Query
 {
    // FIXME: todas las palabras clave de SQL deben ser pedidas a la clase XXXDatabase configurada para acceso a datos.
    
-	private $select = array (); // Opcional    (Projection) // Si es vacio corresponde un '*' en la evaluacion.
+   private $select; // Select
+   
+	//private $select = array (); // Opcional    (Projection) // Si es vacio corresponde un '*' en la evaluacion.
 	private $from   = array (); // Obligatorio (From)
 	private $where  = NULL;     // Opcional    (Condition)
 
 	// Arrays de cada cosa, puedo tener varios ordenamientos.
+   // Order: alias, atributo, direccion (ASC,DESC)
    private $order = array();
-	//private $order_alias = array ();
-	//private $order_attr  = array ();
-	//private $order_dir   = array ();
 
 	private $limit_max;
 	private $limit_offset;
@@ -40,28 +40,72 @@ class Query
 	//SELECT COUNT(DISTINCT store_name)
 	//FROM Store_Information
 
-   /**
-    * Constructor.
-    */
-	function Query()
+   // Cantidad de logs a paginas distintas contados por pagina
+   // SELECT `to_id` , COUNT( `to_id` )
+   // FROM `portal_log_page_access`
+   // GROUP BY `to_id`
+
+	public function __construct()
 	{
+      $this->select = new Select();
 	}
 
-	//public function addProjection( Projection $p )
+   // ========================================================
+	// Select alias.attr, alias.attr, ...
+   // TODO: select podria incluir:
+   //        - funciones sobre atributos: lower(alias.attr)
+   //        - agregaciones: count(alias.attr), sum(), max()
+   //
 	public function addProjection($alias, $attr)
 	{
 		// TODO:
 		// CHECK CORRECTITUD: proyeccion debe tener aliases presentes en el from. Necesario agregar primero el FROM.
 
-		$p = new stdClass(); // Objeto anonimo.
-		$p->alias = $alias;
-		$p->attr = $attr;
+//		$p = new stdClass(); // Objeto anonimo.
+//		$p->alias = $alias;
+//		$p->attr = $attr;
+//
+//		$this->select[] = $p;
 
-		$this->select[] = $p;
+      $this->select->add( new SelectAttribute($alias, $attr) );
 
 		return $this;
 	}
+   
+   public function getSelect()
+   {
+      return $this->select;
+   }
+   public function getFrom()
+   {
+      return $this->from;
+   }
+   public function getWhere()
+   {
+      return $this->where;
+   }
+   public function getOrder()
+   {
+      return $this->order;
+   }
 
+   // FIXME: el from deberia calcularse solo en base a la clase de dominio sobre
+   //        la cual se esta buscando o si la condicion se especifica sobre
+   //        atributos de clases distintas, usar esas clases.
+   
+   /* Como se usa hoy: hay que hallar tableName
+   $q = new Query();
+      $q->addFrom( $tableName, "ref" )
+          ->addProjection( "ref", "id" )
+            ->setCondition(
+               Condition::_AND()
+                 ->add( Condition::EQ("ref", "owner_id", $owner->getId()) )
+                 ->add( Condition::EQ("ref", "ref_id", $child->getId()) )
+              );
+   */
+   
+   // el addFrom deberia 
+   
 	public function addFrom($tableName, $alias)
 	{
 		// TODO:
@@ -110,6 +154,8 @@ class Query
       return $this;
 	}
 
+/* Este codigo va a db.DatabaseXXX
+ * 
 	public function evaluate()
 	{
 		$select = $this->evaluateSelect() . " ";
@@ -176,6 +222,7 @@ class Query
          return substr($res, 0, -2); // Saca ultimo "; "
       }
    }
+   */
 
 }
 ?>

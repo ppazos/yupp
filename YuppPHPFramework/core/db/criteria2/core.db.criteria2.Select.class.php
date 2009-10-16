@@ -7,24 +7,43 @@ class Select {
 
     private $projections = array(); // Se inicializa esta sola porque es la mas comun.
 
-    private $functionSetted = false; // Para saber si se seteo algo mas que proyecciones.
+//    private $functionSetted = false; // Para saber si se seteo algo mas que proyecciones.
 
-    private $count = NULL;
-    private $distinct = NULL;
-    private $countDistinct = NULL;
-
-    private $avg = NULL;
-    private $min = NULL;
-    private $max = NULL;
-    private $sum = NULL;
-
-    private $lower = NULL;
-    private $upper = NULL;
+    // Elige columnas distintas, sirve para sacar dupicados (como cuando se quieren listar todos los nombres distintos).
+//    private $distinct = NULL;
+    
+    // Sirve para contar los distintos, es como un distinc y un count juntos. 
+//    private $countDistinct = NULL;
+    
+    // Agregaciones
+//    private $count = NULL;
+//    private $avg = NULL;
+//    private $min = NULL;
+//    private $max = NULL;
+//    private $sum = NULL;
+//
+//    private $lower = NULL;
+//    private $upper = NULL;
 
     function Select() {
     }
 
-    private function addTo( &$arr, $alias, $attr )
+    public function add( SelectItem $item )
+    {
+       $this->projections[] = $item;
+    }
+    public function getAll()
+    {
+       return $this->projections;
+    }
+    public function isEmpty()
+    {
+       return sizeof($this->projections === 0);
+    }
+
+    // EVALUATE va en cada evaluador de DBMS.
+    /*
+    private function addTo( $arr, $alias, $attr )
     {
        $p = new stdClass(); // Objeto anonimo.
        $p->attr  = $attr;
@@ -33,10 +52,10 @@ class Select {
        $arr[] = $p;
     }
 
-    /**
+    / **
      * @param $func funcion a aplicar a cada proyeccion de $arr.
      * @param $arr array con proyecciones. Debe tener por lo menos un elemento.
-     */
+     * /
     private function evaluateFunction( $func, $arr )
     {
        $res = "";
@@ -112,6 +131,65 @@ class Select {
 
        return substr($res, 0 , -2);
     }
-
+*/
 }
+
+class SelectItem {
+}
+class SelectAttribute extends SelectItem {
+   private $tableAlias;
+   private $attrName;
+   public function __construct($tableAlias, $attrName)
+   {
+      $this->tableAlias = $tableAlias;
+      $this->attrName = $attrName;
+   }
+   public function getAlias()
+   {
+      return $this->tableAlias;
+   }
+   public function getAttrName()
+   {
+      return $this->attrName;
+   }
+}
+class SelectFunction extends SelectItem {
+   private $functionName;
+   private $param; // SelectItem
+   
+   const FUNCTION_LOWER = "lower";
+   const FUNCTION_UPPER = "upper";
+   
+   public function __construct($functionName, SelectItem $param)
+   {
+      $this->functionName = $functionName;
+      $this->param = $param;
+   }
+//   public function setParam( SelectItem $param )
+//   {
+//      $this->param = $param;
+//   }
+}
+class SelectAggregation extends SelectItem {
+   private $aggregationName;
+   private $param; // SelectItem
+   
+   const AGTN_COUNT = "count";
+   const AGTN_AVG = "avg";
+   const AGTN_MAX = "max";
+   const AGTN_MIN = "min";
+   const AGTN_SUM = "sum";
+   const AGTN_DISTINTC = "distinct";
+   
+   public function __construct($aggregationName, SelectItem $param)
+   {
+      $this->aggregationName = $aggregationName;
+      $this->param = $param;
+   }
+//   public function setParam( SelectItem $param )
+//   {
+//      $this->param = $param;
+//   }
+}
+
 ?>
