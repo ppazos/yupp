@@ -149,7 +149,6 @@ class YuppConventions {
          //Logger::struct( $ins, "Instancia de $aclass" );
       }
       
-      
       $tableName1 = self::tableName( $instConElAtributoHasMany );
       
       //echo "=== "  .  $ins1->getType( $inst1Attr ) . " ==== <br/>";
@@ -161,9 +160,10 @@ class YuppConventions {
 
       // TODO: Normalizar $inst1Attr ?
       
-      //echo "Nombre tabla: ". $tableName1 . "_" . $inst1Attr . "_" . $tableName2 ."<br/>";
+//      echo "Nombre tabla relTableName: ". $tableName1 . "_" . $inst1Attr . "_" . $tableName2 ."<br/>";
 
       return $tableName1 . "_" . $inst1Attr . "_" . $tableName2; // owner_child
    }
+   
 }
 ?>
