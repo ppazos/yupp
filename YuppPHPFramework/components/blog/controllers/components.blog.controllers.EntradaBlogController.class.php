@@ -23,6 +23,9 @@ class EntradaBlogController extends YuppController {
      */
     public function listAction()
     {
+       //if ( isset( $this->params['archivo']) )
+       //  print_r( $this->params['archivo'] );
+      
        // paginacion
        if ( !isset($this->params['max']) )
        {
@@ -53,7 +56,7 @@ class EntradaBlogController extends YuppController {
     
     public function getCommentsJSONAction()
     {
-      $id  = $this->params['id'];
+      $id = $this->params['id'];
       $entrada = EntradaBlog::get( $id );
       $comentarios = $entrada->getComentarios();
       
@@ -78,7 +81,7 @@ class EntradaBlogController extends YuppController {
 
     public function editAction()
     {
-       $id    = $this->params['id'];
+       $id  = $this->params['id'];
        $obj = EntradaBlog::get( $id );
        $this->params['object'] = $obj;
        //return $this->render("entradaBlog/edit", &$this->params);

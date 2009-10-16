@@ -139,6 +139,7 @@ class UsuarioController extends YuppController {
           }
           
           // Login
+          // Todo: meter esta conversion adentro mismo del constructor de Condition::EQ
        	 $tableName = YuppConventions::tableName( 'Usuario' ); // Se le pasa la clase, para saber la tabla donde se guardan sus instancias.
           /*
           $condition = Condition::_AND()
@@ -147,7 +148,8 @@ class UsuarioController extends YuppController {
           */
           $condition = Condition::_AND()
                           ->add( Condition::EQ($tableName, "email", $this->params['email']) )
-                          ->add( Condition::STREQ($tableName, "clave", $this->params['clave']) ); // Nueva solucion: se usa STREQ
+                          ->add( Condition::EEQ($tableName, "clave", $this->params['clave']) );
+                          //->add( Condition::STREQ($tableName, "clave", $this->params['clave']) ); // Nueva solucion: se usa STREQ
           
           $list = Usuario::findBy( $condition, $this->params );
        
