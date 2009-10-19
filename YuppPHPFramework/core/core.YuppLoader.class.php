@@ -186,7 +186,7 @@ class YuppLoader {
    
    private function _loadModelRecursive( $model_path )
    {
-      echo __FILE__ . ' ' . __LINE__ . " $model_path<br/>";
+      //echo __FILE__ . ' ' . __LINE__ . " $model_path<br/>";
       
       $fn = new FileNames();
       
