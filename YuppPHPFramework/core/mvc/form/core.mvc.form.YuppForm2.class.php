@@ -384,27 +384,30 @@ class YuppFormDisplay2
             $fieldHTML .= '<div class="field date">';
             $fieldHTML .= '<label for="day">D&iacute;a: </label>'; // TODO: i18n soportado por el framework.
             $fieldHTML .= '<select name="'.$name.'_day">';
+            $day = $field->get("value_day");
             for ( $d=1; $d<32; $d++ )
             {
-               if ( $d === $field->get("value_day") ) $fieldHTML .= '<option value="'. $d .'" selected="true">'. $d .'</option>';
+               if ( $d === $day ) $fieldHTML .= '<option value="'. $d .'" selected="true">'. $d .'</option>';
                else $fieldHTML .= '<option value="'. $d .'">'. $d .'</option>';
             }
             $fieldHTML .= '</select>';
             
             $fieldHTML .= '<label for="month"> Mes: </label>'; // TODO: i18n soportado por el framework.
             $fieldHTML .= '<select name="'.$name.'_month">';
+            $month = $field->get("value_month");
             for ( $m=1; $m<13; $m++ )
             {
-               if ( $m === $field->get("value_month") ) $fieldHTML .= '<option value="'. $m .'" selected="true">'. $m .'</option>';
+               if ( $m === $month ) $fieldHTML .= '<option value="'. $m .'" selected="true">'. $m .'</option>';
                else $fieldHTML .= '<option value="'. $m .'">'. $m .'</option>';
             }
             $fieldHTML .= '</select>';
             
             $fieldHTML .= '<label for="year"> A&ntilde;o: </label>'; // TODO: i18n soportado por el framework.
             $fieldHTML .= '<select name="'.$name.'_year">';
+            $year = $field->get("value_year");
             for ( $y=1930; $y<2010; $y++ )
             {
-               if ( $y === $field->get("value_year") ) $fieldHTML .= '<option value="'. $y .'" selected="true">'. $y .'</option>';
+               if ( $y === $year ) $fieldHTML .= '<option value="'. $y .'" selected="true">'. $y .'</option>';
                else $fieldHTML .= '<option value="'. $y .'">'. $y .'</option>';
             }
             $fieldHTML .= '</select>';
