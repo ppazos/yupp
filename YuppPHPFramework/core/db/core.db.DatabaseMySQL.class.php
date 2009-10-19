@@ -365,6 +365,8 @@ class DatabaseMySQL {
    
    public function evaluateAnyCondition( Condition $condition )
    {
+      //Logger::struct($condition, "DatabaseMySQL::evaluateAnyCondition");
+      
       $where = "";
       switch ( $condition->getType() )
       {
@@ -503,7 +505,8 @@ class DatabaseMySQL {
    
    public function evaluateILIKECondition( Condition $condition )
    {
-      // TODO ???
+       // FIXME?: parece que en MySQL por defecto las busquedas no son case sensitive.
+       return $this->evaluateLIKECondition( $condition );
    }
    public function evaluateGTCondition( Condition $condition )
    {

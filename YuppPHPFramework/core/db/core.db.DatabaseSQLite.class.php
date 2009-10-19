@@ -499,7 +499,17 @@ class DatabaseSQLite {
    
    public function evaluateILIKECondition( Condition $condition )
    {
-      // TODO ???
+      $refVal = $condition->getReferenceValue();
+      $refAtr = $condition->getReferenceAttribute();
+      $atr    = $condition->getAttribute();
+      
+      if ( $refVal !== NULL )
+         return $atr->alias.".".$atr->attr ." ILIKE ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
+      
+      if ( $refAtr !== NULL )
+         return $atr->alias.".".$atr->attr ." ILIKE ". $refAtr->alias.".".$refAtr->attr; // a.b LIKE c.d
+
+      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    public function evaluateGTCondition( Condition $condition )
    {

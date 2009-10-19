@@ -555,6 +555,8 @@ class DAL {
     */
    public function listAll( $tableName, $params )
    {
+      Logger::getInstance()->dal_log("DAL::listAll " . $tableName);
+      
       // TODO: EN PARAMS PDRIA PASAR CONDICIONES SOBRE ATRIBUTOS, PARA HACER BUSQUEDAS QUE ACEPTEN "WHERE", esto lo necesito
       //       para soportar herencia, ya q el listAll debe traer solo instancias de clases de la estructura de herencia
       //       de la clase que necesito (o deberia pasarle tambien la clase que nenecito ??? )
