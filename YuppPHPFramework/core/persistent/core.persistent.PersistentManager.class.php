@@ -196,11 +196,21 @@ class PersistentManager {
       // atributo super_id_$hasManyAttrs[$ownerAttr]
       $ref_id = $child->getId();
       $hasManyAttrs = $owner->getHasMany();
-      if ( $hasManyAttrs[$ownerAttr] !== $child->getClass() )
+      if ( !self::isMappedOnSameTable($hasManyAttrs[$ownerAttr], $child->getClass()) && $hasManyAttrs[$ownerAttr] !== $child->getClass() )
       {
          $ref_id = $child->aGet('super_id_'.$hasManyAttrs[$ownerAttr]);
+         //$ref_id = $child->getMultipleTableId($hasManyAttrs[$ownerAttr]);
          // FIXME: se resuelve igual con getMultipleTableId( $superClass )
       }
+      
+      // CHECK
+      // Esto solo pasa cuando el hijo y el padre se salvan en la misma tabla,
+      // ahi el hijo no tiene super_id_SuperClase !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+//      if ($ref_id === NULL)
+//      {
+//         Logger::struct($child, "No tiene super_id_".$hasManyAttrs[$ownerAttr]);
+//         Logger::struct($hasManyAttrs, "hasManyAttrs: ");
+//      }
       
       // El owner id debe ser el de la clase donde se declara la relacion hasmany
       $owner_id = $owner->getId();
@@ -250,11 +260,15 @@ class PersistentManager {
       // VERIFICA DE QUE LA RELACION NO EXISTE YA.
       // FIXME: ojo ahora tendria que tener en cuenta la direccion tambien!
 
+Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE__);
+
       $params['where'] = Condition::_AND()
                            //->add( Condition::EQ($tableName, "owner_id", $owner->getId()) )
                            ->add( Condition::EQ($tableName, "owner_id", $owner_id ) )
                            ->add( Condition::EQ($tableName, "ref_id",   $ref_id) );
                            //->add( Condition::EQ($tableName, "ref_id",   $child->getId()) );
+
+//Logger::struct($params, "PARAMS");
 
       // FIXME: llamar a exists de DAL
       if ( $dal->count($tableName, $params) == 0 )
@@ -2596,22 +2610,6 @@ class PersistentManager {
       
    	// TODO
       // el caso superclase subclase lo handlea isMappedOnSameTableSubclass.
-      
- //     $c1_ins = new $class1();
-//      $c2_ins = new $class2();
-   
-      // SOLUCION COMPLICADA PERO CORRECTA.
-      // Me tengo que fijar si pertenecen a la misma estructura de herencia (si son primas o hermanas).
-      // Luego me fijo en alguna superclase comun y desde ahi busco en que tabla se mapean.
-      // ...
-      
-      // No lo podria hacer simplemente comparando withTable? se que si tiene y son distintos se mapean en distintas tablas,
-      // y si una no tiene ya se que la que tiene va en otra tabla aunque pertenezca a la misma estructura de herencia.
-      // Pero si ninguna tiene withTable, tengo que encontrar quien define la tabla para cada clase y ver si son la misma...
-      // Para este caso (que incluye a los otros tengo) la funcion tableName que deberia dar el nombre de la tabla para 
-      // cualquier instancia, tenga o no withTable declarado en la instancia.
-//      $table1 = YuppConventions::tableName( $c1_ins );
-//      $table2 = YuppConventions::tableName( $c2_ins );
 
       $table1 = YuppConventions::tableName( $class1 );
       $table2 = YuppConventions::tableName( $class2 );
