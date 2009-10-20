@@ -1057,6 +1057,8 @@ class DAL {
 
    public function count( $tableName, $params = array() )
    {
+      Logger::getInstance()->log("DAL::count $tableName");
+      
       $q = "SELECT count(id) as cant FROM " . $tableName;
       if (isset($params['where']))
       {
