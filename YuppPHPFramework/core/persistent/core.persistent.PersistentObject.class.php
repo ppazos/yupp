@@ -1707,7 +1707,7 @@ class PersistentObject {
    {
       Logger::add( Logger::LEVEL_PO, "PO::aAddTo $attribute []=". $value->getClass() ." ". __LINE__ );
       
-      Logger::getInstance()->po_log("aAddTo $attribute []=".$value->getClass());
+      //Logger::getInstance()->po_log("aAddTo $attribute []=".$value->getClass());
       
       // CHEK: attribute es un atributo hasMany
       // CHEK: value es un PO, TODO: podria pasarle una lista y que agregue todos los elementos.
