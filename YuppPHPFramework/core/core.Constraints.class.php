@@ -19,6 +19,8 @@ abstract class Constraint {
    public static function blank( $blank ) { return new BlankConstraint($blank); }
    
    public static function inList( $array ) { return new InList($array); }
+   
+   // TODO: restriccion para decir el tamanio maximo y minimo de una lista.
 
    public function __toString()
    {
