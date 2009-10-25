@@ -230,6 +230,7 @@ class RequestManager {
             // Agrega params a la url (fix a perdida del flash en redirect)
             foreach ($command->flash() as $key => $value)
             {
+               // FIXME: si en flash se ponen arrays y se hace redirect, urlencode va a fallar porque espera un string...
                $url_params['flash_'.$key] = urlencode( $value ); // Por ejemplo flash.message='un mensaje', url encode por si tiene simbolos.
             }
             
@@ -335,7 +336,8 @@ class RequestManager {
       $model->addFlash( $filter->getFlashParams() ); // Solucion a agregar flash cuando se hace redirect.
         
       /// ACTUALIZAR CONTEXTO ///
-      $context->setModel ( &$model );
+      //$context->setModel ( &$model );
+      $context->setModel ( $model );
       $context->update();
       /// ACTUALIZAR CONTEXTO ///
       

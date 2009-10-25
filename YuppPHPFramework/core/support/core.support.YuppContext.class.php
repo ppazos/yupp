@@ -36,9 +36,7 @@ class YuppContext {
       return $instance;
    }
     
-   private function Context()
-   {
-   }
+   private function __construct() {}
     
    public function setLocale( $locale )
    {
