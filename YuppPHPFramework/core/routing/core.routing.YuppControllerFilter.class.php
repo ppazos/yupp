@@ -21,24 +21,18 @@ class YuppControllerFilter {
         $this->after_filters  = $after_filters;
     }
     
-//    public static function registerBeforeFilter( IControllerFilter $filterClass )
-//    {
-//    	 self::$before_filters[] = $filterClass;
-//    }
-//    
-//    public static function registerAfterFilter( IControllerFilter $filterClass )
-//    {
-//       self::$after_filters[] = $filterClass;
-//    }
-    
     /**
      * Retorna true si pasa los filters y un ViewCommand si no.
      */
-    public function before_filter($component, $controller, $action, &$params)
+    //public function before_filter($component, $controller, $action, &$params)
+    public function before_filter($component, $controller, $action, ArrayObject $params)
     {
+       //print_r($this->before_filters);
     	 foreach ( $this->before_filters as $filterClass )
        {
-       	 $filterInstance = new $filterClass($component, $controller, $action, $params); // Extiende controller por eso necesita los parametros en el constructor
+          // FIXME: no se porque tenia component si el contructor del controller no tiene...
+       	 //$filterInstance = new $filterClass($component, $controller, $action, $params); // Extiende controller por eso necesita los parametros en el constructor
+          $filterInstance = new $filterClass($controller, $action, $params); // Extiende controller por eso necesita los parametros en el constructor
           if ( $this->applies($filterInstance, $component, $controller, $action) )
           {
 //             echo "FILTRO APLICA $filterClass, $component, $controller, $action<br/>";
@@ -66,12 +60,15 @@ class YuppControllerFilter {
     }
     
     // TODO: a after le podria pasar el ViewCommand que genero la accion ejecutada, el modelo, los params, etc.
-    public function after_filter($component, $controller, $action, &$params, ViewCommand $command)
+    //public function after_filter($component, $controller, $action, &$params, ViewCommand $command)
+    public function after_filter($component, $controller, $action, ArrayObject $params, ViewCommand $command)
     {
        foreach ( $this->after_filters as $filterClass )
        {
+          // FIXME: no se porque tenia component si el contructor del controller no tiene...
           // Extiende controller por eso necesita los parametros en el constructor.
-          $filterInstance = new $filterClass($component, $controller, $action, $params);
+          //$filterInstance = new $filterClass($component, $controller, $action, $params);
+          $filterInstance = new $filterClass($controller, $action, $params);
           if ( $this->applies($filterInstance, $component, $controller, $action) )
           {
              $res = $filterInstance->apply( $component, $controller, $action, $command );
@@ -131,9 +128,7 @@ class YuppControllerFilter {
             // solo verifico excepciones
             if (array_key_exists($controller, $exceptions)) // si hay una excepcion para el controller
             {
-               // NO TIENE SENTIDO QUE PONGA UN FILTRO PARA TODAS LAS ACCIONES Y UNA EXCEPCION PARA TODAS LAS ACCIONES. TODO: DEBERIA TIRRAR UN ERROR S ISE HICIERA ESTO.
-               //if ($exceptions[$controller] === "*") return false; // Excepcion para todas las acciones
-               //else 
+               // NO TIENE SENTIDO QUE PONGA UN FILTRO PARA TODAS LAS ACCIONES Y UNA EXCEPCION PARA TODAS LAS ACCIONES. TODO: DEBERIA TIRAR UN ERROR S ISE HICIERA ESTO.
                if ( in_array( $action, $exceptions[$controller] ) ) return false; // Excepcion para una accion
             }
             return true; // Aplica el filtro.

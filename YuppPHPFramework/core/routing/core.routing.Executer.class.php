@@ -6,11 +6,11 @@
  */
 class Executer {
 
-    private $params = array();
+    private $params; // = array();
 
-    function Executer( $params )
+    function __construct( $params )
     {
-       $this->params = $params;
+       $this->params = new ArrayObject( $params );
     }
     
     /**
@@ -35,7 +35,7 @@ class Executer {
         $filters = new YuppControllerFilter( $beforeFilters, $afterFilters ); // TODO: cambiar nombre a YuppControllerFilter.
         
         // Ejecucion de los before filters, true si pasan o un ViewCommand si no.
-        $bf_res = $filters->before_filter($component, $controller, $action, &$this->params);
+        $bf_res = $filters->before_filter($component, $controller, $action, $this->params);
         
         // ===================================================
       
@@ -83,7 +83,9 @@ class Executer {
               // ===============================================================================
               // Execute Controller Flow Action
               $flowActionName = $flow->getCurrentState()->getName() . "Action";
-              $flowExecutionResult = $controllerInstance->{$flowActionName}( &$flow ); // Esta es ya la accion de pasar al otro estado.??? deberia ser en el move...
+              
+              // Esta es ya la accion de pasar al otro estado.??? deberia ser en el move...
+              $flowExecutionResult = $controllerInstance->{$flowActionName}( $flow );
         
               Logger::show( "Salida del flow: $flowExecutionResult, " . __FILE__ . " " . __LINE__ );
         
@@ -94,11 +96,8 @@ class Executer {
                
               	  // TODO: debe mostrar la vista llamada: $currentState
                  
-                 //$params = array_merge($flow->getModel(), $this->params);
                  $controllerInstance->addToParams( $flow->getModel() ); // Hace lo mismo que la linea de arriba. Los params son los del request y los del flow.
                  
-                 //$model_or_command = $controllerInstance->render( $controller . "/" . $flow->getCurrentState()->getName(), &$params ); // En los params no se que pasarle, deberian ser el modelo del flow mas los params submiteados en el request anterior.
-                 //$model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
                  $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName() );
               }
               else if ( $flowExecutionResult === "move" )
@@ -121,14 +120,13 @@ class Executer {
                     
                     //Logger::show("END STATE: " . $flow->getCurrentState()->getName() . ", " . __FILE__ . " " . __LINE__ );
                     
-                    $controllerInstance->{$flowActionName}( &$flow ); // FIXME: podria retornar error y deberia volver al estado anterior y mostrar esa vista.
-        
-                    //$params = array_merge($flow->getModel(), $this->params); // La accion puede haber agregado modelo (al flow o params del controller).
+                    /// FIXME: podria retornar error y deberia volver al estado anterior y mostrar esa vista.
+                    $controllerInstance->{$flowActionName}( $flow );
+                    
+                    // La accion puede haber agregado modelo (al flow o params del controller).
                     $controllerInstance->addToParams( $flow->getModel() ); // Hace lo mismo que la linea de arriba. Los params son los del request y los del flow.
                     
                     // Quiero mostrar la vista correspondiente al nuevo estado. (antes de ejecutar init q cambia el estado!)
-                    //$model_or_command = $controllerInstance->render( $controller . "/" . $flow->getCurrentState()->getName(), &$params );
-                    //$model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
                     $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName() );
 
                     // TODO: remover el flow del controller o inicializarlo de nuevo ya que se termino el que venia ejecutando.
@@ -139,10 +137,6 @@ class Executer {
                     //Logger::show( "NO ES END STATE: " . $flow->getCurrentState()->getName() . ", " . __FILE__ . " " . __LINE__ );
                     
                     // Quiero mostrar la vista correspondiente al nuevo estado.
-                    //$model_or_command = $controllerInstance->render( $controller . "/" . $flow->getCurrentState()->getName(), &$params );
-//                    $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
-//                 	  $params = array_merge($flow->getModel(), $this->params); // FIXME? porque este params estaba luego del render?
-
                     $controllerInstance->addToParams( $flow->getModel() ); // Los params son los del request y los del flow.
                     $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName() );
                  }
@@ -155,12 +149,8 @@ class Executer {
                  $controllerInstance->addToFlash("message", $flowExecutionResult); // Pongo el error en flash.message
                  
                  // Quiero mostrar la vista correspondiente al nuevo estado.
-                 //$params = array_merge($flow->getModel(), $this->params);
-                 
                  $controllerInstance->addToParams( $flow->getModel() );
                  
-                 //$model_or_command = $controllerInstance->render( $controller . "/" . $flow->getCurrentState()->getName(), &$params );
-                 //$model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName(), &$params );
                  $model_or_command = $controllerInstance->render( $flow->getCurrentState()->getName() );
               }
            }
@@ -207,7 +197,7 @@ class Executer {
            else if ( $model_or_command === NULL ) // No retorno nada
            {
               // Nombre de la vista es la accion.
-              $view = $action; // $controller . '/' . $action;
+              $view = $action;
               
               // El modelo que se devuelve es solo los params submiteados.
               $command = ViewCommand::display( $view, $controllerInstance->getParams(), $controllerInstance->getFlash() );
@@ -226,12 +216,12 @@ class Executer {
            // ===================================================
            // after filters
            // Ejecucion de los after filters, true si pasan o un ViewCommand si no.
-           $af_res = $filters->after_filter($component, $controller, $action, &$this->params, $command);
+           //$af_res = $filters->after_filter($component, $controller, $action, &$this->params, $command);
+           $af_res = $filters->after_filter($component, $controller, $action, $this->params, $command);
            
            if ( $af_res !== true )
            {
               if ( get_class($af_res) !== 'ViewCommand' ) throw new Exception("After filter no retorna ViewCommand, retorna " . get_class($af_res));
-              //if ( !($af_res instanceof ViewCommand) ) throw new Exception("After filter no retorna ViewCommand, retorna " . get_class($af_res));
               $command = $af_res; // Retorna el ViewCommand del after filter.
            }
            // ===================================================

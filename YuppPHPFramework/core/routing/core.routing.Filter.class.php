@@ -42,7 +42,8 @@ class Filter {
       // 3 ... params.
       
       // Recorro desde el param 3 para arriba.
-      for ($i=1; $i<count($preUrlParams)-2; $i++)
+      $szPUP = count($preUrlParams)-2;
+      for ($i=1; $i<$szPUP; $i++)
       {
          $this->urlParams["_param_".$i] = $preUrlParams[$i+2]; // FIXME: el 3 depende de donde este instalado el framework en el servidor, si esta en el root es 3, si esta en un subdirectorio es 4, etc, etc, etc.
       }
@@ -93,10 +94,8 @@ class Filter {
        $current = current($paramsKeys);
        while ($current)
        {
-          //echo "CURRENT: $current<br/>";
           if ( String::startsWith($current, "flash_") )
           {
-             
              $res[ substr($current, 6)  ] = $_GET[ $current ];
           }
           $current = next($paramsKeys);
@@ -111,12 +110,11 @@ class Filter {
        if ($this->urlParams !== NULL && count($this->urlParams)>0) // Merge de POST, GET y urlParams.
        {
           $tempArr = array_merge( $this->urlParams, $_GET);
-          //return array_merge( $_POST, $tempArr);
           $tempArr = array_merge( $_POST, $tempArr);
           return array_merge( $_FILES, $tempArr);
        }
        
-    	 //return array_merge( $_POST, $_GET ); // Solo merge de POST y GET.
+       // Merge POST, GET y FILES
        $tempArr = array_merge( $_POST, $_GET);
        return array_merge( $_FILES, $tempArr);
     }
@@ -170,36 +168,5 @@ class Filter {
        return NULL;
     }
 }
-
-/* Ejemplo de variables en post, get y request.
-
-
-if(isset($_GET['posted']) == 1)
-{
-    echo "POST: ";
-    print_R($_POST);
-    echo "<br/>GET: ";
-    print_R($_GET);
-    echo "<br/>REQUEST: ";
-    print_R($_REQUEST);
-}
-else
-{
-    ?>
-    <form method="post" action="?posted=1&something=someotherval">
-        <input type="text" value="someval" name="something"/>
-        <input type="submit" value="Click"/>
-    </form>
-    <?
-}
-?>
-
-The above form post will result in the following output:
-
-POST: Array ( [something] => someval )
-GET: Array ( [posted] => 1 [something] => someotherval )
-REQUEST: Array ( [posted] => 1 [something] => someval )
-
-*/
 
 ?>
