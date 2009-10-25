@@ -58,7 +58,7 @@ class YuppConfig {
                                   array( 'url'  => '',
                                          'user' => '',
                                          'pass' => '',
-                                         'database' => 'C:\\wamp\\sqlitemanager\\test.sqlite')
+                                         'database' => 'C:\\wamp\\sqlitemanager\\carlitos') // 'C:\\wamp\\sqlitemanager\\test.sqlite')
                              );
    
    // ==================================================
