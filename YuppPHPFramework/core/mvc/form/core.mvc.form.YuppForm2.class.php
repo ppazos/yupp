@@ -167,6 +167,8 @@ class YuppForm2
  */
 class YuppFormField2Group
 {
+   public $fieldNumber; // Auxiliar para mostrar los campos del grupo
+   
 	private $name;
 	private $fields = array ();
 
@@ -192,6 +194,8 @@ class YuppFormField2Group
  */
 class YuppFormField2
 {
+   public $fieldNumber; // Auxiliar para mostrar el campo
+   
 	private $label;
 	private $type;
 	private $args = array (); // Atributos particulares de cada campo.
@@ -204,10 +208,8 @@ class YuppFormField2
 	const RADIO    = 5; // input type = radio
 	const CHECK    = 6; // input type = checkbox
 	const SUBMIT   = 7; // input type = submit
-   
    const DATE     = 8; // 3 selects dia mes anio.
    const PASSWORD = 9;
-   
    const FILE     = 10; // Recordar que si hay archivos para subir el form debe tener el atributo: enctype="multiplart/form-data"
 
 	private function __construct($type, $label = NULL)
@@ -366,8 +368,9 @@ class YuppFormDisplay2
 	/**
 	 * 
 	 */
-	private static function displayField(YuppFormField2 $field, $fieldNumber)
+	private static function displayField(YuppFormField2 $field)//, $fieldNumber)
 	{
+      $fieldNumber = $field->fieldNumber;
 		// TODO: debe considerar el atributo "group" (es el atributo "name" del radio) ???
 
 		$fieldHTML = '<div class="field_container">';
@@ -574,18 +577,22 @@ class YuppFormDisplay2
 	/**
 	 * 
 	 */
-	private static function displayGroup(YuppFormField2Group $group, &$fieldNumber)
+	private static function displayGroup(YuppFormField2Group $group)//, &$fieldNumber)
 	{
+      $fieldNumber = $group->fieldNumber;
 		$groupHTML = '<div class="group">';
       $groupHTML .= '<div class="label">' . $group->getName() . '</label></div>';
       
       $fields = $group->get();
       foreach ( $fields as $field )
 		{
-			$groupHTML .= self::displayField($field, &$fieldNumber);
+         $field->fieldNumber = $fieldNumber;
+			//$groupHTML .= self::displayField($field, &$fieldNumber);
+         $groupHTML .= self::displayField($field);
          $fieldNumber++;
 		}
 
+      // No necesario?
       $fieldNumber--; // por que en el metodo de afuera hace otra suma, asi no suma 2 veces.
 
 		return $groupHTML . '</div>';
@@ -616,14 +623,17 @@ class YuppFormDisplay2
 		foreach ($fieldsOrGroups as $fieldOrGroup)
 		{
          $fieldCount++;
+         $fieldOrGroup->fieldNumber = $fieldCount;
          
 			if ($fieldOrGroup instanceof YuppFormField2)
 			{
-				$formHTML .= self::displayField($fieldOrGroup, &$fieldCount);
+				//$formHTML .= self::displayField($fieldOrGroup, &$fieldCount);
+            $formHTML .= self::displayField($fieldOrGroup);
 			}
 			else
 			{
-				$formHTML .= self::displayGroup($fieldOrGroup, &$fieldCount);
+				//$formHTML .= self::displayGroup($fieldOrGroup, &$fieldCount);
+            $formHTML .= self::displayGroup($fieldOrGroup);
 			}
 		}
 		$formHTML .= '</form>';
