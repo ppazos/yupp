@@ -133,8 +133,7 @@ class DatabaseMySQL {
       return mysql_error();
    }
 
-
-   // MApeo tipos de SWP con tipos del dbms ===========================================
+   // Mapeo tipos de SWP con tipos del dbms ===========================================
 
    // Tipos posibles de atributos
    // Tipos de atributos disponibles (se deberian mapear segun cada DBMS...)
@@ -486,7 +485,8 @@ class DatabaseMySQL {
    
    public function evaluateENEQCondition( Condition $condition )
    {
-      // TODO ???
+      // TODO
+      throw new Exception("evaluateENEQCondition no implementada " . __FILE__ . " " . __LINE__);
    }
    public function evaluateLIKECondition( Condition $condition )
    {

@@ -43,10 +43,6 @@ class DatabaseSQLite {
 
       $this->connection  = new SQLiteDatabase($dbName); // $dbName es el nombre del archivo. No necesito ni host ni user ni pass.                                                        // connection debe ser un handler de archivo...
 
-      //echo "SQLite SE CONECTA<br/>";
-      //print_r( $this->connection );
-      //echo gettype($this->connection); // object
-
       if ( $this->connection === false )
       {
          return; // No pudo conectarse
@@ -56,20 +52,7 @@ class DatabaseSQLite {
    public function disconnect ()
    {
       //Logger::getInstance()->log("DatabaseMySQL::disconnect");
-      /*
-      if ($this->connection != NULL)
-      {
-         mysql_close($this->connection); // No necesito pasar la coneccion
-         $this->connection = NULL;
-      }
-      */
-      
-      // no me funca el close....
-//      if ($this->connection !== NULL) // Para no haer close de una conn q no existe.
-//      {
-//         $this->connection->close(); // OO de: sqlite_close($manejador_bd);
-//         $this->connection = NULL;
-//      }
+      // SQLite no tiene disconnect
    }
 
    // TODO: devolver true o false por si se pudo o no hacer la consulta...
@@ -480,7 +463,8 @@ class DatabaseSQLite {
    
    public function evaluateENEQCondition( Condition $condition )
    {
-      // TODO ???
+      // TODO
+      throw new Exception("evaluateENEQCondition no implementada " . __FILE__ . " " . __LINE__);
    }
    public function evaluateLIKECondition( Condition $condition )
    {

@@ -6,26 +6,20 @@ class DatabaseNormalization {
 
    public static function table( $tableName )
    {
-      //return SWPString::toUnderscoreNotation( $tableName );
-      //echo "DBNORM: $tableName <br />";
-      //echo "TYPE: ". gettype($tableName) ." <br />";
       return String::firstToLower( $tableName );
-      //return $tableName;
    }
 
    public static function col( $colName )
    {
-      //return SWPString::toUnderscoreNotation( $colName );
       return $colName;
    }
 
    public static function simpleAssoc( $colName )
    {
-      //return SWPString::toUnderscoreNotation( $colName ) . "_id";
       return $colName . "_id";
    }
 
-   // PAra saber si el nombre de una columna es una asociacion con otra tabla (FK)
+   // Para saber si el nombre de una columna es una asociacion con otra tabla (FK)
    public static function isSimpleAssocName( $colName )
    {
       $largo = strlen($colName);
@@ -42,7 +36,6 @@ class DatabaseNormalization {
       $prefix = substr($colName, 0, $largo-$largo_suffix );
       return $prefix;
    }
-
 }
 
 // Clase auxiliar que ofrece una interfaz de consultas de alto nivel para ser utilizadas desde el
@@ -106,8 +99,6 @@ class DAL {
       }
       
       // TODO: que dmbs desde config, perfecto para factory pattern.
-      //$this->db = new DatabaseSQLite();
-      //$this->db = new DatabaseMySQL();
       $this->db->connect( $this->url, $this->user, $this->pass, $this->database ); // TODO: POR AHORA LOS DATOS PARA ACCEDER A LA BD SE CONFIGURAR AQUI...
    }
 
@@ -119,17 +110,12 @@ class DAL {
 
    // Ejecuta una consulta y devuelve el resultado como una matriz asociativa.
    // FIXME: Devolver referencia para que no copie ?
-   //public function query( $q )
    public function query( Query $query )
    {
       $res = array();
       try
       {
-         // new
          $q = $this->db->evaluateQuery( $query );
-         Logger::getInstance()->dal_log("DAL::query : " . $q);
-         // /new
-         
          if ( !$this->db->query( $q ) ) throw new Exception("ERROR");
 
          //echo "RES SIZE: " . $this->db->resultCount() . "<br/>";
@@ -190,15 +176,12 @@ class DAL {
       // Obs: REFERENCES no me crea la FK, no se si porque no existe la tabla  la que hago referencia o porque se define de otra forma.
       // Asi funca: ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
 
-
       // VERIFY: posible problema, si estoy creando una tabla con referencias a otra y esa otra no esta creada, capaz salta la base.
       // capaz deveria crear las tablas y luego todas las FKs.
-
       
    	// TODO:
       $q_ini = "CREATE TABLE " . $tableName . " (";
       $q_end = ");";
-      
       
       // Keys obligatorias: name, type.
       // Keys opcionales: default.
@@ -336,7 +319,6 @@ class DAL {
           // Esto es MySQL...
           // Falta ver si un atributo es nullable.
           
-          
           // ===========================================================
           // FIXME: esta generando nullables para todos los atributos
 
@@ -354,7 +336,6 @@ class DAL {
           //if ( $obj->nullable($attr) && !$obj->isInyectedAttribute( $attr ) ) $nullable = "NULL";
           //
           // ===========================================================
-
 
           //
           // TODO verificar campos string, ver si tienen restriccion de maxlength, 
@@ -413,7 +394,6 @@ class DAL {
           // `nombre` VARCHAR( 50 ) NULL ,
           // ===========================================
 
-
           $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
           //$q .= "`". DatabaseNormalization::col($attr) ."` $dbms_type $nullable , ";
 
@@ -448,7 +428,6 @@ class DAL {
              break;
           }
           */
-
       }
 
       $q .= "PRIMARY KEY ( id )"; //$q .= "PRIMARY KEY ( `id` )";
@@ -475,13 +454,13 @@ class DAL {
    } // createTable
 
 
-
    // Modifica un registro ya existente. DEBE tener el id seteado en los values.
    // FIXME: si la tabla se deriva del objeto no veo la necesidad de pasarle ambos, 
    // anque podria ser necesario para las tablas intermedias de relaciones 1-* y *-*
    // FIXME: no deberia pasarle obj, deberia ser un array de valores.
    //public function update ( $tableName, &$obj )
-   public function update ( $tableName, &$data )
+   //public function update ( $tableName, &$data )
+   public function update ( $tableName, $data )
    {
       Logger::getInstance()->dal_log("DAL::update " . $tableName . " " . $data['class']);
 
@@ -553,7 +532,7 @@ class DAL {
     * - offset: desfasaje desde el primer registro de la tabla.
     * - where: condiciones sobre los valores de las columnas de la tabla. Es una instancia de Condition.
     */
-   public function listAll( $tableName, $params )
+   public function listAll( $tableName, ArrayObject $params )
    {
       Logger::getInstance()->dal_log("DAL::listAll " . $tableName);
       
@@ -563,7 +542,7 @@ class DAL {
       $limit = "";
       $orderBy = "";
 
-      if ($params && !is_array( $params )) throw new Exception("DAL.getAll: params no es un array.");
+      if ($params === NULL ) throw new Exception("DAL.getAll: params es null");
       else
       {
          // SELECT column FROM table
@@ -595,16 +574,10 @@ class DAL {
 //Logger::struct( $params, "PARAMS" );
 
       // Where siempre viene porque en PM se inyecta las condicioens sobre las subclases (soporte de herencia)
-      // new
-      //$q = "SELECT * FROM " . $tableName . " WHERE " . ($params['where']->evaluate()) . $orderBy . $limit;
       $q = "SELECT * FROM " . $tableName . " WHERE " .
            $this->db->evaluateAnyCondition( $params['where'] ) .
            $orderBy . $limit;
-           
-//      $q = "SELECT * FROM ". $tableName ." ". $this->db->evaluateWhere( $params['where'] ) . $orderBy . $limit;
-
-      //Logger::getInstance()->log( $q );
-
+      
       $this->db->query( $q );
 
       // TODO: Como hago para devolver un array de objetos ya creados...
@@ -777,63 +750,7 @@ class DAL {
    } // delete
    */
    
-
    // TODO: un exists que reciba un queryBuilder, seria algo como existsWhere...
-
-   /*
-   // Crea un nuevo registro con los valores pasados.
-   public function insert( $tableName, &$colNamesAndValues )
-   {
-      Logger::getInstance()->log("DAL::insert");
-
-      // Tengo que generar un nuevo id.
-      $colNamesAndValues["id"] = $this->generateNewId($tableName);
-
-       $q = "INSERT INTO `" . $tableName . "` ( ";
-
-       $attrs = $colNamesAndValues;
-       $tableAttrs = "";
-       foreach ( $attrs as $attr => $value )
-       {
-          $tableAttrs .= "`". DatabaseNormalization::col( $attr ) ."` ,";
-       }
-
-       $tableAttrs = substr($tableAttrs, 0, sizeof($tableAttrs)-2);
-
-       $q .= $tableAttrs;
-       $q .= ") VALUES (";
-
-       // TODO: Si el valor es null tengo que poner null en la tabla, no el string vacio.
-       // TODO: Verificar atributos no nullables en null en la instancia de la clase, esto falta agregar cosas a la clase persistente, "las restricciones"
-       $tableVals = "";
-       foreach ( $attrs as $attr => $value )
-       {
-          $tableVals .= "'". $value ."' ,"; // FIXME: OJO, si no es literal no deberia poner comillas !!!!
-       }
-
-       $tableVals = substr($tableVals, 0, sizeof($tableVals)-2);
-
-       $q .= $tableVals;
-
-       $q .= ");";
-
-
-       try
-       {
-         Logger::getInstance()->log("\tintenta insertar");
-         if ( !$this->db->query( $q ) ) throw new Exception( mysql_error() );
-         Logger::getInstance()->log("\tfin intenta insertar");
-       }
-       catch (Exception $e)
-       {
-           echo "MAL MAL MAL!!!!!!!!!!!!!";
-           echo $e->getMessage();
-       }
-   }
-*/
-
-
-   //////////////////////////
 
    public function insert( $tableName, &$obj )
    {
@@ -1062,8 +979,6 @@ class DAL {
       $q = "SELECT count(id) as cant FROM " . $tableName;
       if (isset($params['where']))
       {
-         // new
-   	   //$q .= " WHERE " . ($params['where']->evaluate());
          $q .= " WHERE " . ( $this->db->evaluateAnyCondition( $params['where'] ) );
       }
 
@@ -1080,8 +995,6 @@ class DAL {
 
       $q = "SELECT MAX(id) AS max FROM ". $tableName;
 
-      //$result = $this->db->query( $q );
-      
       $this->db->query( $q ); // DBSTD
 
       $row = $this->db->nextRow(); //mysql_fetch_assoc( $result ); // DBSTD
