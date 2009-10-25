@@ -26,16 +26,19 @@ class CurrentFlows {
       return $instance;
    }
    
-   public function update( WebFlow &$flow )
+  // public function update( WebFlow &$flow )
+   public function update( WebFlow $flow )
    {
-      $this->addFlow( &$flow ); // Para hacer update es necesario agregarlo de nuevo :S de otra forma no funciona.
+      //$this->addFlow( &$flow ); // Para hacer update es necesario agregarlo de nuevo :S de otra forma no funciona.
+      $this->addFlow( $flow );
    }
 
    private function __construct()
    {
    }
 
-   public function addFlow( WebFlow &$flow )
+   //public function addFlow( WebFlow &$flow )
+   public function addFlow( WebFlow $flow )
    {
       $this->flows[ $flow->getId() ] = $flow;
       YuppSession::set("_current_flows_singleton_instance", $this); // actualizo la variable en la session...

@@ -113,7 +113,7 @@ class WebFlow {
       $this->model[$key] = $value;
       
       // Se supone que el flow esta en CurrentFlows, hay que actualizarlo para que persista el estado entre requests
-      CurrentFlows::getInstance()->update(&$this);
+      CurrentFlows::getInstance()->update($this);
    }
    
    /**
@@ -150,7 +150,7 @@ class WebFlow {
       $this->resetf();
       
       // Se supone que el flow esta en CurrentFlows, hay que actualizarlo para que persista el estado entre requests
-      CurrentFlows::getInstance()->update(&$this);
+      CurrentFlows::getInstance()->update($this);
    }
 
    /**
@@ -216,7 +216,7 @@ class WebFlow {
       $this->currentState = $this->states[$newStateName]; // TODO: verificar que existe?
     
       // Se supone que el flow esta en CurrentFlows, hay que actualizarlo para que persista el estado entre requests
-      CurrentFlows::getInstance()->update(&$this);
+      CurrentFlows::getInstance()->update($this);
       
       // TODO: que hago con data1 y data2 ????? Puede ser el modelo para la vista que hay que mostrar.
       // Aqui deberia mostrar alguna vista, igual que el controller al terminar su ejecucion.
