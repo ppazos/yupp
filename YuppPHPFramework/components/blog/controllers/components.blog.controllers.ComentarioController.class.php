@@ -35,9 +35,6 @@ class ComentarioController extends YuppController {
        $count = Comentario::count();
        $this->params['count'] = $count; // Maximo valor para el paginador.
 
-       //return ViewCommand::display( "comentario/list", $this->params ); // Id NULL para paginas de scaffolding
-       //return $this->render("comentario/list", &$this->params);
-       //return $this->render("list", &$this->params);
        return $this->render("list");
     }
 
@@ -47,9 +44,6 @@ class ComentarioController extends YuppController {
        $obj = EntradaBlog::get( $id );
        $this->params['object'] = $obj;
 
-       //return ViewCommand::display( "comentario/show", $this->params ); // Id NULL para paginas de scaffolding
-       //return $this->render("comentario/show", &$this->params);
-       //return $this->render("show", &$this->params);
        return $this->render("show");
     }
 
@@ -59,9 +53,6 @@ class ComentarioController extends YuppController {
        $obj = Comentario::get( $id );
        $this->params['object'] = $obj;
 
-       //return ViewCommand::display( "comentario/edit", $this->params ); // Id NULL para paginas de scaffolding
-       //return $this->render("comentario/edit", &$this->params);
-       //return $this->render("edit", &$this->params);
        return $this->render("edit");
     }
 
@@ -75,15 +66,11 @@ class ComentarioController extends YuppController {
        if ( !$obj->save() ) // Con validacion de datos!
        {
           $this->params['object'] = $obj;
-          //return $this->render("entradaBlog/edit", &$this->params);
-          //return $this->render("edit", &$this->params);
           return $this->render("edit");
        }
 
        // show
        $this->params['object'] = $obj;
-       //return $this->render("comentario/show", &$this->params);
-       //return $this->render("show", &$this->params);
        return $this->render("show");
     }
 
@@ -94,7 +81,6 @@ class ComentarioController extends YuppController {
        $ins->delete(); // TODO: si es delete fisico y no se pudo eliminar por alguna restriccion, devolver un mensaje en lugar de tirar un error de PHP.
        $this->flash['message'] = "Elemento [Comentario:$id] eliminado.";
 
-       //return ViewCommand::execute( 'blog', 'comentario', 'list' ); // ($component, $controller, $action)
        return $this->redirect( array("action" => "list") );
     }
 
@@ -117,11 +103,9 @@ class ComentarioController extends YuppController {
           {
              // create
              $this->params['object'] = $obj;
-             //return $this->render("create", &$this->params);
              return $this->render("create");
           }
           
-          //print_r($entrada);
           $entrada->addToComentarios( $obj ); // FIXME: esto ya deberia salvar!
 
           if (!$entrada->save()) // Salva comentarios en cascada
@@ -141,7 +125,6 @@ class ComentarioController extends YuppController {
 
        // create
        $this->params['object'] = $obj;
-       //return $this->render("create", &$this->params);
        return $this->render("create");
     }
 

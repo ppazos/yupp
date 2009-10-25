@@ -64,7 +64,8 @@ class UsuarioController extends YuppController {
    /**
     * createUserFlow.fillName
     */
-   public function fillNameAction( &$flow )
+   //public function fillNameAction( &$flow )
+   public function fillNameAction( $flow )
    {
       //echo "<h1>FILL NAME FLOW</h1>";
       //Logger::struct( $this );
@@ -88,7 +89,8 @@ class UsuarioController extends YuppController {
    /**
     * createUserFlow.fillUserAndPass
     */
-   public function fillUserAndPassAction( &$flow )
+   //public function fillUserAndPassAction( &$flow )
+   public function fillUserAndPassAction( $flow )
    {
       //echo "<h1>FILL USER AND PASS FLOW</h1>";
       //Logger::struct( $this );
@@ -120,7 +122,8 @@ class UsuarioController extends YuppController {
    /**
     * createUserFlow.displayUser
     */
-   public function displayUserAction( &$flow )
+   //public function displayUserAction( &$flow )
+   public function displayUserAction( $flow )
    {
       // No devuelvo nada, es el ultimo estado y todo salio OK.
    }
@@ -141,15 +144,9 @@ class UsuarioController extends YuppController {
           // Login
           // Todo: meter esta conversion adentro mismo del constructor de Condition::EQ
        	 $tableName = YuppConventions::tableName( 'Usuario' ); // Se le pasa la clase, para saber la tabla donde se guardan sus instancias.
-          /*
-          $condition = Condition::_AND()
-                          ->add( Condition::EQ($tableName, "email", $this->params['email']) )
-                          ->add( Condition::EQ($tableName, "clave", $this->params['clave']) );
-          */
           $condition = Condition::_AND()
                           ->add( Condition::EQ($tableName, "email", $this->params['email']) )
                           ->add( Condition::EEQ($tableName, "clave", $this->params['clave']) );
-                          //->add( Condition::STREQ($tableName, "clave", $this->params['clave']) ); // Nueva solucion: se usa STREQ
           
           $list = Usuario::findBy( $condition, $this->params );
        
@@ -190,7 +187,7 @@ class UsuarioController extends YuppController {
     public function logoutAction()
     {
        YuppSession::remove("user");
-       $this->flash['message'] = "Vuelve a ingresar en otra ocasi&oacute;n!'";
+       $this->flash['message'] = "Vuelve a ingresar en otra ocasi&oacute;n!";
        return $this->render("login");
     }
     

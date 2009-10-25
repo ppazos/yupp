@@ -23,9 +23,6 @@ class EntradaBlogController extends YuppController {
      */
     public function listAction()
     {
-       //if ( isset( $this->params['archivo']) )
-       //  print_r( $this->params['archivo'] );
-      
        // paginacion
        if ( !isset($this->params['max']) )
        {
@@ -38,9 +35,6 @@ class EntradaBlogController extends YuppController {
        
        $count = EntradaBlog::count();
        $this->params['count'] = $count; // Maximo valor para el paginador.
-       
-       //return $this->render("entradaBlog/list", &$this->params);
-       //return $this->render("list", &$this->params);
        return $this->render("list");
     }
 
@@ -49,8 +43,6 @@ class EntradaBlogController extends YuppController {
        $id  = $this->params['id'];
        $obj = EntradaBlog::get( $id );
        $this->params['object'] = $obj;
-       //return $this->render("entradaBlog/show", &$this->params);
-       //return $this->render("show", &$this->params);
        return $this->render("show");
     }
     
@@ -72,10 +64,9 @@ class EntradaBlogController extends YuppController {
       //header('X-JSON: (' . $json . ')');  
       //header('Content-type: application/x-json');
       
-      sleep(2);
+      sleep(1);
       
       header('Content-type: application/json'); // TODO: si la accion tiene sufijo JSON, que lo ponga solo...
-    	//return $this->renderString( "{'comentarios':['un comentario', 'otro comentario', 'otro mas']}" );
       return $this->renderString( "{'comentarios':[ $json ]}" );
     }
 
@@ -84,8 +75,6 @@ class EntradaBlogController extends YuppController {
        $id  = $this->params['id'];
        $obj = EntradaBlog::get( $id );
        $this->params['object'] = $obj;
-       //return $this->render("entradaBlog/edit", &$this->params);
-       //return $this->params; // Puedo retornar solo los params porque hay una vista llamada edi en entradaBlog.
        return;
     }
 
@@ -100,8 +89,6 @@ class EntradaBlogController extends YuppController {
        if ( !$obj->save() ) // Con validacion de datos!
        {
           $this->params['object'] = $obj;
-          //return $this->render("entradaBlog/edit", &$this->params);
-          //return $this->render("edit", &$this->params);
           return $this->render("edit");
        }
 
@@ -109,8 +96,6 @@ class EntradaBlogController extends YuppController {
        $this->params['object'] = $obj;
        
        // Con esta accion no puedo retornar solo los params porque no hay vista llamada "save".
-       //return $this->render("entradaBlog/show", &$this->params);
-       //return $this->render("show", &$this->params);
        return $this->render("show");
     }
 
@@ -136,8 +121,6 @@ class EntradaBlogController extends YuppController {
           	 // create
              $this->params['object'] = $obj;
              
-             //return $this->render("entradaBlog/create", &$this->params);
-             //return $this->params;
              return;
           }
 
@@ -150,9 +133,7 @@ class EntradaBlogController extends YuppController {
 
        // create
        $this->params['object'] = $obj;
-       
-       //return $this->render("entradaBlog/create", &$this->params);
-       //return $this->params;
+
        return;
     }
 
