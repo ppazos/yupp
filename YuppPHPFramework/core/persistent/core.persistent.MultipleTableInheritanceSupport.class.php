@@ -492,8 +492,10 @@ Array
                                   YuppConventions::superclassRefName( get_class($obj) ),
                                   $obj->getId() );
                                   
-      $params = array();
-      eval('$list = $classAttr::findBy( $condition, &$params );'); // Devuelve un PO.
+      //$params = array();
+      $params = new ArrayObject();
+      //eval('$list = $classAttr::findBy( $condition, &$params );'); // Devuelve un PO.
+      eval('$list = $classAttr::findBy( $condition, $params );'); // Devuelve un PO.
       
       /*
       // Quiero el PO de clase $persistentInstance->getClass() que tenga el id de 
@@ -512,11 +514,9 @@ Array
       */
       
       // Verifico resultado, deberia ser un unico registro porque se pide con id de instancia.
-      $size = count( $list );
+      $size = sizeof( $list );
       if ($size != 1 ) // resultado esperado es 1
-      {
          throw new Exception("Se esperaba obtener exactamente un registro y hay $size");
-      }
 
       return $list[0];
    }

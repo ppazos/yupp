@@ -14,10 +14,6 @@
  * @link ... (PHPDoc)
  */
 
-//YuppLoader::load( "core.db.criteria3", "Condition" );
-//YuppLoader::load( "core.db.criteria3", "Query" );
-
-
 YuppLoader::load( "core.db.criteria2", "Condition" );
 
 YuppLoader::load( "core.db.criteria2", "ComplexCondition" );
@@ -28,7 +24,6 @@ YuppLoader::load( "core.db.criteria2", "Condition" );
 
 YuppLoader::load( "core.db.criteria2", "Select" ); // SelectItem y sus hijos tambien.
 YuppLoader::load( "core.db.criteria2", "Query" );
-
 
 YuppLoader::load( "core.utils",       "Callback" );
 YuppLoader::load( "core.persistent",  "ArtifactHolder" );
@@ -41,7 +36,6 @@ Las funciones podrian ser estaticas si no accedieran al campo $dal.
 */
 
 /*
-
 TODOs GRANDEs
 
 1. Mantener las asociaciones:
@@ -57,7 +51,6 @@ TODOs GRANDEs
    - Solucion: todos los atributos menos los inyectados, como id, deleted y class, son nullables,
      ya que si mando un null a un atributo no nulo va a saltar en la validacion de las constraints
      en lugar de dejarlo pasar hasta la validacion de la db.
-
 */
 
 YuppLoader::loadInterface( "core.persistent", "POLoader" );
@@ -124,7 +117,8 @@ class PersistentManager {
     * @param string $ownerAttr nombre del atributo de owner que mantiene la relacion con child.
     * @param integer ord es el orden de child en el atributo hasMany ownerAttr de owner.
     */
-   public function save_assoc( PersistentObject &$owner, PersistentObject &$child, $ownerAttr, $ord )
+   //public function save_assoc( PersistentObject &$owner, PersistentObject &$child, $ownerAttr, $ord )
+   public function save_assoc( PersistentObject $owner, PersistentObject $child, $ownerAttr, $ord )
    {
       Logger::getInstance()->pm_log("PM::save_assoc " . get_class($owner) . " -> " . get_class($child));
 
@@ -152,7 +146,7 @@ class PersistentManager {
       $hoBidirChildAttr = $child->getHasOneAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
       if ( $hoBidirChildAttr ) // hasOne
       {
-         Logger::getInstance()->pm_log("PM::save_assoc $ownerAttr es hasOne " . __LINE__);
+         //Logger::getInstance()->pm_log("PM::save_assoc $ownerAttr es hasOne " . __LINE__);
          
          $assocObj = $child->aGet($hoBidirChildAttr);
 
@@ -164,7 +158,7 @@ class PersistentManager {
       }
       else // si el atributo no era de hasOne, es hasMany
       {
-         Logger::getInstance()->pm_log("PM::save_assoc $ownerAttr es hasMany " . __LINE__);
+         //Logger::getInstance()->pm_log("PM::save_assoc $ownerAttr es hasMany " . __LINE__);
          
          $hmBidirChildAttr = $child->getHasManyAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
          if ( $hmBidirChildAttr && $child->aContains( $hmBidirChildAttr, $owner->getId() ) ) // FIXME: No se como se llama el atributo como para preguntar si child tiene a owner...
@@ -203,15 +197,6 @@ class PersistentManager {
          // FIXME: se resuelve igual con getMultipleTableId( $superClass )
       }
       
-      // CHECK
-      // Esto solo pasa cuando el hijo y el padre se salvan en la misma tabla,
-      // ahi el hijo no tiene super_id_SuperClase !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-//      if ($ref_id === NULL)
-//      {
-//         Logger::struct($child, "No tiene super_id_".$hasManyAttrs[$ownerAttr]);
-//         Logger::struct($hasManyAttrs, "hasManyAttrs: ");
-//      }
-      
       // El owner id debe ser el de la clase donde se declara la relacion hasmany
       $owner_id = $owner->getId();
       if ( !$owner->attributeDeclaredOnThisClass($ownerAttr) )
@@ -229,7 +214,7 @@ class PersistentManager {
       $refObj = NULL;
       if ( $owner->getHasManyType($ownerAttr) === PersistentObject::HASMANY_LIST )
       {
-         Logger::getInstance()->pm_log("ES LISTA" . __FILE__ . " ". __LINE__);
+         //Logger::getInstance()->pm_log("ES LISTA" . __FILE__ . " ". __LINE__);
          
       	$refObj = new ObjectReference( array(
                                           //"owner_id" => $owner->getId(),
@@ -241,7 +226,7 @@ class PersistentManager {
       }
       else
       {
-         Logger::getInstance()->pm_log("NO ES LISTA" . __FILE__ . " ". __LINE__);
+         //Logger::getInstance()->pm_log("NO ES LISTA" . __FILE__ . " ". __LINE__);
          
          $refObj = new ObjectReference( array(
                                           //"owner_id" => $owner->getId(),
@@ -260,7 +245,7 @@ class PersistentManager {
       // VERIFICA DE QUE LA RELACION NO EXISTE YA.
       // FIXME: ojo ahora tendria que tener en cuenta la direccion tambien!
 
-Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE__);
+      //Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE__);
 
       $params['where'] = Condition::_AND()
                            //->add( Condition::EQ($tableName, "owner_id", $owner->getId()) )
@@ -268,12 +253,12 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
                            ->add( Condition::EQ($tableName, "ref_id",   $ref_id) );
                            //->add( Condition::EQ($tableName, "ref_id",   $child->getId()) );
 
-//Logger::struct($params, "PARAMS");
+      //Logger::struct($params, "PARAMS");
 
       // FIXME: llamar a exists de DAL
       if ( $dal->count($tableName, $params) == 0 )
       {
-         Logger::getInstance()->pm_log("PM::save_assoc No existe la relacion en la tabla intermedia, hago insert en ella. " . __LINE__);
+         //Logger::getInstance()->pm_log("PM::save_assoc No existe la relacion en la tabla intermedia, hago insert en ella. " . __LINE__);
          
          // La asociacion se guarda con insert xq chekea q la relacion no exista para meterlo en la base.
          // TODO: deberia fijarme si los objetos con estos ids ya estan.
@@ -284,7 +269,8 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
    } // save_assoc
 
    // Salva solo un objeto (sin las asociaciones).
-   public function save_object( PersistentObject &$obj, $sessId )
+   //public function save_object( PersistentObject &$obj, $sessId )
+   public function save_object( PersistentObject $obj, $sessId )
    {
       Logger::getInstance()->pm_log("PersistentManager::save_object " . get_class($obj) );
 
@@ -364,7 +350,8 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
     *   Para cada hasMany:
     *     ...
     */
-   public function save_cascade( PersistentObject &$obj, $sessId )
+   //public function save_cascade( PersistentObject &$obj, $sessId )
+   public function save_cascade( PersistentObject $obj, $sessId )
    {
       Logger::getInstance()->pm_log("PersistentManager::save_cascade " . get_class($obj) . " SESSIONID: " . $sessId );
 
@@ -496,7 +483,8 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
   /**
    * save solo sirve para arrancar la session, la que hace el trabajo de salvar realmente es save_cascade, que salva todo el modelo.
    */
-   public function save( PersistentObject &$obj )
+   //public function save( PersistentObject &$obj )
+   public function save( PersistentObject $obj )
    {
       Logger::getInstance()->pm_log("PersistentManager::save " . get_class($obj));
       $sessId = time()."_". rand()."_". rand(); // se genera una vez y se mantiene por todo el save. Se agregaron rands porque para saves consecutivos se hacia muy rapido y la sessId quedaba exactamente igual.
@@ -1122,7 +1110,8 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
 
 // =========================
 // obtiene solo uan asociacion.
-   public function get_many_assoc_lazy( PersistentObject &$obj, $hmattr )
+   //public function get_many_assoc_lazy( PersistentObject &$obj, $hmattr )
+   public function get_many_assoc_lazy( PersistentObject $obj, $hmattr )
    {
       Logger::getInstance()->pm_log("PersistentManager.get_many_assoc_lazy " . get_class( $obj ) . " " . $hmattr);
 
@@ -1213,11 +1202,8 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
       {
          $hm_assoc_attr = "ref_id"; // yo soy el owner entonces el asociado es ref.
          $q->setCondition(
-           // (***)
            Condition::_AND()
-             ->add( Condition::EQ("ref", "owner_id", $obj_id) )
-             //->add( Condition::EQ("ref", "owner_id", $obj->getId()) ) // ref.owner_id = el id del duenio (person_phone.owner_id = obj->getId)
-             // (***)
+             ->add( Condition::EQ("ref", "owner_id", $obj_id) ) // ref.owner_id = el id del duenio (person_phone.owner_id = obj->getId)
              ->add( Condition::EQA("obj", "id", "ref", "ref_id") ) // JOIN
          );
       }
@@ -1225,10 +1211,8 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
       {
          $q->setCondition(
             Condition::_AND()
-              ->add( Condition::EQ("ref", "ref_id", $obj_id) ) 
-              //->add( Condition::EQ("ref", "ref_id", $obj->getId()) ) // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
+              ->add( Condition::EQ("ref", "ref_id", $obj_id) ) // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
               ->add( Condition::EQ("ref", "type",   ObjectReference::TYPE_BIDIR) ) // type = bidir
-              // (***)
               ->add( Condition::EQA("obj", "id", "ref", "owner_id") ) // JOIN
          );
       }
@@ -1507,7 +1491,7 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
     * Hace una consulta y devuelve las filas correspondientes a los registros que matchean el criterio.
     * Es una lista de esos registros, por eso es una matriz.
     */
-   private function findByAttributeMatrix( $instance, $condition, $params )
+   private function findByAttributeMatrix( PersistentObject $instance, Condition $condition, ArrayObject $params )
    {
    	$dal = DAL::getInstance();
       $tableName = YuppConventions::tableName( $instance );
@@ -1521,13 +1505,11 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
 
       // Definicion de la condicion.
       $cond_total = Condition::_AND();
-//      $cond_total = Condition::_AND( array() );
 
       // CONDICION_DE_NOMBRES_DE_SUBCLASES
       if ( count($scs) == 1 )
       {
          $cond_total->add( Condition::EQ($tableName, "class", $scs[0]) );
-//         $cond_total->addSubcondition( Condition::EQ($tableName, "class", $scs[0]) );
       }
       else
       {
@@ -1535,22 +1517,17 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
          foreach ($scs as $subclass)
          {
             $cond_or->add( Condition::EQ($tableName, "class", $subclass) );
-//            $cond_or->addSubcondition( Condition::EQ($tableName, "class", $subclass) );
          }
          $cond_total->add( $cond_or );
-//         $cond_total->addSubcondition( $cond_or );
       }
 
       // NO_ELIMINADO
       // FIXME: Si le pongo false a la RV no aparece nada y me tira consulta erronea.
       // Tendria que ponerle un convertidor de true/false a 1/0...
       $cond_total->add( Condition::EQ($tableName, "deleted", 0) );
-//      $cond_total->addSubcondition( Condition::EQ($tableName, "deleted", 0) );
-
 
       // CRITERIO DE BUSQUEDA
       $cond_total->add( $condition );
-//      $cond_total->addSubcondition( $condition );
 
       $params['where'] = $cond_total;
       
@@ -1565,7 +1542,8 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
    /**
     * Devuelve una lista de PO correspondientes a la consulta realizada.
     */
-   public function findBy( $instance, $condition, $params )
+   //public function findBy( $instance, $condition, $params )
+   public function findBy( PersistentObject $instance, Condition $condition, ArrayObject $params )
    {
       $allAttrValues = $this->findByAttributeMatrix( $instance, $condition, $params ); //$dal->listAll( $tableName, $params ); // FIXME: AHORA TIRA TODOS LOS ATRIBUTOS Y NECESITO SOLO CLASS e ID.
 
@@ -1769,13 +1747,14 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
    // Elimina un objeto de la base de datos.
    // Logical indica si la eliminacion es solo logica o es fisica.
    // FIXME: no es necesario pasar el id, lo tiene la instancia adentro.
-   public function delete( &$persistentInstance, $id, $logical )
+   //public function delete( &$persistentInstance, $id, $logical )
+   public function delete( $persistentInstance, $id, $logical )
    {
       Logger::add( Logger::LEVEL_PM, "PM::delete " . __LINE__ );
       
       // TODO: setear deleted a la instancia si se pudo hacer el delete en la tabla!
 
-      Logger::getInstance()->pm_log("PM::delete " . $persistentInstance->getClass() . " " . $id . " : " . __FILE__."@". __LINE__);
+      //Logger::getInstance()->pm_log("PM::delete " . $persistentInstance->getClass() . " " . $id . " : " . __FILE__."@". __LINE__);
       
       /*
       TODO:
@@ -1791,13 +1770,13 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
       // Soporte MTI
       if (!MultipleTableInheritanceSupport::isMTISubclassInstance( $persistentInstance ))
       {
-         Logger::add( Logger::LEVEL_PM, "No es MTI " . __LINE__ );
+         //Logger::add( Logger::LEVEL_PM, "No es MTI " . __LINE__ );
          
          $dal->delete2( $persistentInstance->getClass(), $id, $logical );
       }
       else
       {
-         Logger::add( Logger::LEVEL_PM, "Es MTI " . __LINE__ );
+         //Logger::add( Logger::LEVEL_PM, "Es MTI " . __LINE__ );
          
          // Se asume que la instancia ya es la ultima porque esta cargada con "get" 
          // o con "listAll" que garantiza que carga la instancia completa.
@@ -1819,7 +1798,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
                //Logger::getInstance()->log( "REF NAME: " . $attr );
                $class = YuppConventions::superclassFromRefName($attr);
                
-               //$dal->delete( YuppConventions::tableName( $class ), $value, $logical ); // OLD
                $dal->delete2( $class, $value, $logical );
             }
             else if ($attr === 'id')
@@ -1900,8 +1878,7 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
             $dal->delete( $tableName, $persistentInstance->getId(), $logical ); // getId deberia ser igual al que me estan pasando como parametro.
          }
 */
-         
-         
+
       }
    } // delete
 
@@ -1990,15 +1967,17 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
       // Si la clase tiene un nombre de tabla, uso ese, si no el nombre de la clase.
       $tableName = YuppConventions::tableName( $ins );
       
-      Logger::show("Crear tabla: $tableName", "h2");
+      //Logger::show("Crear tabla: $tableName", "h2");
 
       // =========================================================
       
       // Ya se sabe que id es el identificador de la tabla, es un atributo inyectado por PO.
-      $pks = array(
-               array('name'    => 'id',
-                     'type'    => Datatypes :: INT_NUMBER,
-                     'default' => 1)
+      $pks = array (
+               array (
+                 'name'    => 'id',
+                 'type'    => Datatypes :: INT_NUMBER,
+                 'default' => 1
+               )
              );
       
       /* EJEMPLO de la estructura que se debe crear.
@@ -2051,10 +2030,9 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
          if ( $attr !== 'id' )
          {
          	$cols[] = array(
-                       'name' => $attr,
-                       'type' => $type,
-                       'nullable' => (DatabaseNormalization::isSimpleAssocName( $attr )) ? true : $ins->nullable( $attr ) // FIXME: si es un atributo de una subclase (nivel 2 o mas, deberia ser nullable independientemente de la restriccion nullable).
-                       //'nullable' => ($nullable === NULL)?$ins->nullable( $attr ):$nullable // FIXME: si es un atributo de una subclase (nivel 2 o mas, deberia ser nullable independientemente de la restriccion nullable).
+                        'name' => $attr,
+                        'type' => $type,
+                        'nullable' => (DatabaseNormalization::isSimpleAssocName( $attr )) ? true : $ins->nullable( $attr ) // FIXME: si es un atributo de una subclase (nivel 2 o mas, deberia ser nullable independientemente de la restriccion nullable).
                       );
          }
       }
@@ -2099,12 +2077,7 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
       */
       // =========================================================
 
-      // $dal->createTable2($tableName, $pks, $cols, $constraints)
-      $dal->createTable2($tableName, $pks, $cols, $ins->getConstraints());
-      
-      // =========================================================
-
-      
+      $dal->createTable2($tableName, $pks, $cols, $ins->getConstraints());      
 
       // Crea tablas intermedias para las relaciones hasMany.
       // Estas tablas deberan ser creadas por las partes que no tienen el belongsTo, o sea la clase duenia de la relacion.
@@ -2156,7 +2129,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
    private function generateHasManyJoinTable($ins, $attr, $assocClassName)
    {
       $dal = DAL::getInstance();
-//echo "A<br/>";
       $tableName = YuppConventions::relTableName( $ins, $attr, new $assocClassName() );
 
       //Logger::struct($this->getDataFromObject( new ObjectReference() ), "ObjRef ===");
@@ -2164,8 +2136,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
       // "owner_id", "ref_id" son FKs.
       // Aqui se generan las columnas, luego se insertan las FKs
       // =========================================================
-
-//echo "B<br/>";
 
       $pks = array(
                array(
@@ -2181,8 +2151,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
       //        deberia hacerse referencia a eso en lugar de redeclarar todo 
       //        (como los atributos y restricciones).
       
-//echo "C<br/>";
-
       $cols[] = array(
                  'name' => "owner_id",
                  'type' => Datatypes::INT_NUMBER, // Se de que tipo, esta definido asien ObjectReference.
@@ -2204,8 +2172,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
                  'type' => Datatypes :: TEXT, // Se de que tipo, esta definido asien PO.
                  'nullable' => false );
                       
-//echo "D<br/>";
-       
        // El tema con la columna ord es que igual esta declarada en la clase ObjectReference,
        // entonces las consultas que se basen en los atributos que tenga la clase van a hacer
        // referencia a "ord" aunque la coleccion hasMany no sea una lista. 
@@ -2215,10 +2181,8 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
                  'name' => "ord",
                  'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien PO.
                  'nullable' => true );
-            
-//echo "E<br/>";
-            
-      // Si es una lista se genera la columna "ord".
+         
+       // Si es una lista se genera la columna "ord".
       /*
       $hmattrType = $ins->getHasManyType( $attr );
       if ( $hmattrType === PersistentObject::HASMANY_LIST )
@@ -2231,9 +2195,7 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
       }
       */
   
-         //    createTable2( $tableName, $pks, $cols, $constraints )
       $dal->createTable2( $tableName, $pks, $cols, array() );
-//echo "F<br/>";
 
    } // generateHasManyJoinTable
 
@@ -2324,8 +2286,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
             $parent_class = get_parent_class($c_ins);
             if ( $parent_class !== 'PersistentObject' ) // Si la instancia no es de primer nivel
             {
-            	//$c_ins->addAttribute("super_id", Datatypes::INT_NUMBER); // No va mas este atrib.
-               
                // La superclase de c_ins se mapea en otra tabla, saco esos atributos...
                $suc_ins = new $parent_class();
                $c_ins = PersistentObject::less($c_ins, $suc_ins); // Saco los atributos de la superclase
@@ -2357,7 +2317,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
             // /Inyecto FKs
             
             
-            
             $tableName = YuppConventions::tableName( $c_ins );
 //            echo __FILE__ . ' ' . __LINE__ . " $tableName<br/>";
             
@@ -2386,7 +2345,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
          $fks = array();
          
          // FKS super_id_XXX
-         
          $mti_attrs = $ins->getMTIAttributes();
          
          //Logger::struct( $mti_attrs, "MTI ATTRS" );
@@ -2451,8 +2409,8 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
          
          //Logger::struct( $hasMany, "HAS MANY!" );
          
-         Logger::getInstance()->pm_log("OwnerClass: " . $ins->getClass() . " " . __FILE__ . " " . __LINE__);
-         Logger::getInstance()->pm_log("OwnerTable: " . YuppConventions::tableName( $ins->getClass() ) . " " . __FILE__ . " " . __LINE__);
+//         Logger::getInstance()->pm_log("OwnerClass: " . $ins->getClass() . " " . __FILE__ . " " . __LINE__);
+//         Logger::getInstance()->pm_log("OwnerTable: " . YuppConventions::tableName( $ins->getClass() ) . " " . __FILE__ . " " . __LINE__);
 
          foreach ( $hasMany as $attr => $assocClassName )
          {
@@ -2605,9 +2563,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
     */
    public static function isMappedOnSameTable( $class1, $class2 )
    {
-      //Logger::getInstance()->log( "isMappedOnSameTable: class1 $class1" );
-      //Logger::getInstance()->log( "isMappedOnSameTable: class2 $class2" );
-      
    	// TODO
       // el caso superclase subclase lo handlea isMappedOnSameTableSubclass.
 
@@ -2652,8 +2607,6 @@ Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE
       */
    }
    
-   
-
 } // PersistentManager
 
 

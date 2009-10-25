@@ -978,11 +978,6 @@ class PersistentObject {
                  if ( !is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
                  else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
                  */
-                 /*
-                 if ( is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
-                 else if ( is_string($this->attributeValues[$attr]) && strcmp($this->attributeValues[$attr], "")==0 ) $err .= "EMPTY STRING";
-                 else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
-                 */
 
                  if ( is_null($value) ) $err .= (($value) ? $value : "NULL"); // OJO, esto puede ser null o cero!
                  else if ( is_string($value) && strcmp($value, "")==0 ) $err .= "EMPTY STRING";
@@ -1168,8 +1163,7 @@ class PersistentObject {
 
    // Los params son para pasarle atributos de paginacion.
    //
-   //public static function listAll( $params = array() )
-   public static function listAll( $params )
+   public static function listAll( ArrayObject $params )
    {
       Logger::getInstance()->po_log("ListAll ". self::$thisClass);
 
@@ -1195,7 +1189,8 @@ class PersistentObject {
     * @param $params son parametros extra como de paginacion y ordenamiento para armar el LIMIT y ORDER BY de la consulta.
     * @return devuelve todos los elementos de la clase actual que coincidan con el critero de busqueda.
     */
-   public static function findBy( Condition $condition, &$params )
+   //public static function findBy( Condition $condition, &$params )
+   public static function findBy( Condition $condition, ArrayObject $params )
    {
       // Verifica argumentos por defecto.
       if (!isset($params['offset'])) $params['offset'] = 0;
@@ -1221,20 +1216,18 @@ class PersistentObject {
       return $pm->countBy( $ins, $condition );
    }
 
-
+   // TODO
    /* Fijarse que listAll recibe una Condition, esto es mas por si armo toda una consulta complicada, no se si el lugar sea PO o deba ir derecho a PM.
    public static function findAllWithQuery( Query $q )
    {
    }
    */
 
-   public static function count( $params = array() )
+   public static function count()
    {
       $ins = new self::$thisClass();
       return PersistentManager::getInstance()->count( $ins );
    }
-
-
 
 
    // ====================
@@ -1375,7 +1368,6 @@ class PersistentObject {
       $hmattrs = $this->hasOneAttributesOfClass( $assocClass );
       $tam = sizeof($hmattrs);
       if ( $tam == 0 ) return NULL; // throw new Exception("PO.getHasManyAttributeNameByAssocAttribute: no tiene un atributo hasMany a " . $assocClass);
-
       if ( $tam == 1 ) return $hmattrs[0]; // Si hay uno, es ese!
 
       // Si hay muchos, tengo que ver por el nombre de asociacion codificado en el nombre de los atributos.
@@ -1609,7 +1601,8 @@ class PersistentObject {
                // if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
                // ver si es necesario...
 
-                PersistentManager::getInstance()->get_many_assoc_lazy(&$this, $attr); // El atributo se carga, no tengo que setearlo...
+               //PersistentManager::getInstance()->get_many_assoc_lazy(&$this, $attr); // El atributo se carga, no tengo que setearlo...
+               PersistentManager::getInstance()->get_many_assoc_lazy($this, $attr); // El atributo se carga, no tengo que setearlo...
             }
             else if ( array_key_exists($attr, $this->hasOne) )
             {
@@ -1655,7 +1648,7 @@ class PersistentObject {
 
              if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
              {
-                $pm->get_many_assoc_lazy( &$this, $attr_w_assoc_name ); // Carga elementos de la coleccion... si es que los hay... y si no inicializa con un array.
+                $pm->get_many_assoc_lazy( $this, $attr_w_assoc_name ); // Carga elementos de la coleccion... si es que los hay... y si no inicializa con un array.
              }
              else // Si no esta salvado...
              {
@@ -1778,7 +1771,6 @@ class PersistentObject {
                	$this->attributeValues[ $attr_with_assoc_name ][] = $value; // TODO: Verificar que args0 es un PersistentObject y es simple!
                                                                               // FIXME: bool is_subclass_of ( mixed $object, string $class_name )
                }
-            
             break;
             case self::HASMANY_LIST: // Por ahora hace lo mismo que COLECTION, en PM se verificaria el orden.
             
@@ -1786,7 +1778,6 @@ class PersistentObject {
                                                                            // FIXME: bool is_subclass_of ( mixed $object, string $class_name )
             break;
          }
-         
       }
       else
       {
@@ -1814,7 +1805,7 @@ class PersistentObject {
 
             if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
             {
-               $pm->get_many_assoc_lazy( &$this, $attr ); // Carga elementos de la coleccion... si es que los hay... y si no inicializa con un array.
+               $pm->get_many_assoc_lazy( $this, $attr ); // Carga elementos de la coleccion... si es que los hay... y si no inicializa con un array.
             }
             else // Si no esta salvado...
             {
@@ -1924,7 +1915,6 @@ class PersistentObject {
       {
       	$json .= "'" . $attr ."' : '" . $this->aGet($attr) . "'";
          
-         
          if ($i<$n) $json .= ", ";  
          $i++;
       }
@@ -1952,12 +1942,10 @@ class PersistentObject {
       // ***************************************************************
       $class = $po1->getClass();
       $res   = new $class(); // si hago una instancia de esta clase estoy en la misma, genera los atributos de la superclase...
-      //$res = new PersistentObject(); // FIXME: deberia ser instancia de la clase y la forma de hacer la resta seria mediante un remove de cada atributo (y no tengo esas operaciones!)
       
       $hone  = $po1->getHasOne();
       $hmany = $po1->getHasMany();
-      //$constraints = $sc_ins->getConstraints();
-      //foreach( $constraints as $attr => $constraintList ) $c_ins->addConstraints($attr, $constraintList);
+
       foreach( $po1->getAttributeTypes() as $name => $type )
       {
          //if ( !$po2->hasAttribute($name) ) $res->addAttribute($name, $type);
@@ -1970,8 +1958,6 @@ class PersistentObject {
          if ( !$res->hasAttribute($name) && !$po2->hasAttribute($name)  ) $res->addAttribute($name, $type);
          
       }
-      //foreach( $hone as $name => $type )  $c_ins->addHasOne($name, $type);
-      //foreach( $hmany as $name => $type ) $c_ins->addHasMany($name, $type);
    	
 //      echo "<pre><h1>";
 //      print_r($res);
