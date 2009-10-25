@@ -21,7 +21,8 @@ class Model {
        return self::$instance;
     }
 
-    public function setModel( &$params )
+    //public function setModel( &$params )
+    public function setModel( $params )
     {
     	 $this->model = $params;
     }
@@ -38,7 +39,8 @@ class Model {
     }
 
     // FLASH ==========================================
-    public function setFlash( &$params )
+   // public function setFlash( &$params )
+    public function setFlash( $params )
     {
        $this->flash = $params;
     }
@@ -48,7 +50,8 @@ class Model {
        
        return NULL;
     }
-    public function addFlash( &$params )
+    //public function addFlash( &$params )
+    public function addFlash( $params )
     {
     	 foreach ($params as $key => $value)
        {

@@ -6,7 +6,7 @@
 
 function h( $name, $paramsMap = array() )
 {
-   return Helpers::$name(&$paramsMap);
+   return Helpers::$name($paramsMap);
 }
 
 /**

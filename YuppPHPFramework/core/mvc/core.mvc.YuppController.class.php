@@ -27,7 +27,7 @@ class YuppController {
     public function loadFlow( $flowName )
     {
     	 $flow = $this->{$flowName . "Flow"}();
-       CurrentFlows::getInstance()->addFlow( &$flow );
+       CurrentFlows::getInstance()->addFlow( $flow );
     }
     
     public function &getFlow( $flowName )
@@ -35,11 +35,9 @@ class YuppController {
        return CurrentFlows::getInstance()->getFlow( $flowName );
     }
 
-
     // TODO: Agregar IndexAction que haga un render de una pagina por defecto para el controller.
     
-
-    function __construct($controllerName, $actionName, $params)
+    function __construct($controllerName, $actionName, ArrayObject $params)
     {
        $this->controllerName = $controllerName;
        $this->actionName     = $actionName;
@@ -77,7 +75,7 @@ class YuppController {
     
     public function addToParams( $params )
     {
-       $this->params = array_merge($this->params, $params);
+       $this->params = new ArrayObject( array_merge((array)$this->params, $params) );
     }
 
     public function renderString( $string ) // FIXME: puedo crearlo sin pasarle los params, xq es un atributo mio.

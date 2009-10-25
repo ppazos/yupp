@@ -26,14 +26,6 @@ class ViewCommand {
 
     private $_string; // Para display_string
 
-    /*
-    function __construct($command, &$params)
-    {
-       $this->command = $command; // VERIFICAR que es un comando valido.
-       $this->params = $params;
-    }
-    */
-
     public function isExecuteCommand() { return ($this->command == self::EXECUTE_COMMAND); }
     public function isDisplayCommand() { return ($this->command == self::DISPLAY_COMMAND); }
     public function isStringDisplayCommand() { return ($this->command == self::STRING_DISPLAY_COMMAND); }
