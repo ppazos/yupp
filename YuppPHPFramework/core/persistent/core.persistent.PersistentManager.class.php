@@ -444,7 +444,7 @@ class PersistentManager {
          {
             $ord = 0;
             
-            Logger::getInstance()->pm_log("save_cascade foreach hasManyAssoc: " . $attrName . " " . get_class($objList) . " " . __FILE__ . " " . __LINE__ );
+            Logger::getInstance()->pm_log("save_cascade foreach hasManyAssoc: ". $attrName ." ". __FILE__ ." ". __LINE__ );
             
             //Logger::warn("HAS MANY ATTR: " . $attrName);
             foreach ( $objList as $assocObj )
