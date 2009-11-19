@@ -1192,11 +1192,14 @@ class PersistentObject {
    //public static function findBy( Condition $condition, &$params )
    public static function findBy( Condition $condition, ArrayObject $params )
    {
+      // Para que al agregarle atributos no modifique a $params
+      $_params = new ArrayObject( $params->getArrayCopy() );
+      
       // Verifica argumentos por defecto.
-      if (!isset($params['offset'])) $params['offset'] = 0;
-      if (!isset($params['max']))    $params['max']    = 10; // Numero por defecto, hardcoded.
-      if (!isset($params['sort']))   $params['sort']   = 'id';
-      if (!isset($params['dir']))    $params['dir']    = 'asc';
+      if (!isset($params['offset'])) $_params['offset'] = 0;
+      if (!isset($params['max']))    $_params['max']    = 10; // Numero por defecto, hardcoded.
+      if (!isset($params['sort']))   $_params['sort']   = 'id';
+      if (!isset($params['dir']))    $_params['dir']    = 'asc';
 
       // TODO:
       // Tengo que modificar la API de listAll para que acepte Conditions,
@@ -1205,7 +1208,7 @@ class PersistentObject {
 
       $ins = new self::$thisClass();
 
-      return $pm->findBy( $ins, $condition, $params );
+      return $pm->findBy( $ins, $condition, $_params );
 
    }
 
