@@ -25,17 +25,27 @@ class Select {
 //    private $lower = NULL;
 //    private $upper = NULL;
 
-    function Select() {
-    }
+    function __construct() {}
 
+    /**
+     * Agrega un item al select de la consulta. 
+     */
     public function add( SelectItem $item )
     {
        $this->projections[] = $item;
     }
+    
+    /**
+     * Obtiene todos los items del select.
+     */
     public function getAll()
     {
        return $this->projections;
     }
+    
+    /**
+     * Devuelve true si no tiene items.
+     */
     public function isEmpty()
     {
        return sizeof($this->projections === 0);

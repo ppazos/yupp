@@ -103,14 +103,7 @@ class Condition {
       
       $c = new Condition();
       $c->setType( self::TYPE_AND );
-      //$c->setSubconditions( $conditionList );
       return $c;
-   }
-   
-   public function add( Condition $cond )
-   {
-      $this->subconditions[] = $cond;
-      return $this;
    }
    
    /**
@@ -122,7 +115,6 @@ class Condition {
       
       $c = new Condition();
       $c->setType( self::TYPE_OR );
-      //$c->setSubconditions( $conditionList );
       return $c;
    }
    
@@ -136,26 +128,36 @@ class Condition {
       $c->setSubconditions( array($condition) ); // Una sola condicion, puede ser simple o compleja.
       return $c;
    }
+   
+   /**
+    * Agrega una subcondicion a una condicion AND u OR.
+    */
+   public function add( Condition $cond )
+   {
+      $this->subconditions[] = $cond;
+      return $this;
+   }
+   
    //
    // /Fabricas de condiciones complejas ========================================================
 
    
    // Metodos de condiciones complejas ==========================================================
    //
-   public function setSubconditions( $conditionList )
-   {
-      $this->subconditions = $conditionList;
-   }
+//   public function setSubconditions( $conditionList )
+//   {
+//      $this->subconditions = $conditionList;
+//   }
    
    public function getSubconditions()
    {
       return $this->subconditions;
    }
    
-   public function addSubcondition( Condition $cond )
-   {
-      $this->subconditions[] = $cond;
-   }
+//   public function addSubcondition( Condition $cond )
+//   {
+//      $this->subconditions[] = $cond;
+//   }
    //
    // /Metodos de condiciones complejas =========================================================
 
@@ -198,10 +200,12 @@ class Condition {
    }
    // /Metodos de condiciones simples ===========================================================
 
-// ======================================
-
    // Fabricas de condiciones simples
    //
+   
+   /**
+    * Condicion de igualdad.
+    */
    public static function EQ( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -211,6 +215,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de desigualdad. 
+    */
    public static function NEQ( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -220,7 +227,9 @@ class Condition {
       return $c;
    }
    
-   // Exact equality
+   /**
+    * Condicion de igualdad exacta.
+    */
    public static function EEQ( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -230,6 +239,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de desigualdad exacta.
+    */
    public static function ENEQ( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -239,6 +251,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de similitud.
+    */
    public static function LIKE( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -248,6 +263,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de similitud sin considerar mayusculas y minusculas.
+    */
    public static function ILIKE( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -257,6 +275,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de mayor que.
+    */
    public static function GT( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -266,6 +287,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de menor que.
+    */
    public static function LT( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -275,6 +299,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de mayor o igual que.
+    */
    public static function GTEQ( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -284,6 +311,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de menor o igual que.
+    */
    public static function LTEQ( $alias, $attr, $refValue )
    {
       $c = new Condition();
@@ -293,8 +323,9 @@ class Condition {
       return $c;
    }
    
-   
-   
+   /**
+    * Condicion de igualdad sobre un atributo.
+    */
    public static function EQA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();
@@ -304,6 +335,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de desigualdad sobre un atributo.
+    */
    public static function NEQA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();
@@ -313,6 +347,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de igualdad exacta sobre un atributo.
+    */
    public static function EEQA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();
@@ -322,6 +359,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de desigualdad exacta sobre un atributo.
+    */
    public static function ENEQA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();
@@ -331,6 +371,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de similitud sobre un atributo.
+    */
    public static function LIKEA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();
@@ -340,6 +383,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de similitud sin considedrar mayusculas y minusculas sobre un atributo.
+    */
    public static function ILIKEA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();
@@ -349,6 +395,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de mayor que sobre un atributo.
+    */
    public static function GTA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();
@@ -358,6 +407,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de menor que sobre un atributo.
+    */
    public static function LTA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();
@@ -367,6 +419,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de mayor o igual que sobre un atributo.
+    */
    public static function GTEQA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();
@@ -376,6 +431,9 @@ class Condition {
       return $c;
    }
    
+   /**
+    * Condicion de menor o igual que sobre un atributo.
+    */
    public static function LTEQA( $alias, $attr, $refAlias, $refAttr )
    {
       $c = new Condition();

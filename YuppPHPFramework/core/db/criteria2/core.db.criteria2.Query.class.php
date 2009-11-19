@@ -56,6 +56,9 @@ class Query
    //        - funciones sobre atributos: lower(alias.attr)
    //        - agregaciones: count(alias.attr), sum(), max()
    //
+   /**
+    * Agrega una proyeccion sobre las columnas de las tablas seleccionadas para la respuesta de la consulta.
+    */
 	public function addProjection($alias, $attr)
 	{
 		// TODO:
@@ -104,8 +107,9 @@ class Query
               );
    */
    
-   // el addFrom deberia 
-   
+   /**
+    * Agrega una tabla fuente de los datos que devuelve la consulta.
+    */
 	public function addFrom($tableName, $alias)
 	{
 		// TODO:
@@ -121,20 +125,25 @@ class Query
 	}
 
 	// TODO: podria permitir modificar la cond internamente y desde afuera con AND u OR para no tener que armar toda la condicion afuera.
+   /**
+    * Agrega una condicion a la consulta.
+    */
 	public function setCondition(Condition $cond)
 	{
 		$this->where = $cond;
 	}
 
+   /**
+    * Agrega un limite de regsitros que devuelve la consulta.
+    */
 	public function setLimit($max, $offset)
 	{
 		$this->limit_max = $max;
 		$this->limit_offset = $offset;
 	}
 
-
    /**
-    * 
+    * Agrega ordenamiento por alguna columna de una tabla.
     * 
     * @param alias alias de la tabla
     * @param attr nombre del atributo al que se hace referencia
