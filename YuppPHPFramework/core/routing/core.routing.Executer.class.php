@@ -190,17 +190,20 @@ class Executer {
            }
            else
            */
-           if ( get_class( $model_or_command ) === 'ViewCommand' ) // Es comando (FIXME: no es lo mismo que instanceof?)
-           {
-              $command = $model_or_command;
-           }
-           else if ( $model_or_command === NULL ) // No retorno nada
+           
+           // Error en 0.1.6.7
+           // Si no verifico por null antes que por get_class, get_class(NULL me tira error en la ultima version de PHP).
+           if ( $model_or_command === NULL ) // No retorno nada
            {
               // Nombre de la vista es la accion.
               $view = $action;
               
               // El modelo que se devuelve es solo los params submiteados.
               $command = ViewCommand::display( $view, $controllerInstance->getParams(), $controllerInstance->getFlash() );
+           }
+           else if ( get_class( $model_or_command ) === 'ViewCommand' ) // Es comando (FIXME: no es lo mismo que instanceof?)
+           {
+              $command = $model_or_command;
            }
            else
            {
