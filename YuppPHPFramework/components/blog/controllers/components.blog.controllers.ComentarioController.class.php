@@ -103,7 +103,7 @@ class ComentarioController extends YuppController {
           {
              // create
              $this->params['object'] = $obj;
-             return $this->render("create");
+             return;
           }
           
           $entrada->addToComentarios( $obj ); // FIXME: esto ya deberia salvar!
@@ -112,7 +112,7 @@ class ComentarioController extends YuppController {
           {
              $this->flash['Hubo un problema al actualizar la entrada'];
              $this->params['object'] = $obj;
-             return $this->render("create");
+             return;
           }
 
           $this->flash['message'] = "Comentario creado con exito.";
@@ -125,7 +125,7 @@ class ComentarioController extends YuppController {
 
        // create
        $this->params['object'] = $obj;
-       return $this->render("create");
+       return;
     }
 
 }

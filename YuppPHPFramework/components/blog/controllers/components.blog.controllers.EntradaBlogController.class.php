@@ -23,8 +23,7 @@ class EntradaBlogController extends YuppController {
      */
     public function listAction()
     {
-       // paginacion
-       if ( !isset($this->params['max']) )
+       if ( !isset($this->params['max']) ) // paginacion
        {
           $this->params['max'] = 5;
           $this->params['offset'] = 0;
@@ -32,10 +31,10 @@ class EntradaBlogController extends YuppController {
 
        $list = EntradaBlog::listAll( $this->params );
        $this->params['list'] = $list;
-       
        $count = EntradaBlog::count();
        $this->params['count'] = $count; // Maximo valor para el paginador.
-       return $this->render("list");
+       
+       return;
     }
 
     public function showAction()
@@ -43,7 +42,7 @@ class EntradaBlogController extends YuppController {
        $id  = $this->params['id'];
        $obj = EntradaBlog::get( $id );
        $this->params['object'] = $obj;
-       return $this->render("show");
+       return;
     }
     
     public function getCommentsJSONAction()
@@ -56,7 +55,7 @@ class EntradaBlogController extends YuppController {
       $json = "";
       foreach($comentarios as $comentario)
       {
-      	$json .= $comentario->toJSON() . ", ";
+         $json .= $comentario->toJSON() . ", ";
       }
       
       $json = substr($json, 0, -2);
@@ -64,7 +63,7 @@ class EntradaBlogController extends YuppController {
       //header('X-JSON: (' . $json . ')');  
       //header('Content-type: application/x-json');
       
-      sleep(1);
+      sleep(1); // agregamos demora para ver como carga los comentarios por ajax
       
       header('Content-type: application/json'); // TODO: si la accion tiene sufijo JSON, que lo ponga solo...
       return $this->renderString( "{'comentarios':[ $json ]}" );
