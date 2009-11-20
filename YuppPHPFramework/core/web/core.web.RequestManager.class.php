@@ -29,20 +29,21 @@ class RequestManager {
       // Url sera: usermanager/person/create?name=pepe&age=23&height=180
 
       // ====================================================
-      // ROUTING 
-
-      $filter = new Filter( $_SERVER['REQUEST_URI'] ); // Toma la url y extrae sus partes para procesamiento posterior.
-      $mapping = new Mapping( $filter->getPath() ); // Toma la ruta y extrae el nombre del componente, controller y accion. (no hay chequeos, pueden no existir!)
-      $lr = $mapping->getLogicalRoute();
-         
-      //Logger::struct( $lr, __FILE__ . " " . __LINE__ );
-      //Logger::struct( $filter->getPath() );
-//      Logger::struct($lr, "LOGICAL ROUTE 1");
+      // ROUTING
+      
+      /// test
+      //include_once("core/routing/core.routing.Router.class.php");
+      $router = new Router( $_SERVER['REQUEST_URI'] );
+      //print_r( $router->getLogicalRoute() );
+      $lr = $router->getLogicalRoute();
+      /// /test
          
       // Verifica salida del router y setea valores que no vienen seteados.
       // TODO: OJO, luego debe pasar el verificador de si el controller y action existen, y si no, ejecutar contra core.
       
-      if ( $lr['component']  === NULL || $lr['component'] === "" )
+      // Esto dice a donde ir cuando se accede a la aplicacion YUPP, esta bien que se haga aca, no es cosa del router.
+      //if ( $lr['component']  === NULL || $lr['component'] === "" )
+      if ( empty($lr['component']) )
       {
          $config = YuppConfig::getInstance();
          $modeDefaultMapping = $config->getModeDefaultMapping();
@@ -50,16 +51,15 @@ class RequestManager {
          $lr['controller'] = $modeDefaultMapping['controller'];
          $lr['action']     = $modeDefaultMapping['action'];
          
-         $filter->addCustomParams( $modeDefaultMapping['params'] ); // Agrego los params necesarios a filter que es quien mantiene los parametros de get y post.
+         $router->addCustomParams( $modeDefaultMapping['params'] );
       }
       
-      if ( $lr['controller'] === NULL || $lr['controller'] === "" ) // Si me pone el componente pero no el controller, entonces no se que hago... (poner core/core es un FIX nomas)
+      // FIXME: esto lo deberia hacer el router
+      //if ( $lr['controller'] === NULL || $lr['controller'] === "" ) // Si me pone el componente pero no el controller, entonces no se que hago... (poner core/core es un FIX nomas)
+      if ( empty($lr['controller']) )
       {
-         //throw new Exception("ERROR: Se especifica el componente pero no el controlador, el controlador es obligatorio y es el segundo argumento de la url: componente/controlador/accion/params " . __FILE__ . " " . __LINE__);
-         // FIXME: tirar 404
-         
          // Si la ruta en la URL llega hasta el componente, se muestran los controladores del componente.
-         $filter->addCustomParams( array('component'=>$lr['component']) );
+         $router->addCustomParams( array('component'=>$lr['component']) );
          $lr['component'] = "core";
          $lr['controller'] = "core";
          $lr['action'] = "componentControllers";
@@ -68,8 +68,12 @@ class RequestManager {
       // Prefiero el parametro por url "_action_nombreAccion", a la accion que viene en la URL (componente/controlador/accion).
       // Esto es porque los formularios creados con YuppForm generan acciones distintas para botones de 
       // submit distintos y la accion es pasada codificada en un parametros _action_nombreAcction.
-      $actionParam = $filter->getActionParam(); // Por si la accion viene codificada en una key de un param como '_action_laAccion', por ejemplo: esto pasa en un submit de un YuppForm.
-      if ($actionParam === NULL || $actionParam === "") // Solo si no hay actionParam, me fijo si viene en la url.
+      
+      // Por si la accion viene codificada en una key de un param como '_action_laAccion', por ejemplo: esto pasa en un submit de un YuppForm.
+      $actionParam = $router->getActionParam();
+      
+      //if ($actionParam === NULL || $actionParam === "") // Solo si no hay actionParam, me fijo si viene en la url.
+      if ( empty($actionParam) )
       {
          if ( !isset($lr['action']) || $lr['action'] === "" )
          {
@@ -133,24 +137,16 @@ class RequestManager {
       
       // Verificacion de controller filters (v0.1.6.3)
       $controllerFiltersPath = "components/".$lr['component']."/ComponentControllerFilters.php"; // Nombre y ubicacion por defecto.
-//      Logger::show( $controllerFiltersPath, "h1" );
       $controllerFiltersInstance = NULL;
       if ( file_exists($controllerFiltersPath) ) // TODO: no ir al filesystem en cada request, una vez que se pone en prod se debe saber que el archivo existe o no.
       {
-//         Logger::show( "el archivo existe", "h1" );
          // FIXME: con la carga bajo demanda de PHP esto se haria automaticamente!
          include_once( $controllerFiltersPath ); // FIXME: no usa YuppLoader (nombre de archivo no sigue estandares!).
          $controllerFiltersInstance = new ComponentControllerFilters(); // Esta clase esta definida en el archivo incluido (es una convension de Yupp).
       }
       
-      $executer = new Executer( $filter->getParams() );
+      $executer = new Executer( $router->getParams() );
       $command = $executer->execute( $controllerFiltersInstance ); // $controllerFiltersInstance puede ser null!
-
-
-//print_r( $command );
-//    echo "SSS"; // OK tiene el flash.
-//    $command->show();
-//    echo "SSS";
 
       // ======================
       // /PARTE DE ROUTING
@@ -177,13 +173,14 @@ class RequestManager {
             $tiempo_proc = $tiempo_final - $tiempo_inicio;
             $tiempo_inicio = microtime(true);
       
-            self::render( $lr, $command, $ctx, $filter );
+            // FIXME: en router esta toda la info, porque pasar todo?
+            self::render( $lr, $command, $ctx, $router );
             
             $tiempo_final = microtime(true);
             $tiempo = $tiempo_final - $tiempo_inicio;
       
-            echo "<br/><br/>Tiempo de proceso: " . $tiempo_proc . " s<br/>";
-            echo "Tiempo de render: " . $tiempo . " s<br/>";
+//            echo "<br/><br/>Tiempo de proceso: " . $tiempo_proc . " s<br/>";
+//            echo "Tiempo de render: " . $tiempo . " s<br/>";
       
             return;
               
@@ -208,10 +205,6 @@ class RequestManager {
 
             // Que hago con el command que tira este? tengo que revisar las llamadas recursivas...
             //$command = self::excecuteControllerAction( $component->component(), $component->controller(), $component->action(), $urlproc->params() )
-
-//        echo "BBB"; // ERROR, se pierde el flash.
-//        $command->show();
-//        echo "BBB";
 
             // FIXME: no hace nada con el model, deberia pasar lo que puede como params de GET.
             // TODO: habria que ver como hacer un request por POST asi puedo mandar info sin que se vea en el request.
@@ -279,7 +272,8 @@ class RequestManager {
       // NO DEBERIA LLEGAR ACA, DEBE HACERSE UN RENDER O UN REDIRECT ANTES...
    }
    
-   private static function render( $logic_route, $command, $context, $filter )
+   //private static function render( $logic_route, $command, $context, $filter )
+   private static function render( $logic_route, $command, $context, $router )
    {
       // Configuro el command para la view...
       // OJO DEBERIA PODER MOSTRAR PAGINAS DE CUALQUIER COMPONENTE!!! LOS TIPOS NO VAN A PONER SUS PAGINAS EN /CORE...
@@ -300,7 +294,6 @@ class RequestManager {
          {
             throw new Exception("La vista con path: '$pagePath' no existe. VERIFIQUE EN EL CONTROLLER QUE LA VISTA QUE QUIERE MOSTRAR EXISTE. " . __FILE__ . " " . __LINE__);
          }
-         
          
          // FIXME: con esto de arriba no es necesario tener mas el "mode".
          
@@ -333,10 +326,11 @@ class RequestManager {
       $model = Model::getInstance();
       $model->setModel( $command->params() ); // $command->params() es el modelo devuelto por la accion del controller.
       $model->addFlash( $command->flash() );
-      $model->addFlash( $filter->getFlashParams() ); // Solucion a agregar flash cuando se hace redirect.
-        
+      
+      // Solucion a agregar flash cuando se hace redirect
+      $model->addFlash( $router->getFlashParams() );
+      
       /// ACTUALIZAR CONTEXTO ///
-      //$context->setModel ( &$model );
       $context->setModel ( $model );
       $context->update();
       /// ACTUALIZAR CONTEXTO ///
