@@ -19,10 +19,10 @@
          text-decoration:none;
          text-align:center;
       }
-      ul.postnav a:hover { background: #A8E52F; color:#FFF; }
-      
-      
-      
+      ul.postnav a:hover {
+         background: #A8E52F;
+         color:#FFF;
+      }
       ul.postnav div {
          display:block;
          /* padding: 5px 10px 5px 10px; */
