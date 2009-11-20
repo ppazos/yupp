@@ -618,7 +618,11 @@ class YuppFormDisplay2
 
       
       $fieldCount = 0;
-		$formHTML .= '<form action="'. $form->getUrl() .'" id="'. $form->getId() .'" method="'. $form->getMethod() .'" '. (($form->hasFileFields())?'enctype="multipart/form-data"':'') .'>';
+		$formHTML .= '<form action="'. $form->getUrl() .'" '.
+                          'id="'. $form->getId() .'" '.
+                          'name="'. $form->getId() .'" '.
+                          'method="'. $form->getMethod() .'" '.
+                          (($form->hasFileFields())?'enctype="multipart/form-data"':'') .'>';
       $fieldsOrGroups = $form->get();
 		foreach ($fieldsOrGroups as $fieldOrGroup)
 		{
