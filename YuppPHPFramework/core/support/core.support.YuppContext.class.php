@@ -1,6 +1,7 @@
 <?php
 
 // FIXME: tiene que ser singleton persistente, o por lo menos el locale.
+// FIXME: tiene informacion duplicada con el Router.
 
 class YuppContext {
 
@@ -48,7 +49,7 @@ class YuppContext {
     	return $this->locale;
    }
     
-   public function setMode( &$mode )
+   public function setMode( $mode )
    {
       // TODO: ver que el modo es valido.
       $this->mode = $mode;
@@ -65,10 +66,10 @@ class YuppContext {
    public function getAction()          { return $this->action; }
     
     
-   public function setParams( &$params ) { $this->params = $params; }
+   public function setParams( $params ) { $this->params = $params; }
    public function getParams()           { return $this->params; }
     
-   public function setModel( &$model ) { $this->model = $model; }
+   public function setModel( $model ) { $this->model = $model; }
    public function getModel()          { return $this->model; }
     
    public function update()
