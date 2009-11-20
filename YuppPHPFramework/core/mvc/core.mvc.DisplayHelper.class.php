@@ -270,7 +270,11 @@ class DisplayHelper {
        return $res;
     }
 
-    public static function yupp_select( $name, $options, $value = NULL, $id = NULL )
+    /**
+     * Genera un control html SELECT con el nombre y las opciones dadas.
+     * Si se le pasa un valor, este queda seleccionado por defecto.
+     */
+    public static function select( $name, $options, $value = NULL, $id = NULL )
     {    
       if ($name === NULL)
          throw new Exception("El argumento 'name' no puede ser nulo. " . __FILE__ . " " . __LINE__);
@@ -282,7 +286,7 @@ class DisplayHelper {
          throw new Exception("El argumento 'options' debe ser un Array. " . __FILE__ . " " . __LINE__);
       
       $fieldHTML = '';
-      $fieldHTML .= '<select name="'.$name.'" '. (($id!==NULL)?'id="'.$id.'"':'') .'>';
+      $fieldHTML .= '<select name="'.$name.'"'. (($id!==NULL)?' id="'.$id.'"':'') .'>';
       
       foreach ( $options as $opt_value => $text )
       {
@@ -295,8 +299,143 @@ class DisplayHelper {
       }
       $fieldHTML .= '</select>';
       
-      return $fieldHTML;
+      echo $fieldHTML;
     }
 
+    /**
+     * Crear un campo html TEXTAREA con el editor TinyMCE.
+     * 
+     * TODO: podria querer pasarle algunos parametros extra para configurar el TinyMCE,
+     *       como por ejemplo la lista de links que aparece en la pantalla modal cuando
+     *       se crea un link.
+     * 
+     * TODO: si quisiera poner muchos htmls en la misma vista, el JS se incluiria cada vez,
+     *       seria bueno pasarle todos los nombres de campos y contenidos para cada uno
+     *       y que el JS se incluya una sola vez.
+     *       Esto se podria hacer mas ordenado mediante la inclusion ocntrolada de JS a la
+     *       vista, o sea, diciendole a la vista que JS se va a usar, en lugar de incluirlo
+     *       aca como un string simple que se pega en la pagina. Ahorraria codigo y la 
+     *       inclusion de JS es mas ordenada. Idem para YUI Calendar, NiftyCorners, Prototype, etc.
+     */
+    public static function html( $name, $content )
+    {
+       ob_start(); // agarro el output y devuelvo el string
+       
+       // FIXME: el lenguaje podria parametrizarse.
+       echo '<textarea name="'.$name.'" id="'.$name.'">'.$content.'</textarea>';
+       
+       echo h('js', array('name'=>'tiny_mce/tiny_mce')); // js/tiny_mce/tiny_mce.js
+       echo '<script type="text/javascript">
+                 tinyMCE.init({
+                     mode:     "exact", //"textareas"
+                     theme:    "advanced",
+                     elements: "'. $name .'", // ids de los elementos a aplicar el wysiwyg
+                     language: "es",
+                     
+                     force_br_newlines : false,
+                     cleanup_on_startup : true,
+                     
+                     plugins : "safari,style,layer,table,advhr,advimage,advlink,emotions,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template", //,imagemanager,filemanager",
+                     //pagebreak,save,
+                     theme_advanced_buttons1 : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect,|,forecolor,backcolor",
+                     theme_advanced_buttons2 : "cut,copy,paste,pastetext,pasteword,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview",
+                     theme_advanced_buttons3 : "tablecontrols,|,removeformat,visualaid,|,sub,sup,|,charmap,emotions,media,advhr,|,fullscreen",
+                     theme_advanced_buttons4 : "insertlayer,moveforward,movebackward,absolute,|,styleprops,|,attribs,|,visualchars,nonbreaking,template,blockquote,|,insertfile,insertimage",
+                     //pagebreak,hr,del,ins,cite,abbr,acronym,styleselect,|,search,replace,
+                           
+                     theme_advanced_statusbar_location : "bottom",
+                     theme_advanced_toolbar_location : "top",
+                     theme_advanced_toolbar_align : "left",
+                     theme_advanced_resizing : true,
+                     theme_advanced_path : false, 
+                     extended_valid_elements : "img[class|src|border=0|alt|title|hspace|vspace|width|height|align|name],hr[class|width|size|noshade],font[face|size|color|style],span[class|align|style]",
+                     
+                     relative_urls : false,
+                     remove_script_host : false,
+                     document_base_url : "'. $_SERVER['HTTP_HOST'] .'"
+                 });
+            </script>';
+        
+        echo ob_get_clean();
+    }
+    
+    /**
+     * Control de calendario basado en Yui Calendar.
+     */
+    public static function calendar( $name, $value )
+    {
+       echo '<input type="text" name="day"   id="day" />
+          <input type="text" name="month" id="month" />
+          <input type="text" name="year"  id="year" />
+          <div id="calendarContainer"></div>';
+
+       echo h('css', array('name'=>'yui/calendar/calendar'));
+       echo h('js', array('name'=>'yui/yahoo/yahoo-min'));
+       echo h('js', array('name'=>'yui/event/event-min'));
+       echo h('js', array('name'=>'yui/dom/dom-min'));
+       echo h('js', array('name'=>'yui/calendar/calendar-min'));
+           
+       echo '<script type="text/javascript">
+   
+             var calendar; // Calendario global from
+      
+             // Acciones que se hacen onload ...
+
+             /* forma inobstructiva window.onload
+             function addEvent(obj, evType, fn) { 
+                if (obj.addEventListener){ 
+                  obj.addEventListener(evType, fn, false); 
+                  return true; 
+                } else if (obj.attachEvent){ 
+                  var r = obj.attachEvent("on"+evType, fn); 
+                  return r; 
+                } else { 
+                  return false; 
+                } 
+             }
+             addEvent(window, "load", foo);
+             */
+             
+             window.onload = function () {
+                calendar = new YAHOO.widget.Calendar("calendar", "calendarContainer" );
+         
+                // Mueve el calendario al mes que se selecciono la fecha.
+                //calendar.cfg.setProperty("pagedate", "${date.getMonth()+1}/${date.getYear()+1900}" );
+                
+                calendar.select(calendar.today);
+                //calendar.select( new Date( ${date.getYear()+1900}, ${date.getMonth()}, ${date.getDate()} ) );
+                
+                //alert( new Date( ${date.getYear()+1900}, ${date.getMonth()}, ${date.getDate()} ) );
+                
+                calendar.selectEvent.subscribe(setDate); // Esto pasa cuando se selecciona una fecha, tambien cuando se hace "select" de forma programatica, por lo que debe estar luego del select para que el formulario no se submitee solo!.
+                calendar.render();
+                calendar.show();
+             } 
+             
+             
+             // funcion reusable
+             function objById( id )
+             {
+                if (document.getElementById)
+                    var returnVar = document.getElementById(id);
+                else if (document.all)
+                    var returnVar = document.all[id];
+                else if (document.layers)
+                    var returnVar = document.layers[id];
+                return returnVar;
+             }
+             
+             function setDate()
+             {
+                var arrDates = calendar.getSelectedDates();
+                var date = arrDates[0];
+                
+                objById("day").value = date.getDate();
+                objById("month").value = date.getMonth()+1; // Ojo, empieza en cero!
+                objById("year").value = date.getFullYear();
+             }
+             
+          </script>';
+    }
 }
 ?>
