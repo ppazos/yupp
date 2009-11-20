@@ -22,13 +22,12 @@ YuppLoader::load("core.mvc.form","YuppForm2");
       </script>
 
       <?php echo h("css",  array("name" => "main") ); ?>
-
    </head>
    <body>
       <h1><?php echo DisplayHelper::message("blog.entrada.list.title"); ?></h1>
       
       <?php if ($m->flash('message')) { ?>
-      <div class="flash"><?php echo $m->flash('message'); ?></div>
+        <div class="flash"><?php echo $m->flash('message'); ?></div>
       <?php } ?>
       
       <ul class="postnav">

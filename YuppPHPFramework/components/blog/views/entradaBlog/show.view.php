@@ -49,7 +49,7 @@ YuppLoader::loadScript("components.blog", "Messages");
       <h1><?php echo DisplayHelper::message("blog.entrada.show.title"); ?></h1>
       
       <?php if ($m->flash('message')) { ?>
-      <div class="flash"><?php echo $m->flash('message'); ?></div>
+        <div class="flash"><?php echo $m->flash('message'); ?></div>
       <?php } ?>
       
       <?php $obj = $m->get('object'); ?>
