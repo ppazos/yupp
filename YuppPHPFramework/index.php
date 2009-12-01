@@ -62,10 +62,8 @@ YuppLoader :: load("core.persistent", "PersistentManager");
 YuppLoader :: load("core.persistent", "PersistentObject");
 
 // TEST
-YuppLoader :: load("core.routing", "Filter");
-YuppLoader :: load("core.routing", "Mapping");
-//YuppLoader :: load("core.routing", "ControllerFilter"); // before y after filters
-YuppLoader :: load("core.routing", "YuppControllerFilter"); // FIXME: prueba!
+YuppLoader :: load("core.routing", "Router");
+YuppLoader :: load("core.routing", "YuppControllerFilter"); // FIXME: no deberia ser parte del paquete routing, esta aca solo porque es usada desde el Executer...
 YuppLoader :: load("core.routing", "Executer");
 
 YuppLoader :: load("core.utils", "YuppStats");
