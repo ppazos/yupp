@@ -2,21 +2,8 @@
 
 include_once "core.db.Datatypes.class.php";
 
-// create table
-// CREATE TABLE carli ( id BIGINT NOT NULL PRIMARY KEY , nom VARCHAR ( 100 ) , edad INT ) ; 
-
-// insert
-// INSERT INTO carli ( id , nom , edad ) VALUES ( NULL , 'pablo' , 26 ) 
-
-/*
-// PARA VER SI EXISTE UNA TABLA.
-$res = mysql_query("show table status like '$tablename'")
-or die(mysql_error());
-$table_exists = mysql_num_rows($res) == 1;
-*/
-
-// Conector a SQLite
-class DatabaseSQLite {
+// Conector a PostgreSQL
+class DatabasePostgreSQL {
 
    // OJO cada vez que se incluya pone todo en NULL ! //
    // TODO: Podria ser singleton para simpleficar.
@@ -36,102 +23,127 @@ class DatabaseSQLite {
       return $this->queryCount;
    }
 
-// SQLite
    public function connect( $dbhost, $dbuser, $dbpass, $dbName )
    {
       //Logger::getInstance()->log("DatabaseMySQL::connect " . $dbhost ." ". $dbuser ." ". $dbpass ." ". $dbName);
 
-      $this->connection  = new SQLiteDatabase($dbName); // $dbName es el nombre del archivo. No necesito ni host ni user ni pass.                                                        // connection debe ser un handler de archivo...
+      //$this->connection = mysql_connect($dbhost, $dbuser, $dbpass);
+      
+      $this->connection = pg_connect("host=$dbhost dbname=$dbName user=$dbuser password=$dbpass");
+      // "host=sheep port=5432 dbname=mary user=lamb password=foo"
+      // connect to a database named "mary" on the host "sheep" with a username and password
 
-      if ( $this->connection === false )
+      //echo "SE CONECTA<br/>";
+      //print_r( $this->connection );
+
+      if ( !$this->connection )
       {
-         return; // No pudo conectarse
+         throw new Exception( "No pudo conectarse a PostgreSQL: " . pg_last_error($this->connection) );
       }
+
+      $this->selectDB( $dbName );
+   }
+
+   private function selectDB ( $dbName )
+   {
+      //Logger::getInstance()->log("DatabaseMySQL::selectDB");
+
+      //echo "<br />";
+      //echo "Select DB: " . $dbName . " " . $this->connection . "<br />";
+//      if ( ! mysql_select_db ($dbName, $this->connection) ) // Por si estoy trabajando con muchas conecciones
+//      {
+//         throw new Exception("Error seleccionando la tabla <b>$dbName</b> de la base de datos.");
+//      }
    }
 
    public function disconnect ()
    {
       //Logger::getInstance()->log("DatabaseMySQL::disconnect");
-      // SQLite no tiene disconnect
+
+//      if ($this->connection !== NULL)
+//      {
+//         mysql_close($this->connection); // No necesito pasar la coneccion
+//         $this->connection = NULL;
+//      }
+      
+      if(!pg_close($this->connection))
+      {
+         //print "Failed to close connection to " . pg_host($this->connection) . ": " .
+         pg_last_error($this->connection) . "<br/>\n";
+      }
+      else
+      {
+         //print "Successfully disconnected from database";
+      }
    }
 
-   // TODO: devolver true o false por si se pudo o no hacer la consulta...
-   // SQLite
+   // OJO! lo que devuelve es un recurso mysql... el resultado deberia tratarse internamente...
+   // Y devolver true o false por si se pudo o no hacer la consulta...
    public function query( $query )
    {
-      Logger::getInstance()->dbmysql_log("DatabaseSQLite::query : " . $query);
+      Logger::getInstance()->dbmysql_log("DatabasePostgreSQL::query : " . $query);
 
       $this->lastQuery = $query;
-      $result = NULL;
 
       // Si hay excepciones, se tiran para la capa de arriba donde se agarran.
-      if (!$result = @$this->connection->query($query)) throw new Exception('La consulta fall&oacute;: ' . sqlite_error_string($this->connection->lastError()) );
-      
+      if (!$result = pg_query($this->connection, $query))
+         throw new Exception('La consulta fall&oacute;: ' . pg_last_error($this->connection));
+
       $this->queryCount++;
       $this->lastResult = $result;
 
       return $result;
+      
+      /*
+      $result = pg_query($conn, "SELECT author, email FROM authors");
+      if (!$result) {
+        echo "An error occured.\n";
+        exit;
+      }
+      
+      while ($row = pg_fetch_row($result)) {
+        echo "Author: $row[0]  E-mail: $row[1]";
+        echo "<br />\n";
+      }
+      */
    }
    
-
-// PARA SQLite necesito otra funcion para update e insert, execute. En MySQL hace update, insert y select con la misma query.
+   // para tener api estandar, es para insert y update. EN mysql es igual a una consulta.
    public function execute( $query )
    {
-      Logger::getInstance()->dbmysql_log("DatabaseSQLite::execute : " . $query);
+      Logger::getInstance()->dbmysql_log("DatabasePostgreSQL::execute : " . $query);
       
-   	$this->lastQuery = $query;
+      $this->lastQuery = $query;
       
       // Si hay excepciones, se tiran para la capa de arriba donde se agarran.
-      $this->connection->queryExec($query);
+      if (!$result = pg_query($this->connection, $query))
+         throw new Exception('La consulta fall&oacute;: ' . pg_last_error($this->connection));
 
       $this->queryCount++;
+      
+      return true;
    }
 
-
-   // Sirve para iterar por los resultados de la ultima consulta.
+   // EN LUGAR DE TENER ESTA PORQUE NO HAGO UNA QUE YA TIRE LOS RESULTADOS EN UNA MATRIZ??? xq tengo que armar la matriz afuera igual...
+   // MySQL no tiene una funcion para tirar todas las filas de la consulta.
+   // Sirve para iterar por los resultados de la ultima consulta..
    public function nextRow()
    {
-      // http://es.codepicks.net/phpmanual/ref.sqlite.html
-      // SQLite.next http://es.codepicks.net/phpmanual/function.sqlite-next.html
-      if ( $this->lastResult && $this->lastResult->valid() ) // chekear valid si no next tira except...
-      {
-         $row = $this->lastResult->current(SQLITE_ASSOC);
-         $this->lastResult->next();
-         
-         // Hay un problema con SQLite y es que los nombres de las columnas las devuelve
-         // con el alias de la tabla. Si hago select * from a,b, tira a.id, b.pepe, etc.
-         // Quiero los atributos SIN alias, para que pueda encontrar los atributos que busco
-         // como id, class y deleted. Si no hago esto, deberia cambiar la capa de arriba para
-         // que sepa que le pueden venir columnas con prefijos.
-         //
-         // Saca el alias del nombre de la columna.
-         foreach ($row as $key => $value)
-         {
-            $ipunto = strpos($key, '.');
-            if ($ipunto !== false)
-            {
-               unset($row[$key]);
-               $key = substr($key, $ipunto+1);
-               $row[$key] = $value;
-            }
-         }
-         return $row;
-      }
+      if ( $this->lastResult ) return pg_fetch_assoc( $this->lastResult ); //pg_fetch_row( $this->lastResult );
       return false;
    }
 
    // Devuelve el numero de resultados (registros) que se obtuvieron con la ultima consulta.
    public function resultCount()
    {
-      return $this->lastResult->numRows(); // ??? sqlite_num_rows($resultado)
+      return pg_num_rows($this->lastResult);
    }
 
    public function showLastQuery()
    {
-      if ($this->lastResult->numRows() > 0) // (mysql_num_rows($this->lastQuery) > 0)
-      {         
-         $matrix = $this->lastResult->fetchAll(SQLITE_ASSOC); // retorna filas y columnas...
-         foreach ( $matrix as $row )
+      if (pg_num_rows($this->lastQuery) > 0)
+      {
+         while ($row = pg_fetch_assoc($this->lastQuery))
          {
             echo "<pre>";
             foreach ($row as $key => $value)
@@ -145,11 +157,10 @@ class DatabaseSQLite {
    
    public function getLastError()
    {
-   	return sqlite_error_string($this->connection->lastError());
+      return pg_last_error($this->connection);
    }
 
-
-   // MApeo tipos de SWP con tipos del dbms ===========================================
+   // Mapeo tipos de SWP con tipos del dbms ===========================================
 
    // Tipos posibles de atributos
    // Tipos de atributos disponibles (se deberian mapear segun cada DBMS...)
@@ -159,8 +170,16 @@ class DatabaseSQLite {
 
       if ( $maxLength )
       {
-         if ( $maxLength > 255 ) return "TEXT";
-         else return "VARCHAR(" . $maxLength . ")";
+         //if ( $maxLength > pow(2,24)) return "LONGTEXT";
+         //if ( $maxLength > pow(2,16)) return "MEDIUMTEXT";
+         if ( $maxLength > 255 )      return "TEXT";
+         return "VARCHAR(" . $maxLength . ")";
+         
+         /* TODO: considerar otros tipos por distintos tamanios
+          * BLOB, TEXT  L+2 bytes, donde L  < 2^16
+          * MEDIUMBLOB, MEDIUMTEXT  L+3 bytes, donde L < 2^24
+          * LONGBLOB, LONGTEXT   L+4 bytes, donde L < 2^32
+          */
 
          // http://dev.mysql.com/doc/refman/5.0/en/char.html
          // Values in VARCHAR columns are variable-length strings.
@@ -168,17 +187,17 @@ class DatabaseSQLite {
          // before MySQL 5.0.3, and 0 to 65,535 in 5.0.3 and later versions.
       }
 
-      return "TEXT"; // No tengo restriccion de tamanio.
+      return "TEXT"; // No tengo restriccion de tamanio, text por defecto.
    }
 
    public function getNumericType( $swpType )
    {
       //Logger::getInstance()->log("DatabaseMySQL::getTextType");
 
-      if ($swpType == Datatypes::INT_NUMBER)   return "INT(11)";
-      if ($swpType == Datatypes::LONG_NUMBER)  return "BIGINT(20)";
+      if ($swpType == Datatypes::INT_NUMBER)   return "INTEGER"; // "INT(11)";
+      if ($swpType == Datatypes::LONG_NUMBER)  return "BIGINT"; // "BIGINT(20)";
       if ($swpType == Datatypes::FLOAT_NUMBER) return "FLOAT";
-      if ($swpType == Datatypes::BOOLEAN)      return "BOOL";
+      if ($swpType == Datatypes::BOOLEAN)      return "BOOLEAN"; //"BOOL";
 
       // No puede llegar aca...
    }
@@ -189,18 +208,17 @@ class DatabaseSQLite {
 
       if ($swpType == Datatypes::DATE)     return "DATE";
       if ($swpType == Datatypes::TIME)     return "TIME";
-      if ($swpType == Datatypes::DATETIME) return "DATETIME";
+      if ($swpType == Datatypes::DATETIME) return "TIMESTAMP"; //"DATETIME";
 
       // No puede llegar aca...
    }
-
-
+   
    public function getDBType( $type, $constraints )
    {
       $dbms_type = NULL;
-      if ( Datatypes::isText( $type ) )
+   	if ( Datatypes::isText( $type ) )
       {
-         $maxLength = NULL;
+         $maxLength = NULL; // TODO: Falta ver si tengo restricciones de maxlength!!!
          
          $maxLengthConstraint = NULL;
          
@@ -208,15 +226,14 @@ class DatabaseSQLite {
          {
             foreach ( $constraints as $constraint )
             {
-               if ( get_class($constraint) === 'MaxLengthConstraint' )
+            	if ( get_class($constraint) === 'MaxLengthConstraint' )
                {
-                  $maxLengthConstraint = $constraint;
+               	$maxLengthConstraint = $constraint;
                   break; // rompe for
                }
             }
          }
          
-         // FIXME: no tengo este metodo? para que se hace la busqueda aca? En MySQL debe estar igual...
          //$maxLengthConstraint = $obj->getConstraintOfClass( $attr, MaxLengthConstraint );
 
          if ($maxLengthConstraint !== NULL) $maxLength = $maxLengthConstraint->getValue();
@@ -255,9 +272,45 @@ class DatabaseSQLite {
     */
    public function addForeignKeys($tableName, $fks)
    {
-      // TODO: SQLite no soporta FKs, se deberia implementar con triggers...
-      return;
+      // TODO: Keys obligatorias: name, type, table, refName.
       
+      // ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
+      //
+      //$q_fks = ""; // Acumula consultas. ACUMULAR CONSULTAS ME TIRA ERROR, VOY A EJECUTARLAS INDEPENDIENTEMENTE, IGUAL PODRIAN ESTAR RODEADAS DE BEGIN Y COMMIT!
+      foreach ( $fks as $fk )
+      {
+         // FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`)
+//         $q_fks = "ALTER TABLE $tableName " .
+//                  "ADD FOREIGN KEY (" . $fk['name'] . ") " .
+//                  "REFERENCES " . $fk['table'] . "(". $fk['refName'] .");";
+         
+         $q_fks = "ALTER TABLE $tableName ".
+                  "ADD CONSTRAINT fk_".$fk['table']."_".$fk['name']."_".$fk['refName']." ". // En Postgre las FK tienen nombre, usando table, name(nombre del atributo) y refName me aseguro de que es unico.
+                  "FOREIGN KEY (" . $fk['name'] . ") ".
+                  "REFERENCES " . $fk['table'] . "(". $fk['refName'] .");";
+         
+         // ALTER TABLE distributors
+         //  ADD CONSTRAINT distfk
+         //  FOREIGN KEY (address)
+         //  REFERENCES addresses (address) MATCH FULL;
+         
+         // ALTER TABLE editions
+         //  ADD CONSTRAINT foreign_book
+         //  FOREIGN KEY (book_id)
+         //  REFERENCES books (id);
+         
+         // ALTER TABLE SALESREPS
+         //  ADD CONSTRAINT
+         //  FOREIGN KEY (REP_OFFICE)
+         //  REFERENCES OFFICES;
+         
+         // ALTER TABLE alumnos
+         //  ADD CONSTRAINT alumnos_fk
+         //  FOREIGN KEY (codigo_tutor)
+         //  REFERENCES padres_tutores(DNI);
+         
+         $this->execute( $q_fks );
+      }
    } // addForeignKeys
    
    /**
@@ -267,20 +320,144 @@ class DatabaseSQLite {
     */
    public function tableExists( $tableName ) //: boolean
    {
-      $res = $this->query( "select name from sqlite_master where name='$tableName'" );
-      return $res->numRows() > 0;
+      // http://archives.devshed.com/forums/databases-124/check-if-postgresql-table-exists-1693460.html
+      
+      $res = $this->query( "select tablename from pg_tables where tablename='$tableName'" );
+      
+      /*
+      while ($row = $this->nextRow())
+      {
+         print_r( $row );
+      }
+      */
+      
+      //print_r( pg_num_rows($res) );
+      //print_r( $res );
+      
+      /* Lo que retorna si existe la tabla:
+       * Array
+       * (
+       *     [0] => Array
+       *         (
+       *             [Tables_in_carlitos (tabla_e)] => tabla_e
+       *         )
+       * )
+       */
+       
+      return pg_num_rows($res) > 0;
    }
    
    public function tableNames() //: string[] // nombres de todas las tablas de la db seleccionada.
    {
-      $q = "SELECT tbl_name FROM sqlite_master";
-      $res = $this->query( $q );
+      //$q = "show tables";
+      $res = $this->query( "select tablename from pg_tables" );
       return $res;
    }
    
+   public function createTable($tableName, $pks, $cols, $constraints)
+   {
+      Logger::getInstance()->dbmysql_log("DatabasePostgreSQL::createTable: " . $tableName);
+      // TODO:
+      // ESTA LLAMADA: $dbms_type = $this->db->getTextType( $type, $maxLength );
+      // Deberia cambiarse por: $this->db->getDBType( $attrType, $attrConstraints ); // Y todo el tema de ver el largo si es un string lo hace adentro.
+      
+      //         CREATE TABLE `tabla_nueva` (
+      //          `id` INT NOT NULL ,
+      //          `user` VARCHAR( 50 ) NOT NULL ,
+      //          PRIMARY KEY ( `id` )
+      //         ) ENGINE = innodb;  
+      //          
+      //         CREATE TABLE table_name (
+      //           id    INTEGER  PRIMARY KEY, << utiliza esta forma de declarar PKs, obs, no puedo declarar mas de una, de la otra forma si!
+      //           col2  CHARACTER VARYING(20),
+      //           col3  INTEGER REFERENCES other_table(column_name), << usa esta forma de declaracon de FKs
+      //         ... )
+      
+      // CREATE TABLE films (
+      //  code        char(5) CONSTRAINT firstkey PRIMARY KEY,
+      //  title       varchar(40) NOT NULL,
+      //  did         integer NOT NULL,
+      //  date_prod   date,
+      //  kind        varchar(10),
+      //  len         interval hour to minute
+      // );
+      
+      // Keys obligatorias: name, type.
+      // Keys opcionales: default.
+      $q_ini = "CREATE TABLE " . $tableName . " (";
+      $q_end = ");";
+      
+      $q_pks = "";
+      foreach ( $pks as $pk )
+      {
+         $constraintsOrNull = (isset($constraints[$pk['name']])) ? $constraints[$pk['name']] : NULL;
+         $q_pks .= $pk['name'] . " " . 
+                   $this->getDBType($pk['type'], $constraintsOrNull ) . " " .
+                   ((array_key_exists('default', $pk)) ? "DEFAULT " . $pk['default'] : '') . // si hay default lo pone 
+                   " PRIMARY KEY, "; // TODO!
+      }
+      
+      // Keys obligatorias: name, type.
+      // Keys opcionales: default, nullable.
+      
+      $q_cols = "";
+      foreach ( $cols as $col )
+      {
+         // $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
+  
+         // =============================================================================================================
+         // FIXME: arreglo rapido porque no hay constraints para id, ver el sig. FIXME en PersistentManager en linea 2203
+         //    FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
+         $constraintsOrNull = (isset($constraints[$col['name']])) ? $constraints[$col['name']] : NULL;
+         $q_cols .= $col['name'] . " " . 
+                    $this->db->getDBType($col['type'], $constraintsOrNull ) . " " .
+                    ((array_key_exists('default', $col)) ? "DEFAULT " . $col['default'] : '') . // si hay default lo pone 
+                    ((array_key_exists('nullable', $col) && $col['nullable']) ? " NULL" : " NOT NULL") . // Si la clave nullable esta y si el ooleano en nullable es true, pone NULL.
+                    ", ";
+      }
+
+      // Keys obligatorias: name, type, table, refName.
+      
+      $q = $q_ini . $q_pks . substr($q_cols,0,-2) . $q_end; // substr para sacar ", " del final.
+
+      //Si hay una excepcion, va a la capa superior.
+      $this->execute( $q );
+      
+   } // createTable
    
+/* Pense que capaz habia que implementar algo especial pero con lo que hay en DAL funciona asi que no es necesario.
+   public function count( $tableName, $params = array() )
+   {
+      //Logger::getInstance()->log("DAL::count $tableName");
+      
+      $q = "SELECT count(id) FROM " . $tableName;
+      if (isset($params['where']))
+      {
+         $q .= " WHERE " . ( $this->evaluateAnyCondition( $params['where'] ) );
+      }
 
+      $this->query( $q );
+      $row = $this->nextRow();
 
+//print_r($row);
+
+      return $row[0];
+   }
+   
+   public function generateNewId ( $tableName )
+   {
+      //Logger::getInstance()->log("DAL::generateNewId $tableName");
+
+      $this->query( "SELECT MAX(id) FROM ". $tableName );
+      $row = $this->nextRow();
+
+//print_r($row);
+
+      if ( empty($row[0]) ) return 1;
+      return ($row[0]+1);
+   }
+*/
+   
    // EVALUACION DE CONSULTAS ======================================================
    //
    public function evaluateQuery( Query $query )
@@ -339,6 +516,8 @@ class DatabaseSQLite {
    
    public function evaluateAnyCondition( Condition $condition )
    {
+      //Logger::struct($condition, "DatabaseMySQL::evaluateAnyCondition");
+      
       $where = "";
       switch ( $condition->getType() )
       {
@@ -407,7 +586,7 @@ class DatabaseSQLite {
    private function evaluateReferenceValue( $refVal )
    {
       // Si es 0 me devuelve null...
-      if ( $refVal === 0 ) return "0";
+      if ( $refVal === 0 ) return "'0'";
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
    }
    
@@ -428,25 +607,21 @@ class DatabaseSQLite {
    
    public function evaluateEEQCondition( Condition $condition )
    {
+      return $this->evaluateEQCondition( $condition );
+      
+      /*
       $refVal = $condition->getReferenceValue();
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-      // Idem a EQ en SQLite
       if ( $refVal !== NULL )
-         return $atr->alias.".".$atr->attr ."=". $this->evaluateReferenceValue( $refVal ); // a.b = 666
-      
-      if ( $refAtr !== NULL )
-         return $atr->alias.".".$atr->attr ."=". $refAtr->alias.".".$refAtr->attr; // a.b = c.d
-      
-      /* STRCMP en SQLite no existe.
-      if ( $refVal !== NULL )
-         return "STRCMP(". $atr->alias.".".$atr->attr .", BINARY(". $this->evaluateReferenceValue( $refVal ) .")) = 0";
+         return "STRCMP(". $atr->alias.".".$atr->attr .", ". $this->evaluateReferenceValue( $refVal ) .") = 0";
           
       if ( $refAtr !== NULL )
-         return "STRCMP(". $atr->alias.".".$atr->attr .", BINARY(". $refAtr->alias.".".$refAtr->attr .")) = 0";
-      */ 
+         return "STRCMP(". $atr->alias.".".$atr->attr .", ". $refAtr->alias.".".$refAtr->attr .") = 0";
+         
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+      */
    }
    
    public function evaluateNEQCondition( Condition $condition )
@@ -486,17 +661,8 @@ class DatabaseSQLite {
    
    public function evaluateILIKECondition( Condition $condition )
    {
-      $refVal = $condition->getReferenceValue();
-      $refAtr = $condition->getReferenceAttribute();
-      $atr    = $condition->getAttribute();
-      
-      if ( $refVal !== NULL )
-         return $atr->alias.".".$atr->attr ." ILIKE ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
-      
-      if ( $refAtr !== NULL )
-         return $atr->alias.".".$atr->attr ." ILIKE ". $refAtr->alias.".".$refAtr->attr; // a.b LIKE c.d
-
-      throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
+       // FIXME?: parece que en MySQL por defecto las busquedas no son case sensitive.
+       return $this->evaluateLIKECondition( $condition );
    }
    public function evaluateGTCondition( Condition $condition )
    {

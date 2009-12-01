@@ -6,12 +6,14 @@ class DatabaseNormalization {
 
    public static function table( $tableName )
    {
-      return String::firstToLower( $tableName );
+      //return String::firstToLower( $tableName );
+      return String::toUnderscore( $tableName );
    }
 
    public static function col( $colName )
    {
-      return $colName;
+      //return $colName;
+      return strtolower($colName);
    }
 
    public static function simpleAssoc( $colName )
@@ -96,6 +98,10 @@ class DAL {
             YuppLoader::load( "core.db", "DatabaseSQLite" );
             $this->db = new DatabaseSQLite();
          break;
+         case YuppConfig::DB_POSTGRES:
+            YuppLoader::load( "core.db", "DatabasePostgreSQL" );
+            $this->db = new DatabasePostgreSQL();
+         break;
       }
       
       // TODO: que dmbs desde config, perfecto para factory pattern.
@@ -135,6 +141,7 @@ class DAL {
    }
 
 
+   // FIXME: depende del DBMS
    /**
     * createTable
     * Crea una nueva tabla con la informacion que se le pasa.
@@ -179,7 +186,6 @@ class DAL {
       // VERIFY: posible problema, si estoy creando una tabla con referencias a otra y esa otra no esta creada, capaz salta la base.
       // capaz deveria crear las tablas y luego todas las FKs.
       
-   	// TODO:
       $q_ini = "CREATE TABLE " . $tableName . " (";
       $q_end = ");";
       
@@ -269,30 +275,8 @@ class DAL {
    public function addForeignKeys($tableName, $fks)
    {
       // Lo resuelve cada DBMS particular.
-      $this->db->addForeignKeys($tableName, $fks);
-      
-      /*
-      // FIXME: generar FKs depende del DBMS, p.e. SQLite no las soporta...
-      if ( $this->dbms_metadata[ YuppConfig::getInstance()->getDatabaseType() ]['fk_support'] )
-      {
-         // FIXME: las FKs dependen del DBMS, p.e. SQLite no tiene FKs, usa triggers para modelar esta restriccion.
-         // Keys obligatorias: name, type, table, refName.
-         
-      	// ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
-         //
-         //$q_fks = ""; // Acumula consultas. ACUMULAR CONSULTAS ME TIRA ERROR, VOY A EJECUTARLAS INDEPENDIENTEMENTE, IGUAL PODRIAN ESTAR RODEADAS DE BEGIN Y COMMIT!
-         foreach ( $fks as $fk )
-         {
-            // FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`)
-            $q_fks = "ALTER TABLE $tableName " .
-                     "ADD FOREIGN KEY (" . $fk['name'] . ") " .
-                     "REFERENCES " . $fk['table'] . "(". $fk['refName'] .");";
-
-            $this->db->execute( $q_fks );
-         }
-      }
-      */
-   } // addForeignKeys
+      $this->db->addForeignKeys($tableName, $fks);  
+   }
 
    /**
     * FIXME: no deberia mandarle el objeto, deberia ser un vector de datos.
@@ -305,6 +289,7 @@ class DAL {
     */
    // SQLite> CREATE TABLE ggg (id int, name CHAR(255), email CHAR(255), PRIMARY KEY (id));
    // MySQL> aca le pongo ` y funciona, pero en la doc de la web no le pone, y esas comillas hacen q no me ande el lite.
+/*
    public function createTable( $tableName, &$obj )
    {
       Logger::getInstance()->log("DAL::createTable " . $tableName);
@@ -323,11 +308,11 @@ class DAL {
           // FIXME: esta generando nullables para todos los atributos
 
           // VERFICA CAMPOS NULLABLES
-          /* Ahora son todos nullables menos los inyectados, para hacer mas simple el soporte para herencia.
-          $nullable = "";
-          if ( $obj->nullable($attr) ) $nullable = "NULL";
-          else $nullable = "NOT NULL";
-          */
+          // Ahora son todos nullables menos los inyectados, para hacer mas simple el soporte para herencia.
+          //$nullable = "";
+          //if ( $obj->nullable($attr) ) $nullable = "NULL";
+          //else $nullable = "NOT NULL";
+          
           $nullable = "NULL";
           if ( $obj->isInyectedAttribute( $attr ) ) $nullable = "NOT NULL";
 
@@ -344,23 +329,6 @@ class DAL {
           //
 
           //Logger::getInstance()->log( "TIPO: " . $type );
-
-          /*
-          CREATE TABLE `tabla_nueva` (
-          `id` INT NOT NULL ,
-          `user` VARCHAR( 50 ) NOT NULL ,
-          PRIMARY KEY ( `id` )
-          ) ENGINE = innodb;
-          */
-          
-          /*
-           * CREATE TABLE table_name (
-           *    id    INTEGER  PRIMARY KEY,
-           *    col2  CHARACTER VARYING(20),
-           *    col3  INTEGER REFERENCES other_table(column_name),
-           * ... )
-           *
-           */
 
           $dbms_type = NULL;
           if ( Datatypes::isText( $type ) )
@@ -396,38 +364,6 @@ class DAL {
 
           $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
           //$q .= "`". DatabaseNormalization::col($attr) ."` $dbms_type $nullable , ";
-
-          /*
-          // FIXME: el tipo real depende del dbms, por lo que hay que preguntarle a el cual es el string real.
-          switch ( $type )
-          {
-             ...
-             default:
-             {
-                // Si cae aca es poruqe puede ser una clase persistente, si es tengo que hacer la asoc con la otra tabla.
-                // Esto si es una relacion 1..1...
-
-                if ( is_subclass_of($type, 'PersistentObject') )
-                {
-                   // Ahora agrego dinamicamente el atributo....
-                   //$q .= $ins->getAssocAttrName( $type ) . " , "; // FK !!!
-
-                   // FKs MySQL http://dev.mysql.com/doc/refman/5.0/en/innodb-foreign-key-constraints.html
-                   // ....
-                   // PRIMARY KEY  (`id`),
-                   // KEY `FK748CA1805DDE6506` (`tipo_id`),
-                   // KEY `FK748CA1805C55741A` (`topografia_id`),
-                   // CONSTRAINT `FK748CA1805C55741A` FOREIGN KEY (`topografia_id`) REFERENCES `tipotopografia` (`id`),
-                   // CONSTRAINT `FK748CA1805DDE6506` FOREIGN KEY (`tipo_id`) REFERENCES `tipoacceso` (`id`)
-                }
-                else
-                {
-                   // Tipo de sociacion no soportado o clase no persistente...
-                }
-             }
-             break;
-          }
-          */
       }
 
       $q .= "PRIMARY KEY ( id )"; //$q .= "PRIMARY KEY ( `id` )";
@@ -452,7 +388,7 @@ class DAL {
       //Logger::log("/DAL::createTable");
 
    } // createTable
-
+*/
 
    // Modifica un registro ya existente. DEBE tener el id seteado en los values.
    // FIXME: si la tabla se deriva del objeto no veo la necesidad de pasarle ambos, 
@@ -889,45 +825,6 @@ class DAL {
 
 
    /**
-    * FIXME: deberia recibir un array de valores para TODOS los atributos, o sea los declarado en attributeTypes.
-    * Se recibe un objecto a la que ya se ha verificado que debe updatearse en la base de datos.
-    * @param $object POs a actualizar.
-    */
-/*SE USA update_query2
-   private function update_query( $object, $tableName = NULL )
-   {
-      if (!$tableName) $tableName = YuppConventions::tableName( $object );
-
-      $q = "UPDATE " . $tableName . " SET "; // DBSTD
-      $attrs = $object->getAttributeTypes(); // Atributos simples... (normales e inyectados).  // FIXME: No deberia usar la API de PO en DAL...
-      $tableAttrs = "";
-      foreach ( $attrs as $attr => $type )
-      {
-         if ( strcmp($attr, "id") != 0 ) // No updateo el id...
-         {
-            $value = $object->aGet( $attr );
-            if ( is_null($value) ) $tableAttrs .= DatabaseNormalization::col( $attr ) ."=NULL,"; // Si no se pone esto ponia '' y se guardaba 0, mientras necesito que se guarde NULL.
-            else $tableAttrs .= DatabaseNormalization::col( $attr ) ."='". $value ."',"; // FIXME: Ver si el value es literal...
-         }
-      }
-      $tableAttrs = substr($tableAttrs, 0, sizeof($tableAttrs)-2);
-      $q .= $tableAttrs;
-      $q .= " WHERE id=" . $object->getId();
-
-      try
-      {
-         $this->db->execute( $q );
-      }
-      catch (Exception $e)
-      {
-          echo $e->getMessage();
-          echo $this->db->getLastError();
-      }
-      
-   } // update_query
-*/
-
-   /**
     * Se recibe un objecto a la que ya se ha verificado que debe insertarse en la base de datos.
     * @param $object POs a salvar.
     */
@@ -971,10 +868,13 @@ class DAL {
    } // insert_query
 
 
-
+// FIXME: depende del DBMS!!!!!!!!!!!
+//        le hice correcciones para postgres, pero en mysql va a andar mal...
    public function count( $tableName, $params = array() )
    {
       Logger::getInstance()->log("DAL::count $tableName");
+      
+      //return $this->db->count( $tableName,$params );
       
       $q = "SELECT count(id) as cant FROM " . $tableName;
       if (isset($params['where']))
@@ -986,21 +886,26 @@ class DAL {
 
       $row = $this->db->nextRow();
 
-      return $row['cant'];
+//print_r($row);
+
+      return $row['cant']; // dice que no existe el indice 'cant' aunque consulte con count(id) as cant
    }
 
+// FIXME: depende del DBMS
+// para postgres la primer consulta da NULL porque no hay items,
+// ahi habria que decirle que no sume, que el resultado es 1 derecho.
    public function generateNewId ( $tableName )
    {
       //Logger::getInstance()->log("DAL::generateNewId $tableName");
+      
+      //return $this->db->generateNewId($tableName);
 
       $q = "SELECT MAX(id) AS max FROM ". $tableName;
-
       $this->db->query( $q ); // DBSTD
-
       $row = $this->db->nextRow(); //mysql_fetch_assoc( $result ); // DBSTD
 
-      //$result = stand_alone_query ( $q );
-      //$row = mysql_fetch_assoc( $result ); // FIXME: Hay que ver que pasa cuando es null...
+//print_r($row);
+
       return ($row['max']+1);
    }
 
