@@ -9,7 +9,7 @@ class YuppConventions {
    function YuppConventions() {
    }
     
-   
+   // FIXME: Esta deberia ir en DatabaseNormalization
    /**
     * @return nombre de la columna de la tabla que va a hacer referencia a una
     *  tabla de una superclase, sirve para MTI donde se inyectan atributos
@@ -18,7 +18,9 @@ class YuppConventions {
     */
    public static function superclassRefName( $superclassName )
    {
-   	return "super_id_" . $superclassName; //strtolower($superclassName); // TODO: si lo paso a lower, luego puedo no obtener el nombre exacto.
+   	//return "super_id_" . $superclassName; //strtolower($superclassName);
+      // TODO: si lo paso a lower, luego puedo no obtener el nombre exacto.
+      return "super_id_" . strtolower($superclassName);
    }
    
    /**
@@ -26,8 +28,24 @@ class YuppConventions {
     */
    public static function superclassFromRefName( $ref )
    {
-      return substr($ref, 9); // le saco el "super_id_"
+      // FIXME: hay que buscar la clase con la que matchea, porque puede ser
+      //       super_id_clase y deberia encontrar 'Clase' con mayuscula.
       
+      // Es underscore por la transformacion que hace superclassRefName()
+      $classname_underscore = substr($ref, 9); // le saco el "super_id_"
+      
+      $classes = YuppLoader::getLoadedModelClasses();
+      foreach ($classes as $class)
+      {
+         if ( $classname_underscore == strtolower($class) ) return $class;
+      }
+      
+      // Si no se encuentra en las clases cargadas devuelvo lo mas parecido a
+      // un nombre de clase: lo que obtengo con la primer letra en mayuscula.
+      
+      return String::firstToUpper( $classname_underscore );
+      
+      //return substr($ref, 9); // le saco el "super_id_"
    }
    
    /**

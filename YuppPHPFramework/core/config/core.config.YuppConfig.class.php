@@ -31,6 +31,7 @@ class YuppConfig {
     */
    const DB_MYSQL  = "mysql";
    const DB_SQLITE = "sqlite";
+   const DB_POSTGRES = "postgres";
    
    /**
     * Keys de bases de datos disponibles.
@@ -58,7 +59,12 @@ class YuppConfig {
                                   array( 'url'  => '',
                                          'user' => '',
                                          'pass' => '',
-                                         'database' => 'C:\\wamp\\sqlitemanager\\carlitos') // 'C:\\wamp\\sqlitemanager\\test.sqlite')
+                                         'database' => 'C:\\wamp\\sqlitemanager\\carlitos'), // 'C:\\wamp\\sqlitemanager\\test.sqlite')
+                               self::DB_POSTGRES =>
+                                  array( 'url' => 'localhost',
+                                         'user' => 'postgres',
+                                         'pass' => 'root',
+                                         'database' => 'postgres')
                              );
    
    // ==================================================
