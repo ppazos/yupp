@@ -283,6 +283,32 @@ class PersistentObject {
       return $this->hasManyType[$attr];
    }
    
+   /**
+    * Busca el nombre del atributo por el nombre de la coumna que le corresponde en el ORM.
+    * Devuelve NULL si no lo encuentra.
+    * Solo busca en atributos simples o hasOne, ya que los hasMany no se 
+    * mapean en la misma tabla con una columna (aunque los hasOne solo 
+    * seria el atributo referencia que esta tambie en attributeTypes
+    * con los attrs simples).
+    */
+   public function getAttributeByColumn( $colname )
+   {
+      // Si esta con el mismo nombre, lo retorno (son la mayoria de los casos)
+      if ( array_key_exists( $colname, $this->attributeTypes ) )
+         return $colname;
+      
+      // Si no esta por el nombre exacto, busco normalizando los nombres de
+      // los atributos por la columna que le toca en el ORM.
+      foreach ( $this->attributeTypes as $classAttr => $type )
+      {
+         if ( DatabaseNormalization::col($classAttr) == $colname )
+            return $classAttr;
+      }
+      
+      // Si no encuentra, devuelve NULL
+      return NULL;
+   }
+   
    // ====================================================
    // Para saber cuando se salvo el objeto.
    protected $sessId = NULL;
@@ -1509,7 +1535,10 @@ class PersistentObject {
       // CHECK 1: El atributo esta en la lista de atributos?
       if ( array_key_exists($attribute, $this->attributeTypes) )
       {
-         if ( is_null($value) || is_scalar($value) ) // Dejo tambien setear NULL xq al setear email_id puede ser NULL y un valor simple tambien puede ser NULL si se lo desea.
+         // Si el valor es null o es un tipo simple (no una clase)
+         //  - Dejo tambien setear NULL xq al setear email_id puede ser NULL 
+         //    y un valor simple tambien puede ser NULL si se lo desea.
+         if ( is_null($value) || is_scalar($value) )
          {
             $this->attributeValues[ $attribute ] = $value;
             return;
@@ -1519,18 +1548,42 @@ class PersistentObject {
          	throw new Exception( "El valor para el atributo simple $attribute no es simple, es un " . gettype($value) );
          }
       }
+      else // FIXME OPTIMIZACION: aqui deberia buscar por hasMany y hasOne, y recien cuando veo que no encuentro, hacer la busqueda por parecidos.
+      {
+         // Pruebo si el attribute no es el nombre de la columna
+         // que corresponde con algun atributo de esta clase en
+         // el ORM.
+         foreach ( $this->attributeTypes as $classAttr => $type )
+         {
+            if ( DatabaseNormalization::col($classAttr) == $attribute )
+            {
+               if ( is_null($value) || is_scalar($value) )
+               {
+                  $this->attributeValues[ $classAttr ] = $value;
+                  return;
+               }
+               else
+               {
+                  throw new Exception( "El valor para el atributo simple $attribute no es simple, es un " . gettype($value) );
+               }
+            }
+         }
+      }
+      // else // si no esta en la lista de atributos, me fijo si no encuentro un atributo con
+              // nombre "similar" a $attribute, esto pasa porque si el atributo es normalizedName
+              // en la tabla guarda 'normalizedname' todo en minusculas (por YuppConventions).
+              // Se debe hacer idem para hasOne y hasMany
       
 //Logger::getInstance()->log( $attribute );
 
       // Para checkear hasOne o hasMany tengo que fijarme por el nombre del atribtuo que puede tener el nombre de la asociacion.
       // $attribute no es atributo simple.
       $full_attribute = $this->getFullAttributename( $attribute ); // Podria tener codificador el nombre de la asociacion.
-                                                              // SE PIERDE EL ATRIBUTOOOO SI ES UN ATRIBUTO SIMPLE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                                                   // SE PIERDE EL ATRIBUTO SI ES UN ATRIBUTO SIMPLE!!!!!!
 
       if ( array_key_exists($full_attribute, $this->hasOne) )
       {
-
-         if ( is_null($value) || is_subclass_of( $value, 'PersistentObject' ) ) // El caso null es valido pero falla en el is_subclass_of, por eso se agrega como OR a la conicion.
+         if ( is_null($value) || is_subclass_of( $value, 'PersistentObject' ) ) // El caso null es valido pero falla en el is_subclass_of, por eso se agrega como OR a la condicion.
          {
             $this->attributeValues[ $full_attribute ] = $value; // email
 
@@ -1546,8 +1599,35 @@ class PersistentObject {
             throw new Exception( "El valor para el atributo hasOne $full_attribute no es persistente, es un " . gettype($value) );
          }
       }
+      else
+      {
+         // Pruebo si el attribute no es el nombre de la columna
+         // que corresponde con algun atributo de esta clase en
+         // el ORM.
+         foreach ( $this->hasOne as $classHOAttr ) // FIXME: ver estructura
+         {
+            if ( DatabaseNormalization::col($classHOAttr) == $full_attribute )
+            {
+               if ( is_null($value) || is_subclass_of( $value, 'PersistentObject' ) ) // El caso null es valido pero falla en el is_subclass_of, por eso se agrega como OR a la condicion.
+               {
+                  $this->attributeValues[ $full_attribute ] = $value; // email
+                  
+                  // Si seteo NULL no puedo preguntarle el id!!!
+                  $refAttrName = DatabaseNormalization::simpleAssoc( $full_attribute ); // "email_id"
+                  if ( $value ) $this->attributeValues[ $refAttrName ] = $value->getId(); // Seteo tambien "email_id", puede ser NULL !!!
+                  else $this->attributeValues[ $refAttrName ] = NULL; // Seteo tambien "email_id", puede ser NULL !!!
 
-      if ( array_key_exists($full_attribute, $this->hasMany) ) // El valor deberia ser una lista de objetos....
+                  return;
+               }
+               else
+               {
+                  throw new Exception( "El valor para el atributo hasOne $full_attribute no es persistente, es un " . gettype($value) );
+               }
+            }
+         }
+      }
+
+      if ( array_key_exists($full_attribute, $this->hasMany) ) // El valor deberia ser una lista de objetos.
       {
          // $value Debe ser un array
          // TODO: ademas deberia ser de objetos persistentes.
@@ -1560,6 +1640,33 @@ class PersistentObject {
          else
          {
              throw new Exception("El valor para el atributo ". $full_attribute ." debe ser un array.");
+         }
+      }
+      else
+      {
+         // Pruebo si el attribute no es el nombre de la columna
+         // que corresponde con algun atributo de esta clase en
+         // el ORM.
+         foreach ( $this->hasMany as $classHMAttr )// FIXME: ver estructura
+         {
+            if ( DatabaseNormalization::col($classHMAttr) == $full_attribute )
+            {
+               if ( is_array($value) )
+               {
+                   $this->attributeValues[ $full_attribute ] = $value;
+                  
+                  // Si seteo NULL no puedo preguntarle el id!!!
+                  $refAttrName = DatabaseNormalization::simpleAssoc( $full_attribute ); // "email_id"
+                  if ( $value ) $this->attributeValues[ $refAttrName ] = $value->getId(); // Seteo tambien "email_id", puede ser NULL !!!
+                  else $this->attributeValues[ $refAttrName ] = NULL; // Seteo tambien "email_id", puede ser NULL !!!
+
+                  return;
+               }
+               else
+               {
+                  throw new Exception("El valor para el atributo ". $full_attribute ." debe ser un array.");
+               }
+            }
          }
       }
       
@@ -1587,6 +1694,9 @@ class PersistentObject {
       // Si no es un atributo simple tengo que ver lazy load...
       if ( !array_key_exists($attr, $this->attributeTypes) )
       {
+         // Si llega aqui estoy seguro de que no pide un atributo simple, se pide uno complejo.
+         // Podria ser simple pero se paso un nombre normalizado para una columna.
+         
          $attr = $this->getFullAttributename( $attr ); // Podria tener codificador el nombre de la asociacion.
 
          // Soporte para lazy loading par ahasOne y hasMany
@@ -1604,7 +1714,6 @@ class PersistentObject {
                // if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
                // ver si es necesario...
 
-               //PersistentManager::getInstance()->get_many_assoc_lazy(&$this, $attr); // El atributo se carga, no tengo que setearlo...
                PersistentManager::getInstance()->get_many_assoc_lazy($this, $attr); // El atributo se carga, no tengo que setearlo...
             }
             else if ( array_key_exists($attr, $this->hasOne) )
@@ -1619,12 +1728,37 @@ class PersistentObject {
             }
             else
             {
+               // BUSCA POR SIMILARES
+               
+               // Aun puede ser simple porque se pide por el nombre de la columna en lugar
+               // del nombre del atributo, entonces primero hay que buscar si no se pide
+               // por el nombre de la columna. Idem a lo que hago en aSet.
+               foreach ( $this->attributeTypes as $classAttr => $type )
+               {
+                  //echo "BUSCA CON NORMALIZACION $classAttr, $attr<br/>";
+                  if ( DatabaseNormalization::col($classAttr) == $attr )
+                  {
+                     //echo "ENCUENTRA CON NORMALIZACION $classAttr, $attr<br/>";
+                     
+                     if (isset($this->attributeValues[ $classAttr ]))
+                     {
+                        return $this->attributeValues[ $classAttr ];
+                     }
+                     else
+                        return NULL;
+                  }
+               }
+               
                throw new Exception("El atributo ". $attr ." no existe en la clase (" . get_class($this) . ")");
             }
          } // si no esta cargada
       } // si no es simple
 
-      if (isset($this->attributeValues[ $attr ])) return $this->attributeValues[ $attr ];
+      // Devuelvo atributo simple
+      if (isset($this->attributeValues[ $attr ]))
+      {
+         return $this->attributeValues[ $attr ];
+      }
       
       return NULL;
 

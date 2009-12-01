@@ -659,6 +659,8 @@ class PersistentManager {
       
       $dal = DAL::getInstance();
       
+// Logger::struct( $attrValues, "get_mti_object_byData 1" );
+      
       // Nueva instancia de la clase real.
       $cins = new $attrValues["class"](array(), true); // Intancia para hallar nombre de tabla (solo para eso, no se usa luego).
       
@@ -694,7 +696,6 @@ class PersistentManager {
              * en esa tabla debe haber un atributo super_id_$persistentClass,
              * entonces, la consulta que se hace es dame el objeto con "super_id_$persistentClass = $id" (YuppConventions::superclassRefName( $superclassName ))
              */
-            //$cins = new $attrValues["class"](array(), true); // Solo para hallar el nombre de la tabla.
             $tableName = YuppConventions::tableName( $cins );
             
             
@@ -780,12 +781,10 @@ class PersistentManager {
          //Logger::getInstance()->pm_log("NO ES MTI: " . __FILE__ . " " . __LINE__);
       }
 
-      //Logger::struct( $attrValues, "ATTR VALUES" );
-      
       // Soporte para herencia. (TODO: necesito mas que esto para multiples tablas)
       $realClass = $attrValues['class'];
       
-      // TODO: setear los multipleTableIds!!!!!! ????
+//      Logger::struct( $attrValues, "get_mti_object_byData 2" );
       
       return $this->createObjectFromData( $realClass, $attrValues );
    
@@ -836,14 +835,29 @@ class PersistentManager {
     */
    private function createObjectFromData( $class, $data )
    {
+      Logger::getInstance()->pm_log("PersistentManager.createObjectFromData " . $class );
+      
       // $data son $attrValues.
       
    	$obj = new $class(); // Instancia a devolver, instanciado en la clase correcta.
 
       // Carga atributos simples
-      foreach ($data as $attr => $value)
+      foreach ($data as $colname => $value)
       {
-         if ($obj->hasAttribute($attr)) // Setea solo si es un atributo de el.
+         // FIXME: si es un refName super_id_Clase, no va a encontrarlo como atributo 
+         //        porque la columna se va a llamar super_id_clase (clase en minuscula).
+         
+         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         // ACA ESTA EL PROBLEMA AL CARGAR QUE DICE QUE NO hasAttribute para normalizedName...
+         
+// FIX rapido porque hasAttribute no busca en los atributos ocn nombre normalizado como columna.
+// En todos los lugares donde pregunte por hasAttribute puede haber el mismo problema.
+// Tengo un problema cuando la clase no tiene el atributo declarado en ella pero si esta declarado en la 
+// superclase... me tira que no existe el atributo.
+//       if ($obj->hasAttribute($attr)) // Setea solo si es un atributo de el.
+//       {
+         // Obtiene el nombre del atributo para setearlo, si es NULL la clase no tiene ese atributo.
+         if ( $attr = $obj->getAttributeByColumn( $colname ) )
          {
             // TODO: Ver como se cargan los NULLs, por ahora se setean... como debe ser?
             
@@ -865,6 +879,8 @@ class PersistentManager {
     */
    private function getDataFromObject( $obj )
    {
+      Logger::getInstance()->pm_log("PersistentManager.getDataFromObject");
+      
       $data = array();
       $attrs = $obj->getAttributeTypes();
       foreach ( $attrs as $attr => $type )
@@ -1108,9 +1124,9 @@ class PersistentManager {
    } // get_many_assocs
 */
 
-// =========================
-// obtiene solo uan asociacion.
-   //public function get_many_assoc_lazy( PersistentObject &$obj, $hmattr )
+   // =========================
+   // Obtiene solo una asociacion.
+   //
    public function get_many_assoc_lazy( PersistentObject $obj, $hmattr )
    {
       Logger::getInstance()->pm_log("PersistentManager.get_many_assoc_lazy " . get_class( $obj ) . " " . $hmattr);
@@ -1169,14 +1185,15 @@ class PersistentManager {
 
       $q = new Query();
       $q->addFrom( $relTableName, "ref" );  // person_phone ref // FIXME: ESTO ES addFrom.
-      // (***)
       $q->addFrom( $relObjTableName, "obj" );
       
-      
+      // Se agregan los atributos de la clase como proyeccion de la query.
       // Solo quiero los atributos de OBJ, agrego sus atributos como proyecciones de la consulta.
       foreach( $_obj->getAttributeTypes() as $attr => $type )
       {
-         $q->addProjection("obj", $attr);
+         //$q->addProjection("obj", $attr);
+         // TODO: no deberia normalizar la query mismo?
+         $q->addProjection( "obj", DatabaseNormalization::col($attr) );
       }
       
       // Necesito saber el nombre del atributo de los ids asociados.
@@ -1226,9 +1243,12 @@ class PersistentManager {
       	$q->addOrder("ref", "ord", "ASC"); // Orden ascendente por atributo ORD de la tabla intermedia.
       }
       
-      // new
-      //$data = $dal->query( $q->evaluate() ); // Trae todos los objetos linkeados... (solo sus atributos simples)
+      Logger::getInstance()->pm_log("PersistentManager.get_many_assoc_lazy query ". __FILE__ ." ". __LINE__);
+      
+      // Trae todos los objetos linkeados... (solo sus atributos simples)
       $data = $dal->query( $q );
+
+//Logger::struct( $data, "get_many_assoc_lazy data" );
 
       // FIN QUERY...
       
@@ -1262,17 +1282,19 @@ class PersistentManager {
          
          if ( $many_attrValues['class']===$hmattrClazz )
          {
-//            echo "   la clase es la misma que la declarada<br/>";
+            //echo "   la clase es la misma que la declarada<br/>";
             $rel_obj = $this->createObjectFromData( $hmattrClazz, $many_attrValues );
          }
          else
          {
-//            echo "   la clase NO es la misma que la declarada<br/>";
+            //echo "   la clase NO es la misma que la declarada<br/>";
             // TODO: deberia cargar los atributos declarados en la clase $many_attrValues['class'], que estan en otra tabla que la que acabo de cargar.
             //       por ejemplo el id cargado es el de una superclase no el de la clase que deberia ser la instancia.
             //$rel_obj = $this->createObjectFromData( $many_attrValues['class'], $many_attrValues );
             $rel_obj = $this->get_mti_object_byData( $hmattrClazz, $many_attrValues );
          }
+
+//Logger::struct($rel_obj, "get_many_assoc_lazy rel_obj");
 
          $obj->aAddTo( $hmattr, $rel_obj );
       }
@@ -1422,7 +1444,7 @@ class PersistentManager {
       //
       // FIXME: Si le pongo false a la RV no aparece nada y me tira consulta erronea.
       // Tendria que ponerle un convertidor de true/false a 1/0...
-      $cond->add( Condition::EQ($objTableName, "deleted", 0) ); 
+      $cond->add( Condition::EQ($objTableName, "deleted", 0) ); // FIXME: en postgres boolean se verifica contra '0' no contra 0.
 
       $params['where'] = $cond;
 
