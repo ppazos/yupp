@@ -42,22 +42,41 @@ class Executer {
         if ( $bf_res !== true )
         {
         	  if ( !($bf_res instanceof ViewCommand) ) throw new Exception("After filter no retorna ViewCommand, retorna " . get_class($bf_res));
-           $command = $bf_res; //
+           $command = $bf_res;
         }
         else // Si pasa el filtro, ejecuta la accion normalmente
         {
        	  $controllerClassName = strtoupper($controller[0]) . substr($controller, 1) . "Controller"; // El nombre de la clase es el que viene en la url + 'Controller''
    
+//   echo "Controller Class Name 1: $controllerClassName<br/>";
+   
+           // esta verificacion ya se hace en el request manager, por lo que aca siempre deberia llegar con el nombre y ruta de un controller que existe...
+           //if ( file_exists("components/". $ctx->getComponent() ."/controllers/". $controllerClassName .".class.php") )
+           //{
+              YuppLoader::load( "components.". $ctx->getComponent() .".controllers", $controllerClassName );
+           //}
+           //else
+           //{
+           //   $controllerClassName = "CoreController";
+           //   YuppLoader::load( "components.core.controllers", $controllerClassName  );
+           //}
+   
+   /*
            try
            {
               // Debe chekear existencia y si no existe, va a core controller
-              YuppLoader::load( "components.". $ctx->getComponent() .".controllers", $controllerClassName  );
+              // FIXME: deberia verificar la existencia del archivo del controller, no esperar por si da
+              //        alguna exepcion, ya que puede ser un error interno y no se esta mostrando.
+              YuppLoader::load( "components.". $ctx->getComponent() .".controllers", $controllerClassName );
            }
            catch (Exception $e)
            {
+              Logger::struct($e, "Exception 1");
               $controllerClassName = "CoreController";
            	  YuppLoader::load( "components.core.controllers", $controllerClassName  );
            }
+   */
+//   echo "Controller Class Name 2: $controllerClassName<br/>"; 
    
            // Debe verificar si tiene la accion y si la puede ejecutar, si no va a index.
            $controllerInstance = new $controllerClassName($controller, $action, $this->params); // Se usa abajo!!!
