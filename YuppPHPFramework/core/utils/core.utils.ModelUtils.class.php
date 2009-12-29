@@ -11,11 +11,13 @@
  */
 
 // FIXME: usar YuppLoader
-chdir('core/utils');
-include_once('../core.FileSystem.class.php');
-include_once('../config/core.config.PackageNames.class.php');
-include_once('../persistent/core.persistent.PersistentObject.class.php');
-chdir('../..');
+// Con Loader me da un error de que no encuentra a la clase core.config.FileNames en YuppLoader...
+//YuppLoader::load("core",'FileSystem');
+//YuppLoader::load("core.config",'PackageNames');
+//YuppLoader::load("core.persistent",'PersistentObject');
+include_once('core/core.FileSystem.class.php');
+include_once('core/config/core.config.PackageNames.class.php');
+include_once('core/persistent/core.persistent.PersistentObject.class.php');
 
 //YuppLoader::load("core.persistent", "PersistentObject");
 
