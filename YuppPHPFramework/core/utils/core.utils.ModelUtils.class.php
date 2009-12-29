@@ -10,6 +10,7 @@
  * Created on 24/02/2008
  */
 
+// FIXME: usar YuppLoader
 chdir('core/utils');
 include_once('../core.FileSystem.class.php');
 include_once('../config/core.config.PackageNames.class.php');
