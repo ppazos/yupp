@@ -1,10 +1,14 @@
 <?php
 
 //chdir('core');
-include_once ('./core/utils/core.utils.ModelUtils.class.php');
-include_once ('./core/config/core.config.FileNames.class.php');
-include_once ('./core/config/core.config.PackageNames.class.php');
+//include_once ('./core/utils/core.utils.ModelUtils.class.php');
+//include_once ('./core/config/core.config.FileNames.class.php');
+//include_once ('./core/config/core.config.PackageNames.class.php');
 //chdir('..');
+
+include_once ('core/utils/core.utils.ModelUtils.class.php');
+include_once ('core/config/core.config.FileNames.class.php');
+include_once ('core/config/core.config.PackageNames.class.php');
 
 class YuppLoader {
 
@@ -123,37 +127,9 @@ class YuppLoader {
 	{
       $components = FileSystem::getSubdirNames("./components");      
 		$packs = new PackageNames();
-		$fn = new FileNames();
-
-//print_r($this);
 
 		if (!$this->modelLoaded)
 		{
-         //echo "NO CARGADO";
-			// FIXME: Si el modelo ya esta cargado no deberia leer el disco para cargarlo, deberia fijarme la estructura que tengo en memoria y hacer el include de eso de nuevo...
-			// Esto es porque la lectura de disco tarda pila, y eso que hay pocas clases.
-         /*
-			while (false !== ($entry = $dir->read()))
-			{
-				if ($entry != "." && $entry != "..")
-				{
-					$finfo = $fn->getFilenameInfo($entry);
-					if ($finfo)
-					{
-						//print_r( $finfo );
-
-						//echo "PACKAGE: " . $finfo['package'] . "</br>";
-						//echo "NAME: "    . $finfo['name'] . "</br>";
-
-						$this->_load($finfo['package'], $finfo['name']);
-
-						//echo $entry."\n";
-					}
-				}
-			}
-			$dir->close();
-         */
-         
          // Carga: component/elComponent/model, para todos los componentes
          foreach ($components as $component)
          {
@@ -175,7 +151,6 @@ class YuppLoader {
 		else
 		{
          //echo "CARGADO";
-         
          //echo "<h2>" . __FILE__ . " (". __LINE__ .") REFRESH</h2>";
 			self :: refresh();
 		}
@@ -274,7 +249,6 @@ class YuppLoader {
 		}
       
       //echo "<h3>" . __FILE__ . " (". __LINE__ .") Termina de incluir</h3>";
-
 		//$vars = (array)$this;
 		//print_r($vars);
 
