@@ -9,8 +9,7 @@ class ComponentMapping {
    
    public $mapping = "/blog(\/.*(\/.*)?)?/"; // conrtoller y action son opcionales! // TODO: hacer una expresion dividida por / que se esplitee por / y se chekeen las 3 regexps, o las N que sean, viendo cada pedazo de url. ASI ES MAS SENCILLA la regexp esta.
    
-   // FIXME: sacar el & pasando ArrayObject
-   //public function getLogicalRoute( & $field_list )
+   // FIXME: sacar el pasar ArrayObject
    public function getLogicalRoute( $field_list )
    {
       return array('component'  => $field_list[0], 
