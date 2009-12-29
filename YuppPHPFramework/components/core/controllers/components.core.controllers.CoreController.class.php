@@ -54,7 +54,6 @@ class CoreController extends YuppController
     */
    public function componentControllersAction()
    {
-      //print_r( $this->params );
       return;
    }
    
