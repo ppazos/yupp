@@ -97,8 +97,6 @@ class ComentarioController extends YuppController {
           $obj->setEntrada( $entrada );
           $obj->setProperties( $this->params );
           
-          //print_r($entrada);
-          
           if ( !$obj->validate() ) // Validacion de datos!
           {
              // create
