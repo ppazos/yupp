@@ -16,8 +16,8 @@
 
 
 // FIXME: sacar esto y ponerle LoadClass.
-include_once "../core.Constraints.class.php";
-include_once("../utils/core.utils.Callback.class.php");
+include_once "core/core.Constraints.class.php";
+include_once "core/utils/core.utils.Callback.class.php";
 
 /*
 
