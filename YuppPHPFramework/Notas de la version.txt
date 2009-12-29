@@ -1,55 +1,48 @@
 NOTAS DE LA VERSIÓN:
 --------------------
 
- Versión 0.1.6.4 del Yupp Framework PHP
+ Versión 0.1.7 de Yupp PHP Framework
 
 
 Incluye los siguientes componentes:
 -----------------------------------
 
- - versión 0.6.2 del YORM (Yupp Object Relational Mapping)
- - versión 0.2.0 del YMVC (Yupp Model View Controller)
+ - versión 0.8 del YORM (Yupp Object Relational Mapping)
+ - versión 0.3 del YMVC (Yupp Model View Controller)
 
 
 Requisitos:
 -----------
 
  - Versión de PHP: 5.2.x (nosotros utilizamos 5.2.3)
-   - Probado en 5.2.0, 5.2.4, 5.2.6 y 5.2.8 (versión de Windows)
-   - Probado con WAMP y con AppServ 2.5.10
- - Motor de bases de datos: MySQL 5.x o superior (nosotros utilizamos 5.0.41)
- - Tener el modulo de Apache MOD_REWRITE instalado y activado.
+   - Probado en 5.2.3, 5.2.4, 5.2.5, 5.2.7, 5.2.8, 5.2.9-2 y 5.2.11 (versión de Windows)
+   - Probado con WAMP 2.0 y con AppServ 2.5.10
+ - Motor de bases de datos: MySQL 5.x o superior (nosotros utilizamos 5.0.41 o 5.1.33)
+ - Motor de bases de datos: SQLite (nosotros utilizamos 2.8.17)
+ - Motor de bases de datos: PostgreSQL 8.3
+ - Tener el módulo de Apache MOD_REWRITE instalado y activado.
 
 
-Cambios con respecto a la versión anterior:
+Cambios con respecto a la versión 0.1.6.7:
 -------------------------------------------
 
-Esta es una versión de estabilización de la versión 0.1.6 de Yupp PHP 
-Framework, la cual contiene cambios y correcciones con respecto a v0.1.6.3.
+Esta versión incluye grandes mejoras de YORM en el soporte a persistencia de estructuras de clases con herencia y varias mejoras al YMVC.
 
-1. Se corrigió y mejoró el web flow.
 
-2. Se agrego el metodo 'validateOnly' a la clase PersistentObject.
+ 1. Se corrije un bug que se liberó con Yupp 0.1.6.7 en la clase routing.Executer,
+    pasaba cuando se retornaba null de una accion de un controller.
 
-3. Correcciones para DRUD y vistas dinamicas.
+ 2. Corrección de DatabaseMySQL en consultas que buscan por strings numéricos.
 
-4. Cambia el nombre de la clase ControllerFilter2 por YuppControllerFilter.
+ 3. Se eliminaron las clases Filter y Mapping, y se creó una clase Router que
+    cumple las tareas de las elminadas y es mucho mas simple de usar.     (http://code.google.com/p/yupp/issues/detail?id=10)
 
-5. Se agregó addslashes en los métodos insert_query y update_query de DAL y stripslashes en PersistentManager, para resolver problemas con caracteres de  control de MySQL.
+ 4. YuppContext se quitan pasajes por referencia.
 
-6. Se agregó el helper "pager" para crear links de paginación de registros para los listados.
+ 5. Se agregan pruebas de generacion de controles complejos en formularios: html y calendar. html usa TinyMCE y calendar usa YUI Calendar. Se agregan ambas librerias al framework.
 
-7. Se agrego el helper orderBy para crear columnas ordenables en los listados.
-
-8. Corrección de restricción de email.
-
-9. Ya no es necesario pasarle $this->params al método "render" de YuppController:
-  - Antes: return $this->render("show", &$this->params);
-  - Ahora: return $this->render("show");
-
-10. Corrección del helper "locale_chooser" que generaba XHTML inválido.
-
-11. Se agrega al paginador los params de ordenamiento por columnas en los listados (helper "orderBy") si los hay.
+ 6. Primer integración de PostgreSQL a Yupp. Nueva clase DatabasePosgreSQL.
+    Correcciones a DAL, PersistentObject y PersistentManager.
 
 
 
@@ -84,6 +77,7 @@ Para correr el ejemplo:
 Debes tener un servidor Apache con soporte para PHP corriendo.
 Debes tener PHP 5.2.x o superior.
 Debes tener MySQL 5.x o superior instalado y corriendo.
+ - Alternativas: SQLite o PostgreSQL.
 
 Descomprime el contenido de la liberacion que descargaste desde 
 http://www.simplewebportal.net/host/1022.htm o 
@@ -94,13 +88,16 @@ en el "web root" de tu servidor Apache ("www" o "public_html").
   Configuración de la base de datos y creación de la base:
   --------------------------------------------------------
 
-  Para configurar los datos de conexion a la base de datos MySQL se debe
-  editar la informacion presente en el archivo:
+  Para configurar los datos de conexion a la base de datos MySQL/SQLite/PostgreSQL
+  se debe editar la informacion presente en el archivo:
+
   "/core/config/core.config.YuppConfig.class.php",
   modificando el campo $dev_datasource, estableciendo los valores correctos
   para cada clave de dicho array: url, user, pass y database.
+
   Y se debe crear la base de datos con el nombre que hayas configurado en
-  "/core/config/core.config.YuppConfig.class.php" en el campo "database".
+  "/core/config/core.config.YuppConfig.class.php" en el campo "database"
+  antes de correr el framework.
 
 
   Acceder al ejemplo:
@@ -132,10 +129,12 @@ CONTACTO:
 ---------
 
 Cualquier duda o sugerencia, publica tu comentario en nuestro grupo: 
-http://groups.google.com/group/yuppframeworkphp
+http://groups.google.com/group/yuppframeworkphp o en nuestra wiki:
+http://code.google.com/p/yupp/w/list
 
 
-Pablo Pazos Gutierrez
+Pablo Pazos Gutiérrez
+Yupp PHP Framework
 Líder del proyecto
 www.SimpleWebPortal.net
 
