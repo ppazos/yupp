@@ -37,6 +37,8 @@ class RequestManager {
       //print_r( $router->getLogicalRoute() );
       $lr = $router->getLogicalRoute();
       /// /test
+      
+      //Logger::struct( $lr, "LOGICAR ROUTE 1 " .__FILE__.' '.__LINE__ );
          
       // Verifica salida del router y setea valores que no vienen seteados.
       // TODO: OJO, luego debe pasar el verificador de si el controller y action existen, y si no, ejecutar contra core.
@@ -84,6 +86,8 @@ class RequestManager {
       {
          $lr['action'] = $actionParam;
       }
+      
+      //Logger::struct( $lr, "LOGICAR ROUTE 2 " .__FILE__.' '.__LINE__ );
            
       // *******************************************************************************
       // FIXME: puedo tener componente, controlador y accion, pero pueden ser nombres
@@ -144,6 +148,8 @@ class RequestManager {
          include_once( $controllerFiltersPath ); // FIXME: no usa YuppLoader (nombre de archivo no sigue estandares!).
          $controllerFiltersInstance = new ComponentControllerFilters(); // Esta clase esta definida en el archivo incluido (es una convension de Yupp).
       }
+      
+      //Logger::struct( $router->getParams(), "ROUTER PARAMS " .__FILE__.' '.__LINE__ );
       
       $executer = new Executer( $router->getParams() );
       $command = $executer->execute( $controllerFiltersInstance ); // $controllerFiltersInstance puede ser null!
