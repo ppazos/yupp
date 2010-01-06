@@ -61,7 +61,8 @@ class ModelUtils {
      * @param string $clazz nombre de una clase de modelo (tambien puede ser PersistentObject).
      * 
      */
-    public function &getSubclassesOf( $clazz )
+    //public function &getSubclassesOf( $clazz )
+    public function getSubclassesOf( $clazz )
     {
         // chekear el class loader, viendo de las clases cargadas cuales son hijas directas de $clazz.
 
@@ -81,9 +82,13 @@ class ModelUtils {
      * clazz es el nombre de una clase de modelo (tambien puede ser PersistentObject).
      * Devuelve una estructura multiple con los nombres de todas las clases que heredan de clazz (hijas, nietas, etc)
      */
-    public function &getAllSubclassesOf( $clazz )
+    //public function &getAllSubclassesOf( $clazz )
+    public function getAllSubclassesOf( $clazz )
     {
         //echo "<h1>ModelUtils.getAllSubclassesOf $clazz</h1>";
+        
+    //Logger::struct( get_declared_classes(), "Declared classes ".__FILE__." ".__LINE__ );
+        
         $loadedClasses = YuppLoader::getLoadedClasses();
         $res = array();
 
