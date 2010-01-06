@@ -49,13 +49,11 @@ class PersistentObject {
    const HASMANY_SET       = "set";
    const HASMANY_LIST      = "list";
 
-   //private $_class = PersistentObject;
    // Necesario para poder llamar a las funciones CRUD de forma estatica.
    protected static $thisClass; // auxiliar para metodos estaticos...
 
-   //protected $name;
-
    protected $withTable;
+   
    protected $attributeValues = array(); // Mapa: Nombres de los atributos -> Valor
                                          // Para elementos que estan declarados en hasMany, lo que hay es una lista de objetos.
 
@@ -155,7 +153,7 @@ class PersistentObject {
       if (!is_array($constraints)) throw new Exception("El parametro 'constraints' debe ser un array " . __FILE__ . " " . __LINE__);
       
       
-      // TODO: CHECK 3: constraints debe ser un array de restricciones validas.
+      // TODO: CHECK 3: constraints debe ser un array de restricciones (subclases de Constraint).
       
       
       // Si ya hay constraints para ese atributo, no las redefine.
@@ -402,7 +400,7 @@ class PersistentObject {
 
       // Si es simple, no hago nada.
       if ( $isSimpleInstance ) return;
-       
+      
 
       // Inyecta atributos de referencia hasOne.
       // VERIFY: Ojo, yo puedo tener un hasOne, pero el otro puede tener un hasMany con migo adentro! o sea *..1 bidireccional!!!!! no 1..1
@@ -455,8 +453,6 @@ class PersistentObject {
       $this->attributeValues[ "id" ] = NULL; // No tengo ningun objeto asociado.
 
       
-
-
 
       // super_id_XXX
       $superclasses = ModelUtils::getAllAncestorsOf( $this->attributeValues[ "class" ] );
@@ -548,8 +544,6 @@ class PersistentObject {
    }
 
 
-
-
    // La idea es llamarla desde getSimpleAssocValues para obtener todos los objetos persistentes relacionados 1..1
    public function isSimplePersistentObject( $attr )
    {
@@ -608,7 +602,10 @@ class PersistentObject {
     */
    public function setWithTable( $tableName )
    {
-   	$this->withTable = $tableName;
+      // Prueba para no resetear el WT desde una superclase.
+      // http://code.google.com/p/yupp/issues/detail?id=19
+      if (!isset($this->withTable))
+   	   $this->withTable = $tableName;
    }
 
    /**
