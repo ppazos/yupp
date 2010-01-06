@@ -128,6 +128,7 @@ class YuppLoader {
       $components = FileSystem::getSubdirNames("./components");      
 		$packs = new PackageNames();
 
+      // FIXME: que pasa si quiero cargar con refresh otras clases? p.e. MySQLDatabase se carga solo una vez porque el que la usa (DAL) es singleton.
 		if (!$this->modelLoaded)
 		{
          // Carga: component/elComponent/model, para todos los componentes
@@ -211,7 +212,7 @@ class YuppLoader {
 		$fn = new FileNames();
 		$filename = $fn->getClassFilename($package, $clazz);
 
-		//echo "FILE $filename<br />";
+//		echo "FILE $filename<br />";
 
 		// tengo que ver de que tipo es para pedir la ruta correcta...
 		// el que sabe la ruta es PackageNames ...
@@ -230,14 +231,15 @@ class YuppLoader {
 		$incPath = $path . "/" . $filename;
 
 		//echo $incPath . "<br />";
-      //echo "<h3>" . __FILE__ . " (". __LINE__ .") INC PATH: $incPath</h3>";
+//      echo "<h3>" . __FILE__ . " (". __LINE__ .") INC PATH: $incPath</h3>";
 
 		if (!is_file($incPath))
 			throw new Exception("YuppLoader::load() - ruta de inclusion errada ($incPath)");
 
 		//    echo "INC: $incPath <br/>";
-		include_once ($incPath); // esto lo tengo que hacer aunque ya tenga la clase registrada xq si no php no se da cuenta que tiene que incluirla...
-
+		include_once $incPath; // esto lo tengo que hacer aunque ya tenga la clase registrada xq si no php no se da cuenta que tiene que incluirla...
+      //include ($incPath);
+      
 		if (!isset ($this->loadedClasses[$incPath])) // registro solo si no se incluyo ya.
 		{
 			// Guardo la info de la clase cargada.
@@ -410,7 +412,7 @@ class YuppLoader {
 				throw new Exception("YuppLoader::refresh() - ruta de inclusion errada ($incPath)");
 
 			//    echo "INCLUDE: $incPath <br/>";
-			include_once ($incPath);
+			include_once $incPath;
 		}
 	}
 
