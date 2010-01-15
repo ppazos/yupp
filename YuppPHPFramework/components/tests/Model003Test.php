@@ -1,7 +1,7 @@
 <?php
 
 // Ejecutar test:
-// http://localhost:8081/YuppPHPFramework/components/tests/Model002Test.php
+// http://localhost:8081/YuppPHPFramework/components/tests/Model003Test.php
 
 // ===============================================================
 // Se incluye esto para poder usar funcionalidades del framework
@@ -21,7 +21,17 @@ include_once ('core/core.YuppLoader.class.php');
 
 set_error_handler("my_warning_handler", E_ALL);
 
-function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext) {
+function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext)
+{
+   echo "<hr>Warning Failed:
+     ErrNo '$errno'<br />
+     Str '$errstr'<br />
+     File '$errfile'<br />
+     Line '$errline'<br />
+     Context ";
+    Logger::struct($errcontext);
+    echo "<br /><hr />";
+    
 	throw new Exception( $errstr );
 }
 
@@ -112,11 +122,13 @@ assert_options(ASSERT_CALLBACK, 'my_assert_handler');
 // EMPIEZA CODIGO DEL TEST
 // ===============================================================
 
+YuppLoader::load("tests.model", "Entidad");
+YuppLoader::load("tests.model", "TestPersona");
 
-YuppLoader::load("tests.model", "Nariz");
-YuppLoader::load("tests.model", "Cara");
+// Sin esto al hacer reload no carga DatabaseMySQL
+YuppLoader::refresh();
 
-class Model002Test {
+class Model003Test {
 
 	public function runTest()
 	{
@@ -127,45 +139,51 @@ class Model002Test {
 	{
       PersistentManager::getInstance()->generateAll();
       
+      echo YuppConventions::tableName('Entidad') . "<br/>";
+      echo YuppConventions::tableName('TestPersona') . "<br/>";
+      
       /**
        * Resultado>
-       * CREATE TABLE test_002_nariz (
+       * 
+       * CREATE TABLE test_003_persona (
        *   id INT(11) DEFAULT 1 PRIMARY KEY, 
-       *   tamanio TEXT NULL, 
+       *   nombre TEXT NULL, edad INT(11) NULL, 
        *   class TEXT NOT NULL, 
+       *   deleted BOOL NOT NULL, 
+       *   super_id_entidad INT(11) NOT NULL
+       * );
+       * 
+       * CREATE TABLE test_003_entidad (
+       *   id INT(11) DEFAULT 1 PRIMARY KEY,
+       *   tipo TEXT NULL,
+       *   class TEXT NOT NULL,
        *   deleted BOOL NOT NULL
        * );
        * 
-       * CREATE TABLE test_002_cara (
-       *   id INT(11) DEFAULT 1 PRIMARY KEY, 
-       *   color TEXT NULL, class TEXT NOT NULL, 
-       *   deleted BOOL NOT NULL, nariz_id INT(11) NULL
-       * );
-       * 
-       * ALTER TABLE test_002_cara 
-       *   ADD FOREIGN KEY (nariz_id) 
-       *   REFERENCES test_002_nariz(id);
+       * ALTER TABLE test_003_persona
+       *   ADD FOREIGN KEY (super_id_entidad)
+       *   REFERENCES test_003_entidad(id);
        */
       
       // TODO: verificar si la tabla para Nariz y Cara fue creada.
       $dal = DAL::getInstance();
       
-      if ( $dal->tableExists( YuppConventions::tableName('Cara') ) )
+      if ( $dal->tableExists( YuppConventions::tableName('Entidad') ) )
       {
          echo "Test 1 correcto";
       }
       else
       {
-         echo "Test 1 INcorrecto";
+         echo "Test 1 Incorrecto";
       }
       
-      if ( $dal->tableExists( YuppConventions::tableName('Nariz') ) )
+      if ( $dal->tableExists( YuppConventions::tableName('TestPersona') ) )
       {
          echo "Test 1 correcto";
       }
       else
       {
-         echo "Test 1 INcorrecto";
+         echo "Test 1 Incorrecto";
       }
       
    }
@@ -173,7 +191,7 @@ class Model002Test {
 }
 
 // Corro el test
-$test = new Model002Test();
+$test = new Model003Test();
 $test->runTest();
 
 ?>

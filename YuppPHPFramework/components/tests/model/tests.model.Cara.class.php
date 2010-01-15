@@ -8,13 +8,14 @@ class Cara extends PersistentObject
 {
    function __construct($args = array (), $isSimpleInstance = false)
    {
-      $this->withTable = "test_002_cara";
+      $this->setWithTable("test_002_cara");
 
       $this->addAttribute("color",  Datatypes :: TEXT);
       $this->addHasOne("nariz", 'Nariz');
 
-      $this->constraints = array (
-         "color" => array (
+      $this->addConstraints(
+         "color",
+         array (
             Constraint :: inList( array("blanco", "negro", "pardo") )
          )
       );

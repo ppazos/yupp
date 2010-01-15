@@ -1,26 +1,49 @@
 <?php
 
 /**
- * Clase modelo para el test 002.
+ * Clase modelo para el test I006.
  */
 
-class Nariz extends PersistentObject
+class Contenido1 extends PersistentObject
 {
    function __construct($args = array (), $isSimpleInstance = false)
    {
-      $this->setWithTable("test_002_nariz");
+      $this->setWithTable("test_i006_contenido1");
 
-      $this->addAttribute("tamanio",  Datatypes :: TEXT);
+      $this->belongsTo = array('Vaso1'); // La unica diferencia con respecto al test i005
+
+      $this->addAttribute("elemento",  Datatypes :: TEXT);
+      $this->addAttribute("volumen", Datatypes :: FLOAT_NUMBER);
 
       $this->addConstraints(
-         "tamanio",
+         "elemento",
          array (
-            Constraint :: inList( array("chica", "mediana", "grande") )
+            Constraint :: maxLength(30),
+            Constraint :: blank(false)
+         )
+      );
+      $this->addConstraints(
+         "volumen",
+         array (
+            Constraint :: between(0.0, 10.0)
          )
       );
 
+      /*
+      $this->constraints = array (
+         "elemento" => array (
+            Constraint :: maxLength(30),
+            Constraint :: blank(false)
+         ),
+         "volumen" => array (
+            Constraint :: between(0.0, 10.0)
+         )
+      );
+      */
+
       parent :: __construct($args, $isSimpleInstance);
    }
+   
    public static function listAll($params)
    {
       self :: $thisClass = __CLASS__;
@@ -46,6 +69,5 @@ class Nariz extends PersistentObject
       self :: $thisClass = __CLASS__;
       return PersistentObject :: countBy($condition);
    }
-}
-
+} // Model001
 ?>

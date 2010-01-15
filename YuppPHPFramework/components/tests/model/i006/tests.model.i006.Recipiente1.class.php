@@ -1,18 +1,18 @@
 <?php
 
 /**
- * Clase modelo para el test 001.
+ * Clase modelo para el test I006.
  */
 
-class Botella extends PersistentObject
+class Recipiente1 extends PersistentObject
 {
    function __construct($args = array (), $isSimpleInstance = false)
    {
-      $this->setWithTable("test_001_botella");
+      $this->setWithTable("test_i006_recipiente1");
 
       $this->addAttribute("material",  Datatypes :: TEXT);
       $this->addAttribute("capacidad", Datatypes :: FLOAT_NUMBER);
-      $this->addAttribute("tapaRosca", Datatypes :: BOOLEAN);
+      $this->addAttribute("tieneTapa", Datatypes :: BOOLEAN);
 
       $this->addConstraints(
          "material",
@@ -28,11 +28,26 @@ class Botella extends PersistentObject
          )
       );
       $this->addConstraints(
-         "tapaRosca",
+         "tieneTapa",
          array (
             Constraint :: nullable(true)
          )
       );
+
+      /*
+      $this->constraints = array (
+         "material" => array (
+            Constraint :: maxLength(30),
+            Constraint :: blank(false)
+         ),
+         "capacidad" => array (
+            Constraint :: between(0.0, 10.0)
+         ),
+         "tieneTapa" => array (
+            Constraint :: nullable(true)
+         )
+      );
+      */
 
       parent :: __construct($args, $isSimpleInstance);
    }

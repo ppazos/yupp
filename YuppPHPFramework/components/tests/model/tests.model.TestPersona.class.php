@@ -1,26 +1,23 @@
 <?php
 
 /**
- * Clase modelo para el test 002.
+ * Clase modelo para el test 003.
  */
 
-class Nariz extends PersistentObject
+YuppLoader::load("tests.model", "Entidad");
+
+class TestPersona extends Entidad
 {
    function __construct($args = array (), $isSimpleInstance = false)
    {
-      $this->setWithTable("test_002_nariz");
+      $this->setWithTable("test_003_persona"); // BUG #19
 
-      $this->addAttribute("tamanio",  Datatypes :: TEXT);
-
-      $this->addConstraints(
-         "tamanio",
-         array (
-            Constraint :: inList( array("chica", "mediana", "grande") )
-         )
-      );
+      $this->addAttribute("nombre",  Datatypes :: TEXT);
+      $this->addAttribute("edad",  Datatypes :: INT_NUMBER);
 
       parent :: __construct($args, $isSimpleInstance);
    }
+   
    public static function listAll($params)
    {
       self :: $thisClass = __CLASS__;
