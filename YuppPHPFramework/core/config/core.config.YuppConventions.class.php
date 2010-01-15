@@ -62,7 +62,8 @@ class YuppConventions {
    public static function getModelPath( $package ) //( $component )
    {
    	//return "./components/$component/model";
-      return "./components/" . strtr($package, ".", "/"); // Correccion para poder poner subdirectorios en /model.
+      //return "./components/" . strtr($package, ".", "/"); // Correccion para poder poner subdirectorios en /model.
+      return "components/" . strtr($package, ".", "/"); // Correccion para poder poner subdirectorios en /model.
    }
    
     
@@ -88,6 +89,8 @@ class YuppConventions {
       // Si no tiene withTable, tengo que crear el nombre de la tabla a partir del nombre de la clase.
       // Si no tiene withTable, quiere decir que en ninguna superclase de ella se define, entonces tengo que
       // obtener la superclase de nivel 1 y el nombre de la tabla se saca de el nombre de esa clase.
+
+//echo "wTABLe: " . $ins->getWithTable() . "<br/>"; 
 
       if ( $ins->getWithTable() != NULL && strcmp($ins->getWithTable(), "") != 0 ) // Me aseguro que haya algo.
       {
