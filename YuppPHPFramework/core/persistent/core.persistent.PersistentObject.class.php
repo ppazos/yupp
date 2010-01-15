@@ -147,7 +147,7 @@ class PersistentObject {
    public function addConstraints( $attr, $constraints )
    {
       // Check 1: el atributo existe.
-      if (!$this->hasAttribute($attr)) throw new Exception("Se intenta definir una restriccion en [". print_r($this, true) ."] para un atributo que no existe ($attr) " . __FILE__ . " " . __LINE__);
+      if (!$this->hasAttribute($attr)) throw new Exception("Se intenta definir una restriccion en [". get_class($this) ."] para un atributo que no existe ($attr) " . __FILE__ . " " . __LINE__);
       
       // Check 2: constraints debe ser un array.
       if (!is_array($constraints)) throw new Exception("El parametro 'constraints' debe ser un array " . __FILE__ . " " . __LINE__);
@@ -157,12 +157,47 @@ class PersistentObject {
       
       
       // Si ya hay constraints para ese atributo, no las redefine.
-      // Deberia chekear por tipo de cosntraint tmb? asi puedo definir constraints para 
+      // Deberia chequear por tipo de cosntraint tmb? asi puedo definir constraints para 
       // distintos atributos en distintas clases en la jerarquia de herencia?
-   	if ( !array_key_exists($attr, $this->constraints) )
-      {
+   	
+      // 14-01-2010: Quiero que las redefiniciones de restricciones sobreescriban las viejas.
+      //             El problema es si una subclase define una restriccion para un atirbuto de la
+      //             superclase y esta ya tiene una restriccion definida.
+      //if ( !array_key_exists($attr, $this->constraints) )
+      //{
       	$this->constraints[$attr] = $constraints;
+      //}
+   }
+   
+   /**
+    * Obtiene todas las restricciones si $attr es null, o si no,
+    * obtiene las restricciones para el atributo $attr.
+    */
+   public function getConstraints( $attr = NULL )
+   {
+      if ( $attr === NULL ) return $this->constraints;
+      
+      if ( isset($this->constraints[ $attr ]) )
+      {
+         return $this->constraints[ $attr ];
       }
+
+      return array(); // No tiene restricciones
+   }
+   
+   /**
+    * Devuelve la restriccion para el atributo que sea del tipo dado, si no la encuentra retorna NULL.
+    */
+   public function getConstraintOfClass( $attr, $class )
+   {
+      foreach ( $this->getConstraints($attr) as $constraint )
+      {
+         if ( get_class($constraint) === $class )
+         {
+            return $constraint;
+         }
+      }
+      return NULL;
    }
    
    /**
@@ -787,32 +822,6 @@ class PersistentObject {
 
    }
 
-   public function getConstraints( $attr = NULL )
-   {
-      if ( $attr === NULL ) return $this->constraints;
-      
-      if ( isset($this->constraints[ $attr ]) )
-      {
-         return $this->constraints[ $attr ];
-      }
-
-      return array(); // No tiene restricciones
-   }
-   
-   /**
-    * Devuelve la restriccion para el atributo que sea del tipo dado, si no la encuentra retorna NULL.
-    */
-   public function getConstraintOfClass( $attr, $class )
-   {
-      foreach ( $this->getConstraints($attr) as $constraint )
-      {
-      	if ( get_class($constraint) === $class )
-         {
-         	return $constraint;
-         }
-      }
-      return NULL;
-   }
 
    // ===================================================================
    // Verificacion de restriccioens que afectan la generacion del esquema
@@ -955,6 +964,11 @@ class PersistentObject {
               //        al inicializar la clase pasandole un array con algunos valores, deberia poner
               //        en NULL los valores de los demas atributos que son de la clase pero que no se
               //        les esta asignando valor en el construct.
+              
+              // FIXME: value podria ser un objeto, si la restriccion se puso para una relacion.
+              //        Mas abajo se usa el value para armar el string de error y falla si el
+              //        objeto no tiene toString.
+              
               $value = ( (array_key_exists($attr, $this->attributeValues)) ? $this->attributeValues[$attr] : NULL );
               if ( get_class($constraint) === 'Nullable' )
               {
@@ -992,7 +1006,8 @@ class PersistentObject {
                  // TODO: ver de donde sacar el mensaje segun el tipo de constraint.
                  // FIX: se pueden tener keys i18n estandar para problemas con constraints, y para resolver
                  //      el mensaje como parametros le paso la constraint, el atributo y el valor que fallo.
-                 $err = "Error " . get_class($constraint) . " " . $constraint . " en " . $attr . " con valor ";
+                 //$err = "Error " . get_class($constraint) . " " . $constraint . " en " . $attr . " con valor ";
+                 $err = "Error " . get_class($constraint) . " en " . $attr . " con valor ";
 
                  /*
                  // FIXME!!: BUG: Si el atributo es un string vacio, me muestra 0.
@@ -1004,7 +1019,8 @@ class PersistentObject {
 
                  if ( is_null($value) ) $err .= (($value) ? $value : "NULL"); // OJO, esto puede ser null o cero!
                  else if ( is_string($value) && strcmp($value, "")==0 ) $err .= "EMPTY STRING";
-                 else $err .= (($value) ? $value : "0");
+                 else if ( $value instanceof PersistentObject ) $err .= $value->getClass() . ":" . $value->getId(); // TODO: ver si hay que preguntar si es PO o si es un objeto en general...
+                 else $err .= (($value) ? $value : "0"); // FIXME: Si value es un objeto, falla aqui.
 
                  $this->errors[$attr][] = $err;
               }
