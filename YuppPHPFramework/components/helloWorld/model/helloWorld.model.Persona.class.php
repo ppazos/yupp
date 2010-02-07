@@ -13,15 +13,13 @@ class Persona extends PersistentObject
       $this->addAttribute("nombre", Datatypes :: TEXT);
       $this->addAttribute("edad",   Datatypes :: INT_NUMBER);
 
-      $this->constraints = array (
-         "nombre" => array (
-            Constraint :: maxLength(30),
-            Constraint :: blank(false)
-         ),
-         "edad" => array (
-            Constraint :: between(10, 100)
-         )
-      );
+      $this->addConstraints("nombre", array (
+          Constraint :: maxLength(30),
+          Constraint :: blank(false)
+      ));
+      $this->addConstraints("edad", array (
+          Constraint :: between(10, 100)
+      ));
 
       parent :: __construct($args, $isSimpleInstance);
    }
