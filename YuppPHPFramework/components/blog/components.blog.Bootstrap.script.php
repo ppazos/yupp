@@ -11,10 +11,13 @@
 
 Logger::show( "Blog Bootstrap: empieza", "h1" );
 
+// Pregunta cantidad de usuarios
 $cantidadUsuarios = Usuario::count();
 
 Logger::show( "Cantidad de usuarios: $cantidadUsuarios" );
 
+// Si no se ha ejecutado el bootstrap deberian haber cero
+// La pregunta evita agregar 2 usuarios adminsitradores
 if ( $cantidadUsuarios == 0 )
 {
    $user = new Usuario( array(
@@ -25,8 +28,11 @@ if ( $cantidadUsuarios == 0 )
                            "edad" => "27",
                            "gggf" => "2008-09-23 00:39:38"
                            ) );
+  
+   // Intenta guardar el usuario en la base de datos
    if ( !$user->save() )
    {
+      // Si no pudo guardar, muestra errores
       Logger::struct( $user->getErrors() );
    }
 }
