@@ -28,7 +28,7 @@ Esta versión incluye grandes mejoras de YORM en el soporte a persistencia de es
     # http://code.google.com/p/yupp/issues/detail?id=19
     # http://code.google.com/p/yupp/issues/detail?id=22
 
-  #Se crea y libera el primer juego de tests del YORM.
+  # Se crea y libera el primer juego de tests del YORM.
 
 
 =Que contiene esta liberación?=
