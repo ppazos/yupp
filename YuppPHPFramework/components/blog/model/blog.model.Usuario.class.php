@@ -8,7 +8,7 @@ class Usuario extends PersistentObject
 {
     function __construct($args = array (), $isSimpleInstance = false)
     {
-        $this->withTable = "usuarios";
+        $this->setWithTable("usuarios");
 
         $this->addAttribute("nombre", Datatypes :: TEXT);
         $this->addAttribute("email", Datatypes :: TEXT);

@@ -8,10 +8,10 @@ YuppLoader :: load("blog.model", "Entrada"); // Si no esta me tira error de que 
 
 class EntradaBlog extends Entrada
 {
-	protected $withTable = "entradas_blog";
-
 	function __construct($args = array (), $isSimpleInstance = false)
 	{
+      $this->setWithTable("entradas_blog");
+      
 		$this->addAttribute("titulo", Datatypes :: TEXT);
 
       /*
