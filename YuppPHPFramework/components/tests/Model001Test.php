@@ -9,7 +9,7 @@
 
 session_start();
 
-chdir('../../'); // setea el dir a la raiz del proyecto
+chdir('../../../'); // setea el dir a la raiz del proyecto
 
 include_once ('core/core.YuppSession.class.php');
 include_once ('core/core.YuppLoader.class.php');
@@ -111,7 +111,7 @@ assert_options(ASSERT_CALLBACK, 'my_assert_handler');
 // ===============================================================
 
 
-YuppLoader::load("tests.model", "Botella");
+YuppLoader::load("tests.model.001", "Botella");
 
 
 class Model001Test {

@@ -4,7 +4,7 @@
  * Clase modelo para el test 003.
  */
 
-YuppLoader::load("tests.model", "Entidad");
+YuppLoader::load("tests.model.003", "Entidad");
 
 class TestPersona extends Entidad
 {

@@ -9,7 +9,7 @@
 
 session_start();
 
-chdir('../../'); // setea el dir a la raiz del proyecto
+chdir('../../../'); // setea el dir a la raiz del proyecto
 
 echo getcwd();
 
@@ -113,8 +113,8 @@ assert_options(ASSERT_CALLBACK, 'my_assert_handler');
 // ===============================================================
 
 
-YuppLoader::load("tests.model", "Nariz");
-YuppLoader::load("tests.model", "Cara");
+YuppLoader::load("tests.model.002", "Nariz");
+YuppLoader::load("tests.model.002", "Cara");
 
 class Model002Test {
 

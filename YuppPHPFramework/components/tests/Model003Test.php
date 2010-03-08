@@ -9,7 +9,7 @@
 
 session_start();
 
-chdir('../../'); // setea el dir a la raiz del proyecto
+chdir('../../../'); // setea el dir a la raiz del proyecto
 
 echo getcwd();
 
@@ -122,8 +122,8 @@ assert_options(ASSERT_CALLBACK, 'my_assert_handler');
 // EMPIEZA CODIGO DEL TEST
 // ===============================================================
 
-YuppLoader::load("tests.model", "Entidad");
-YuppLoader::load("tests.model", "TestPersona");
+YuppLoader::load("tests.model.003", "Entidad");
+YuppLoader::load("tests.model.003", "TestPersona");
 
 // Sin esto al hacer reload no carga DatabaseMySQL
 YuppLoader::refresh();
