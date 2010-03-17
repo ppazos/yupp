@@ -48,6 +48,8 @@ class PersistentObject {
    const HASMANY_COLECTION = "colection";
    const HASMANY_SET       = "set";
    const HASMANY_LIST      = "list";
+   
+   protected $xml; // Auxiliar para crear el XML
 
    // Necesario para poder llamar a las funciones CRUD de forma estatica.
    protected static $thisClass; // auxiliar para metodos estaticos...
@@ -2072,8 +2074,88 @@ class PersistentObject {
       $json .= "}}";
       
       // TODO: if $recursive ....
+      // Tengo que hacer lo mismo para los objetos relacionados
 
       return $json;
+   }
+   
+   public function toXML( $recursive = false )
+   {
+      $this->xml = new XMLWriter();
+      $this->xml->openMemory();
+      $this->xml->setIndent(true);
+      $this->xml->setIndentString('  ');
+      
+      // array de clase_id para saber que objetos ya se recorrieron
+      // Cuando detecta loops deberia poner una referencia al nodo que ya se puso en el HTML, como hace xtream,
+      // asi no se pierde informacion de relaciones. La referencia deberia ser una xpath. Asi que deberia
+      // guardarse la xpath a cada nodo y pedirla por la clase y el id.
+      $loopDetection = new ArrayObject();
+
+      $this->toXMLSingle( $this, $recursive, $loopDetection );
+      
+      return $this->xml->outputMemory();
+   }
+   
+   private function toXMLSingle( $obj, $recursive, $loopDetection )
+   {  
+      if(!in_array(get_class($obj).'_'.$obj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
+      {
+         $loopDetection[] = get_class($obj).'_'.$obj->getId(); // MArca como recorrido
+         
+         $this->xml->startElement( String::toUnderscore( get_class($obj) ) );
+         
+         //echo get_class($obj) . " " . $obj->getId() . "<br/>";
+         
+         foreach ( $obj->attributeTypes as $attr => $type )
+         {
+            $this->xml->writeElement($attr, $obj->aGet($attr));
+         }
+         
+         // TODO: if $recursive ....
+         // Tengo que hacer lo mismo para los objetos relacionados
+         
+         if ($recursive)
+         {
+            foreach ($obj->getHasOne() as $attr => $clazz)
+            {
+               $relObj = $obj->aGet($attr);
+               if (!is_null($relObj))
+               {
+                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
+                  {
+                     $this->toXMLSingle( $relObj, $recursive, $loopDetection );
+                  }
+               }
+            }
+            
+            //echo get_class($obj) . "hasMany: ";
+            //print_r( $obj->getHasMany() );
+            //echo "<br/>";
+            
+            foreach ($obj->getHasMany() as $attr => $clazz)
+            {
+               //echo "attr: $attr<br/>";
+               //echo $obj->getHasManyType($attr) . "<br/>";
+               
+               $this->xml->startElement( $obj->getHasManyType($attr) ); // list, colection, set
+               $relObjs = $obj->aGet($attr);
+               
+               //print_r($relObjs);
+               
+               foreach ($relObjs as $relObj)
+               {
+                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
+                  {
+                     $this->toXMLSingle($relObj, $recursive, $loopDetection);
+                  }
+               }
+               $this->xml->endElement();
+            }
+         }
+      }
+      
+      $this->xml->endElement();
    }
 
 
