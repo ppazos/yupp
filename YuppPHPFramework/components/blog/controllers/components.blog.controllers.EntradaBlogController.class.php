@@ -45,6 +45,13 @@ class EntradaBlogController extends YuppController {
        return;
     }
     
+    public function showXMLAction()
+    {
+       $obj = EntradaBlog::get( $this->params['id'] );
+       header ("content-type: text/xml");
+       return $this->renderString( $obj->toXML(true) );
+    }
+    
     public function getCommentsJSONAction()
     {
       $id = $this->params['id'];
@@ -85,6 +92,9 @@ class EntradaBlogController extends YuppController {
        $obj = EntradaBlog::get( $id );
        $obj->setProperties( $this->params );
        
+       $user = YuppSession::get("user");
+       $obj->setUsuario( $user );
+       
        if ( !$obj->save() ) // Con validacion de datos!
        {
           $this->params['object'] = $obj;
@@ -115,6 +125,10 @@ class EntradaBlogController extends YuppController {
        if (isset($this->params['doit'])) // create
        {
           $obj->setProperties( $this->params );
+          
+          $user = YuppSession::get("user");
+          $obj->setUsuario( $user );
+       
           if ( !$obj->save() ) // Con validacion de datos!
           {
           	 // create
