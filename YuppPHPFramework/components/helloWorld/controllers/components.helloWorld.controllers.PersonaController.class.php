@@ -6,9 +6,15 @@
  
 class PersonaController extends YuppController {
 
-    public function index()
+    public function indexAction()
     {
        return $this->listAction();
+    }
+    
+    public function showXMLAction()
+    {
+       $persona = Persona::get( $this->params['id'] );
+       return $this->renderString( $persona->toXML(true) );
     }
 }
 
