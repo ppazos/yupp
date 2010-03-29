@@ -122,6 +122,9 @@ class PersistentManager {
    {
       Logger::getInstance()->pm_log("PM::save_assoc " . get_class($owner) . " -> " . get_class($child));
 
+//echo "PM::save_assoc CHILD<br/>";
+//print_r($child);
+
       $dal = DAL::getInstance();
 
       // Considera la direccion de la relacion del owner con el child.
@@ -189,13 +192,24 @@ class PersistentManager {
       // Yo quiero el id de ese elemento, lo encuentro en el 
       // atributo super_id_$hasManyAttrs[$ownerAttr]
       $ref_id = $child->getId();
+      
+      //echo "<h1>REF ID: $ref_id</h1>";
+      
       $hasManyAttrs = $owner->getHasMany();
       if ( !self::isMappedOnSameTable($hasManyAttrs[$ownerAttr], $child->getClass()) && $hasManyAttrs[$ownerAttr] !== $child->getClass() )
       {
-         $ref_id = $child->aGet('super_id_'.$hasManyAttrs[$ownerAttr]);
+         //echo "<h2>SUPER_ID: ". 'super_id_'.$hasManyAttrs[$ownerAttr]."</h2>";
+         
+         // Habia un problema de creacion del nombre super_id_XXX que es distinto a la ocnvension, siempre hay que usar la convension!
+         //$ref_id = $child->aGet('super_id_'.$hasManyAttrs[$ownerAttr]);
+         
+         $ref_id = $child->aGet( YuppConventions::superclassRefName( $hasManyAttrs[$ownerAttr] ) );
+         
          //$ref_id = $child->getMultipleTableId($hasManyAttrs[$ownerAttr]);
          // FIXME: se resuelve igual con getMultipleTableId( $superClass )
       }
+
+      //echo "<h1>REF ID: $ref_id</h1>";
       
       // El owner id debe ser el de la clase donde se declara la relacion hasmany
       $owner_id = $owner->getId();
@@ -205,7 +219,10 @@ class PersistentManager {
          
 //         echo "ownerSuperClass: $ownerSuperClass<br/>";
          
-         $owner_id = $owner->aGet('super_id_'.$ownerSuperClass);
+         // Habia un problema de creacion del nombre super_id_XXX que es distinto a la ocnvension, siempre hay que usar la convension!
+         //$owner_id = $owner->aGet('super_id_'.$ownerSuperClass);
+         $owner_id = $child->aGet( YuppConventions::superclassRefName( $ownerSuperClass ) );
+         
          // FIXME: se resuelve igual con getMultipleTableId( $superClass )
       }
       
@@ -1209,7 +1226,9 @@ class PersistentManager {
          
 //         echo "ownerSuperClass: $ownerSuperClass<br/>";
          
-         $obj_id = $obj->aGet('super_id_'.$ownerSuperClass);
+         // Se debe pedir a YuppConventions!
+         //$obj_id = $obj->aGet('super_id_'.$ownerSuperClass);
+         $obj_id = $obj->aGet( YuppConventions::superclassRefName( $ownerSuperClass ) );
       }
       
 //      echo "obj_id $obj_id<br/>";

@@ -77,6 +77,8 @@ class Helpers {
         {
            $params_in_url_str .= "/" . $value;
         }
+        
+        //echo "xxx ".$params_url . " xxx";
 
         return $_base_dir ."/". $component ."/". $controller ."/". $action . $params_in_url_str . ((strcmp($params_url,"") != 0)? ("?". $params_url) : "");
     }

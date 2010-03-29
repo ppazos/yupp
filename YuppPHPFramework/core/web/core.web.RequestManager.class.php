@@ -104,8 +104,10 @@ class RequestManager {
       $controllerFileName  = "components.".$lr['component'].".controllers.".$controllerClassName.".class.php";
       $controllerPath      = "components/".$lr['component']."/controllers/".$controllerFileName;
       
-      //print_r( $lr );
+      
+      //Logger::struct( $lr, "LOGICAR ROUTE 3 " .__FILE__.' '.__LINE__ );
       //echo "<hr/>PATH: $controllerPath<br/>";
+      
       
       if ( !file_exists($componentPath) )
       {
