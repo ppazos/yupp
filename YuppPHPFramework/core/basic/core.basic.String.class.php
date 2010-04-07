@@ -77,7 +77,7 @@ class String {
      //return preg_replace("/[A-Z ]/", "/[a-z_]/", $string);
     return strtr($string,
                  "ABCDEFGHIJKLMNOPQRSTUVWXYZ ", 
-                 "abcdefghikklmnopqrstuvwxyz_");
+                 "abcdefghijklmnopqrstuvwxyz_");
      /*
      $pattern[0] = '/\&/';
      $pattern[1] = '/</';
