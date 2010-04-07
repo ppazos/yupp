@@ -45,7 +45,7 @@ class PersistentObject {
    const NOT_LOADED_ASSOC = -1; // Codigo de asociacion no cargada, util para lazy loading.
 
    // Tipos de hasMany
-   const HASMANY_COLECTION = "colection";
+   const HASMANY_COLECTION = "collection"; // FIXME: collection es con 2 LLs
    const HASMANY_SET       = "set";
    const HASMANY_LIST      = "list";
    
@@ -2097,13 +2097,20 @@ class PersistentObject {
       return $this->xml->outputMemory();
    }
    
-   private function toXMLSingle( $obj, $recursive, $loopDetection )
+   private function toXMLSingle( $obj, $recursive, $loopDetection, $attrName = null )
    {  
       if(!in_array(get_class($obj).'_'.$obj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
       {
-         $loopDetection[] = get_class($obj).'_'.$obj->getId(); // MArca como recorrido
+         $loopDetection[] = get_class($obj).'_'.$obj->getId(); // Marca como recorrido
          
-         $this->xml->startElement( String::toUnderscore( get_class($obj) ) );
+         // El nombre de la tag es el nombre del atributo, a no ser que sea el nodo raiz.
+         if ( is_null($attrName) )
+            $this->xml->startElement( get_class($obj) );
+         else
+         {
+            $this->xml->startElement( $attrName );
+            $this->xml->writeAttribute( 'type', get_class($obj) );
+         }
          
          //echo get_class($obj) . " " . $obj->getId() . "<br/>";
          
@@ -2124,21 +2131,26 @@ class PersistentObject {
                {
                   if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                   {
-                     $this->toXMLSingle( $relObj, $recursive, $loopDetection );
+                     // FIXME: las tags de los atributos hijos de la instancia raiz deberian
+                     //        tener su nombre igual al nombre del atributo, no el nombre de
+                     //        la clase. Con este codigo es el nombre de la clase.
+                     $this->toXMLSingle( $relObj, $recursive, $loopDetection, $attr );
                   }
                }
             }
             
             //echo get_class($obj) . "hasMany: ";
             //print_r( $obj->getHasMany() );
-            //echo "<br/>";
             
             foreach ($obj->getHasMany() as $attr => $clazz)
             {
                //echo "attr: $attr<br/>";
                //echo $obj->getHasManyType($attr) . "<br/>";
                
-               $this->xml->startElement( $obj->getHasManyType($attr) ); // list, colection, set
+               //$this->xml->startElement( $obj->getHasManyType($attr) ); // list, colection, set
+               $this->xml->startElement( $attr );
+               $this->xml->writeAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
+               
                $relObjs = $obj->aGet($attr);
                
                //print_r($relObjs);
