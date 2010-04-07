@@ -117,7 +117,6 @@ class PersistentManager {
     * @param string $ownerAttr nombre del atributo de owner que mantiene la relacion con child.
     * @param integer ord es el orden de child en el atributo hasMany ownerAttr de owner.
     */
-   //public function save_assoc( PersistentObject &$owner, PersistentObject &$child, $ownerAttr, $ord )
    public function save_assoc( PersistentObject $owner, PersistentObject $child, $ownerAttr, $ord )
    {
       Logger::getInstance()->pm_log("PM::save_assoc " . get_class($owner) . " -> " . get_class($child));
@@ -149,8 +148,6 @@ class PersistentManager {
       $hoBidirChildAttr = $child->getHasOneAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
       if ( $hoBidirChildAttr ) // hasOne
       {
-         //Logger::getInstance()->pm_log("PM::save_assoc $ownerAttr es hasOne " . __LINE__);
-         
          $assocObj = $child->aGet($hoBidirChildAttr);
 
          // Si hay objeto, si esta cargado, y si coincide el id.
@@ -161,8 +158,6 @@ class PersistentManager {
       }
       else // si el atributo no era de hasOne, es hasMany
       {
-         //Logger::getInstance()->pm_log("PM::save_assoc $ownerAttr es hasMany " . __LINE__);
-         
          $hmBidirChildAttr = $child->getHasManyAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
          if ( $hmBidirChildAttr && $child->aContains( $hmBidirChildAttr, $owner->getId() ) ) // FIXME: No se como se llama el atributo como para preguntar si child tiene a owner...
          {
@@ -198,11 +193,6 @@ class PersistentManager {
       $hasManyAttrs = $owner->getHasMany();
       if ( !self::isMappedOnSameTable($hasManyAttrs[$ownerAttr], $child->getClass()) && $hasManyAttrs[$ownerAttr] !== $child->getClass() )
       {
-         //echo "<h2>SUPER_ID: ". 'super_id_'.$hasManyAttrs[$ownerAttr]."</h2>";
-         
-         // Habia un problema de creacion del nombre super_id_XXX que es distinto a la ocnvension, siempre hay que usar la convension!
-         //$ref_id = $child->aGet('super_id_'.$hasManyAttrs[$ownerAttr]);
-         
          $ref_id = $child->aGet( YuppConventions::superclassRefName( $hasManyAttrs[$ownerAttr] ) );
          
          //$ref_id = $child->getMultipleTableId($hasManyAttrs[$ownerAttr]);
@@ -216,12 +206,8 @@ class PersistentManager {
       if ( !$owner->attributeDeclaredOnThisClass($ownerAttr) )
       {
          $ownerSuperClass = $owner->getSuperClassWithDeclaredAttribute($ownerAttr);
-         
-//         echo "ownerSuperClass: $ownerSuperClass<br/>";
-         
-         // Habia un problema de creacion del nombre super_id_XXX que es distinto a la ocnvension, siempre hay que usar la convension!
-         //$owner_id = $owner->aGet('super_id_'.$ownerSuperClass);
-         $owner_id = $child->aGet( YuppConventions::superclassRefName( $ownerSuperClass ) );
+
+         $owner_id = $owner->aGet( YuppConventions::superclassRefName( $ownerSuperClass ) );
          
          // FIXME: se resuelve igual con getMultipleTableId( $superClass )
       }
@@ -231,25 +217,18 @@ class PersistentManager {
       $refObj = NULL;
       if ( $owner->getHasManyType($ownerAttr) === PersistentObject::HASMANY_LIST )
       {
-         //Logger::getInstance()->pm_log("ES LISTA" . __FILE__ . " ". __LINE__);
-         
       	$refObj = new ObjectReference( array(
-                                          //"owner_id" => $owner->getId(),
                                           "owner_id" => $owner_id,
                                           "ref_id"   => $ref_id,
-                                          //"ref_id"   => $child->getId(),
                                           "type"     => $relType,
                                           "ord"      => $ord ) );
       }
       else
       {
-         //Logger::getInstance()->pm_log("NO ES LISTA" . __FILE__ . " ". __LINE__);
-         
+
          $refObj = new ObjectReference( array(
-                                          //"owner_id" => $owner->getId(),
                                           "owner_id" => $owner_id,
                                           "ref_id"   => $ref_id,
-                                          //"ref_id"   => $child->getId(),
                                           "type"     => $relType ) );
       }
 
@@ -729,7 +708,7 @@ class PersistentManager {
             
             //Logger::getInstance()->pm_log("CONDITION: " . $condition->evaluate() . " " . __FILE__ . " " . __LINE__);
             
-            $params = array(); // Para pasarle la referencia a un array vacio.
+            $params = new ArrayObject(); // Para pasarle la referencia a un array vacio.
             $list = $this->findByAttributeMatrix( $cins, $condition, $params ); // Devuelve matriz de atributos
              
             //Logger::struct( $list, "LAST INSTANCE" );
