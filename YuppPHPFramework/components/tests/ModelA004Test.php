@@ -9,7 +9,7 @@
 
 session_start();
 
-chdir('../../../'); // setea el dir a la raiz del proyecto
+chdir('../../'); // setea el dir a la raiz del proyecto
 
 echo getcwd();
 

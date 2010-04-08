@@ -122,48 +122,38 @@ assert_options(ASSERT_CALLBACK, 'my_assert_handler');
 // EMPIEZA CODIGO DEL TEST
 // ===============================================================
 
-YuppLoader::load("tests.model.m003", "Dedo");
-YuppLoader::load("tests.model.m003", "Mano");
+YuppLoader::load("tests.model.m010", "M010_Persona");
 
 
 // Sin esto al hacer reload no carga DatabaseMySQL
 YuppLoader::refresh();
 
-class ModelM003Test {
+class ModelM010Test {
 
 	public function runTest()
 	{
 		$this->test1();
       $this->test2();
       $this->test3();
-      $this->test4();
 	}
 	 
 	private function test1()
 	{
       PersistentManager::getInstance()->generateAll();
       
-      echo YuppConventions::tableName('Dedo') . "<br/>";
-      echo YuppConventions::tableName('Mano') . "<br/>";
+      echo YuppConventions::tableName('M010_Persona') . "<br/>";
       
       /**
        * Resultado>
        * 
-       * CREATE TABLE test_m003_dedo (
+       * CREATE TABLE test_m010_persona (
        *   id INT(11) DEFAULT 1 PRIMARY KEY,
-       *   uniaLarga BOOL NULL,
+       *   nombre TEXT NULL,
        *   class TEXT NOT NULL,
        *   deleted BOOL NOT NULL
        * );
        * 
-       * CREATE TABLE test_m003_mano (
-       *   id INT(11) DEFAULT 1 PRIMARY KEY,
-       *   tamanio TEXT NULL,
-       *   class TEXT NOT NULL,
-       *   deleted BOOL NOT NULL
-       * );
-       * 
-       * CREATE TABLE test_m003_mano_dedos_test_m003_dedo (
+       * CREATE TABLE test_m010_persona_hijos_test_m010_persona (
        *   id INT(11) DEFAULT 1 PRIMARY KEY,
        *   owner_id INT(11) NOT NULL,
        *   ref_id INT(11) NOT NULL,
@@ -173,20 +163,12 @@ class ModelM003Test {
        *   ord INT(11) NULL
        * );
        * 
-       * ALTER TABLE test_m003_mano_dedos_test_m003_dedo
-       *   ADD FOREIGN KEY (owner_id)
-       *   REFERENCES test_m003_mano(id);
-       * 
-       * ALTER TABLE test_m003_mano_dedos_test_m003_dedo
-       *   ADD FOREIGN KEY (ref_id)
-       *   REFERENCES test_m003_dedo(id);
-       * 
        */
       
       // TODO: verificar si la tabla para Nariz y Cara fue creada.
       $dal = DAL::getInstance();
       
-      if ( $dal->tableExists( YuppConventions::tableName('Dedo') ) )
+      if ( $dal->tableExists( YuppConventions::tableName('M010_Persona') ) )
       {
          echo "Test 1 correcto";
       }
@@ -194,16 +176,6 @@ class ModelM003Test {
       {
          echo "Test 1 Incorrecto";
       }
-      
-      if ( $dal->tableExists( YuppConventions::tableName('Mano') ) )
-      {
-         echo "Test 1 correcto";
-      }
-      else
-      {
-         echo "Test 1 Incorrecto";
-      }
-      
    }
    
    private function test2()
@@ -212,161 +184,139 @@ class ModelM003Test {
        * Consultas:
        * 
        * SELECT MAX(id) AS max
-       * FROM test_m003_mano
+       * FROM test_m010_persona
        * 
-       * INSERT INTO test_m003_mano (
-       *   tamanio ,class ,deleted ,id
+       * INSERT INTO test_m010_persona (
+       *   nombre ,class ,deleted ,id
        * )
        * VALUES (
-       *   'grande' ,'Mano' ,'0' ,'1'
+       *   'Isabel de York' ,'M010_Persona' ,'0' ,'1'
        * );
        * 
-       * // Primer dedo
-       * SELECT MAX(id) AS max
-       * FROM test_m003_dedo
-       * 
-       * INSERT INTO test_m003_dedo (
-       *   unialarga ,class ,deleted ,id
+       * INSERT INTO test_m010_persona (
+       *   nombre ,class ,deleted ,id
        * )
-       * VALUES ('1' ,'Dedo' ,'0' ,'1' );
+       * VALUES (
+       *   'Enrique VIII' ,'M010_Persona' ,'0' ,'2'
+       * );
        * 
-       * // Se fija si la relacion entre la mano y el dedo ya existe.
+       * INSERT INTO test_m010_persona (
+       *   nombre ,class ,deleted ,id
+       * ) VALUES (
+       *   'Elizabeth I' ,'M010_Persona' ,'0' ,'3'
+       * );
+       * 
+       * SELECT obj.nombre, obj.class, obj.deleted, obj.id
+       * FROM test_m010_persona_hijos_test_m010_persona ref, test_m010_persona obj
+       * WHERE (ref.owner_id=3 AND obj.id=ref.ref_id) 
+       * 
        * SELECT count(id) as cant
-       * FROM test_m003_mano_dedos_test_m003_dedo
-       * WHERE (
-       *   test_m003_mano_dedos_test_m003_dedo.owner_id=1 AND
-       *   test_m003_mano_dedos_test_m003_dedo.ref_id=1
-       * )
+       * FROM test_m010_persona_hijos_test_m010_persona
+       * WHERE (test_m010_persona_hijos_test_m010_persona.owner_id=2 AND test_m010_persona_hijos_test_m010_persona.ref_id=3)
        * 
        * SELECT MAX(id) AS max
-       * FROM test_m003_mano_dedos_test_m003_dedo
+       * FROM test_m010_persona_hijos_test_m010_persona
        * 
-       * INSERT INTO test_m003_mano_dedos_test_m003_dedo (
+       * INSERT INTO test_m010_persona_hijos_test_m010_persona (
        *   owner_id ,ref_id ,type ,ord ,class ,deleted ,id
        * )
-       * VALUES ('1' ,'1' ,'1' ,NULL ,'ObjectReference' ,'0' ,'1' );
+       * VALUES ('2' ,'3' ,'1' ,NULL ,'ObjectReference' ,'0' ,'1' );
        * 
+       * INSERT INTO test_m010_persona ( nombre ,class ,deleted ,id )
+       * VALUES ('Eduardo VI' ,'M010_Persona' ,'0' ,'4' );
        * 
-       * // Segundo dedo
-       * SELECT MAX(id) AS max
-       * FROM test_m003_dedo
+       * SELECT id FROM test_m010_persona WHERE id=4
        * 
-       * INSERT INTO test_m003_dedo (
-       *   unialarga ,class ,deleted ,id
-       * )
-       * VALUES (
-       *   '0' ,'Dedo' ,'0' ,'2'
-       * );
+       * SELECT obj.nombre, obj.class, obj.deleted, obj.id
+       * FROM test_m010_persona_hijos_test_m010_persona ref, test_m010_persona obj
+       * WHERE (ref.owner_id=4 AND obj.id=ref.ref_id) 
        * 
-       * // Se fija si la relacion entre la mano y el dedo ya existe
        * SELECT count(id) as cant
-       * FROM test_m003_mano_dedos_test_m003_dedo
-       * WHERE (
-       *   test_m003_mano_dedos_test_m003_dedo.owner_id=1 AND
-       *   test_m003_mano_dedos_test_m003_dedo.ref_id=2
-       * )
+       * FROM test_m010_persona_hijos_test_m010_persona
+       * WHERE (test_m010_persona_hijos_test_m010_persona.owner_id=2 AND test_m010_persona_hijos_test_m010_persona.ref_id=4)
        * 
-       * SELECT MAX(id) AS max
-       * FROM test_m003_mano_dedos_test_m003_dedo
+       * SELECT MAX(id) AS max FROM test_m010_persona_hijos_test_m010_persona
        * 
-       * INSERT INTO test_m003_mano_dedos_test_m003_dedo (
+       * INSERT INTO test_m010_persona_hijos_test_m010_persona (
        *   owner_id ,ref_id ,type ,ord ,class ,deleted ,id
        * )
-       * VALUES (
-       *   '1' ,'2' ,'1' ,NULL ,'ObjectReference' ,'0' ,'2'
-       * );
+       * VALUES ('2' ,'4' ,'1' ,NULL ,'ObjectReference' ,'0' ,'2' );
+       * 
+       * SELECT count(id) as cant FROM test_m010_persona_hijos_test_m010_persona WHERE (test_m010_persona_hijos_test_m010_persona.owner_id=1 AND test_m010_persona_hijos_test_m010_persona.ref_id=2)
+       * 
+       * SELECT MAX(id) AS max FROM test_m010_persona_hijos_test_m010_persona
+       * 
+       * INSERT INTO test_m010_persona_hijos_test_m010_persona ( owner_id ,ref_id ,type ,ord ,class ,deleted ,id ) VALUES ('1' ,'2' ,'1' ,NULL ,'ObjectReference' ,'0' ,'3' );
+       * 
        */
        
       // WARNING:
-      // Guarda en cascada los dedos al guardar la mano porque Dedo belongsTo Mano.
-      $mano = new Mano(
+      // Guarda en cascada por el belongsTo de M010_Persona
+      $persona = new M010_Persona(
         array(
-          "tamanio" => "grande",
-          "dedos"   => array(
-              new Dedo(
-                array(
-                  "uniaLarga" => true
-                )
-              ),
-              new Dedo(
-                array(
-                  "uniaLarga" => false
+          "nombre" => "Isabel de York",
+          "hijos"  => array(
+            new M010_Persona( // hijo
+              array(
+                "nombre" => "Enrique VIII",
+                "hijos"  => array(
+                  new M010_Persona( // nieto
+                    array(
+                      "nombre" => "Elizabeth I"
+                    )
+                  ),
+                  new M010_Persona( // nieto
+                    array(
+                      "nombre" => "Eduardo VI"
+                    )
+                  )
                 )
               )
+            )
           )
         )
       );
       
-
-      if (!$mano->save())
+      if (!$persona->save())
       {
-         Logger::struct( $mano->getErrors(), "Falla test m003.2" );
+         Logger::struct( $persona->getErrors(), "Falla test m010" );
       }
       else
       {
          echo "Guarda Ok<br/>";
       }
-      
    }
    
    private function test3()
    {
-      $manos = Mano::listAll( new ArrayObject() ); // FIXME: que el parametro no sea obligatorio!
+      $personas = M010_Persona::listAll( new ArrayObject() ); // FIXME: que el parametro no sea obligatorio!
       
-      foreach ($manos as $mano)
+      foreach ($personas as $persona)
       {
          echo '<ul>';
-           echo '<li>'. $mano->getTamanio() .'</li>';
-           foreach( $mano->getDedos() as $dedo )
+           echo '<li>'. $persona->getNombre() .'</li>';
+           echo '<ul>';
+           foreach( $persona->getHijos() as $hijo )
            {
-             echo '<ul>';
-               echo '<li>'. (($dedo->getUniaLarga())?'Larga':'Corta') .'</li>';
-             echo '</ul>';
+              echo '<li>'. $hijo->getNombre() .'</li>';
+              echo '<ul>';
+              foreach( $hijo->getHijos() as $nieto )
+              {
+                 echo '<li>'. $nieto->getNombre() .'</li>';
+              }
+              echo '</ul>';
            }
+           echo '</ul>';
          echo '</ul>';
       }
       
       echo "Fin test 3 'listAll'";
    }
-   
-   // Igual al test2 pero con mas contenido de la capacidad del vaso
-   private function test4()
-   {
-      $mano = new Mano(
-        array(
-          "tamanio" => "extra large",
-          "dedos"   => array(
-              new Dedo(
-                array(
-                  "uniaLarga" => true
-                )
-              ),
-              new Dedo(
-                array(
-                  "uniaLarga" => false
-                )
-              )
-          )
-        )
-      );
-      
-
-      if (!$mano->save())
-      {
-         Logger::struct( $mano->getErrors(), "Falla salvar m003.4" );
-         echo "Test m003.4 correcto<br/>"; // quiero probar que tira error violando una constraint.
-      }
-      else
-      {
-         echo "Guarda Ok<br/>";
-         echo "Test m003.4 fallido<br/>";
-      }
-   }
 
 }
 
 // Corro el test
-$test = new ModelM003Test();
+$test = new ModelM010Test();
 $test->runTest();
 
 ?>

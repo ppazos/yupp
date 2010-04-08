@@ -9,7 +9,9 @@
 
 session_start();
 
-chdir('../../../'); // setea el dir a la raiz del proyecto
+chdir('../../'); // setea el dir a la raiz del proyecto
+
+echo getcwd();
 
 include_once ('core/core.YuppSession.class.php');
 include_once ('core/core.YuppLoader.class.php');
