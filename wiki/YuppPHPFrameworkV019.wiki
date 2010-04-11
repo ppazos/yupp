@@ -118,4 +118,4 @@ Pablo Pazos Gutiérrez
 Yupp PHP Framework
 Líder del proyecto
 }}}
-www.SimpleWebPortal.net
+http://www.simplewebwortal.net
