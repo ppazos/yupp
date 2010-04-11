@@ -1,19 +1,16 @@
 #labels liberacion,v0.1.9,notasdeversion
 =NOTAS DE LA VERSIÓN:=
-----------------------
 
   * Versión 0.1.9 de Yupp PHP Framework
 
 
 =Incluye los siguientes componentes:=
--------------------------------------
 
   * versión 0.8.5 del YORM (Yupp Object Relational Mapping)
   * versión 0.3.5 del YMVC (Yupp Model View Controller)
 
 
 =Requisitos:=
--------------
 
   * Versión de PHP: 5.2.x (nosotros utilizamos 5.2.3)
     * Probado en 5.2.3, 5.2.4, 5.2.5, 5.2.7, 5.2.8, 5.2.9-2 y 5.2.11 (versión de Windows)
@@ -25,7 +22,6 @@
 
 
 =Cambios con respecto a la versión 0.1.8:=
-------------------------------------------
 
 Esta versión incluye grandes mejoras de YORM en el soporte a persistencia de estructuras de clases con herencia y varias mejoras al YMVC.
 
@@ -37,9 +33,7 @@ Esta versión incluye grandes mejoras de YORM en el soporte a persistencia de es
   * Se corrigieron bugs en PersistenManager, Helpers, RequestManager, YuppForm2 y String.
 
 
-
 =Que contiene esta liberación?=
--------------------------------
 
 Contiene los componentes mencionados antes, el YORM y el YMVC.
 
@@ -64,7 +58,6 @@ Este componente puede hacer altas, bajas y modificaciones de usuarios.
 
 
 =Para correr el ejemplo=
-------------------------
 
 Debes tener un servidor Apache con soporte para PHP corriendo.
 Debes tener PHP 5.2.x o superior.
@@ -78,7 +71,6 @@ en el "web root" de tu servidor Apache ("www" o "public_html").
 
 
 ==Configuración de la base de datos y creación de la base==
------------------------------------------------------------
 
   Para configurar los datos de conexion a la base de datos MySQL/SQLite/PostgreSQL
   se debe editar la informacion presente en el archivo:
@@ -93,7 +85,6 @@ en el "web root" de tu servidor Apache ("www" o "public_html").
 
 
 ==Acceder al ejemplo==
-----------------------
 
   Accede al directorio donde se descomprimió Yupp Framework PHP desde un
   browser, aparecerá una página con links, esos links ejecutan las acciones
@@ -103,7 +94,6 @@ en el "web root" de tu servidor Apache ("www" o "public_html").
 
 
 ==Generación de las tablas==
-----------------------------
 
   Desde la pantalla de administración que aparece al instalar Yupp y accederlo
   mediante un navegador web, existe una sección llamada "Información del modelo",
@@ -118,7 +108,6 @@ en el "web root" de tu servidor Apache ("www" o "public_html").
   
 
 =CONTACTO=
-----------
 
 Cualquier duda o sugerencia, publica tu comentario en nuestro grupo: 
 http://groups.google.com/group/yuppframeworkphp o en nuestra wiki:
@@ -129,4 +118,3 @@ Pablo Pazos Gutiérrez
 Yupp PHP Framework
 Líder del proyecto
 [www.SimpleWebPortal.net]
-
