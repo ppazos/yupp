@@ -60,6 +60,13 @@ class HelpersTestController extends YuppController {
                                     $this->params['texto'] . "'";
           return;
        }
+       else if (isset($this->params['doit_ajax']))
+       {
+          header('Content-type: text/plain');
+          return $this->renderString("Los datos ingresados son: '" .
+                                     $this->params['titulo'] . "' y '" .
+                                     $this->params['texto'] . "'");
+       }
     }
 }
 ?>
