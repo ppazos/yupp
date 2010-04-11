@@ -607,16 +607,25 @@ class YuppFormDisplay2
       $formHTML = "";
 		if ( $form->isAjax() )
       {
-          $formHTML .= h('js', array('component'=>'portal', 'name'=>'jquery/jquery-1.3.1.min'));
-          $formHTML .= h('js', array('component'=>'portal', 'name'=>'jquery/jquery.form.2_18'));
+          $formHTML .= h('js', array('name'=>'jquery/jquery-1.3.1.min'));
+          $formHTML .= h('js', array('name'=>'jquery/jquery.form.2_18'));
        
           // TODO: llamar a una funcion JS antes de hacer el request AJAX.
           // Dependencia con jQuery.
+          //$formHTML .= '<script type="text/javascript">$(document).ready(function() { '.
+          //             '$(\'#'. $form->getId() .'\').ajaxForm(function() {'. $form->getAjaxCallback() . '(); });'. 
+          //             '});</script>';
+          
+          // http://jquery.malsup.com/form/#ajaxForm
           $formHTML .= '<script type="text/javascript">$(document).ready(function() { '.
-                       '$(\'#'. $form->getId() .'\').ajaxForm(function() {'. $form->getAjaxCallback() . '(); });'. 
+                       'var options = {
+                          //beforeSubmit:  showRequest,  // pre-submit callback 
+                          success:       '. $form->getAjaxCallback() .'  // post-submit callback 
+                       };' .
+                       '$(\'#'. $form->getId() .'\').ajaxForm(options);'. 
                        '});</script>';
+                       
       }
-
       
       $fieldCount = 0;
 		$formHTML .= '<form action="'. $form->getUrl() .'" '.
@@ -624,8 +633,9 @@ class YuppFormDisplay2
                           'name="'. $form->getId() .'" '.
                           'method="'. $form->getMethod() .'" '.
                           (($form->hasFileFields())?'enctype="multipart/form-data"':'') .'>';
+      
       $fieldsOrGroups = $form->get();
-		foreach ($fieldsOrGroups as $fieldOrGroup)
+      foreach ($fieldsOrGroups as $fieldOrGroup)
 		{
          $fieldCount++;
          $fieldOrGroup->fieldNumber = $fieldCount;
@@ -641,7 +651,9 @@ class YuppFormDisplay2
             $formHTML .= self::displayGroup($fieldOrGroup);
 			}
 		}
+      
 		$formHTML .= '</form>';
+      
       echo $formHTML;
 	}
 
