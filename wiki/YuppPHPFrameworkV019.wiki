@@ -1,4 +1,4 @@
-#labels liberacion,v0.1.9,notasdeversion
+#labels liberacion,v0.1.9,notas,versio
 =NOTAS DE LA VERSIÓN:=
 
   * Versión 0.1.9 de Yupp PHP Framework
@@ -113,8 +113,9 @@ Cualquier duda o sugerencia, publica tu comentario en nuestro grupo:
 http://groups.google.com/group/yuppframeworkphp o en nuestra wiki:
 http://code.google.com/p/yupp/w/list
 
-
+{{{
 Pablo Pazos Gutiérrez
 Yupp PHP Framework
 Líder del proyecto
-[www.SimpleWebPortal.net]
+}}}
+www.SimpleWebPortal.net
