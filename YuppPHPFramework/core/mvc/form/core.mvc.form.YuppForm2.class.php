@@ -60,6 +60,7 @@ class YuppForm2
       }
       else
       {
+         // FIXME: hacer que si no viene component ni controller agarre los del contexto.
 		   $this->component  = $params['component'];
 		   $this->controller = $params['controller'];
 		   $this->action     = $params['action'];
