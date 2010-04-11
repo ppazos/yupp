@@ -35,8 +35,8 @@ $m = Model::getInstance();
       <?php echo h('url', array('component'  => 'nombreComponente',
                                 'controller' => 'nombreController',
                                 'action'     => 'nombreAccion',
-                                'id'         =>555,
-                                'name'       =>'Dilbert' )); ?>
+                                'id'         => 555,
+                                'name'       => 'Dilbert' )); ?>
       <br/>
       
     </div>

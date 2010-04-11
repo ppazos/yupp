@@ -50,5 +50,16 @@ class HelpersTestController extends YuppController {
     {
        
     }
+    
+    function formTestAction()
+    {
+       if (isset($this->params['doit']))
+       {
+          $this->flash['message'] = "Los datos ingresados son: '" .
+                                    $this->params['titulo'] . "' y '" .
+                                    $this->params['texto'] . "'";
+          return;
+       }
+    }
 }
 ?>
