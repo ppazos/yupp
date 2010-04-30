@@ -36,7 +36,7 @@ class YuppConfig {
    /**
     * Keys de bases de datos disponibles.
     */
-   private $available_database_types = array(self::DB_MYSQL, self::DB_SQLITE);
+   private $available_database_types = array(self::DB_MYSQL, self::DB_SQLITE, self::DB_POSTGRES);
    
    /**
     * Que base de datos se utiliza. Debe estar en la lista $available_database_types.
