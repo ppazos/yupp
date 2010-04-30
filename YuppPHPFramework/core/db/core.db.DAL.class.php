@@ -504,7 +504,6 @@ class DAL {
          {
          	$orderBy = " ORDER BY ". $params["sort"] ." ". $params["dir"] ."";
          }
-         
       }
 
 //Logger::struct( $params, "PARAMS" );

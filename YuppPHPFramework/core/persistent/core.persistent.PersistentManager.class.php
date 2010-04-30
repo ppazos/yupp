@@ -346,7 +346,6 @@ class PersistentManager {
     *   Para cada hasMany:
     *     ...
     */
-   //public function save_cascade( PersistentObject &$obj, $sessId )
    public function save_cascade( PersistentObject $obj, $sessId )
    {
       Logger::getInstance()->pm_log("PersistentManager::save_cascade " . get_class($obj) . " SESSIONID: " . $sessId );
@@ -479,7 +478,6 @@ class PersistentManager {
   /**
    * save solo sirve para arrancar la session, la que hace el trabajo de salvar realmente es save_cascade, que salva todo el modelo.
    */
-   //public function save( PersistentObject &$obj )
    public function save( PersistentObject $obj )
    {
       Logger::getInstance()->pm_log("PersistentManager::save " . get_class($obj));
@@ -1559,10 +1557,10 @@ class PersistentManager {
       
    } // findByAttributeMatrix
 
+
    /**
     * Devuelve una lista de PO correspondientes a la consulta realizada.
     */
-   //public function findBy( $instance, $condition, $params )
    public function findBy( PersistentObject $instance, Condition $condition, ArrayObject $params )
    {
       $allAttrValues = $this->findByAttributeMatrix( $instance, $condition, $params ); //$dal->listAll( $tableName, $params ); // FIXME: AHORA TIRA TODOS LOS ATRIBUTOS Y NECESITO SOLO CLASS e ID.
@@ -1592,85 +1590,16 @@ class PersistentManager {
       
    } // findBy
    
-   
-   /*
-   public function findBy( $instance, $condition, $params )
+
+   /**
+    * 
+    */
+   public function findByQuery( Query $q )
    {
       $dal = DAL::getInstance();
-      //$tableName = $this->tableName( $instance );
-      $tableName = YuppConventions::tableName( $instance );
-
-
-      // Quiero solo los registros de las subclases y ella misma.
-      $class = get_class( $instance );
-      $scs = ModelUtils::getAllSubclassesOf( $class );
-      $scs[] = $class;
-
-      // La condicion total es la que me pasan AND CONDICION_DE_NOMBRES_DE_SUBCLASES AND NO_ELIMINADO
-
-      // Definicion de la condicion.
-      $cond_total = Condition::_AND();
-
-      // CONDICION_DE_NOMBRES_DE_SUBCLASES
-      if ( count($scs) == 1 )
-      {
-         $cond_total->add( Condition::EQ($tableName, "class", $scs[0]) );
-      }
-      else
-      {
-          $cond_or = Condition::_OR();
-          foreach ($scs as $subclass)
-          {
-              $cond_or->add( Condition::EQ($tableName, "class", $subclass) );
-          }
-          $cond_total->add( $cond_or );
-      }
-
-      // NO_ELIMINADO
-      $cond_total->add( Condition::EQ($tableName, "deleted", 0) ); // FIXME: Si le pongo false a la RV no aparece nada y me tira consulta erronea. Tendria que ponerle un convertidor de true/false a 1/0...
-
-      // CRITERIO DE BUSQUEDA
-      $cond_total->add( $condition );
-
-
-///echo '<h1 style="color:red;">'. $cond_total->evaluate() .'</h1>'; // OK
-
-
-      $params['where'] = $cond_total;
-
-      $allAttrValues = $dal->listAll( $tableName, $params ); // FIXME: AHORA TIRA TODOS LOS ATRIBUTOS Y NECESITO SOLO CLASS e ID.
-
-      $res = array(); // Lista de objetos
-      foreach ($allAttrValues as $row)
-      {
-         $persistentClass = $row['class']; // soporte de herencia!!!!
-
-         // Carga considerando estrategia... y se fija en el holder si ese objeto no esta ya cargado.
-
-         $obj = NULL;
-         if ( ArtifactHolder::getInstance()->existsModel( $persistentClass, $row['id'] ) ) // Si ya esta cargado...
-         {
-            $obj = ArtifactHolder::getInstance()->getModel( $persistentClass, $row['id'] );
-         }
-         else
-         {
-            $obj = $this->po_loader->get($persistentClass, $row['id']); // Define la estrategia con la que se cargan los objetos...
-            ArtifactHolder::getInstance()->addModel( $obj ); // Lo pongo aca para que no se guarde luego de la recursion de las assocs...
-         }
-
-         $res[] = $obj;
-      }
-
-      return $res;
-      
-   } // findBy
-*/
-
-   /*
-   public function find( QueryBuilder $qbuilder )
-   {
+      return $dal->query( $q );
    }
-   */
+
 
    // FIXME: El mundo seria mas sencillo si en lugar de pasarle la clase le paso la instancia...
    // ya que tengo que hacer un get_class para pasarle la clase y luego aca hago un new para crear una instancia...

@@ -321,6 +321,8 @@ class DatabaseMySQL {
    
    private function evaluateSelect( Select $select )
    {
+      // FIXME: no todos los objetos tienen porque ser proyecciones,
+      //        pueden haber agregaciones y funciones.
       $projections = $select->getAll();
       if (count($projections) == 0) return "SELECT *";
       else
@@ -328,7 +330,13 @@ class DatabaseMySQL {
          $res = "SELECT ";
          foreach ($projections as $proj)
          {
-            $res .= $proj->getAlias() . "." . $proj->getAttrName() . ", "; // Projection
+            // FIXME: la aggregation puede ser una evaluacion
+            //        recursiva porque param es SelectItem y
+            //        puede ser que tenga una agg adentro, asi sucesivamente.
+            if ($proj instanceof SelectAttribute)
+               $res .= $proj->getAlias() . "." . $proj->getAttrName() . ", "; // Projection
+            else if ($proj instanceof SelectAggregation)
+               $res .= $proj->getName() . "(". $proj->getParam()->getAlias() . "." . $proj->getParam()->getAttrName() ."), ";
          }
          return substr($res, 0, -2); // Saca ultimo "; "
       }

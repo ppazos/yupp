@@ -75,6 +75,15 @@ class Query
 		return $this;
 	}
    
+   public function addAggregation($aggName, $alias, $attr)
+   {
+      $selAttr = new SelectAttribute($alias, $attr);
+      $aggregation= new SelectAggregation( $aggName, $selAttr );
+      $this->select->add( $aggregation );
+      
+      return $this;
+   }
+   
    public function getSelect()
    {
       return $this->select;

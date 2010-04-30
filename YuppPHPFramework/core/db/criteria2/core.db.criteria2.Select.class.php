@@ -89,7 +89,7 @@ class SelectFunction extends SelectItem {
 //   }
 }
 class SelectAggregation extends SelectItem {
-   private $aggregationName;
+   private $name;
    private $param; // SelectItem
    
    const AGTN_COUNT = "count";
@@ -101,13 +101,23 @@ class SelectAggregation extends SelectItem {
    
    public function __construct($aggregationName, SelectItem $param)
    {
-      $this->aggregationName = $aggregationName;
+      $this->name = $aggregationName;
       $this->param = $param;
    }
 //   public function setParam( SelectItem $param )
 //   {
 //      $this->param = $param;
 //   }
+
+   public function getName()
+   {
+      return $this->name;
+   }
+   
+   public function getParam()
+   {
+      return $this->param;
+   }
 }
 
 ?>
