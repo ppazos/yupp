@@ -1230,7 +1230,6 @@ class PersistentObject {
     * @param $params son parametros extra como de paginacion y ordenamiento para armar el LIMIT y ORDER BY de la consulta.
     * @return devuelve todos los elementos de la clase actual que coincidan con el critero de busqueda.
     */
-   //public static function findBy( Condition $condition, &$params )
    public static function findBy( Condition $condition, ArrayObject $params )
    {
       // Para que al agregarle atributos no modifique a $params
