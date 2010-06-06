@@ -1554,7 +1554,20 @@ class PersistentObject {
          //    y un valor simple tambien puede ser NULL si se lo desea.
          if ( is_null($value) || is_scalar($value) )
          {
-            $this->attributeValues[ $attribute ] = $value;
+            // TICKET: http://code.google.com/p/yupp/issues/detail?id=35
+            // Resuelve el problema de que si es un booleano y carga de la base,
+            // el tipo del valor pasa a ser string y debe mantener el tipo boolean de PHP.
+            if ( $this->attributeTypes[$attribute] == Datatypes :: BOOLEAN )
+            {
+               // TODO: otro valor posible podria ser "true" o "false" como strings.
+               if ( $value === "0" || $value === 0 ) $this->attributeValues[ $attribute ] = false;
+               else if ( $value === "1" || $value === 1 ) $this->attributeValues[ $attribute ] = true;
+            }
+            else
+            {
+               // TODO: verificar que el tipo del dato corresponde con el tipo del campo.
+               $this->attributeValues[ $attribute ] = $value;
+            }
             return;
          }
          else
@@ -1813,12 +1826,11 @@ class PersistentObject {
       }
 
       $id = -1;
-      if ( is_int($value) ) // Busca por id
+      if ( is_numeric($value) )//is_int($value) ) // Busca por id // habia problema al pasarle un id entero pero como string...
       {
          $id = $value;
       }
-
-      if ( is_subclass_of($value, 'PersistentObject') ) // Busca por id del PO
+      else if ( is_subclass_of($value, 'PersistentObject') ) // Busca por id del PO
       {
          $id = $value->getId(); // FIXME: debe tener id seteado!
       }
