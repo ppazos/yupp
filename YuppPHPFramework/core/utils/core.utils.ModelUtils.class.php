@@ -61,18 +61,32 @@ class ModelUtils {
      * @param string $clazz nombre de una clase de modelo (tambien puede ser PersistentObject).
      * 
      */
-    //public function &getSubclassesOf( $clazz )
     public function getSubclassesOf( $clazz )
     {
         // chekear el class loader, viendo de las clases cargadas cuales son hijas directas de $clazz.
 
-        $loadedClasses = YuppLoader::getLoadedClasses();
+        // Esto en realidad se deberia hacer con getLoadedModelClasses
+        // porque ModelUtils es para resolver temas de las clases del modelo.
+        //$loadedClasses = YuppLoader::getLoadedClasses();
+        $loadedClasses = YuppLoader::getLoadedModelClasses();
+        
+        //print_r ( YuppLoader::getLoadedClasses() ); // tiene claves class, filename y package
+        //echo "<br/>";
+        //print_r ( YuppLoader::getLoadedModelClasses() ); // solo tiene class sin clave
+        
         $res = array();
 
+        /* Con getLoadedModelClasses se obtiene un array de nombres de clases, no classInfo
         foreach ( $loadedClasses as $classInfo ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
         {
             // class info tiene: package, class y filename.
         	   if ( get_parent_class( $classInfo['class'] ) == $clazz ) $res[] = $classInfo['class'];
+        }
+        */
+        
+        foreach ( $loadedClasses as $loadedClass ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
+        {
+            if ( get_parent_class( $loadedClass ) == $clazz ) $res[] = $loadedClass;
         }
 
         return $res;
@@ -82,16 +96,19 @@ class ModelUtils {
      * clazz es el nombre de una clase de modelo (tambien puede ser PersistentObject).
      * Devuelve una estructura multiple con los nombres de todas las clases que heredan de clazz (hijas, nietas, etc)
      */
-    //public function &getAllSubclassesOf( $clazz )
     public function getAllSubclassesOf( $clazz )
     {
         //echo "<h1>ModelUtils.getAllSubclassesOf $clazz</h1>";
         
     //Logger::struct( get_declared_classes(), "Declared classes ".__FILE__." ".__LINE__ );
         
-        $loadedClasses = YuppLoader::getLoadedClasses();
+        // Esto en realidad se deberia hacer con getLoadedModelClasses
+        // porque ModelUtils es para resolver temas de las clases del modelo.
+        //$loadedClasses = YuppLoader::getLoadedClasses();
+        $loadedClasses = YuppLoader::getLoadedModelClasses();
         $res = array();
 
+        /* Con getLoadedModelClasses se obtiene un array de nombres de clases, no classInfo
         foreach ( $loadedClasses as $classInfo ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
         {
             // class info tiene: package, class y filename.
@@ -102,6 +119,12 @@ class ModelUtils {
             //echo "ClassInfo.class: " . $classInfo['class'] . ", ". $clazz ."<br/>";
 
             if ( is_subclass_of( $classInfo['class'], $clazz ) ) $res[] = $classInfo['class'];
+        }
+        */
+        
+        foreach ( $loadedClasses as $loadedClass ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
+        {
+            if ( is_subclass_of( $loadedClass, $clazz ) ) $res[] = $loadedClass;
         }
 
         return $res;
