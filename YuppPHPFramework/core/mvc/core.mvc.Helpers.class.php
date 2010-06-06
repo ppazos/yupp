@@ -164,6 +164,12 @@ class Helpers {
        $body = (array_key_exists('body',$paramsMap)) ? $paramsMap['body'] : NULL;
        unset($paramsMap['body']);
        
+       
+       /**
+        * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
+        */
+       self::js( array("name" => "prototype-1.6.0.2") );
+       
        /*
         new Ajax.Updater({ success: 'items', failure: 'notice' }, '/items', {
            parameters: { text: $F('text') },
@@ -310,10 +316,19 @@ function $func {
     }
     
     
+    /**
+     * @param params array asociativo con los valores
+     *  - component (opcional) nombre del componente donde esta la libreria
+     *  - name (obligatorio) nombre de la libreria JS 
+     */
     public static function js( $params )
     {
-       global $_base_dir;
+       //global $_base_dir;
        
+       // TODO: registrar la libreria en LayoutManager en lugar de retornar un string...
+       LayoutManager::getInstance()->addJSLibReference( $params );
+       
+       /*
        // Busca la ubicacion en un componente particular
        if ( array_key_exists('component', $params) ) 
           $res = '<script type="text/javascript" src="'. $_base_dir .'/components/'. $params['component'] .'/javascript/'. $params['name'] .'.js"></script>';
@@ -321,6 +336,8 @@ function $func {
           $res = '<script type="text/javascript" src="' . $_base_dir . '/js/' . $params['name'] . '.js"></script>';
        
        return $res;
+       */
+       return ''; // FIXME: no retornar nada
     }
     
     public static function css( $params )

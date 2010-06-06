@@ -112,6 +112,7 @@ class YuppForm2
 	}
    
    // Constructores de campos
+   // TODO: crear campo bigtext pero HTML.
    public static function text( $params )
    {
       return YuppFormField2::text($params);
@@ -533,9 +534,13 @@ class YuppFormDisplay2
             $value = $field->get("value");
             if ($value === NULL)
                throw new Exception("El argumento 'value' es obligatorio para el campo CHECK." . __FILE__ . " " . __LINE__);
-            
+
+//echo "VALUE: $value<br/>";
+//echo gettype($value);
+
+
             $fieldHTML .= '<div class="label check"><label for="checkbox_'. $fieldNumber .'">' . $field->getLabel() . '</label></div>';
-            $fieldHTML .= '<div class="field check"><input type="checkbox" id="checkbox_'. $fieldNumber .'" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' /></div>';
+            $fieldHTML .= '<div class="field check"><input type="checkbox" id="checkbox_'. $fieldNumber .'" name="'. $name .'" value="'. $value .'" '. (($field->get("on"))?'checked="true"':'') . $field->getTagParams() .' /></div>';
          
 			break;
 			case YuppFormField2 :: SUBMIT :

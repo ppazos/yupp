@@ -345,7 +345,9 @@ class RequestManager {
       
       //Logger::struct( $context, __FILE__ . " " . __LINE__ );
 
-      LayoutManager::renderWithLayout( $pagePath );
+      //LayoutManager::renderWithLayout( $pagePath );
+      $layoutManager = LayoutManager::getInstance();
+      $layoutManager->renderWithLayout( $pagePath );
       
    } // render
    
