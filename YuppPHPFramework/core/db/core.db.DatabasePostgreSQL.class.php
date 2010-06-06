@@ -25,9 +25,9 @@ class DatabasePostgreSQL {
 
    public function connect( $dbhost, $dbuser, $dbpass, $dbName )
    {
-      //Logger::getInstance()->log("DatabaseMySQL::connect " . $dbhost ." ". $dbuser ." ". $dbpass ." ". $dbName);
+      //Logger::getInstance()->log("DatabasePostgreSQL::connect " . $dbhost ." ". $dbuser ." ". $dbpass ." ". $dbName);
 
-      //$this->connection = mysql_connect($dbhost, $dbuser, $dbpass);
+      //$this->connection = PostgreSQL_connect($dbhost, $dbuser, $dbpass);
       
       $this->connection = pg_connect("host=$dbhost dbname=$dbName user=$dbuser password=$dbpass");
       // "host=sheep port=5432 dbname=mary user=lamb password=foo"
@@ -46,11 +46,11 @@ class DatabasePostgreSQL {
 
    private function selectDB ( $dbName )
    {
-      //Logger::getInstance()->log("DatabaseMySQL::selectDB");
+      //Logger::getInstance()->log("DatabasePostgreSQL::selectDB");
 
       //echo "<br />";
       //echo "Select DB: " . $dbName . " " . $this->connection . "<br />";
-//      if ( ! mysql_select_db ($dbName, $this->connection) ) // Por si estoy trabajando con muchas conecciones
+//      if ( ! PostgreSQL_select_db ($dbName, $this->connection) ) // Por si estoy trabajando con muchas conecciones
 //      {
 //         throw new Exception("Error seleccionando la tabla <b>$dbName</b> de la base de datos.");
 //      }
@@ -58,11 +58,11 @@ class DatabasePostgreSQL {
 
    public function disconnect ()
    {
-      //Logger::getInstance()->log("DatabaseMySQL::disconnect");
+      //Logger::getInstance()->log("DatabasePostgreSQL::disconnect");
 
 //      if ($this->connection !== NULL)
 //      {
-//         mysql_close($this->connection); // No necesito pasar la coneccion
+//         PostgreSQL_close($this->connection); // No necesito pasar la coneccion
 //         $this->connection = NULL;
 //      }
       
@@ -77,11 +77,11 @@ class DatabasePostgreSQL {
       }
    }
 
-   // OJO! lo que devuelve es un recurso mysql... el resultado deberia tratarse internamente...
+   // OJO! lo que devuelve es un recurso PostgreSQL... el resultado deberia tratarse internamente...
    // Y devolver true o false por si se pudo o no hacer la consulta...
    public function query( $query )
    {
-      Logger::getInstance()->dbmysql_log("DatabasePostgreSQL::query : " . $query);
+      Logger::getInstance()->dbPostgreSQL_log("DatabasePostgreSQL::query : " . $query);
 
       $this->lastQuery = $query;
 
@@ -108,10 +108,10 @@ class DatabasePostgreSQL {
       */
    }
    
-   // para tener api estandar, es para insert y update. EN mysql es igual a una consulta.
+   // para tener api estandar, es para insert y update. EN PostgreSQL es igual a una consulta.
    public function execute( $query )
    {
-      Logger::getInstance()->dbmysql_log("DatabasePostgreSQL::execute : " . $query);
+      Logger::getInstance()->dbPostgreSQL_log("DatabasePostgreSQL::execute : " . $query);
       
       $this->lastQuery = $query;
       
@@ -125,7 +125,7 @@ class DatabasePostgreSQL {
    }
 
    // EN LUGAR DE TENER ESTA PORQUE NO HAGO UNA QUE YA TIRE LOS RESULTADOS EN UNA MATRIZ??? xq tengo que armar la matriz afuera igual...
-   // MySQL no tiene una funcion para tirar todas las filas de la consulta.
+   // PostgreSQL no tiene una funcion para tirar todas las filas de la consulta.
    // Sirve para iterar por los resultados de la ultima consulta..
    public function nextRow()
    {
@@ -166,7 +166,7 @@ class DatabasePostgreSQL {
    // Tipos de atributos disponibles (se deberian mapear segun cada DBMS...)
    public function getTextType( $swpType, $maxLength = NULL )
    {
-      //Logger::getInstance()->log("DatabaseMySQL::getTextType");
+      //Logger::getInstance()->log("DatabasePostgreSQL::getTextType");
 
       if ( $maxLength )
       {
@@ -180,11 +180,6 @@ class DatabasePostgreSQL {
           * MEDIUMBLOB, MEDIUMTEXT  L+3 bytes, donde L < 2^24
           * LONGBLOB, LONGTEXT   L+4 bytes, donde L < 2^32
           */
-
-         // http://dev.mysql.com/doc/refman/5.0/en/char.html
-         // Values in VARCHAR columns are variable-length strings.
-         // The length can be specified as a value from 0 to 255
-         // before MySQL 5.0.3, and 0 to 65,535 in 5.0.3 and later versions.
       }
 
       return "TEXT"; // No tengo restriccion de tamanio, text por defecto.
@@ -192,7 +187,7 @@ class DatabasePostgreSQL {
 
    public function getNumericType( $swpType )
    {
-      //Logger::getInstance()->log("DatabaseMySQL::getTextType");
+      //Logger::getInstance()->log("DatabasePostgreSQL::getTextType");
 
       if ($swpType == Datatypes::INT_NUMBER)   return "INTEGER"; // "INT(11)";
       if ($swpType == Datatypes::LONG_NUMBER)  return "BIGINT"; // "BIGINT(20)";
@@ -204,7 +199,7 @@ class DatabasePostgreSQL {
 
    public function getDateTimeType( $swpType )
    {
-      //Logger::getInstance()->log("DatabaseMySQL::getTextType");
+      //Logger::getInstance()->log("DatabasePostgreSQL::getTextType");
 
       if ($swpType == Datatypes::DATE)     return "DATE";
       if ($swpType == Datatypes::TIME)     return "TIME";
@@ -250,7 +245,7 @@ class DatabasePostgreSQL {
       }
       else
       {
-         throw new Exception("DatabaseMySQL.getDBType: el tipo ($type) no esta definido.");
+         throw new Exception("DatabasePosgreSQL.getDBType: el tipo ($type) no esta definido.");
       }
       
       return $dbms_type;
@@ -280,10 +275,6 @@ class DatabasePostgreSQL {
       foreach ( $fks as $fk )
       {
          // FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`)
-//         $q_fks = "ALTER TABLE $tableName " .
-//                  "ADD FOREIGN KEY (" . $fk['name'] . ") " .
-//                  "REFERENCES " . $fk['table'] . "(". $fk['refName'] .");";
-         
          $q_fks = "ALTER TABLE $tableName ".
                   "ADD CONSTRAINT fk_".$fk['table']."_".$fk['name']."_".$fk['refName']." ". // En Postgre las FK tienen nombre, usando table, name(nombre del atributo) y refName me aseguro de que es unico.
                   "FOREIGN KEY (" . $fk['name'] . ") ".
@@ -349,14 +340,13 @@ class DatabasePostgreSQL {
    
    public function tableNames() //: string[] // nombres de todas las tablas de la db seleccionada.
    {
-      //$q = "show tables";
       $res = $this->query( "select tablename from pg_tables" );
       return $res;
    }
    
    public function createTable($tableName, $pks, $cols, $constraints)
    {
-      Logger::getInstance()->dbmysql_log("DatabasePostgreSQL::createTable: " . $tableName);
+      Logger::getInstance()->dbPostgreSQL_log("DatabasePostgreSQL::createTable: " . $tableName);
       // TODO:
       // ESTA LLAMADA: $dbms_type = $this->db->getTextType( $type, $maxLength );
       // Deberia cambiarse por: $this->db->getDBType( $attrType, $attrConstraints ); // Y todo el tema de ver el largo si es un string lo hace adentro.
@@ -524,7 +514,7 @@ class DatabasePostgreSQL {
    
    public function evaluateAnyCondition( Condition $condition )
    {
-      //Logger::struct($condition, "DatabaseMySQL::evaluateAnyCondition");
+      //Logger::struct($condition, "DatabasePostgreSQL::evaluateAnyCondition");
       
       $where = "";
       switch ( $condition->getType() )
@@ -669,9 +659,10 @@ class DatabasePostgreSQL {
    
    public function evaluateILIKECondition( Condition $condition )
    {
-       // FIXME?: parece que en MySQL por defecto las busquedas no son case sensitive.
+       // FIXME?: parece que en PostgreSQL por defecto las busquedas no son case sensitive.
        return $this->evaluateLIKECondition( $condition );
    }
+   
    public function evaluateGTCondition( Condition $condition )
    {
       $refVal = $condition->getReferenceValue();

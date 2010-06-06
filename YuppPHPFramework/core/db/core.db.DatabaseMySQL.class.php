@@ -300,8 +300,7 @@ class DatabaseMySQL {
    
    public function tableNames() //: string[] // nombres de todas las tablas de la db seleccionada.
    {
-      $q = "show tables";
-      $res = $this->query( $q );
+      $res = $this->query( "show tables" );
       return $res;
    }
    
@@ -517,6 +516,7 @@ class DatabaseMySQL {
        // FIXME?: parece que en MySQL por defecto las busquedas no son case sensitive.
        return $this->evaluateLIKECondition( $condition );
    }
+   
    public function evaluateGTCondition( Condition $condition )
    {
       $refVal = $condition->getReferenceValue();

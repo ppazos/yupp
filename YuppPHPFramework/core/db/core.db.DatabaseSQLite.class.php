@@ -506,6 +506,7 @@ class DatabaseSQLite {
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
+   
    public function evaluateGTCondition( Condition $condition )
    {
       $refVal = $condition->getReferenceValue();
