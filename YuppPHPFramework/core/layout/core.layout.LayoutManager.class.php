@@ -172,7 +172,9 @@ class LayoutManager {
          // Inclusion de JS bajo demanda
          // http://code.google.com/p/yupp/issues/detail?id=32
          $partes = explode("<head>", $view);
-         $partes[0] .= '<head>';// explode elimina el <head>, lo agrego.
+
+         if (count($partes)>1)
+            $partes[0] .= '<head>';// explode elimina el <head>, lo agrego.
          
          //$head = $coincidencias[0];
          
@@ -183,8 +185,13 @@ class LayoutManager {
             $partes[0] .= '<script type="text/javascript" src="'. $path .'"></script>';
          }
          
-         echo $partes[0];
-         echo $partes[1];
+         // FIXME: Si la pagina no esta bien formada aqui dara un error
+         // p.e. si no se tiene html/head/body
+         if (isset($partes[0]))
+            echo $partes[0];
+            
+         if (isset($partes[1]))
+            echo $partes[1];
          
          //echo '<textarea style="height:800px; width:940px;">';
          //print_r( $partes );
