@@ -1,16 +1,15 @@
 <?php
+
 /**
  * Este archivo contiene la interfaz que deben implementar las estrategias de carga de datos.
  * 
  * Created on 29/03/2008
- * Modified on 30/05/2008
+ * Modified on 13/06/2010
  * 
  * @name core.persistent.POLoader.interface.php
  * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
- * @version v0.1.0
+ * @version v0.9.0
  * @package core.persistent
- * 
- * @link ... (PHPDoc)
  */
 
 /**

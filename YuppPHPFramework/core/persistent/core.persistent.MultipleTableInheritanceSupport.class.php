@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Esta clase es la que ofrece el soporte a la persistencia de estructuras de herencia cuando se guardan en tablas distintas.
+ * 
+ * Created on 15/12/2007
+ * Modified on 13/06/2010
+ * 
+ * @name core.persistent.MultipleTableInheritanceSupport.class.php
+ * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
+ * @version v0.9.0
+ * @package core.persistent
+ */
+ 
 class MultipleTableInheritanceSupport {
 
    /**
@@ -26,10 +38,6 @@ class MultipleTableInheritanceSupport {
       
       if ( count( $superClasses ) > 0 )
       {
-      	//$level1SuperClass = array_shift($superClasses); // Saca el primer elemento del array.
-         //$level1SuperClassIns = new $level1SuperClass(array(), true);
-         //$level1WithTable = $level1SuperClassIns->getWithTable();
-         
          //Logger::getInstance()->log( "LEVEL 1 ($level1SuperClass) WITH TABLE: " . $level1WithTable );
       
          $superSuperClass = array_shift($superClasses);
@@ -275,8 +283,7 @@ Array
          $parent_class = get_parent_class($c_ins);
          if ( $parent_class !== 'PersistentObject' )
          {
-            // Se inyecta en el constructor...
-            //$c_ins->addAttribute("super_id", Datatypes::INT_NUMBER);
+            // El atributo super_id se inyecta en el constructor
             
             // La superclase de c_ins se mapea en otra tabla, saco esos atributos...
             $suc_ins = new $parent_class();
@@ -491,10 +498,8 @@ Array
       $condition = Condition::EQ( YuppConventions::tableName( $classAttr ), 
                                   YuppConventions::superclassRefName( get_class($obj) ),
                                   $obj->getId() );
-                                  
-      //$params = array();
+
       $params = new ArrayObject();
-      //eval('$list = $classAttr::findBy( $condition, &$params );'); // Devuelve un PO.
       eval('$list = $classAttr::findBy( $condition, $params );'); // Devuelve un PO.
       
       /*
@@ -520,6 +525,5 @@ Array
 
       return $list[0];
    }
-   
 }
 ?>

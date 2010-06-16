@@ -1,25 +1,18 @@
 <?php
-/**
- * Este archivo contiene la estrategia de carga de datos perezosa, 
- * la cual no carga elementos assciados a no ser que sean pedidos explicitamente.
- * 
- * Created on 29/03/2008
- * Modified on 30/05/2008
- * 
- * @name core.persistent.LazyLoadStrategy.class.php
- * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
- * @version v0.1.0
- * @package core.persistent
- * 
- * @link ... (PHPDoc)
- */
 
 /**
  * Clase que implementa la carga de datos de forma perezosa. Esta clase no implementa la logica de carga, 
  * dice que funciones y en que orden se llaman a las funciones de carga del PersistentManager.
+ * 
+ * Created on 15/12/2007
+ * Modified on 13/06/2010
+ * 
+ * @name core.persistent.MultipleTableInheritanceSupport.class.php
+ * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
+ * @version v0.9.0
  * @package core.persistent
- * @subpackage classes
  */
+
 class LazyLoadStrategy implements POLoader {
 
     private $manager; // PersistentManager

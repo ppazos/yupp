@@ -1,29 +1,18 @@
 <?php
- /**
- * Este archivo contiene la clase singleton utilizada para almacenar objetos que se cargaron 
- * de la base de datos, ante la carga de nuevos objetos actua como cache.
- * 
- * Created on 07/01/2008
- * Modified on 30/05/2008
- * 
- * @name core.persistent.ArtifactHolder.class.php
- * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
- * @version v0.1.0
- * @package core.persistent
- * 
- * @link ... (PHPDoc)
- * 
- */
-
-
-// TODO: corregir identacion.
-
 
 /**
  * Clase que implementa un contenedor de objetos donde se registran a medida que se van cargando.
+ * 
+ * Created on 07/01/2008
+ * Modified on 13/06/2010
+ * 
+ * @name core.persistent.ArtifactHolder.class.php
+ * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
+ * @version v0.9.0
  * @package core.persistent
- * @subpackage classes
+ * 
  */
+
 class ArtifactHolder {
 
    private static $instance = NULL;
@@ -49,10 +38,7 @@ class ArtifactHolder {
       $class = get_class($obj);
       $id = $obj->getId();
 
-      //print_r( $obj );
-
       //Logger::artholder_log("ArtifactHolder.addModel " . $class . " " . $id);
-
       if ( !array_key_exists($class, $this->model) || !$this->model[$class] ) $this->model[$class] = array();
 
       $this->model[$class][$id] = $obj;
@@ -68,6 +54,7 @@ class ArtifactHolder {
    public function getModel( $class, $id )
    {
       Logger::artholder_log("ArtifactHolder.getModel " . $class . " " . $id);
+      
       if ( !isset($this->model[$class]) ) return NULL;
       if ( !isset($this->model[$class][$id]) ) return NULL;
       return $this->model[$class][$id]; // VERIFY: Si no tengo un objeto con $id me tira null o una excepcion de que no existe la key?
@@ -82,9 +69,8 @@ class ArtifactHolder {
    public function existsModel( $class, $id )
    {
       Logger::artholder_log("ArtifactHolder.existsModel " . $class . " " . $id);
-      //print_r( $this->model );
 
-   	return ( $this->getModel($class, $id) != NULL );
+      return ( $this->getModel($class, $id) != NULL );
    }
 
 }

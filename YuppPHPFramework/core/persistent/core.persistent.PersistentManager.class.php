@@ -4,14 +4,13 @@
  * La cual se encarga de comunicarse con las capas de persistencia inferiores (DAL) y generar objetos persistentes con los datos cargados.
  * 
  * Created on 15/12/2007
- * Modified on 30/05/2008
+ * Modified on 13/06/2010
  * 
  * @name core.persistent.PersistentManager.class.php
  * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
- * @version v0.1.0
+ * @version v0.9.0
  * @package core.persistent
  * 
- * @link ... (PHPDoc)
  */
 
 YuppLoader::load( "core.db.criteria2", "Condition" );

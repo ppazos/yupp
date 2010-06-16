@@ -1,19 +1,19 @@
 <?php
+
 /**
  * Este archivo contiene la definicion de la clase persistente, que tiene soporte para delaciones 
  * unidireccionales y bidireccionales 1-1, 1-n, n-n. Tambien soporta herencia.
  * 
  * Created on 15/12/2007
- * Modified on 30/05/2008
+ * Modified on 13/06/2010
  * 
  * @name core.persistent.PersistentObject.class.php
  * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
- * @version v0.1.0
+ * @version v0.9.0
  * @package core.persistent
  * 
- * @link ... (PHPDoc)
+ * @link http://www.simplewebportal.net/yupp_framework_php_doc/2_modelo.html
  */
-
 
 // FIXME: sacar esto y ponerle LoadClass.
 include_once "core/core.Constraints.class.php";
@@ -1559,9 +1559,13 @@ class PersistentObject {
             // el tipo del valor pasa a ser string y debe mantener el tipo boolean de PHP.
             if ( $this->attributeTypes[$attribute] == Datatypes :: BOOLEAN )
             {
-               // TODO: otro valor posible podria ser "true" o "false" como strings.
-               if ( $value === "0" || $value === 0 ) $this->attributeValues[ $attribute ] = false;
-               else if ( $value === "1" || $value === 1 ) $this->attributeValues[ $attribute ] = true;
+               if ( is_bool($value) ) $this->attributeValues[ $attribute ] = $value;
+               else
+               {
+                  // TODO: otro valor posible podria ser "true" o "false" como strings.
+                  if ( $value === "0" || $value === 0 ) $this->attributeValues[ $attribute ] = false;
+                  else if ( $value === "1" || $value === 1 ) $this->attributeValues[ $attribute ] = true;
+               }
             }
             else
             {
