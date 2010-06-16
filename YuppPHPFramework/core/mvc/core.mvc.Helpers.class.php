@@ -269,8 +269,6 @@ function $func {
           $params['controller'] = NULL;
           $params = array_filter($params); // Saca nulls // ['params']; // opcional, es un mapa.
 
-          // /Persistent/components/blog/views/entradaBlog/details.template.php
-          //
           //$url = $_base_dir ."/components/". $component ."/views/". $controller;
           $url = "./components/". $component ."/views/". $controller;
           
