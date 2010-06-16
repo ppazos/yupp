@@ -517,8 +517,9 @@ class YuppFormDisplay2
                throw new Exception("El argumento 'name' es obligatorio para el campo RADIO." . __FILE__ . " " . __LINE__);
                
             $value = $field->get("value");
-            if ($value === NULL)
-               throw new Exception("El argumento 'value' es obligatorio para el campo RADIO." . __FILE__ . " " . __LINE__);
+            // En check y radio, podria no pasarse un valor, lo que importa es que se seleccione o no.
+            //if ($value === NULL)
+            //   throw new Exception("El argumento 'value' es obligatorio para el campo RADIO." . __FILE__ . " " . __LINE__);
             
             $fieldHTML .= '<div class="label radio"><label for="radio_'. $fieldNumber .'">' . $field->getLabel() . '</label></div>';
             $fieldHTML .= '<div class="field radio"><input type="radio" id="radio_'. $fieldNumber .'" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' /></div>';
@@ -532,8 +533,9 @@ class YuppFormDisplay2
                throw new Exception("El argumento 'name' es obligatorio para el campo CHECK." . __FILE__ . " " . __LINE__);
                
             $value = $field->get("value");
-            if ($value === NULL)
-               throw new Exception("El argumento 'value' es obligatorio para el campo CHECK." . __FILE__ . " " . __LINE__);
+            // En check y radio, podria no pasarse un valor, lo que importa es que se seleccione o no.
+            //if ($value === NULL)
+            //   throw new Exception("El argumento 'value' es obligatorio para el campo CHECK." . __FILE__ . " " . __LINE__);
 
 //echo "VALUE: $value<br/>";
 //echo gettype($value);
