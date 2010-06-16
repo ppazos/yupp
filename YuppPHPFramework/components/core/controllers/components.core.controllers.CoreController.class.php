@@ -34,15 +34,37 @@ class CoreController extends YuppController
             }
 			}
          
-         $this->params['modelTables']      = $createdTables;
+         //$this->params['modelTables']      = $createdTables;
          $this->params['allTablesCreated'] = $allTablesCreated;
 		}
+      
+      
       
       
       // Nombres de los compoentes instalados
       $components = PackageNames::getComponentNames();
       $this->params['components'] = $components;
       
+      $componentModelClasses = array();
+      foreach ($components as $component)
+      {
+         $classes = ModelUtils::getModelClasses($component);
+         /*
+         if ( !isset($componentModelClasses[$component]) )
+         {
+            $componentModelClasses[$component] = array();
+         }
+         */
+         foreach ($classes as $class)
+         {
+            $fileInfo = FileNames::getFilenameInfo( $class );
+            $componentModelClasses[$component][$fileInfo['name']] = $createdTables[$fileInfo['name']];
+         }
+      }
+      
+      //print_r( $componentModelClasses );
+      
+      $this->params['componentModelClasses'] = $componentModelClasses;
 
       return $this->render("index");
       
