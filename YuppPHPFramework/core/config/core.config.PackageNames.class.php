@@ -45,7 +45,7 @@ class PackageNames {
     	$dir = dir("./components");
       while (false !== ($component = $dir->read()))
       {
-         if ($component !== "." && $component !== ".." && $component !== "core")
+         if ( !String::startsWith( $component,"." ) && $component !== "core")
          {
             $componentNames[] = $component;
          }
