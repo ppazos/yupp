@@ -22,6 +22,9 @@ include_once ('core/core.YuppLoader.class.php');
 set_error_handler("my_warning_handler", E_ALL);
 
 function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext) {
+   
+   //print_r ( get_declared_classes () );
+   //print_r( $errcontext );
 	throw new Exception( $errstr );
 }
 
@@ -116,11 +119,15 @@ assert_options(ASSERT_CALLBACK, 'my_assert_handler');
 YuppLoader::load("tests.model.001", "Botella");
 
 
+// Sin esto al hacer reload no carga DatabaseMySQL
+YuppLoader::refresh();
+
 class Model001Test {
 
 	public function runTest()
 	{
 		$this->test1();
+      $this->test2();
 	}
 	 
 	private function test1()
@@ -155,6 +162,40 @@ class Model001Test {
          echo "Test 1 INcorrecto";
       }
       */
+   }
+   
+   private function test2()
+   {
+      $bot = new Botella(
+        array(
+          "material" => "vidrio",
+          "capacidad" => 1.5, 
+          "tapaRosca" => true
+        )
+      );
+      
+      if ( is_bool( $bot->getTapaRosca() ) ) echo "Correcto, es boolean 1<br/>";
+      else echo "Inorrecto, no es boolean 1<br/>";
+      
+      if (!$bot->save())
+      {
+         print_r($bot->getErrors());
+      }
+      
+      if ( is_bool( $bot->getTapaRosca() ) ) echo "Correcto, es boolean 2<br/>";
+      else echo "Inorrecto, no es boolean 2<br/>";
+      
+      $bot2 = Botella::get( $bot->getId() );
+      
+      if ( is_bool( $bot2->getTapaRosca() ) ) echo "Correcto, es boolean 3<br/>";
+      else echo "Inorrecto, no es boolean 3<br/>";
+      
+      if ( is_string( $bot2->getTapaRosca() ) ) echo "Es string 4<br/>";
+      
+      echo "En realidad es: " . gettype( $bot2->getTapaRosca() ) . "<br/>";
+      
+      if ( $bot2->getTapaRosca() ) echo "OK, es tapa rosca!<br/>";
+      else echo "ERROR, dice que no es tapa rosca<br/>";
    }
 
 }

@@ -116,6 +116,9 @@ assert_options(ASSERT_CALLBACK, 'my_assert_handler');
 YuppLoader::load("tests.model.002", "Nariz");
 YuppLoader::load("tests.model.002", "Cara");
 
+// Sin esto al hacer reload no carga DatabaseMySQL
+YuppLoader::refresh();
+
 class Model002Test {
 
 	public function runTest()
