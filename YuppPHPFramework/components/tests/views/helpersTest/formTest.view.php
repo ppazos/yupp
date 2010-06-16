@@ -20,9 +20,9 @@ YuppLoader::load("core.mvc.form", "YuppForm2");
             return document.layers[elemID]
          }
       }
-     function after_function (responseText, statusText, xhr, $form) {
-      
-       alert("aaaaaa: "+responseText);
+     function after_function (responseText, statusText, xhr, $form)
+     {
+       //alert("aaaaaa: "+responseText);
       
        var div = getObj('content_div');
        div.innerHTML = responseText;
