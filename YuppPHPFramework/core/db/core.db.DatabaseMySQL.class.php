@@ -441,6 +441,7 @@ class DatabaseMySQL {
    private function evaluateReferenceValue( $refVal )
    {
       // Si es 0 me devuelve null...
+      if ( is_null($refVal) ) return 'NULL';
       if ( $refVal === 0 ) return "0";
       if ( is_numeric($refVal) ) return $refVal; // Si busca por un numero, aunque el tipo fuera TEXT no encuentra si no se le sacan las comillas.
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
@@ -452,12 +453,15 @@ class DatabaseMySQL {
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-      if ( $refVal !== NULL )
-         return $atr->alias.".".$atr->attr ."=". $this->evaluateReferenceValue( $refVal ); // a.b = 666
-      
       if ( $refAtr !== NULL )
          return $atr->alias.".".$atr->attr ."=". $refAtr->alias.".".$refAtr->attr; // a.b = c.d
-
+      else
+      {
+         // El valor puede ser null porque puedo querer buscar por atributos nulos.
+         //if ( $refVal !== NULL )
+            return $atr->alias.".".$atr->attr ."=". $this->evaluateReferenceValue( $refVal ); // a.b = 666
+      }
+      
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
