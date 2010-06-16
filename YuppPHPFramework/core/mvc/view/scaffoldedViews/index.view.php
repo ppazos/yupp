@@ -33,11 +33,26 @@ $m = Model::getInstance();
             }
          }
 
+         /*
          $modelTables = $m->get('modelTables');
          if ( $modelTables !== NULL )
          {
             echo "<ul>";
             foreach ( $modelTables as $class => $info )
+            {
+               $comp = ModelUtils::getComponentForModelClass( $class );
+               echo  '<li>Clase: <b>'. $comp .'.'. $class .'</b> se guarda en la tabla: <b>'. $info['tableName'] .'</b> (' . $info['created'] .')</li>';
+            }
+            echo "</ul>";
+         }
+         */
+         
+         $componentModelClasses = $m->get('componentModelClasses');
+         foreach ($componentModelClasses as $component => $classInfo)
+         {
+            echo "<h3>$component:</h3>";
+            echo "<ul>";
+            foreach ( $classInfo as $class => $info )
             {
                echo  '<li>Clase: <b>'. $class .'</b> se guarda en la tabla: <b>'. $info['tableName'] .'</b> (' . $info['created'] .')</li>';
             }
