@@ -27,8 +27,6 @@ class DatabasePostgreSQL {
    {
       //Logger::getInstance()->log("DatabasePostgreSQL::connect " . $dbhost ." ". $dbuser ." ". $dbpass ." ". $dbName);
 
-      //$this->connection = PostgreSQL_connect($dbhost, $dbuser, $dbpass);
-      
       $this->connection = pg_connect("host=$dbhost dbname=$dbName user=$dbuser password=$dbpass");
       // "host=sheep port=5432 dbname=mary user=lamb password=foo"
       // connect to a database named "mary" on the host "sheep" with a username and password
@@ -47,24 +45,11 @@ class DatabasePostgreSQL {
    private function selectDB ( $dbName )
    {
       //Logger::getInstance()->log("DatabasePostgreSQL::selectDB");
-
-      //echo "<br />";
-      //echo "Select DB: " . $dbName . " " . $this->connection . "<br />";
-//      if ( ! PostgreSQL_select_db ($dbName, $this->connection) ) // Por si estoy trabajando con muchas conecciones
-//      {
-//         throw new Exception("Error seleccionando la tabla <b>$dbName</b> de la base de datos.");
-//      }
    }
 
    public function disconnect ()
    {
       //Logger::getInstance()->log("DatabasePostgreSQL::disconnect");
-
-//      if ($this->connection !== NULL)
-//      {
-//         PostgreSQL_close($this->connection); // No necesito pasar la coneccion
-//         $this->connection = NULL;
-//      }
       
       if(!pg_close($this->connection))
       {
@@ -81,7 +66,7 @@ class DatabasePostgreSQL {
    // Y devolver true o false por si se pudo o no hacer la consulta...
    public function query( $query )
    {
-      Logger::getInstance()->dbPostgreSQL_log("DatabasePostgreSQL::query : " . $query);
+      Logger::getInstance()->dbmysql_log("DatabasePostgreSQL::query : " . $query);
 
       $this->lastQuery = $query;
 
@@ -93,25 +78,12 @@ class DatabasePostgreSQL {
       $this->lastResult = $result;
 
       return $result;
-      
-      /*
-      $result = pg_query($conn, "SELECT author, email FROM authors");
-      if (!$result) {
-        echo "An error occured.\n";
-        exit;
-      }
-      
-      while ($row = pg_fetch_row($result)) {
-        echo "Author: $row[0]  E-mail: $row[1]";
-        echo "<br />\n";
-      }
-      */
    }
    
    // para tener api estandar, es para insert y update. EN PostgreSQL es igual a una consulta.
    public function execute( $query )
    {
-      Logger::getInstance()->dbPostgreSQL_log("DatabasePostgreSQL::execute : " . $query);
+      Logger::getInstance()->dbmysql_log("DatabasePostgreSQL::execute : " . $query);
       
       $this->lastQuery = $query;
       
@@ -129,7 +101,9 @@ class DatabasePostgreSQL {
    // Sirve para iterar por los resultados de la ultima consulta..
    public function nextRow()
    {
-      if ( $this->lastResult ) return pg_fetch_assoc( $this->lastResult ); //pg_fetch_row( $this->lastResult );
+      if ( $this->lastResult )
+         return pg_fetch_assoc( $this->lastResult );
+      
       return false;
    }
 
@@ -211,7 +185,7 @@ class DatabasePostgreSQL {
    public function getDBType( $type, $constraints )
    {
       $dbms_type = NULL;
-   	if ( Datatypes::isText( $type ) )
+   	  if ( Datatypes::isText( $type ) )
       {
          $maxLength = NULL; // TODO: Falta ver si tengo restricciones de maxlength!!!
          
@@ -221,7 +195,7 @@ class DatabasePostgreSQL {
          {
             foreach ( $constraints as $constraint )
             {
-            	if ( get_class($constraint) === 'MaxLengthConstraint' )
+               if ( get_class($constraint) === 'MaxLengthConstraint' )
                {
                	$maxLengthConstraint = $constraint;
                   break; // rompe for
@@ -343,10 +317,11 @@ class DatabasePostgreSQL {
       $res = $this->query( "select tablename from pg_tables" );
       return $res;
    }
-   
+
+/*
    public function createTable($tableName, $pks, $cols, $constraints)
    {
-      Logger::getInstance()->dbPostgreSQL_log("DatabasePostgreSQL::createTable: " . $tableName);
+      Logger::getInstance()->log("DatabasePostgreSQL::createTable: " . $tableName);
       // TODO:
       // ESTA LLAMADA: $dbms_type = $this->db->getTextType( $type, $maxLength );
       // Deberia cambiarse por: $this->db->getDBType( $attrType, $attrConstraints ); // Y todo el tema de ver el largo si es un string lo hace adentro.
@@ -414,7 +389,8 @@ class DatabasePostgreSQL {
       $this->execute( $q );
       
    } // createTable
-   
+*/
+
 /* Pense que capaz habia que implementar algo especial pero con lo que hay en DAL funciona asi que no es necesario.
    public function count( $tableName, $params = array() )
    {
@@ -584,6 +560,7 @@ class DatabasePostgreSQL {
    private function evaluateReferenceValue( $refVal )
    {
       // Si es 0 me devuelve null...
+      if ( is_null($refVal) ) return 'NULL';
       if ( $refVal === 0 ) return "'0'";
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
    }
@@ -594,11 +571,14 @@ class DatabasePostgreSQL {
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-      if ( $refVal !== NULL )
-         return $atr->alias.".".$atr->attr ."=". $this->evaluateReferenceValue( $refVal ); // a.b = 666
-      
       if ( $refAtr !== NULL )
          return $atr->alias.".".$atr->attr ."=". $refAtr->alias.".".$refAtr->attr; // a.b = c.d
+      else
+      {
+         // El valor puede ser null porque puedo querer buscar por atributos nulos.
+         //if ( $refVal !== NULL )
+            return $atr->alias.".".$atr->attr ."=". $this->evaluateReferenceValue( $refVal ); // a.b = 666
+      }
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }

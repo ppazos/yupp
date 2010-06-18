@@ -72,7 +72,8 @@ class DatabaseMySQL {
       $this->lastQuery = $query;
 
       // Si hay excepciones, se tiran para la capa de arriba donde se agarran.
-      if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
+      if (!$result = mysql_query($query, $this->connection))
+         throw new Exception('La consulta fall&oacute;: ' . mysql_error());
 
       $this->queryCount++;
       $this->lastResult = $result;
@@ -87,7 +88,8 @@ class DatabaseMySQL {
       
       $this->lastQuery = $query;
       
-      if (!$result = mysql_query($query, $this->connection)) throw new Exception('La consulta fall&oacute;: ' . mysql_error());
+      if (!$result = mysql_query($query, $this->connection))
+         throw new Exception('La consulta fall&oacute;: ' . mysql_error());
       
       $this->queryCount++;
       
@@ -100,9 +102,8 @@ class DatabaseMySQL {
    public function nextRow()
    {
       if ( $this->lastResult )
-      {
          return mysql_fetch_assoc( $this->lastResult );
-      }
+
       return false;
    }
 
@@ -189,7 +190,7 @@ class DatabaseMySQL {
    public function getDBType( $type, $constraints )
    {
       $dbms_type = NULL;
-   	if ( Datatypes::isText( $type ) )
+      if ( Datatypes::isText( $type ) )
       {
          $maxLength = NULL; // TODO: Falta ver si tengo restricciones de maxlength!!!
          
@@ -199,7 +200,7 @@ class DatabaseMySQL {
          {
             foreach ( $constraints as $constraint )
             {
-            	if ( get_class($constraint) === 'MaxLengthConstraint' )
+               if ( get_class($constraint) === 'MaxLengthConstraint' )
                {
                	$maxLengthConstraint = $constraint;
                   break; // rompe for
@@ -253,8 +254,8 @@ class DatabaseMySQL {
       foreach ( $fks as $fk )
       {
          // FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`)
-         $q_fks = "ALTER TABLE $tableName " .
-                  "ADD FOREIGN KEY (" . $fk['name'] . ") " .
+         $q_fks = "ALTER TABLE $tableName ".
+                  "ADD FOREIGN KEY (" . $fk['name'] . ") ".
                   "REFERENCES " . $fk['table'] . "(". $fk['refName'] .");";
                   
          $this->execute( $q_fks );
@@ -266,7 +267,7 @@ class DatabaseMySQL {
     * @param string tableName nombre de la tabla.
     * @return true si existe la tabla tableName en la base de datos.
     */
-    public function tableExists( $tableName ) //: boolean
+   public function tableExists( $tableName ) //: boolean
    {
       /* MySQL:
        * SHOW TABLES [[FROM dbname] LIKE 'tablename']
@@ -461,7 +462,7 @@ class DatabaseMySQL {
          //if ( $refVal !== NULL )
             return $atr->alias.".".$atr->attr ."=". $this->evaluateReferenceValue( $refVal ); // a.b = 666
       }
-      
+
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
@@ -625,7 +626,6 @@ class DatabaseMySQL {
    //
    // /EVALUACION DE CONSULTAS ======================================================
    
-
-} // DatabaseMySQL
+}
 
 ?>

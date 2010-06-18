@@ -161,6 +161,8 @@ class DAL {
     * @param $constraints array de restricciones para cada nombre de columna, para cada nombre de columna 
     *        hay un array de restricciones y pueden haber columnas sin restricciones.
     */
+   // SQLite> CREATE TABLE ggg (id int, name CHAR(255), email CHAR(255), PRIMARY KEY (id));
+   // MySQL> aca le pongo ` y funciona, pero en la doc de la web no le pone, y esas comillas hacen q no me ande el lite.
    public function createTable2($tableName, $pks, $cols, $constraints)
    {
       Logger::getInstance()->dal_log("DAL::createTable2 : " . $tableName);
@@ -270,7 +272,6 @@ class DAL {
     * @param $fks       claves externas a otras tablas. Array de arrays, cada array interno 
     *                   tiene claves: requeridas(name(string), type(string), table(string), refName(string)),
     *                   "table" es la tabla referenciada por la FK y "refName" es la columna referenciada por la FK.
-    * 
     */
    public function addForeignKeys($tableName, $fks)
    {
@@ -278,117 +279,6 @@ class DAL {
       $this->db->addForeignKeys($tableName, $fks);  
    }
 
-   /**
-    * FIXME: no deberia mandarle el objeto, deberia ser un vector de datos.
-    * 
-    * @param string          $tableName  nombre de la tabla a generar.
-    * //@param PersistentObjet $obj        Intancia del objeto persistente que se quiere salvar.
-    * @param $data resultado de hacer PM->getDataFromObject, no importan los valores solo las claves que son los atributos.
-    * @param $constraints restricciones sobre los atributos en $data, es necesario para setear nullable o restricciones de largo en strings.
-    * @param array           $fks        Vector de resgistros con: atributo de $obj, tabladestino, atributo destino.
-    */
-   // SQLite> CREATE TABLE ggg (id int, name CHAR(255), email CHAR(255), PRIMARY KEY (id));
-   // MySQL> aca le pongo ` y funciona, pero en la doc de la web no le pone, y esas comillas hacen q no me ande el lite.
-/*
-   public function createTable( $tableName, &$obj )
-   {
-      Logger::getInstance()->log("DAL::createTable " . $tableName);
-
-      //$q = "CREATE TABLE `" . $tableName . "` (";
-      $q = "CREATE TABLE " . $tableName . " (";
-
-      foreach ( $obj->getAttributeTypes() as $attr => $type )
-      {
-          // Tengo que ver de que tipo es el campo para crearlo...
-          // El nombre del tipo depende del DBMS...
-          // Esto es MySQL...
-          // Falta ver si un atributo es nullable.
-          
-          // ===========================================================
-          // FIXME: esta generando nullables para todos los atributos
-
-          // VERFICA CAMPOS NULLABLES
-          // Ahora son todos nullables menos los inyectados, para hacer mas simple el soporte para herencia.
-          //$nullable = "";
-          //if ( $obj->nullable($attr) ) $nullable = "NULL";
-          //else $nullable = "NOT NULL";
-          
-          $nullable = "NULL";
-          if ( $obj->isInyectedAttribute( $attr ) ) $nullable = "NOT NULL";
-
-          // Esta solucion me genera NOT NULL para los atributos de superclases mapeados en la misma tabla, y deberia ser NULL.
-          //$nullable = "NOT NULL";
-          //if ( $obj->nullable($attr) && !$obj->isInyectedAttribute( $attr ) ) $nullable = "NULL";
-          //
-          // ===========================================================
-
-          //
-          // TODO verificar campos string, ver si tienen restriccion de maxlength, 
-          // ver que largo puede tener, si es menor que 255 se crea un varchar de eso.
-          // Si es mas que eso se crea un TEXT o BLOB.
-          //
-
-          //Logger::getInstance()->log( "TIPO: " . $type );
-
-          $dbms_type = NULL;
-          if ( Datatypes::isText( $type ) )
-          {
-             $maxLength = NULL; // TODO: Falta ver si tengo restricciones de maxlength!!!
-             $maxLengthConstraint = $obj->getConstraintOfClass( $attr, 'MaxLengthConstraint' );
-
-             if ($maxLengthConstraint !== NULL) $maxLength = $maxLengthConstraint->getValue();
-             
-             $dbms_type = $this->db->getTextType( $type, $maxLength ); // Devuelve VARCHAR, TEXT, o el tipo correcto dependiendo del maxlength.
-          }
-          else if ( Datatypes::isNumber( $type ) )
-          {
-             $dbms_type = $this->db->getNumericType( $type );
-          }
-          else if ( Datatypes::isDateTime( $type ) )
-          {
-             $dbms_type = $this->db->getDateTimeType( $type );
-          }
-          else
-          {
-             // Tipo no definido....
-             throw new Exception("DAL.createTable: el tipo ($type) del atributo ($attr) no esta definido.");
-          }
-
-          //Logger::getInstance()->log( "DBMS TYPE: " . $dbms_type );
-
-          // ===========================================
-          // Esta parte genera algo asi:
-          // `id` INT NOT NULL ,
-          // `nombre` VARCHAR( 50 ) NULL ,
-          // ===========================================
-
-          $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
-          //$q .= "`". DatabaseNormalization::col($attr) ."` $dbms_type $nullable , ";
-      }
-
-      $q .= "PRIMARY KEY ( id )"; //$q .= "PRIMARY KEY ( `id` )";
-      $q .= ");";
-
-      try
-      {
-         //Logger::getInstance()->log("\tintento crear");
-         //if ( !$this->db->query( $q ) ) throw new Exception( mysql_error() );
-         
-         // DBSTD
-         $this->db->execute( $q );
-         
-         //Logger::getInstance()->log("\tfin intento crear");
-      }
-      catch (Exception $e)
-      {
-         echo $e->getMessage();
-         echo $this->db->getLastError(); // DBSTD
-      }
-
-      //Logger::log("/DAL::createTable");
-
-   } // createTable
-*/
 
    // Modifica un registro ya existente. DEBE tener el id seteado en los values.
    // FIXME: si la tabla se deriva del objeto no veo la necesidad de pasarle ambos, 
