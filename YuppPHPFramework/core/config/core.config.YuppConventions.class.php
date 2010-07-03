@@ -59,7 +59,7 @@ class YuppConventions {
    /**
     * @pre: isModelPackage($package)
     */
-   public static function getModelPath( $package ) //( $component )
+   public static function getModelPath( $package )
    {
    	//return "./components/$component/model";
       //return "./components/" . strtr($package, ".", "/"); // Correccion para poder poner subdirectorios en /model.
