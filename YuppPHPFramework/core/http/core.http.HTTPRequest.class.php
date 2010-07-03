@@ -1,9 +1,8 @@
 <?php
 
-
 YuppLoader::load('core.http', 'HTTPResponse');
 
-class HTTPRequest{
+class HTTPRequest {
 
 /*   private $code;
    private $date;
@@ -18,28 +17,41 @@ class HTTPRequest{
    private $content_type;
    */
    private $cookie;
+   private $timeout = 10; // en segundos
+	
+   public function setTimeOut( $secs )
+   {
+      $this->timeout = $secs;
+   }
+   
    
    //Request Método Post
+   // FIXME: cambiarle el nombre a post
    public function HttpRequestPost($url)
    {
+      // Los espacios y otros caracteres de separacion no son admisibles en una url...
+      $pattern="/[\t\r\n]*/s";
+      $url = preg_replace($pattern,'',$url);
+      
       $r = $this->file_post_contents($url);
       return $r;
 
    }
    
    //Request Método Get
+   // FIXME: cambiarle el nombre a get
    public function HttpRequestGet($url)
    {
       $parsedUrl = parse_url($url);
 
       if (!isset($parsedUrl['port'])) {
-         if ($parsedUrl['scheme'] == 'http') 
+         if ($parsedUrl['scheme'] == 'http')
          {
-            $parsedUrl['port']=80; 
+            $parsedUrl['port']=80;
          }
-         elseif ($parsedUrl['scheme'] == 'https') 
-         { 
-            $parsedUrl['port']=443; 
+         elseif ($parsedUrl['scheme'] == 'https')
+         {
+            $parsedUrl['port']=443;
          }
       }
       
@@ -69,23 +81,15 @@ class HTTPRequest{
 //      echo "<hr/>".gettype($parsedUrl['port'])."<hr/>";
       
       $result = '';
-      $timeout = 30;
       //echo $headers;
       //$r = file_get_contents($url);
-      $fp = fsockopen($parsedUrl['host'], $parsedUrl['port'], $errno, $errstr, 30);
+      $fp = fsockopen($parsedUrl['host'], $parsedUrl['port'], $errno, $errstr, $this->timeout);
       if($fp) 
       {
-         /*
-         fputs($fp, $headers); // Mandar headers
-         while(!feof($fp)) 
-         { 
-            $result .= fgets($fp, 128);
-         }
-         */
-         fwrite($fp, $headers);
+         fwrite($fp, $headers); // Envia pedido
          while(is_resource($fp) && $fp && !feof($fp)) $result .= fread($fp, 1024);
       }
-      fclose($fp);
+      fclose($fp); // TODO: si hay keepalive, no cerrar el socket...
       
       
 //      $this->_fp = fsockopen(($this->_protocol == 'https' ? 'ssl://' : '') . $this->_host, $this->_port);
@@ -104,7 +108,6 @@ class HTTPRequest{
          //removes headers
          $pattern="/^.*\r\n\r\n/s";
          $result=preg_replace($pattern,'',$result);
-
       }
 
       $r = preg_split('/\r\n/', $result);
@@ -121,7 +124,7 @@ class HTTPRequest{
 //      echo '</textarea>';
       
       $responseHeaders = $response->getHeaders();
-         
+      
       if (isset($responseHeaders['Set-Cookie']))
       {
          $this->setCookie($responseHeaders['Set-Cookie']);
@@ -138,23 +141,23 @@ class HTTPRequest{
 
       if (!isset($parsedUrl['port']))
       {
-         if ($parsedUrl['scheme'] == 'http') 
+         if ($parsedUrl['scheme'] == 'http')
          {
-            $parsedUrl['port']=80; 
+            $parsedUrl['port']=80;
          }
-         elseif ($parsedUrl['scheme'] == 'https') 
-         { 
-            $parsedUrl['port']=443; 
+         elseif ($parsedUrl['scheme'] == 'https')
+         {
+            $parsedUrl['port']=443;
          }
       }
    /*   $parsedQuery ='';
       if (isset($parsedUrl['query']))
       {
          $parsedQuery = $this->parseQuery($parsedUrl['query']);
-         //print_r($parsedUrl['query']);   
+         //print_r($parsedUrl['query']);
       }
       
-   */         
+   */
       
       $parsedUrl['query']=isset($parsedUrl['query'])?$parsedUrl['query']:'';
       $parsedUrl['protocol']=$parsedUrl['scheme'].'://';
@@ -188,24 +191,15 @@ class HTTPRequest{
 //      echo '</textarea>';
       
       $result = '';
-      $timeout = 30;
-      $fp = fsockopen($parsedUrl['host'], $parsedUrl['port'], $errno, $errstr, $timeout);
-      if($fp) 
+      $fp = fsockopen($parsedUrl['host'], $parsedUrl['port'], $errno, $errstr, $this->timeout);
+      if($fp)
       {
-         /*
-         fputs($fp, $headers);
-
-         while(!feof($fp)) 
-         { 
-            $result .= fgets($fp, 128);
-         }
-         */
          fwrite($fp, $headers);
          while(is_resource($fp) && $fp && !feof($fp)) $result .= fread($fp, 1024);
       }
-      fclose($fp);
+      fclose($fp); // TODO: si hay keepalive, no cerrar el socket...
       
-      if (!$headers) 
+      if (!$headers)
       {
          //removes headers
          $pattern="/^.*\r\n\r\n/s";
