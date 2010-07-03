@@ -1,6 +1,6 @@
 <?php
 
-YuppLoader::load("core.layout", "LayoutManager");
+YuppLoader::load('core.layout', 'LayoutManager');
 
 /*
  * Implementa el proceso y control de generacion de paginas a partir del request.
@@ -79,7 +79,7 @@ class RequestManager {
       {
          if ( !isset($lr['action']) || $lr['action'] === "" )
          {
-            $lr['action'] = "index";
+            $lr['action'] = 'index';
          }
       }
       else
@@ -98,7 +98,8 @@ class RequestManager {
       // Estaria bueno definir codigos estandar de errores de yupp, para poder tener una
       // lista ed todos los errores que pueden ocurrir.
       // *******************************************************************************
-      
+
+      // FIXME: no armar esto a mano, pedirselo a alguna clase de convensiones o la nueva clase App.
       $componentPath       = "components/".$lr['component'];
       $controllerClassName = String::firstToUpper($lr['controller']) . "Controller";
       $controllerFileName  = "components.".$lr['component'].".controllers.".$controllerClassName.".class.php";
@@ -159,6 +160,8 @@ class RequestManager {
       // ======================
       // /PARTE DE ROUTING
       // ======================
+
+//print_r( $command );
 
       // Aun mejor, si devuelvo un array, lo tomo como modelo y tomo la accion y controller para encontrar el view, si el view existe o no, lo trato luego con paginas logicas o views escaffoldeados...
       // Si no devuelve nada, hago lo mismo, y tomo como modelo un array vacio, lo que podria hacer, es si el controller tiene atributos, es usar esos atributos (los valores) como modelo (y los nombres los uso como key en el model).
@@ -294,7 +297,7 @@ class RequestManager {
       if ( !file_exists($pagePath) ) // Si la pagina NO es fisica
       {
          // Si puedo mostrar la vista dinamica:
-         if ( in_array($command->viewName(), array("show","list","edit","create","index","componentControllers")) )
+         if ( in_array($command->viewName(), array("show","list","edit","create","index","componentControllers","dbStatus")) )
          {
             $pagePath = "core/mvc/view/scaffoldedViews/".$command->viewName().".view.php"; // No puede no existir, es parte del framework!
          }
