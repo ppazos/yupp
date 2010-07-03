@@ -37,22 +37,29 @@ class YuppController {
 
     // TODO: Agregar IndexAction que haga un render de una pagina por defecto para el controller.
     
-    function __construct($controllerName, $actionName, ArrayObject $params)
+    // Ahora controller y action los obtiene de Context, no es necesario pasarselos como parametro.
+    //function __construct($controllerName, $actionName, ArrayObject $params)
+    function __construct(ArrayObject $params)
     {
-       $this->controllerName = $controllerName;
-       $this->actionName     = $actionName;
+       $ctx = YuppContext::getInstance();
+       //$component  = $ctx->getComponent();
+       $this->controllerName = $ctx->getController();
+       $this->actionName     = $ctx->getAction();
+        
+       //$this->controllerName = $controllerName;
+       //$this->actionName     = $actionName;
        $this->params         = $params;
     }
 
     public function __call( $method, $args )
     {
        // Es una accion?
-       if (method_exists($this, $method . "Action"))
+       if (method_exists($this, $method . 'Action'))
        {
-          return $this->{$method . "Action"}( $args );
+          return $this->{$method . 'Action'}( $args );
        }
 
-       throw new Exception("La accion <b>" . $method . "</b> no existe.");
+       throw new Exception('La accion <b>' . $method . '</b> no existe.');
     }
 
     public function addToFlash( $key, $value )

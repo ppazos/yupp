@@ -2,13 +2,183 @@
 
 $m = Model::getInstance();
 
+$apps = $m->get('apps');
+
 ?>
 
 <html>
-   <head>
-   </head>
-   <body>
-      <h1>Index</h1>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      body {
+         font-family: arial, verdana, tahoma;
+         font-size: 12px;
+         background-color: #efefef;
+      }
+      h1 {
+         margin: 0px;
+         padding-top: 10px;
+         display: inline-block;
+      }
+      #apps ul {
+         margin: 0px;
+         padding: 0px;
+         /*position: relative;*/
+         /*left: 0px;*/
+         list-style: none;
+      }
+      #apps li {
+       width: 250px;
+       min-height: 100px;
+       height: 100px; /* necesario para que el anchor se expanda al alto 100% */
+       _height: 100px; /* IE6 */
+       /*border: 1px solid #000;*/
+       display: -moz-inline-stack; /* FF2*/
+       display: inline-block;
+       vertical-align: top; /* BASELINE CORRECCIÓN*/
+       padding: 5px;
+       margin: 0px;
+       /*margin-right: 5px;*/
+       /*margin-bottom: 7px;*/
+       zoom: 1; /* IE7 (hasLayout)*/
+       *display: inline; /* IE */
+       background-color: #ffff80;
+      }
+      #apps li:hover {
+         background-color: #99ddff;
+         /*cursor: pointer;*/
+      }
+      #apps li a {
+         /*height: 100%;*/
+         display: block;
+         /*text-decoration: none;*/
+         /*color: #000;*/
+      }
+      .app_icon {
+         display: inline-block;
+         vertical-align: top;
+         width: 64px;
+         /*border: 1px solid #000;*/
+         margin: 0px;
+         margin-right: 3px;
+         padding: 0px;
+         float: left;
+      }
+      .app_icon img {
+         border: 0px;
+      }
+      .app_details {
+         display: inline-block;
+         vertical-align: top;
+         width: 181px;
+         /*border: 1px solid #000;*/
+         margin: 0px;
+         padding: 0px;
+         padding-top: 3px;
+         float: left;
+      }
+      table#top {
+         width: 100%;
+      }
+      td#logo {
+         /*display: inline-block;*/
+         width: 64px;
+      }
+      td#top_right {
+         /*width: 100%;*/
+         /*border: 1px solid #000;*/
+      }
+      .right {
+         float: right;
+      }
+    </style>
+  </head>
+  <body>
+    <table id="top">
+      <tr>
+        <td id="logo">
+          <?php echo h('img', array('src'=>'yupp_logo.png')); ?>
+        </td>
+        <td id="top_right">
+          <h1>Yupp PHP Framework</h1>
+          <div class="right">
+            <a href="<?php echo h('url', array(
+                       'component'=>'core',
+                       'controller'=>'core',
+                       'action'=>'dbStatus'));?>">
+              <div class="app_icon">
+                <?php echo h('img', array('src'=>'db_64.png')); ?>
+              </div>
+              <div class="app_details">
+                Base de datos
+              </div>
+            </a>
+          </div>
+          <div class="right">
+            <a href="<?php echo h('url', array(
+                       'component'=>'core',
+                       'controller'=>'core',
+                       'action'=>'index'));?>">
+              <div class="app_icon">
+                <?php echo h('img', array('src'=>'app_64.png')); ?>
+              </div>
+              <div class="app_details">
+                Aplicaciones
+              </div>
+            </a>
+          </div>
+        </td>
+      </tr>
+    </table>
+    <br/><br/>
+    <div id="apps">
+      <ul>
+        <?php foreach ($apps as $app) : ?>
+          <li>
+              <div class="app_icon">
+                <a href="<?php echo h('url', array(
+                            'component'=>$app->getName(),
+                            'controller'=>$app->getDescriptor()->entry_point->controller,
+                            'action'=>$app->getDescriptor()->entry_point->action));
+                         ?>" title="Ejecutar aplicacion">
+                  <?php
+                    // Si no existe la imagen del icono de la aplicacion, muestra la imagen por defecto.
+                    try {
+                       echo h('img', array(
+                          'component'=>$app->getName(),
+                          'src'=>'app_64.png',
+                          'w'=>64,
+                          'h'=>64
+                       ));
+                    } catch (Exception $e) {
+                       //echo $e->getMessage();
+                       echo h('img', array('src'=>'app_64.png', 'w'=>64, 'h'=>64,));
+                    }
+                  ?>
+                </a>
+              </div>
+              <div class="app_details">
+                <b><?php echo $app->getDescriptor()->name; ?></b><br/>
+                <?php echo $app->getDescriptor()->description; ?><br/>
+                <?php
+                if ($app->hasBootstrap())
+                {
+                   //echo 'Tiene BS<br/>';
+                   echo h('link', array("action"        => "executeBootstrap",
+                                        "body"          => "Ejecutar arranque",
+                                        "componentName" => $app->getName()) );
+                }
+                //else  echo 'No tiene BS<br/>';
+                ?>
+              </div>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
+    <hr/>
+
+<?php /*
+    <h1>Index</h1>
 
       <!-- fixme: no deberia mostrarse si el modo es produccion, esto es solo para dev -->
       <h2>Informacion del modelo</h2>
@@ -32,20 +202,6 @@ $m = Model::getInstance();
                echo "Se generaron todas las tablas para el modelo.<br/>";
             }
          }
-
-         /*
-         $modelTables = $m->get('modelTables');
-         if ( $modelTables !== NULL )
-         {
-            echo "<ul>";
-            foreach ( $modelTables as $class => $info )
-            {
-               $comp = ModelUtils::getComponentForModelClass( $class );
-               echo  '<li>Clase: <b>'. $comp .'.'. $class .'</b> se guarda en la tabla: <b>'. $info['tableName'] .'</b> (' . $info['created'] .')</li>';
-            }
-            echo "</ul>";
-         }
-         */
          
          $componentModelClasses = $m->get('componentModelClasses');
          foreach ($componentModelClasses as $component => $classInfo)
@@ -58,35 +214,18 @@ $m = Model::getInstance();
             }
             echo "</ul>";
          }
-         
          echo "<hr/>";
          
-         /*
-         foreach ( YuppLoader::getLoadedClasses() as $path => $classInfo )
-         {
-            if ( String::endsWith($classInfo['package'], "model") )
-            {
-               echo '[ <a href="core/list?class='. $classInfo['class'] .'">'. $classInfo['class'] .'</a> ]<br/>';
-            }
-         }
-         */
-      ?>
-
-      <?php
-      /**
-       * TODO: verificar si el componente tiene un archivo de Bootstrap, de no tener, no mostrarlo en la lista.
-       */
       ?>
 
       <h2>Componentes</h2>
-      Esta secci&oacute;n le permite ejecutar scripts de inicializaci&oacute;n 
-      para los componentes del sistema.<br/>
+      Ejecutar scripts de arranque para precargar datos necesarios para el funcionamiento de los componentes del sistema.<br/>
       <ul>
          <?php foreach ($m->get('components') as $component): ?>
            <?php if (!String::startsWith($component, ".")) : ?>
             <li>
                <?php echo $component; ?>
-               <?php if (file_exists("components/$component/components.$component.Bootstrap.script.php")): ?>
+               <?php if (file_exists("components/$component/bootstrap/components.$component.bootstrap.Bootstrap.script.php")): ?>
                   <?php echo h('link', array("action"        => "executeBootstrap",
                                              "body"          => "Ejecutar Bootstrap",
                                              "componentName" => $component) ); ?>
@@ -128,14 +267,7 @@ $m = Model::getInstance();
                         $logic_controller = String::firstToLower( $controller );
    
                         echo '<li>[ <a href="'.Helpers::url( array("component"=>$component, "controller"=>$logic_controller, "action"=>"index") ).'">'. $controller .'</a> ]</li>';
-                        
-                        /*
-                        $ctx = YuppContext::getInstance();
-                        if ($ctx->getComponent() !== NULL && $ctx->getComponent() !== "core") // Si entro por http://localhost:8081/Persistent/blog/ y no tengo controller me repite el /blog en el link.
-                           echo '<li>[ <a href="'.$logic_controller.'">'. $controller .'</a> ]</li>';
-                        else
-                           echo '<li>[ <a href="'.$component.'/'.$logic_controller.'/list">'. $controller .'</a> ]</li>';
-                        */
+
                      }
                   }
                   echo "</ul>";
@@ -145,19 +277,19 @@ $m = Model::getInstance();
          }
       ?>
       <hr/>
+*/ ?>      
       
-      
-      <h2>Estad&iacute;sticas</h2>
-      Algunas medidas del sistema.<br/>
-      <ul>
-        <li>
-          <?php echo h('link', array("component"     => "core",
-                                     "controller"    => "core",
-                                     "action"        => "showStats",
-                                     "body"          => "Ver estad&iacute;sticas") ); ?>
-        </li>
-      </ul>
-      <hr/>
-      
-   </body>
+    <h2>Estad&iacute;sticas</h2>
+    Algunas medidas del sistema.<br/>
+    <ul>
+      <li>
+        <?php echo h('link', array("component"     => "core",
+                                   "controller"    => "core",
+                                   "action"        => "showStats",
+                                   "body"          => "Ver estad&iacute;sticas") ); ?>
+      </li>
+    </ul>
+    <hr/>
+    
+  </body>
 </html>
