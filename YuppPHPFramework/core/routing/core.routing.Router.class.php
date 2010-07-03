@@ -16,7 +16,7 @@ class Router {
     {
         global $_base_dir;
       
-        $this->parsedUrl = parse_url($url);
+        $this->parsedUrl = parse_url($url); // FIXME: hacer un url encode por si viene una url con http: como parametro, si no no parsea. Luego hacer url decode. 
         
         // Saca los params de la url sin importar en que subdirectorio esta instalado Yupp.
         $lp = strrpos( $_SERVER["SCRIPT_NAME"], "/" );

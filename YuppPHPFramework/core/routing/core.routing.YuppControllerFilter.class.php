@@ -24,7 +24,6 @@ class YuppControllerFilter {
     /**
      * Retorna true si pasa los filters y un ViewCommand si no.
      */
-    //public function before_filter($component, $controller, $action, &$params)
     public function before_filter($component, $controller, $action, ArrayObject $params)
     {
        //print_r($this->before_filters);
@@ -60,7 +59,6 @@ class YuppControllerFilter {
     }
     
     // TODO: a after le podria pasar el ViewCommand que genero la accion ejecutada, el modelo, los params, etc.
-    //public function after_filter($component, $controller, $action, &$params, ViewCommand $command)
     public function after_filter($component, $controller, $action, ArrayObject $params, ViewCommand $command)
     {
        foreach ( $this->after_filters as $filterClass )
