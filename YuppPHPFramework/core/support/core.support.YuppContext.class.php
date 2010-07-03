@@ -14,7 +14,10 @@ class YuppContext {
    private $model  = array();  // Modelo devuelto por la ultima accion ejecutada
     
    private $locale = "es"; // actual locale seleccionado, en su forma de string, es_UY_xxxx
+   
+   // FIXME: el modo deberia ser configurable, no deberia estar aca fijo.
    private $mode   = YuppConfig::MODE_DEV; // Modo de ejecucion 
+   
 
    //private static $instance = NULL;
    public static function getInstance()
@@ -22,7 +25,7 @@ class YuppContext {
       // Deberia ser persistente asi concervo el locale entre requests... pero puede haber problemas con los params, aunque los params se resetean en cada request.
       //if (self::$instance === NULL) self::$instance = new YuppContext();
       //return self::$instance;
-       
+      
       $instance = NULL;
       if ( !YuppSession::contains("_yupp_context_singleton_instance") )
       {
