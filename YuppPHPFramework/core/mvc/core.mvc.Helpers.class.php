@@ -280,11 +280,13 @@ function $func {
           $$argname = $argvalue; // Declaro variables con los nombres pasados en los args.
        }
        
-       include($url . "/" . $params['name'] . ".template.php");
+       include($url . '/' . $params['name'] . '.template.php');
     }
  
     
     /**
+     * Se utiliza para mostrar la tag img para una imagen local, resolviendo su src de forma automatica.
+     * 
      * @param params array de argumentos:
      *   component: nombre del componente donde se encuentra la imagen.
      *   src: path de la imagen a partir del directorio del imagenes del componente (si viene "component")
@@ -298,14 +300,19 @@ function $func {
     {
        global $_base_dir;
        
-       if ( !array_key_exists('src', $params) ) throw new Exception( __FILE__ . "(".__LINE__.") : parametro 'src' es obligatorio y no esta presente.");
+       if ( !array_key_exists('src', $params) ) throw new Exception( __FILE__ . '('.__LINE__.') : parametro "src" es obligatorio y no esta presente.');
+       
+       $src = NULL;
        
        // Busca la ubicacion en un componente particular
        if ( array_key_exists('component', $params) ) 
-          $res = '<img src="'. $_base_dir .'/components/'. $params['component'] .'/images/'. $params['src'] .'"';
+          $src = '/components/'. $params['component'] .'/images/'. $params['src'];
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
-          $res = '<img src="'. $_base_dir .'/images/'. $params['src'] .'"';
+          $src = '/images/'. $params['src'];
        
+       if (!file_exists('./'.$src)) throw new Exception('La imagen '. $src .' no existe');
+       
+       $res = '<img src="'. $_base_dir . $src .'"';
        if ( isset($params['w']) )    $res .= ' width="'.  $params['w'] .'"';
        if ( isset($params['h']) )    $res .= ' height="'. $params['h'] .'"';
        if ( isset($params['text']) ) $res .= ' alt="'.    $params['text'] .'"';
