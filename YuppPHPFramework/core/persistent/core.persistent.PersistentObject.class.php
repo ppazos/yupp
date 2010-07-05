@@ -16,7 +16,7 @@
  */
 
 // FIXME: sacar esto y ponerle LoadClass.
-include_once "core/core.Constraints.class.php";
+include_once "core/validation/core.validation.Constraints.class.php";
 include_once "core/utils/core.utils.Callback.class.php";
 
 /*
@@ -906,24 +906,22 @@ class PersistentObject {
                     // Si no hay un vector de mensajes para este campo
                     if (!isset($this->errors[ $attr ])) $this->errors[$attr] = array();
    
+// ====================================================================
+YuppLoader::load('core.validation','ValidationMessage');
+$err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
+// ====================================================================
+
+/*
                     // Agrego mensaje
                     // TODO: ver de donde sacar el mensaje segun el tipo de constraint.
                     // FIX: se pueden tener keys i18n estandar para problemas con constraints, y para resolver
                     //      el mensaje como parametros le paso la constraint, el atributo y el valor que fallo.
                     $err = "Error " . get_class($constraint) . " " . $constraint . " en " . $attr . " con valor ";
    
-                    /*
-                    // FIXME!!: BUG: Si el atributo es un string vacio, me muestra 0.
-   
-                    // Le pongo el valor que viola, pero si es 0 o null se confunde... por eso distingo usando is_null.
-                    if ( !is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
-                    else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
-                    */
-   
                     if ( is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
                     else if ( is_string($this->attributeValues[$attr]) && strcmp($this->attributeValues[$attr], "")==0 ) $err .= "EMPTY STRING";
                     else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
-   
+*/
                     $this->errors[$attr][] = $err;
                  }
               }
@@ -977,7 +975,6 @@ class PersistentObject {
                  if ( $value === NULL && $constraint->evaluate($value) ) // Si valor nulo y valida => nullable(true)
                  {
                     unset( $this->errors[$attr] );
-                     //return true;
                     break;
                  }
               }
@@ -986,18 +983,20 @@ class PersistentObject {
                  if ( $value === "" && $constraint->evaluate($value) ) // Si valor vacio y valida => blank(true)
                  {
                     unset( $this->errors[$attr] );
-                    //return true;
                     break;
                  }
               }
               
-              //if ( !$constraint->evaluate( $this->attributeValues[$attr] ) ) // NO PIDE HASONE...
-              //if ( !$constraint->evaluate( $this->aGet($attr) ) )
               if ( !$constraint->evaluate($value) )
               {
                  $valid = false;
 
                  // TODO: Validar asociaciones hasOne !!!  (*****)
+
+// ====================================================================
+YuppLoader::load('core.validation','ValidationMessage');
+$err = ValidationMessage::getMessage( $constraint, $attr, $value );
+// ====================================================================
 
                  // Agrego el error a "errors"
 
@@ -1009,21 +1008,22 @@ class PersistentObject {
                  // FIX: se pueden tener keys i18n estandar para problemas con constraints, y para resolver
                  //      el mensaje como parametros le paso la constraint, el atributo y el valor que fallo.
                  //$err = "Error " . get_class($constraint) . " " . $constraint . " en " . $attr . " con valor ";
+/*
                  $err = "Error " . get_class($constraint) . " en " . $attr . " con valor ";
 
-                 /*
+                 / *
                  // FIXME!!: BUG: Si el atributo es un string vacio, me muestra 0.
 
                  // Le pongo el valor que viola, pero si es 0 o null se confunde... por eso distingo usando is_null.
                  if ( !is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
                  else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
-                 */
+                 * /
 
                  if ( is_null($value) ) $err .= (($value) ? $value : "NULL"); // OJO, esto puede ser null o cero!
                  else if ( is_string($value) && strcmp($value, "")==0 ) $err .= "EMPTY STRING";
                  else if ( $value instanceof PersistentObject ) $err .= $value->getClass() . ":" . $value->getId(); // TODO: ver si hay que preguntar si es PO o si es un objeto en general...
                  else $err .= (($value) ? $value : "0"); // FIXME: Si value es un objeto, falla aqui.
-
+*/
                  $this->errors[$attr][] = $err;
               }
            }
@@ -2055,7 +2055,7 @@ class PersistentObject {
    public function delete( $logical = false )
    {
       Logger::add( Logger::LEVEL_PO, "PO::delete " . __LINE__ );
-      
+      // FIXME: devolver algo que indique si se pudo o no eliminar.
       // FIXME: si no esta salvado (no tiene id), no se puede hacer delete.
       $pm = PersistentManager::getInstance();
       $pm->delete( $this, $this->getId(), $logical ); // FIXME: no necesita pasarle el id, el objeto ya lo tiene...
