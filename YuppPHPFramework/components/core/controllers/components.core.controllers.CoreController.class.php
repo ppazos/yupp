@@ -1,4 +1,8 @@
 <?php
+
+YuppLoader::load('core','App');
+YuppLoader::load('core','Yupp');
+
 class CoreController extends YuppController
 {
 
@@ -10,7 +14,19 @@ class CoreController extends YuppController
 		// Si estoy en mode DEV quiero mosrar informacion sobre lo 
 		// que hay en la base, y lo que falta crear, y dar opcion 
 		// a que genere las tablas desde la vista.
+      
+      // Test Yupp Desktop
+      $yupp = new Yupp();
+      $appNames = $yupp->getAppNames();
+      $apps = array();
+      foreach ($appNames as $name)
+      {
+         $apps[] = new App($name);
+      }
+      $this->params['apps'] = $apps;
+      // /Test Yupp Desktop 
 
+/*
       $dal = DAL::getInstance();
 		if (YuppContext :: getInstance()->getMode() === YuppConfig :: MODE_DEV)
 		{
@@ -39,7 +55,63 @@ class CoreController extends YuppController
 		}
       
       
+      // Nombres de los compoentes instalados
+      $components = PackageNames::getComponentNames();
+      $this->params['components'] = $components;
       
+      $componentModelClasses = array();
+      foreach ($components as $component)
+      {
+         $classes = ModelUtils::getModelClasses($component);
+         foreach ($classes as $class)
+         {
+            $fileInfo = FileNames::getFilenameInfo( $class );
+            $componentModelClasses[$component][$fileInfo['name']] = $createdTables[$fileInfo['name']];
+         }
+      }
+      
+      //print_r( $componentModelClasses );
+      
+      $this->params['componentModelClasses'] = $componentModelClasses;
+*/
+
+      return $this->render("index");
+      
+	} // index
+   
+   
+   /**
+    * Para ver el modelo de todos los componentes y si estan creadas las tablas.
+    * Copio parte del codigo del viejo indexAction.
+    */
+   public function dbStatusAction()
+   {
+      $dal = DAL::getInstance();
+      if (YuppContext :: getInstance()->getMode() === YuppConfig :: MODE_DEV)
+      {
+         $createdTables = array(); // array de clase / array tabla / creada o no creada.
+         $allTablesCreated = true;
+         
+         $loadedClasses = YuppLoader :: getLoadedModelClasses();
+         $this->params['loadedClasses'] = $loadedClasses;
+
+         foreach ($loadedClasses as $class)
+         {
+            $tableName = YuppConventions::tableName( $class );
+            if ( $dal->tableExists( $tableName ) )
+            {
+               $createdTables[$class] = array('tableName'=>$tableName, 'created'=>"CREADA");
+            }
+            else
+            {
+               $createdTables[$class] = array('tableName'=>$tableName, 'created'=>"NO CREADA");
+               $allTablesCreated = false;
+            }
+         }
+         
+         //$this->params['modelTables']      = $createdTables;
+         $this->params['allTablesCreated'] = $allTablesCreated;
+      }
       
       // Nombres de los compoentes instalados
       $components = PackageNames::getComponentNames();
@@ -65,10 +137,10 @@ class CoreController extends YuppController
       //print_r( $componentModelClasses );
       
       $this->params['componentModelClasses'] = $componentModelClasses;
-
-      return $this->render("index");
       
-	} // index
+      return $this->render("dbStatus");
+   }
+   
    
    /**
     * Sirve para listar los controladores de un componente cuando se ingresa la URL hasta el componente.
@@ -90,7 +162,7 @@ class CoreController extends YuppController
       // a la DB para las tablas que ya existen que no se pueden crear.
       PersistentManager::getInstance()->generateAll();
       
-   	return $this->redirect( array( "action" => "index" ));
+   	return $this->redirect( array( 'action' => 'dbStatus' ));
    }
 
 
@@ -108,12 +180,7 @@ class CoreController extends YuppController
 		$type = $this->params['type'];
 		$name = $this->params['name'];
 
-		//$includePath = $_base_dir . "/" . $type . "/" . $name; // name viene con la extension del archivo.
-		$includePath = "./" . $type . "/" . $name;
-		//echo $includePath;
-
-		//$fileContent = FileSystem::read( $includePath );
-		//echo $fileContent;
+		$includePath = "./" . $type . "/" . $name; // name viene con la extension del archivo.
 
 		if (file_exists($includePath))
 		{
@@ -139,7 +206,6 @@ class CoreController extends YuppController
 	{
 		$id = $this->params['_param_1'];
 		$this->flash['message'] = "Arriba loco, este es el mensaje del flash!";
-		//return $this->render($id, & $this->params);
       return $this->render( $id );
 	}
 
@@ -178,10 +244,7 @@ class CoreController extends YuppController
 		eval ('$obj' . " = $clazz::get( $id );");
 
 		$this->params['object'] = $obj;
-//		$this->params['mode'] = "show"; // Para saber que pagina es.
 
-//	   return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
-      //return $this->render("show", & $this->params); // Id NULL para paginas de scaffolding
       return $this->render("show");
 	}
 
@@ -194,10 +257,7 @@ class CoreController extends YuppController
 		eval ('$obj' . " = $clazz::get( $id );");
 
 		$this->params['object'] = $obj;
-//		$this->params['mode'] = "edit"; // Para saber que pagina es.
 
-//      return $this->render(NULL, & $this->params); // Id NULL para paginas de scaffolding
-      //return $this->render("edit", & $this->params); // Id NULL para paginas de scaffolding
       return $this->render("edit");
 	}
 
@@ -215,17 +275,11 @@ class CoreController extends YuppController
 		{
 			// create
 			$this->params['object'] = $obj;
-//       $this->params['mode'] = "edit"; // Para saber que pagina es.
-//       return ViewCommand :: display(NULL, & $this->params);
-         //return ViewCommand :: display("edit", & $this->params);
          return $this->render("edit");
 		}
 
 		// show
 		$this->params['object'] = $obj;
-//		$this->params['mode'] = "show"; // Para saber que pagina es.
-//		return $this->render(NULL, & $this->params);
-      //return $this->render("show", & $this->params);
       return $this->render("show");
 	}
 
@@ -259,25 +313,16 @@ class CoreController extends YuppController
 			{
 				// create
 				$this->params['object'] = $obj;
-				//$this->params['mode'] = "create"; // Para saber que pagina es.
-				//return $this->render(NULL, $this->params);
-            //return $this->render("create", $this->params);
             return $this->render("create");
 			}
 
 			// show
 			$this->params['object'] = $obj;
-			//$this->params['mode'] = "show"; // Para saber que pagina es.
-			//return $this->render(NULL, $this->params);
-         //return $this->render("show", $this->params);
          return $this->render("show");
 		}
 
 		// create
 		$this->params['object'] = $obj;
-		//$this->params['mode'] = "create"; // Para saber que pagina es.
-		//return $this->render(NULL, $this->params);
-      //return $this->render("create", $this->params);
       return $this->render("create");
 	}
    
@@ -332,7 +377,7 @@ class CoreController extends YuppController
     */
    public function executeBootstrapAction()
    {
-      Logger::show("Execute Bootstrap Action");
+      Logger::show('Execute Bootstrap Action');
       
   	   $component = $this->params['componentName'];
       
@@ -341,7 +386,8 @@ class CoreController extends YuppController
       // importa derecho la pagina...
       //include_once( $pagePath );
       
-      YuppLoader::getInstance()->loadScript("components.".$component, "Bootstrap");
+      // FIXME: el BS a ejecutar debe depender del modo de ejecucion
+      YuppLoader::getInstance()->loadScript('components.'.$component.'.bootstrap', 'Bootstrap');
       
       //$view = ob_get_clean();
       
@@ -351,7 +397,7 @@ class CoreController extends YuppController
    
    public function showStatsAction()
    {
-      YuppLoader::load("core.utils", "YuppStats");
+      YuppLoader::load('core.utils', 'YuppStats');
       $stats = new YuppStats();
       $stats = $stats->showStats();
       
