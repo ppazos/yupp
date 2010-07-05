@@ -80,6 +80,11 @@ class MinLengthConstraint extends Constraint {
    {
       return "" . $this->min;
    }
+   
+   public function getValue()
+   {
+      return $this->min;
+   }
 }
 
 // Para enteros
@@ -164,6 +169,9 @@ class Between extends Constraint {
    {
       return $this->min->__toString() . ".." . $this->max->__toString();
    }
+   
+   public function getMin() { return $this->min->getValue(); }
+   public function getMax() { return $this->max->getValue(); }
 }
 
 
