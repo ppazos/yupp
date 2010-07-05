@@ -64,7 +64,6 @@ class UsuarioController extends YuppController {
    /**
     * createUserFlow.fillName
     */
-   //public function fillNameAction( &$flow )
    public function fillNameAction( $flow )
    {
       //echo "<h1>FILL NAME FLOW</h1>";
@@ -89,7 +88,6 @@ class UsuarioController extends YuppController {
    /**
     * createUserFlow.fillUserAndPass
     */
-   //public function fillUserAndPassAction( &$flow )
    public function fillUserAndPassAction( $flow )
    {
       //echo "<h1>FILL USER AND PASS FLOW</h1>";
