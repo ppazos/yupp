@@ -663,7 +663,7 @@ class PersistentManager {
       // O sea, si $persistentClass es A o A1 me dice que MTI es false aunque sea una instancia real de C, C1, G o G1.
       if ( MultipleTableInheritanceSupport::isMTISubclassInstance( $cins ) )
       {
-         //Logger::getInstance()->pm_log("ES MTI: " . __FILE__ . " " . __LINE__);
+         Logger::getInstance()->pm_log("ES MTI: " . __FILE__ . " " . __LINE__);
          
          // 2.1: Cargar la ultima instancia parcial en la estructura de herencia.
          //$superclases = ModelUtils::getAllAncestorsOf( $attrValues["class"] ); // $attrValues["class"] es la ultima en la estructura del carga de multiple tabla, puede tener subclases pero se guardan en la misma tabla que ella. Por eso necesito solo los padres xq son los que se pueden guardar en otras tablas.
@@ -753,9 +753,8 @@ class PersistentManager {
          // merge
          foreach ($scRefIdAttrs as $sc_class => $sc_id)
          {
-            // TODO:
-            $obj = new $sc_class(array(), true); // Intancia para hallar nombre de tabla..
-            $tableName = YuppConventions::tableName( $obj );
+            // La instancia se crea en YuppConventions
+            $tableName = YuppConventions::tableName( $sc_class );
             $scAttrValues = $dal->get( $tableName, $sc_id );
               
             // no considero el id, no sirve, sobreescribe null en el id...
@@ -1177,20 +1176,25 @@ class PersistentManager {
       // y cargo solo los que no estan cargados. Seteo todos los objetos al atributo hasMany del objeto.
 
       $q = new Query();
-      $q->addFrom( $relTableName, "ref" );  // person_phone ref // FIXME: ESTO ES addFrom.
-      $q->addFrom( $relObjTableName, "obj" );
+      $q->addFrom( $relTableName, 'ref' );  // person_phone ref // FIXME: ESTO ES addFrom.
+      $q->addFrom( $relObjTableName, 'obj' );
       
+      
+      // FIXME: quiero todos los atributos...
       // Se agregan los atributos de la clase como proyeccion de la query.
       // Solo quiero los atributos de OBJ, agrego sus atributos como proyecciones de la consulta.
+      /*
       foreach( $_obj->getAttributeTypes() as $attr => $type )
       {
          //$q->addProjection("obj", $attr);
-         // TODO: no deberia normalizar la query mismo?
+         // TODO: normalizar en la query mismo
          $q->addProjection( "obj", DatabaseNormalization::col($attr) );
       }
+      */
+      $q->addProjection( 'obj', '*' ); // Todos los atributos de la tabla con alias "obj".
       
       // Necesito saber el nombre del atributo de los ids asociados.
-      $hm_assoc_attr = "owner_id";
+      $hm_assoc_attr = "owner_id"; // FIXME: poner el string en una clase de convensiones de yupp
 
       // como id del obj necesito el id del objeto donde se declara el atributo HM con
       // nombre hmattr.
@@ -1212,20 +1216,21 @@ class PersistentManager {
       // Tengo que ver el objeto en la tabla de referehcia si es el owner_id o el ref_id
       if ( $obj_is_owner )
       {
-         $hm_assoc_attr = "ref_id"; // yo soy el owner entonces el asociado es ref.
+          // FIXME: poner el string en una clase de convensiones de yupp
+         $hm_assoc_attr = 'ref_id'; // yo soy el owner entonces el asociado es ref.
          $q->setCondition(
            Condition::_AND()
-             ->add( Condition::EQ("ref", "owner_id", $obj_id) ) // ref.owner_id = el id del duenio (person_phone.owner_id = obj->getId)
-             ->add( Condition::EQA("obj", "id", "ref", "ref_id") ) // JOIN
+             ->add( Condition::EQ('ref', 'owner_id', $obj_id) ) // ref.owner_id = el id del duenio (person_phone.owner_id = obj->getId)
+             ->add( Condition::EQA('obj', 'id', 'ref', 'ref_id') ) // JOIN
          );
       }
       else // Aca obj es ref_id y class es owner_id !!! (soy el lado debil)
       {
          $q->setCondition(
             Condition::_AND()
-              ->add( Condition::EQ("ref", "ref_id", $obj_id) ) // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
-              ->add( Condition::EQ("ref", "type",   ObjectReference::TYPE_BIDIR) ) // type = bidir
-              ->add( Condition::EQA("obj", "id", "ref", "owner_id") ) // JOIN
+              ->add( Condition::EQ('ref', 'ref_id', $obj_id) ) // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
+              ->add( Condition::EQ('ref', 'type',   ObjectReference::TYPE_BIDIR) ) // type = bidir
+              ->add( Condition::EQA('obj', 'id', 'ref', 'owner_id') ) // JOIN
          );
       }
       
@@ -1277,15 +1282,21 @@ class PersistentManager {
          
          if ( $many_attrValues['class']===$hmattrClazz )
          {
+            // FIXME: si el rel_obj tiene hasOne, y hereda de otra clase, no se cargan los hasOne.
+            //Logger::getInstance()->pm_log("Caso1: $hmattrClazz ". __FILE__ ." ". __LINE__);
+            //Logger::struct($many_attrValues, "many_attrValues");
+            
             //echo "   la clase es la misma que la declarada<br/>";
             $rel_obj = $this->createObjectFromData( $hmattrClazz, $many_attrValues );
          }
          else
          {
+            //Logger::getInstance()->pm_log("Caso2: [$hmattrClazz / ". $many_attrValues['class'] ."] " . __FILE__ ." ". __LINE__);
+            //Logger::struct($many_attrValues, "many_attrValues");
+            
             //echo "   la clase NO es la misma que la declarada<br/>";
             // TODO: deberia cargar los atributos declarados en la clase $many_attrValues['class'], que estan en otra tabla que la que acabo de cargar.
             //       por ejemplo el id cargado es el de una superclase no el de la clase que deberia ser la instancia.
-            //$rel_obj = $this->createObjectFromData( $many_attrValues['class'], $many_attrValues );
             $rel_obj = $this->get_mti_object_byData( $hmattrClazz, $many_attrValues );
          }
 
