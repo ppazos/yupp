@@ -5,7 +5,6 @@ $m = Model::getInstance();
 $apps = $m->get('apps');
 
 ?>
-
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -17,8 +16,32 @@ $apps = $m->get('apps');
       }
       h1 {
          margin: 0px;
-         padding-top: 10px;
+         padding-top: 35px;
          display: inline-block;
+      }
+      table, tr, td {
+         margin: 0px;
+         padding: 0px;
+         border: 0px;
+      }
+      #apps {
+         background-color: #fff;
+         padding: 10px;
+      }
+      .menu_btn {
+         padding: 15px;
+         padding-left: 20px;
+         padding-right: 20px;
+         margin-top: 5px;
+         margin-left: 5px;
+         /*width: 110px;*/
+         text-align: center;
+      }
+      .menu_btn.active {
+         background-color: #fff; /* tab activa del menu superior */
+      }
+      .menu_btn img {
+         border: 0px;
       }
       #apps ul {
          margin: 0px;
@@ -94,43 +117,37 @@ $apps = $m->get('apps');
     </style>
   </head>
   <body>
-    <table id="top">
+    <table id="top" cellspacing="0">
       <tr>
         <td id="logo">
           <?php echo h('img', array('src'=>'yupp_logo.png')); ?>
         </td>
         <td id="top_right">
           <h1>Yupp PHP Framework</h1>
-          <div class="right">
+          <div class="right menu_btn">
             <a href="<?php echo h('url', array(
                        'component'=>'core',
                        'controller'=>'core',
                        'action'=>'dbStatus'));?>">
-              <div class="app_icon">
-                <?php echo h('img', array('src'=>'db_64.png')); ?>
-              </div>
-              <div class="app_details">
-                Base de datos
-              </div>
+              
+              <?php echo h('img', array('src'=>'db_64.png')); ?>
+              <br/>
+              Base de datos
             </a>
           </div>
-          <div class="right">
+          <div class="right menu_btn active">
             <a href="<?php echo h('url', array(
                        'component'=>'core',
                        'controller'=>'core',
                        'action'=>'index'));?>">
-              <div class="app_icon">
-                <?php echo h('img', array('src'=>'app_64.png')); ?>
-              </div>
-              <div class="app_details">
-                Aplicaciones
-              </div>
+              <?php echo h('img', array('src'=>'app_64.png')); ?>
+              <br/>
+              Aplicaciones
             </a>
           </div>
         </td>
       </tr>
     </table>
-    <br/><br/>
     <div id="apps">
       <ul>
         <?php foreach ($apps as $app) : ?>
