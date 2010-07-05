@@ -71,8 +71,7 @@ $m = Model::getInstance();
                        'component'=>'core',
                        'controller'=>'core',
                        'action'=>'dbStatus'));?>">
-              <?php echo h('img', array('src'=>'db_64.png')); ?>
-              <br/>
+              <?php echo h('img', array('src'=>'db_64.png')); ?><br/>
               Base de datos
             </a>
           </div>
@@ -81,8 +80,7 @@ $m = Model::getInstance();
                        'component'=>'core',
                        'controller'=>'core',
                        'action'=>'index'));?>">
-              <?php echo h('img', array('src'=>'app_64.png')); ?>
-              <br/>
+              <?php echo h('img', array('src'=>'app_64.png')); ?><br/>
               Aplicaciones
             </a>
           </div>
