@@ -451,6 +451,9 @@ function $func {
        $params['max'] = $model->get('max'); // puede no estar
        $params['dir'] = $dir;
        $params['sort'] = $params['attr'];
+       
+       if (!isset($params['body'])) $params['body'] = $params['attr'];
+       
        $res = self::link( $params );
        
        return $res;
