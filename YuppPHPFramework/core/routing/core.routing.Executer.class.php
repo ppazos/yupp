@@ -50,38 +50,14 @@ class Executer {
    
 //   echo "Controller Class Name 1: $controllerClassName<br/>";
    
-           // esta verificacion ya se hace en el request manager, por lo que aca siempre deberia llegar con el nombre y ruta de un controller que existe...
-           //if ( file_exists("components/". $ctx->getComponent() ."/controllers/". $controllerClassName .".class.php") )
-           //{
-              YuppLoader::load( "components.". $ctx->getComponent() .".controllers", $controllerClassName );
-           //}
-           //else
-           //{
-           //   $controllerClassName = "CoreController";
-           //   YuppLoader::load( "components.core.controllers", $controllerClassName  );
-           //}
-   
-   /*
-           try
-           {
-              // Debe chekear existencia y si no existe, va a core controller
-              // FIXME: deberia verificar la existencia del archivo del controller, no esperar por si da
-              //        alguna exepcion, ya que puede ser un error interno y no se esta mostrando.
-              YuppLoader::load( "components.". $ctx->getComponent() .".controllers", $controllerClassName );
-           }
-           catch (Exception $e)
-           {
-              Logger::struct($e, "Exception 1");
-              $controllerClassName = "CoreController";
-           	  YuppLoader::load( "components.core.controllers", $controllerClassName  );
-           }
-   */
-//   echo "Controller Class Name 2: $controllerClassName<br/>"; 
-   
-           // Debe verificar si tiene la accion y si la puede ejecutar, si no va a index.
-           $controllerInstance = new $controllerClassName($controller, $action, $this->params); // Se usa abajo!!!
-   
+           // Ya se verifico en RequestManager que el controller existe.
+           YuppLoader::load( "components.". $ctx->getComponent() .".controllers", $controllerClassName );
 
+           // Debe verificar si tiene la accion y si la puede ejecutar, si no va a index.
+           // FIXME: para que pasarle el nombre del controller al mismo controller???
+//           $controllerInstance = new $controllerClassName($controller, $action, $this->params); // Se usa abajo!!!
+           $controllerInstance = new $controllerClassName( $this->params ); // Se usa abajo!!!
+   
            // Si hay except la agarra en el try del index.php
            if ( $controllerInstance->flowExists($action) ) // Si es un web flow
            {
@@ -180,6 +156,10 @@ class Executer {
               CurrentFlows::getInstance()->resetFlows(); // Se encarga de verificar si hay algun flow para resetear
 
               //Logger::show("ES ACCION COMUN, " . __FILE__ . " " . __LINE__ );
+              
+              // FIXME: la instancia del controller se crea con la accion como parametro,
+              //        si ya se sabe que accion se va a ejecutar,
+              //        para que hacer esta llamada con la accion como variable ???.
               $model_or_command = $controllerInstance->{$action}();
            }
 
@@ -204,7 +184,6 @@ class Executer {
               $view = $action; // $controller . '/' . $action;
               
               // $model_or_command incluye los params submiteados!
-              //$command = ViewCommand::display( $view, $model_or_command, $controllerInstance->getFlash() );
               $command = ViewCommand::display( $view, $controllerInstance->getParams(), $controllerInstance->getFlash() );
            }
            else
@@ -238,7 +217,6 @@ class Executer {
            // ===================================================
            // after filters
            // Ejecucion de los after filters, true si pasan o un ViewCommand si no.
-           //$af_res = $filters->after_filter($component, $controller, $action, &$this->params, $command);
            $af_res = $filters->after_filter($component, $controller, $action, $this->params, $command);
            
            if ( $af_res !== true )
