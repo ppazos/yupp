@@ -428,7 +428,6 @@ Array
       
       // OBS: los id y super_id deberia irlos calculando y seteando el insert o update que es quien maneja eso.
       
-      
 //      echo "<pre>getPartialInstancesToSave partialInstances2 =========================================<br/>";
 //      print_r( $partialInstances );
 //      echo "</pre>";
@@ -461,10 +460,12 @@ Array
          
          if ($parentClass !== 'PersistentObject')
          {
+            //Logger::getInstance()->pm_log("Caso1: padre no es PO, padre $parentClass " . __FILE__ ." ". __LINE__);
             if ($obj->getWithTable() !== $pcIns->getWithTable()) $found = true;
          }
          else
          {
+            //Logger::getInstance()->pm_log("Caso2: padre es PO " . __FILE__ ." ". __LINE__);
          	break; // Si llego a PO sin encontrar, tengo que parar el loop.
          }
          
@@ -521,7 +522,7 @@ Array
       // Verifico resultado, deberia ser un unico registro porque se pide con id de instancia.
       $size = sizeof( $list );
       if ($size != 1 ) // resultado esperado es 1
-         throw new Exception("Se esperaba obtener exactamente un registro y hay $size");
+         throw new Exception('Se esperaba obtener exactamente un registro y hay ' . $size);
 
       return $list[0];
    }
