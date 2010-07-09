@@ -32,4 +32,7 @@ print_r( $app->getModel() );
 
 print_r( $app->getDescriptor() );
 
+echo '<h1>Intento crear app carlox</h1>';
+App::create('carlox');
+
 ?>

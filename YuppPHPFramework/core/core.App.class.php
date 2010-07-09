@@ -146,6 +146,9 @@ class App {
       YuppLoader::getInstance()->loadScript($package, 'Bootstrap');
    }
    
+   /**
+    * Obtiene el descriptor XML de la aplicacion.
+    */
    public function getDescriptor()
    {
       if ( !isset($this->descriptor) )
@@ -161,5 +164,53 @@ class App {
       
       return $this->descriptor;
    }
+   
+   /**
+    * Crea una nueva aplicacion con nombre $name.
+    * En $params se pasarian parametros extra como clases del
+    * modelo y sus campos para crear una estructura mas rica.
+    * Este parametro todavia no se usa.
+    * Tira una excepcion si no puede crear la estructura de directorios.
+    */
+   public static function create( $name, $params = array() )
+   {
+      $appStruct = array(
+         './components/'.$name,
+         './components/'.$name.'/controllers',
+         './components/'.$name.'/model',
+         './components/'.$name.'/views',
+         './components/'.$name.'/services',
+         './components/'.$name.'/i18n',
+         './components/'.$name.'/bootstrap',
+         './components/'.$name.'/config',
+         './components/'.$name.'/utils'
+         // TODO: filters & mappings
+      );
+      
+      foreach ($appStruct as $package)
+      {
+         echo "intenta crear $package<br/>";
+         if (!file_exists($package) && !mkdir($package)) //mkdir($package, 0777, true)
+         {
+            throw new Exception('No se puede crear el directorio '. $package .', verifique que tiene los permisos suficientes');
+         }
+      }
+      
+      // TODO: crear descriptor con el nombre de la app
+      $appDescriptor = FileSystem::read('./core/app/templates/app.xml');
+      $appDescriptor = str_replace('{appName}', $name, $appDescriptor);
+      
+      /*
+       * TODO:
+       * - appDescription
+       * - appVersion
+       * - appLangs
+       * - epController
+       * - epAction
+       */
+       
+       FileSystem::write('./components/'.$name.'/app.xml', $appDescriptor);
+   } 
+   
 }
 ?>
