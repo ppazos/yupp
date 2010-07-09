@@ -330,6 +330,11 @@ class InList extends Constraint {
    {
       return in_array($value, $this->array);
    }
+   
+   public function getList()
+   {
+      return $this->array;
+   }
 }
 
 

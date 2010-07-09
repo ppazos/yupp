@@ -71,5 +71,14 @@ class ValidationMessage {
       $msg = DisplayHelper::message( self::MSG_EMAIL );
       return str_replace('{0}', $attr, $msg);
    }
+   
+   private static function inlist( $constraint, $attr, $value)
+   {
+      // 0=attr
+      // 1=lista
+      $msg = DisplayHelper::message( self::MSG_INLIST );
+      $msg = str_replace('{0}', $attr, $msg);
+      return str_replace('{1}', print_r($constraint->getList(), true), $msg);
+   }
 }
 ?>
