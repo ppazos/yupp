@@ -2,6 +2,8 @@
 
 $m = Model::getInstance();
 
+global $_base_dir;
+
 ?>
 <html>
   <head>
@@ -22,6 +24,12 @@ $m = Model::getInstance();
          padding: 0px;
          border: 0px;
       }
+      #actions {
+          background: #fff url(<?php echo $_base_dir; ?>/images/shadow.jpg) bottom repeat-x;
+          border: 1px solid #ccc;
+          border-style: solid none solid none;
+          padding: 7px 12px;
+      }
       #apps {
          background-color: #fff;
          padding: 10px;
@@ -40,6 +48,69 @@ $m = Model::getInstance();
       }
       .menu_btn img {
          border: 0px;
+      }
+      #apps ul {
+         margin: 0px;
+         padding: 0px;
+         /*position: relative;*/
+         /*left: 0px;*/
+         list-style: none;
+      }
+      #apps li {
+       width: 460px;
+       min-height: 200px;
+       /*height: auto;*/ /* necesario para que el anchor se expanda al alto 100% */
+       /*_height: 100px;*/ /* IE6 */
+       /*border: 1px solid #000;*/
+       /*display: -moz-inline-stack;*/ /* FF2*/
+       display: inline-block;
+       vertical-align: top; /* BASELINE CORRECCIÓN*/
+       padding: 5px;
+       margin: 0px;
+       /*margin-right: 5px;*/
+       /*margin-bottom: 7px;*/
+       zoom: 1; /* IE7 (hasLayout)*/
+       *display: inline; /* IE */
+       background-color: #ffff80;
+      }
+      #apps li:hover {
+         background-color: #99ddff;
+         /*cursor: pointer;*/
+      }
+      #apps li a {
+         /*height: 100%;*/
+         display: block;
+         /*text-decoration: none;*/
+         /*color: #000;*/
+      }
+      .app_icon {
+         display: inline-block;
+         vertical-align: top;
+         width: 64px;
+         margin: 0px;
+         margin-right: 3px;
+         padding: 0px;
+         float: left;
+      }
+      .app_icon img {
+         border: 0px;
+      }
+      .app_details {
+         display: inline-block;
+         vertical-align: top;
+         /*width: 370px;*/
+         width: 100%;
+         /*border: 1px solid #000;*/
+         margin: 0px;
+         padding: 5px;
+         padding-top: 3px;
+         padding-right: 0px;
+         float: left;
+      }
+      
+      .classes {
+         overflow: auto;
+         height: 190px;
       }
       
       table#top {
@@ -87,6 +158,15 @@ $m = Model::getInstance();
         </td>
       </tr>
     </table>
+    
+    <div id="actions">
+      <?php echo h('link', array(
+                   'component'=>'core',
+                   'controller'=>'core',
+                   'action'=>'createApp',
+                   'body'=>'Nueva Aplicacion'));?>
+    </div>
+    
     <div id="apps">
       <!-- fixme: no deberia mostrarse si el modo es produccion, esto es solo para dev -->
       <h2>Informacion del modelo</h2>
@@ -110,19 +190,28 @@ $m = Model::getInstance();
                echo "Se generaron todas las tablas para el modelo.<br/>";
             }
          }
-         
-         $componentModelClasses = $m->get('componentModelClasses');
-         foreach ($componentModelClasses as $component => $classInfo)
-         {
-            echo "<h3>$component:</h3>";
-            echo "<ul>";
-            foreach ( $classInfo as $class => $info )
-            {
-               echo  '<li>Clase: <b>'. $class .'</b> se guarda en la tabla: <b>'. $info['tableName'] .'</b> (' . $info['created'] .')</li>';
-            }
-            echo "</ul>";
-         }
       ?>
+       
+      <ul>
+      <?php
+        $componentModelClasses = $m->get('componentModelClasses');
+        foreach ($componentModelClasses as $component => $classInfo) :
+      ?>
+        <li>
+          <div class="app_details classes">
+           <?php
+              echo "<h3>Clases de $component:</h3>";
+              foreach ( $classInfo as $class => $info )
+              {
+                 echo  '<div><b>'. $class .'</b> se guarda en la tabla: <b>'. $info['tableName'] .'</b> (' . $info['created'] .')</div>';
+              }
+           ?>
+          </div>
+        </li>
+      <?php
+         endforeach;
+      ?>
+      </ul>
     </div>
   </body>
 </html>
