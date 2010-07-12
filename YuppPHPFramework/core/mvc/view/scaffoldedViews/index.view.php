@@ -4,6 +4,8 @@ $m = Model::getInstance();
 
 $apps = $m->get('apps');
 
+global $_base_dir;
+
 ?>
 <html>
   <head>
@@ -23,6 +25,12 @@ $apps = $m->get('apps');
          margin: 0px;
          padding: 0px;
          border: 0px;
+      }
+      #actions {
+          background: #fff url(<?php echo $_base_dir; ?>/images/shadow.jpg) bottom repeat-x;
+          border: 1px solid #ccc;
+          border-style: solid none solid none;
+          padding: 7px 12px;
       }
       #apps {
          background-color: #fff;
@@ -81,7 +89,6 @@ $apps = $m->get('apps');
          display: inline-block;
          vertical-align: top;
          width: 64px;
-         /*border: 1px solid #000;*/
          margin: 0px;
          margin-right: 3px;
          padding: 0px;
@@ -146,7 +153,19 @@ $apps = $m->get('apps');
         </td>
       </tr>
     </table>
+    
+    <div id="actions">
+      <?php echo h('link', array(
+                   'component'=>'core',
+                   'controller'=>'core',
+                   'action'=>'createApp',
+                   'body'=>'Nueva Aplicacion'));?>
+    </div>
+    
     <div id="apps">
+    
+      <div align="center"><?php echo $m->flash('message'); ?></div>
+    
       <ul>
         <?php foreach ($apps as $app) : ?>
           <li>
@@ -184,6 +203,11 @@ $apps = $m->get('apps');
                                         "componentName" => $app->getName()) );
                 }
                 //else  echo 'No tiene BS<br/>';
+                ?>
+                <?php
+                echo h('link', array("action" => "testApp",
+                                     "body"   => "Ejecutar tests",
+                                     "name"   => $app->getName()) );
                 ?>
               </div>
           </li>
