@@ -39,7 +39,7 @@ class App {
       while (false !== ($package = $dir->read()))
       {
          // Se queda solo con los nombres de los directorios
-         if ( !String::startsWith( $package,"." ) && is_dir($package))
+         if ( !String::startsWith( $package, "." ) && is_dir($this->path.'/'.$package))
          {
             $packages[] = $package;
          }
@@ -174,22 +174,23 @@ class App {
     */
    public static function create( $name, $params = array() )
    {
+      $normalizedName = String::toUnderscore( $name );
       $appStruct = array(
-         './components/'.$name,
-         './components/'.$name.'/controllers',
-         './components/'.$name.'/model',
-         './components/'.$name.'/views',
-         './components/'.$name.'/services',
-         './components/'.$name.'/i18n',
-         './components/'.$name.'/bootstrap',
-         './components/'.$name.'/config',
-         './components/'.$name.'/utils'
+         './components/'.$normalizedName,
+         './components/'.$normalizedName.'/controllers',
+         './components/'.$normalizedName.'/model',
+         './components/'.$normalizedName.'/views',
+         './components/'.$normalizedName.'/services',
+         './components/'.$normalizedName.'/i18n',
+         './components/'.$normalizedName.'/bootstrap',
+         './components/'.$normalizedName.'/config',
+         './components/'.$normalizedName.'/utils'
          // TODO: filters & mappings
       );
       
       foreach ($appStruct as $package)
       {
-         echo "intenta crear $package<br/>";
+         //echo "intenta crear $package<br/>";
          if (!file_exists($package) && !mkdir($package)) //mkdir($package, 0777, true)
          {
             throw new Exception('No se puede crear el directorio '. $package .', verifique que tiene los permisos suficientes');
@@ -200,16 +201,20 @@ class App {
       $appDescriptor = FileSystem::read('./core/app/templates/app.xml');
       $appDescriptor = str_replace('{appName}', $name, $appDescriptor);
       
+      if (isset($params['description']))
+        $appDescriptor = str_replace('{appDescription}', $params['description'], $appDescriptor);
+        
+      if (isset($params['langs']))
+        $appDescriptor = str_replace('{appLangs}', $params['langs'], $appDescriptor);
+      
       /*
        * TODO:
-       * - appDescription
        * - appVersion
-       * - appLangs
        * - epController
        * - epAction
        */
        
-       FileSystem::write('./components/'.$name.'/app.xml', $appDescriptor);
+       FileSystem::write('./components/'.$normalizedName.'/app.xml', $appDescriptor);
    } 
    
 }
