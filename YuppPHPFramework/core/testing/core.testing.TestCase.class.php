@@ -32,7 +32,22 @@ abstract class TestCase {
             $trace = substr($trace, $pos);
          }
          
-         $this->suite->report($msg .': '. $trace);
+         // TODO: hay que remover las ultimas lineas que son llamadas del framework
+         /*
+          * #4  CoreController->testAppAction(Array ()) called at [C:\wamp\www\YuppPHPFramework\core\mvc\core.mvc.YuppController.class.php:59]
+#5  YuppController->__call(testApp, Array ())
+#6  CoreController->testApp() called at [C:\wamp\www\YuppPHPFramework\core\routing\core.routing.Executer.class.php:163]
+#7  Executer->execute() called at [C:\wamp\www\YuppPHPFramework\core\web\core.web.RequestManager.class.php:158]
+#8  RequestManager::doRequest() called at [C:\wamp\www\YuppPHPFramework\index.php:94]
+
+          */
+         
+         $this->suite->report('ERROR', $msg, $trace);
+      }
+      else
+      {
+         // tengo que mostrar los tests correctos
+         $this->suite->report('OK', $msg);
       }
    }
    
