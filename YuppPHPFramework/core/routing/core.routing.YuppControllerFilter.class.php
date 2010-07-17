@@ -31,7 +31,8 @@ class YuppControllerFilter {
        {
           // FIXME: no se porque tenia component si el contructor del controller no tiene...
        	 //$filterInstance = new $filterClass($component, $controller, $action, $params); // Extiende controller por eso necesita los parametros en el constructor
-          $filterInstance = new $filterClass($controller, $action, $params); // Extiende controller por eso necesita los parametros en el constructor
+          //$filterInstance = new $filterClass($controller, $action, $params); // Extiende controller por eso necesita los parametros en el constructor
+          $filterInstance = new $filterClass($params); 
           if ( $this->applies($filterInstance, $component, $controller, $action) )
           {
 //             echo "FILTRO APLICA $filterClass, $component, $controller, $action<br/>";
@@ -66,7 +67,8 @@ class YuppControllerFilter {
           // FIXME: no se porque tenia component si el contructor del controller no tiene...
           // Extiende controller por eso necesita los parametros en el constructor.
           //$filterInstance = new $filterClass($component, $controller, $action, $params);
-          $filterInstance = new $filterClass($controller, $action, $params);
+          //$filterInstance = new $filterClass($controller, $action, $params);
+          $filterInstance = new $filterClass($params);
           if ( $this->applies($filterInstance, $component, $controller, $action) )
           {
              $res = $filterInstance->apply( $component, $controller, $action, $command );
