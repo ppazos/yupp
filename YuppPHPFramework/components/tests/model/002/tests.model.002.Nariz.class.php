@@ -9,6 +9,8 @@ class Nariz extends PersistentObject
    function __construct($args = array (), $isSimpleInstance = false)
    {
       $this->setWithTable("test_002_nariz");
+      
+      $this->belongsTo = array('Cara');
 
       $this->addAttribute("tamanio",  Datatypes :: TEXT);
 
