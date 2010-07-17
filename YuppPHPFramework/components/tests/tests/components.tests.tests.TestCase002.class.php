@@ -76,13 +76,9 @@ class TestCase002 extends TestCase {
       
       // Debe fallar el save porque hay datos erroneos
       $this->assert( !$cara->save(), 'Test guardar cara 3 '. print_r($cara->getErrors(), true));
-      
-      
-      // FIXME
-      // Sin errores en cara igual no llega a verificar errores en nariz!!!!
-      //print_r($cara->getNariz()->getErrors());
-      
-      echo 'Test errores en nariz 3 '. print_r($cara->getNariz()->getErrors(), true).'<br/>';
+
+      //print_r($cara);      
+      //echo 'Test errores en nariz 3 '. print_r($cara->getNariz()->getErrors(), true).'<br/>';
       
       // La nariz tambien debe tener errores
       $this->assert( count($cara->getNariz()->getErrors())>0, 'Test errores en nariz 3 '. print_r($cara->getNariz()->getErrors(), true));
