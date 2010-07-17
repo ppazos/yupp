@@ -69,19 +69,18 @@ class DAL {
 
    private function __construct()
    {
+      Logger::getInstance()->log("DAL::construct");
+      
       // ===============================================
       $cfg = YuppConfig::getInstance();
       $datasource = $cfg->getDatasource();
       
-      // FIXME: Esto es solo para mysql.================
+      // FIXME: Esto es solo para mysql y postgres =====
       $this->url      = $datasource['url'];
       $this->user     = $datasource['user'];
       $this->pass     = $datasource['pass'];
       $this->database = $datasource['database'];
       // ===============================================
-      
-      // FIXME: que base de datos se usa deberia salir de la configuracion. Y la api deberia ser la misma sea cual sea la base.
-      //Logger::getInstance()->log("DAL::construct");
       
       // Constructor por configuracion del dbms
       // OBS: cada vez que agregue un soporte nuevo tengo que agregar la opcion al switch.
@@ -110,7 +109,7 @@ class DAL {
 
    public function __destruct()
    {
-      //Logger::getInstance()->log("DAL::destruct");
+      Logger::getInstance()->log("DAL::destruct");
       $this->db->disconnect();
    }
 
