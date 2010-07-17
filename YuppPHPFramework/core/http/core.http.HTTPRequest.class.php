@@ -4,26 +4,27 @@ YuppLoader::load('core.http', 'HTTPResponse');
 
 class HTTPRequest {
 
+   const BUFF_SIZE = 512;
+
 /*   private $code;
    private $date;
    private $server;
    private $powered;
-   private $cookie;
    private $expires;
    private $cache;
    private $pragma;
    private $content_length;
    private $connection;
-   private $content_type;
    */
+   
    private $cookie;
+   private $content_type;
    private $timeout = 10; // en segundos
 	
    public function setTimeOut( $secs )
    {
       $this->timeout = $secs;
    }
-   
    
    //Request Método Post
    // FIXME: cambiarle el nombre a post
@@ -44,7 +45,8 @@ class HTTPRequest {
    {
       $parsedUrl = parse_url($url);
 
-      if (!isset($parsedUrl['port'])) {
+      if (!isset($parsedUrl['port']))
+      {
          if ($parsedUrl['scheme'] == 'http')
          {
             $parsedUrl['port']=80;
@@ -84,17 +86,17 @@ class HTTPRequest {
       //echo $headers;
       //$r = file_get_contents($url);
       $fp = fsockopen($parsedUrl['host'], $parsedUrl['port'], $errno, $errstr, $this->timeout);
-      if($fp) 
+      if($fp)
       {
          fwrite($fp, $headers); // Envia pedido
-         while(is_resource($fp) && $fp && !feof($fp)) $result .= fread($fp, 1024);
+         while(is_resource($fp) && $fp && !feof($fp)) $result .= fread($fp, self::BUFF_SIZE);
       }
       fclose($fp); // TODO: si hay keepalive, no cerrar el socket...
       
-      
+// TODO: probar con HTTPS (ssl)
 //      $this->_fp = fsockopen(($this->_protocol == 'https' ? 'ssl://' : '') . $this->_host, $this->_port);
 //      fwrite($this->_fp, $req);
-//      while(is_resource($this->_fp) && $this->_fp && !feof($this->_fp)) $response .= fread($this->_fp, 1024);
+//      while(is_resource($this->_fp) && $this->_fp && !feof($this->_fp)) $response .= fread($this->_fp, self::BUFF_SIZE);
 //      
 //      fclose($this->_fp);
       
@@ -103,7 +105,7 @@ class HTTPRequest {
 //      echo $result;
 //      echo '</textarea>';
       
-      if (!isset($headers)) 
+      if (!isset($headers))
       {
          //removes headers
          $pattern="/^.*\r\n\r\n/s";
@@ -137,7 +139,7 @@ class HTTPRequest {
    //auxiliar para envío post
    private function file_post_contents($url, $headers = false)
    {
-      $parsedUrl = parse_url($url);
+      $parsedUrl = parse_url($url); // FIXME: no deberia hacer parse de la url con params, los params deberian venir aparte.
 
       if (!isset($parsedUrl['port']))
       {
@@ -178,7 +180,7 @@ class HTTPRequest {
       $headers .= "Content-Length: ".strlen($parsedUrl['query']).$eol.$eol;
       $headers .= $parsedUrl['query'];
       
-      /*   $headers =  "POST ".$parsedUrl['protocol'].$parsedUrl['host'].$parsedUrl['path']." HTTP/1.0".$eol.
+      /*   $headers = "POST ".$parsedUrl['protocol'].$parsedUrl['host'].$parsedUrl['path']." HTTP/1.0".$eol.
                 "Host: ".$parsedUrl['host'].$eol.
                 "Referer: ".$parsedUrl['protocol'].$parsedUrl['host'].$parsedUrl['path'].$eol.
                 "Content-Type: application/x-www-form-urlencoded".$eol.
@@ -195,7 +197,7 @@ class HTTPRequest {
       if($fp)
       {
          fwrite($fp, $headers);
-         while(is_resource($fp) && $fp && !feof($fp)) $result .= fread($fp, 1024);
+         while(is_resource($fp) && $fp && !feof($fp)) $result .= fread($fp, self::BUFF_SIZE);
       }
       fclose($fp); // TODO: si hay keepalive, no cerrar el socket...
       
