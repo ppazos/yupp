@@ -73,7 +73,12 @@ class PersistentObject {
    // Validacion.
    protected $constraints = array();     // Array de Array de constraints, dado que varias constraints se pueden aplicar al mismo campo.
    protected $errors = array();          // Mensajes de validacion, misma estructura que constraints.
-
+   protected $validated = false;         // Bandera que indica si fue validada con validate()
+   
+   // TODO: usar esta bandera para optimizar la salvada.
+   protected $dirty = false;             // Bandera que indica si una instancia cargada desde la base fue modificada.
+                                         // Se considera que ls instnacias que fueron creadas y no guardadas (no tienen
+                                         // id asignado) son tambien dirty aunque el campo "dirty" sea false.
 
    protected $multipleTableIds = array(); // Array asociativo por Nombre-de-superclas, y valor el id en la tabla correspondiente.
                                           // Este atributo sirve para realizar las operaciones del save (update) sin tener que 
@@ -763,7 +768,7 @@ class PersistentObject {
       foreach ( $this->hasOne as $attr => $type )
       {
          $value = $this->aGet( $attr );
-         if ( $value !== NULL )  // FIXME: xq no retorno los valores null? null es un valor tambien...
+         if ( $value !== NULL ) // FIXME: xq no retorno los valores null? null es un valor tambien...
          {                      // EL TEMA ES QUE SI RETORNO NULL EL TIPO VA A QUERER GUARDAR NULL... O SEA SI ES NULL NO GUARDO NADA.
                                 // TAMBIEN PASA QUE SI SE PONE EN NULL UN ATRIBUTO, DEBERIA PONERSE EN NULL DICHO ATRIBUTO EN LA BASE.. (ESTO ES UN FIXME!)
              $res[$attr] = $value;
@@ -938,7 +943,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
     * 
     * @return boolean true si no hubieron errores de validacion, false en caso contrario.
     */
-   public function validate()
+   public function validate($validateCascade = false)
    {
       //Logger::getInstance()->log("PersistenObject::validate");
       // TODO: Verificar restricciones en objetos asociados.
@@ -951,63 +956,63 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
       // deberia dar que valida aunque haya otra restriccion que falle para el valor.
 
       $valid = true;
-      $this->errors = NULL; // Reset
+      $this->errors = NULL; // Reset de los errores actuales
+      $this->validated = true; // Se setea al ppio para que la cascada no gener loops de validacion,
+                               // asi ve que esta instancia tiene validated en true y no intenta revalidarla. 
 
       if ( is_array($this->constraints) )
       {
-        // Para cada campo
-        foreach ( $this->constraints as $attr => $constraintArray )
-        {
-           foreach ( $constraintArray as $constraint )
-           {
-              // FIXME: para no tener que verificar si un atributo que es de la clase tenga un valor,
-              //        al inicializar la clase pasandole un array con algunos valores, deberia poner
-              //        en NULL los valores de los demas atributos que son de la clase pero que no se
-              //        les esta asignando valor en el construct.
+         // Para cada campo
+         foreach ( $this->constraints as $attr => $constraintArray )
+         {
+            foreach ( $constraintArray as $constraint )
+            {
+               // FIXME: para no tener que verificar si un atributo que es de la clase tenga un valor,
+               //        al inicializar la clase pasandole un array con algunos valores, deberia poner
+               //        en NULL los valores de los demas atributos que son de la clase pero que no se
+               //        les esta asignando valor en el construct.
               
-              // FIXME: value podria ser un objeto, si la restriccion se puso para una relacion.
-              //        Mas abajo se usa el value para armar el string de error y falla si el
-              //        objeto no tiene toString.
+               // FIXME: value podria ser un objeto, si la restriccion se puso para una relacion.
+               //        Mas abajo se usa el value para armar el string de error y falla si el
+               //        objeto no tiene toString.
               
-              $value = ( (array_key_exists($attr, $this->attributeValues)) ? $this->attributeValues[$attr] : NULL );
-              if ( get_class($constraint) === 'Nullable' )
-              {
+               $value = ( (array_key_exists($attr, $this->attributeValues)) ? $this->attributeValues[$attr] : NULL );
+               if ( get_class($constraint) === 'Nullable' )
+               {
                  if ( $value === NULL && $constraint->evaluate($value) ) // Si valor nulo y valida => nullable(true)
                  {
                     unset( $this->errors[$attr] );
                     break;
                  }
-              }
-              else if ( get_class($constraint) === 'BlankConstraint' )
-              {
+               }
+               else if ( get_class($constraint) === 'BlankConstraint' )
+               {
                  if ( $value === "" && $constraint->evaluate($value) ) // Si valor vacio y valida => blank(true)
                  {
                     unset( $this->errors[$attr] );
                     break;
                  }
-              }
+               }
               
-              if ( !$constraint->evaluate($value) )
-              {
-                 $valid = false;
+               if ( !$constraint->evaluate($value) )
+               {
+                  $valid = false;
 
-                 // TODO: Validar asociaciones hasOne !!!  (*****)
+                  // ====================================================================
+                  YuppLoader::load('core.validation','ValidationMessage');
+                  $err = ValidationMessage::getMessage( $constraint, $attr, $value );
+                  // ====================================================================
 
-// ====================================================================
-YuppLoader::load('core.validation','ValidationMessage');
-$err = ValidationMessage::getMessage( $constraint, $attr, $value );
-// ====================================================================
+                  // Agrego el error a "errors"
 
-                 // Agrego el error a "errors"
+                  // Si no hay un vector de mensajes para este campo
+                  if (!isset($this->errors[ $attr ])) $this->errors[$attr] = array();
 
-                 // Si no hay un vector de mensajes para este campo
-                 if (!isset($this->errors[ $attr ])) $this->errors[$attr] = array();
-
-                 // Agrego mensaje
-                 // TODO: ver de donde sacar el mensaje segun el tipo de constraint.
-                 // FIX: se pueden tener keys i18n estandar para problemas con constraints, y para resolver
-                 //      el mensaje como parametros le paso la constraint, el atributo y el valor que fallo.
-                 //$err = "Error " . get_class($constraint) . " " . $constraint . " en " . $attr . " con valor ";
+                  // Agrego mensaje
+                  // TODO: ver de donde sacar el mensaje segun el tipo de constraint.
+                  // FIX: se pueden tener keys i18n estandar para problemas con constraints, y para resolver
+                  //      el mensaje como parametros le paso la constraint, el atributo y el valor que fallo.
+                  //$err = "Error " . get_class($constraint) . " " . $constraint . " en " . $attr . " con valor ";
 /*
                  $err = "Error " . get_class($constraint) . " en " . $attr . " con valor ";
 
@@ -1024,10 +1029,32 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $value );
                  else if ( $value instanceof PersistentObject ) $err .= $value->getClass() . ":" . $value->getId(); // TODO: ver si hay que preguntar si es PO o si es un objeto en general...
                  else $err .= (($value) ? $value : "0"); // FIXME: Si value es un objeto, falla aqui.
 */
-                 $this->errors[$attr][] = $err;
-              }
-           }
-        }
+                  $this->errors[$attr][] = $err;
+               }
+            }
+         }
+      }
+      
+      // http://code.google.com/p/yupp/issues/detail?id=50
+      // Si hay que validar las instancias en hasOne y hasMany
+      if ($validateCascade)
+      {
+         // TODO: Validar asociaciones hasOne !!!  (*****)
+         foreach ( $this->hasOne as $attr => $clazz )
+         {
+            $inst = $this->attributeValues[ $attr ];
+            
+            if ($inst !== NULL && $inst !== PersistentObject::NOT_LOADED_ASSOC && !$inst->validated)
+            {
+               if (!$inst->validate(true)) // Sigue validando en cascada
+               {
+                  $valid = false;
+                  // TODO: puedo pedirle los errores y adjuntarlos a los mios ($this->errors)
+               }
+            }
+         }
+         
+         // TODO: hasMany
       }
 
       return $valid;
@@ -1161,8 +1188,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $value );
    {
       Logger::getInstance()->po_log("PO:save " . get_class($this));
 
-      // Nuevo validation!!
-      if (!$this->validate()) return false;
+      if (!$this->validate(true)) return false;
 
       $this->executeBeforeSave();
 
@@ -1176,7 +1202,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $value );
 
       $this->executeAfterSave();
       
-      // Nuevo validation!!
+      // Validacion
       return true;
    }
 
