@@ -124,6 +124,16 @@ class Helpers {
        $ctx = YuppContext::getInstance();
        $paramsMap['action'] = $ctx->getAction();
        
+       // Agregado de params de filtrado a links (http://code.google.com/p/yupp/issues/detail?id=49)
+       $_params = $model->getAll(); // params + lo que metio el controller como model para la view
+       foreach ($_params as $k=>$v)
+       {
+          if (String::startsWith($k, 'filter_'))
+          {
+             $paramsMap[$k] = $v;
+          }
+       }
+       
        $linkPrev = "";
        if ( $offset - $max >= 0 ) // Si no esta en la primer pagina, puedo volver para atras.
        {
@@ -445,6 +455,16 @@ function $func {
        //$res .= '<a href="'. Helpers::params2url( array('sort'=>$attr, 'dir'=>$dir) ) .'">'; // TODO: no tengo acceso a los params desde helpers.
        //$res .= $attr; // TODO: Habria que ver si esto es i18n, deberia haber algun "display name" asociado al nombre del campo.
        //$res .= '</a>';
+       
+       // Agregado de params de filtrado a links (http://code.google.com/p/yupp/issues/detail?id=49)
+       $_params = $model->getAll(); // params + lo que metio el controller como model para la view
+       foreach ($_params as $k=>$v)
+       {
+          if (String::startsWith($k, 'filter_'))
+          {
+             $params[$k] = $v;
+          }
+       }
        
        // Para mantener el paginado.
        $params['offset'] = $model->get('offset'); // puede no estar

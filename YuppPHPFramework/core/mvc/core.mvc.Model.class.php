@@ -36,6 +36,14 @@ class Model {
     	 if ( isset($this->model[$key]) ) return $this->model[$key];
        return NULL;
     }
+    
+    /**
+     * Devuelve todo el modelo (sin flash).
+     */
+    public function getAll()
+    {
+       return $this->model;
+    }
 
     // FLASH ==========================================
     
