@@ -438,57 +438,21 @@ class CoreController extends YuppController
       
       //print_r($app->getPackages());
       
-      // TODO: App.hasTests
-      if (!in_array('tests', $app->getPackages()))
+      // Si hay tests
+      if (!$app->hasTests())
       {
          return $this->redirect( array('action' => 'index',
                                        'params'=>array('flash.message'=>'No hay tests para ejecutar')));
       }
       
-      // TODO: App.loadTests
-      
-      $dir = dir('./components/'.$appName.'/tests');
-      
-      $testCases = array();
-      
-      // Recorre directorio de la aplicacion
-      while (false !== ($test = $dir->read()))
-      {
-         //echo $test.'<br/>';
-         // Se queda solo con los nombres de los directorios
-         if ( String::endsWith( $test, 'class.php' ) && is_file('./components/'.$appName.'/tests/'.$test))
-         {
-            $testCases[] = $test;
-         }
-      }
-      
-      // Crea instancias de las clases testcase
-      $suite = new TestSuite();
-      foreach ($testCases as $testCaseFile)
-      {
-         $fi = FileNames::getFilenameInfo($testCaseFile);
-         $clazz = $fi['name'];
-         //print_r($fi);
-         
-         YuppLoader::load($fi['package'], $clazz);
-         
-         
-         $suite->addTestCase( new $clazz( $suite ) );
-      }
-      
+      // Cargar los casos de test en una suite y ejecutarlos
+      $suite = $app->loadTests();
       $suite->run();
+      
       //print_r( $suite->getReports() );
       
       $this->params['results'] = $suite->getReports();
       $this->params['app'] = $app;
-      
-      /*
-       * 
-         $tc = new CustomTestCase($suite);
-         $suite->addTestCase($tc);
-         
-         
-       */
    } 
 }
 ?>
