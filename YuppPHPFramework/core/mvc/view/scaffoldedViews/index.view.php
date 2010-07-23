@@ -163,7 +163,6 @@ global $_base_dir;
     </div>
     
     <div id="apps">
-    
       <div align="center"><?php echo $m->flash('message'); ?></div>
     
       <ul>
@@ -178,15 +177,10 @@ global $_base_dir;
                   <?php
                     // Si no existe la imagen del icono de la aplicacion, muestra la imagen por defecto.
                     try {
-                       echo h('img', array(
-                          'component'=>$app->getName(),
-                          'src'=>'app_64.png',
-                          'w'=>64,
-                          'h'=>64
-                       ));
+                       echo h('img', array('component'=>$app->getName(), 'src'=>'app_64.png', 'w'=>64, 'h'=>64));
                     } catch (Exception $e) {
                        //echo $e->getMessage();
-                       echo h('img', array('src'=>'app_64.png', 'w'=>64, 'h'=>64,));
+                       echo h('img', array('src'=>'app_64.png', 'w'=>64, 'h'=>64));
                     }
                   ?>
                 </a>
@@ -197,7 +191,6 @@ global $_base_dir;
                 <?php
                 if ($app->hasBootstrap())
                 {
-                   //echo 'Tiene BS<br/>';
                    echo h('link', array("action"        => "executeBootstrap",
                                         "body"          => "Ejecutar arranque",
                                         "componentName" => $app->getName()) );
@@ -205,9 +198,12 @@ global $_base_dir;
                 //else  echo 'No tiene BS<br/>';
                 ?>
                 <?php
-                echo h('link', array("action" => "testApp",
-                                     "body"   => "Ejecutar tests",
-                                     "name"   => $app->getName()) );
+                if ($app->hasTests())
+                {
+                   echo h('link', array("action" => "testApp",
+                                        "body"   => "Ejecutar tests",
+                                        "name"   => $app->getName()) );
+                }
                 ?>
               </div>
           </li>
