@@ -217,5 +217,45 @@ class App {
        FileSystem::write('./components/'.$normalizedName.'/app.xml', $appDescriptor);
    } 
    
+   public function hasTests()
+   {
+      return in_array('tests', $this->getPackages());
+   }
+   
+   /**
+    * Genera una TestSuite con los TestCase definidos para esta aplicacion.
+    */
+   public function loadTests()
+   {
+      $dir = dir($this->path.'/tests');
+      
+      $testCases = array();
+      
+      // Recorre directorio de la aplicacion
+      while (false !== ($test = $dir->read()))
+      {
+         //echo $test.'<br/>';
+         // Se queda solo con los nombres de los directorios
+         if (String::endsWith($test, 'class.php') && is_file($this->path.'/tests/'.$test))
+         {
+            $testCases[] = $test;
+         }
+      }
+      
+      // Crea instancias de las clases testcase
+      $suite = new TestSuite();
+      foreach ($testCases as $testCaseFile)
+      {
+         $fi = FileNames::getFilenameInfo($testCaseFile);
+         $clazz = $fi['name'];
+         //print_r($fi);
+         
+         YuppLoader::load($fi['package'], $clazz);
+         
+         $suite->addTestCase( new $clazz( $suite ) );
+      }
+      
+      return $suite;
+   }
 }
 ?>
