@@ -206,13 +206,21 @@ class App {
         
       if (isset($params['langs']))
         $appDescriptor = str_replace('{appLangs}', $params['langs'], $appDescriptor);
-      
-      /*
-       * TODO:
-       * - appVersion
-       * - epController
-       * - epAction
-       */
+       
+       if (isset($params['controller']))
+       {
+          $appDescriptor = str_replace('{epController}', $params['controller'], $appDescriptor);
+          $appDescriptor = str_replace('{epAction}', 'index', $appDescriptor);
+          
+          $templateController = FileSystem::read('./core/app/templates/TemplateController.class.php');
+          $templateController = str_replace('Template', $params['controller'], $templateController);
+          
+          echo './components/'.$normalizedName.'/controllers/components.'.$normalizedName.'.controllers.'.String::firstToUpper($params['controller']).'Controller.class.php';
+          
+          FileSystem::write('./components/'.$normalizedName.'/controllers/components.'.$normalizedName.'.controllers.'.String::firstToUpper($params['controller']).'Controller.class.php',
+                            $templateController);
+       }
+       
        
        FileSystem::write('./components/'.$normalizedName.'/app.xml', $appDescriptor);
    } 
