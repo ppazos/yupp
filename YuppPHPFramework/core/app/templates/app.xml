@@ -2,7 +2,7 @@
 <app>
   <name>{appName}</name>
   <description>{appDescription}</description>
-  <version>{appVersion}</version>
+  <version>0.1</version>
   <langs>{appLangs}</langs>
   <code></code>
   <tags></tags>
