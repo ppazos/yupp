@@ -25,13 +25,10 @@
 
 =Cambios con respecto a la versión 0.2.0=
 
-  * Se completa la definicion de componentes para que sean auto-contenidos
-    (modelo, controllers, vistas, filtros, mappings, i18n, etc)
+  * Se completa la definicion de componentes para que sean auto-contenidos (modelo, controllers, vistas, filtros, mappings, i18n, etc)
     * Se hizo la generación de estructuras para nuevas aplicaciones.
   * Mensajes de errores de validación ahora son internacionalizables.
-  * Se creó la primer versión de Yupp Desktop, desde donde ser permite
-    el acceso a las aplicaciones, la generación de tablas y la creación
-    de nuevas aplicaciones de forma simple.
+  * Se creó la primer versión de Yupp Desktop, desde donde ser permite el acceso a las aplicaciones, la generación de tablas y la creación de nuevas aplicaciones de forma simple.
   * Nuevo componente de testing para crear y ejecutar casos de prueba de forma automática.
   * Correcciones al paquete http.
 
