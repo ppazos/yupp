@@ -1,4 +1,4 @@
-#labels liberacion,v0.2.0,notas,version,Featured,Phase-Deploy
+#labels liberacion,v0.2.0,notas,version,Phase-Deploy
 =NOTAS DE LA VERSIóN:=
 
   * Versión 0.2.0 de Yupp PHP Framework
