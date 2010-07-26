@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<generos>
+  <genero>Action</genero>
+  <genero>Adventure</genero>
+  <genero>Animation</genero>
+  <genero>Biography</genero>
+  <genero>Comedy</genero>
+  <genero>Crime</genero>
+  <genero>Documentary</genero>
+  <genero>Drama</genero>
+  <genero>Family</genero>
+  <genero>Fantasy</genero>
+  <genero>History</genero>
+  <genero>Horror</genero>
+  <genero>Musical</genero>
+  <genero>Mystery</genero>
+  <genero>Romance</genero>
+  <genero>Sci-Fi</genero>
+  <genero>Short</genero>
+  <genero>Sport</genero>
+  <genero>Thriller</genero>
+  <genero>War</genero>
+</generos>
