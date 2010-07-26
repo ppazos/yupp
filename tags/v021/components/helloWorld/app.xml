@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<app>
+  <name>Hello World</name>
+  <description>Aplicacion de prueba para Yupp</description>
+  <version>0.1</version>
+  <langs>es</langs>
+  <code></code>
+  <tags>test</tags>
+  <site></site><!-- & codificado como entity &amp;, si no no carga el xml -->
+  <docs></docs>
+  <update></update>
+  <entry_point>
+    <controller>persona</controller>
+    <action>list</action>
+  </entry_point>
+</app>
