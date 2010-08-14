@@ -5,9 +5,10 @@ $m = Model::getInstance();
 YuppLoader::loadScript("components.blog", "Messages");
 
 ?>
-
 <html>
    <head>
+      <?php echo h("css", array("name" => "main") ); ?>
+      
       <style type="text/css">
       ul.postnav, ul.postnav li {
          margin: 0px;
@@ -32,7 +33,6 @@ YuppLoader::loadScript("components.blog", "Messages");
       
       <?php echo h("css", array("name" => "niftyCorners") ); ?>
       <?php echo h("js",  array("name" => "niftycube") ); ?>
-      <?php echo h("js",  array("name" => "prototype-1.6.0.2") ); ?>
       
       <script type="text/javascript">
       window.onload=function(){
@@ -40,12 +40,8 @@ YuppLoader::loadScript("components.blog", "Messages");
          Nifty("ul.postnav a","transparent");
       }
       </script>
-   
-      <?php echo h("css", array("name" => "main") ); ?>
-   
    </head>
    <body>
-      
       <h1><?php echo DisplayHelper::message("blog.entrada.show.title"); ?></h1>
       
       <?php if ($m->flash('message')) { ?>
@@ -94,6 +90,5 @@ YuppLoader::loadScript("components.blog", "Messages");
          </div>
          <?php $i++; ?>
       <?php endforeach; ?>
-      
    </body>
 </html>

@@ -10,6 +10,8 @@ YuppLoader::load("core.mvc.form","YuppForm2");
 <html>
    <layout name="blog" />
    <head>
+      <?php echo h("css",  array("name" => "main") ); ?>
+      
       <?php echo h("css", array("name" => "niftyCorners") ); ?>
       <?php echo h("js",  array("name" => "niftycube") ); ?>
 
@@ -20,8 +22,6 @@ YuppLoader::load("core.mvc.form","YuppForm2");
          //Nifty("ul.postnav div.locale_chooser","transparent");
       }
       </script>
-
-      <?php echo h("css",  array("name" => "main") ); ?>
    </head>
    <body>
       <h1><?php echo DisplayHelper::message("blog.entrada.list.title"); ?></h1>

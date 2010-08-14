@@ -10,7 +10,6 @@ YuppLoader::load("core.mvc.form", "YuppForm2");
 <html>
    <head>
       <?php echo h("css", array("name" => "main") ); ?>
-      <?php echo h("js",  array("name" => "prototype-1.6.0.2") ); ?>
       <style>
          /* Estilo para YuppForm */
          .field_container {
