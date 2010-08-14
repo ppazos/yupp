@@ -42,10 +42,10 @@ class PackageNames {
    {
       $componentNames = array();
       
-    	$dir = dir("./components");
+    	$dir = dir('./components');
       while (false !== ($component = $dir->read()))
       {
-         if ( !String::startsWith( $component,"." ) && $component !== "core")
+         if ( !String::startsWith( $component,"." ) && $component !== "core" && is_dir('./components/'.$component))
          {
             $componentNames[] = $component;
          }
