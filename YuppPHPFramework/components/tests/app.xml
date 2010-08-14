@@ -10,7 +10,7 @@
   <docs>http://code.google.com/p/yupp/downloads/detail?name=Yupp%20Framework%20PHP%20v0.1.6.7%20-%20Sistema%20de%20Blog%20simple.pdf&amp;can=2&amp;q=</docs>
   <update></update>
   <entry_point>
-    <controller>helpers</controller>
-    <action>list</action>
+    <controller>helpersTest</controller>
+    <action>index</action>
   </entry_point>
 </app>
