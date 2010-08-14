@@ -1,5 +1,6 @@
 <html>
   <head>
+    <?php echo h("js",  array("name" => "prototype_161") ); ?>
     <style type="text/css">
       ul.postnav, ul.postnav li {
          margin: 0px;
@@ -31,7 +32,6 @@
          padding-top: 4px;
       }
     </style>
-    <?php echo h("js",  array("name" => "prototype-1.6.0.2") ); ?>
     <?php echo $head; ?>
   </head>
   <body>
