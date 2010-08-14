@@ -60,7 +60,7 @@ class YuppConfig {
                                   array( 'url' => 'localhost',
                                          'user' => 'root',
                                          'pass' => '',
-                                         'database' => 'carlitos'),
+                                         'database' => 'yupp_dev'),
                                self::DB_SQLITE =>
                                   array( 'url'  => '',
                                          'user' => '',
@@ -70,7 +70,7 @@ class YuppConfig {
                                   array( 'url' => 'localhost',
                                          'user' => 'postgres',
                                          'pass' => 'root',
-                                         'database' => 'postgres')
+                                         'database' => 'yupp_dev')
                              );
    
    // ==================================================
