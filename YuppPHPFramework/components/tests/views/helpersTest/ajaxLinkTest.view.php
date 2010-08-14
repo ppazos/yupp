@@ -8,7 +8,7 @@ $m = Model::getInstance();
   <head>
     <title>Helpers Test: Ajax Link Test</title>
     
-    <?php echo h("js", array("name" => "prototype-1.6.0.2") ); ?>
+    <?php echo h("js", array("name" => "prototype_161") ); ?>
   
     <script type="text/javascript">
      var before_function = function(req, json) {
