@@ -178,7 +178,7 @@ class Helpers {
        /**
         * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
         */
-       self::js( array("name" => "prototype-1.6.0.2") );
+       self::js( array("name" => "prototype_161") );
        
        /*
         new Ajax.Updater({ success: 'items', failure: 'notice' }, '/items', {
