@@ -8,9 +8,12 @@ $m = Model::getInstance();
   <head>
     <title>Helpers Test: Ajax Link Test</title>
     
-    <?php echo h("js", array("name" => "prototype_161") ); ?>
-  
+    <?php /*echo h("js", array("name" => "prototype_161") ); */ ?>
+    <?php echo h("js", array("name" => "jquery/jquery-1.3.1.min") ); ?>
+    
     <script type="text/javascript">
+     // Handlers para Prototype
+     /*
      var before_function = function(req, json) {
        
        $('content_div').innerHTML = "Cargando...";
@@ -21,6 +24,26 @@ $m = Model::getInstance();
        else       json = json.evalJSON();
         
        $('content_div').innerHTML = json.mensaje;
+     }
+     */
+    </script>
+    
+    <script type="text/javascript">
+     // Handlers para JQuery
+     var before_function = function(req, json) {
+       
+       $('#content_div').html( "Cargando..." );
+     }
+     var after_function = function(json) {
+      
+       //alert(json);
+       //alert(json.mensaje); // undefined
+       
+       var obj = eval('('+json+')');
+       
+       //alert(obj.mensaje); // Hola mundo!
+       
+       $('#content_div').html( obj.mensaje );
      }
     </script>
   </head>
