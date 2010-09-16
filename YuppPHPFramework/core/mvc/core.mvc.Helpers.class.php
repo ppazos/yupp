@@ -158,6 +158,52 @@ class Helpers {
        return $linkPrev . $pagerState . $linkNext;
     }
     
+    /**
+     * Operacion auxiliar para generar el HTML y JS del helper ajax_link para prototype.
+     */
+    private static function ajax_link_prototype($paramsMap, $body, $before, $callback)
+    {
+       /**
+        * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
+        */
+       self::js( array("name" => "prototype_161") );
+       
+       $func = "ajax_link_". self::getCounter()."()";
+        
+       $script = "<script type=\"text/javascript\">
+function $func {
+   new Ajax.Request('". self::url(array_filter($paramsMap)) ."', {
+                     onLoading: $before,   
+                     onSuccess: $callback
+   });
+}
+</script>";
+       
+       return $script . '<a href="javascript:'. $func .'" target="_self">'. $body .'</a>'; // Tengo que pegar el script para que quede disponible.
+    }
+    
+    private static function ajax_link_jquery($paramsMap, $body, $before, $callback)
+    {
+       /**
+        * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
+        */
+       self::js( array("name" => "jquery/jquery-1.3.1.min") );
+       
+       $func = "ajax_link_". self::getCounter()."()";
+        
+       $script = "<script type=\"text/javascript\">
+function $func {
+   $.ajax({
+      url: '". self::url(array_filter($paramsMap)) ."',
+      beforeSend: $before,
+      success: $callback
+   });
+}
+</script>";
+       
+       return $script . '<a href="javascript:'. $func .'" target="_self">'. $body .'</a>'; // Tengo que pegar el script para que quede disponible.
+    }
+    
     public static function ajax_link($paramsMap)
     {
        $before = (array_key_exists('before',$paramsMap)) ? $paramsMap['before'] : NULL;
@@ -175,17 +221,31 @@ class Helpers {
        unset($paramsMap['body']);
        
        
-       /**
-        * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
-        */
+       
+       $lm = LayoutManager::getInstance();
+       $jslib = $lm->getJSLib();
+       if (is_null($jslib)) $jslib = 'prototype'; // Libreria por defecto.
+       
+       //echo "x: $jslib<br/>";
+       
+       eval('$ret = self::ajax_link_'.$jslib.'($paramsMap, $body, $before, $callback);');
+       
+       // parse error, expecting `T_STRING' or `T_VARIABLE' or `'$'' in C:\wamp\www\YuppPHPFramework\core\mvc\core.mvc.Helpers.class.php on line 207
+       //return self::{"ajax_link_$jslib"}($paramsMap, $body);
+       return $ret;
+       
+       
+/*
+       //Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
        self::js( array("name" => "prototype_161") );
        
-       /*
-        new Ajax.Updater({ success: 'items', failure: 'notice' }, '/items', {
-           parameters: { text: $F('text') },
-           insertion: Insertion.Bottom
-         });
-        */
+
+//        new Ajax.Updater({ success: 'items', failure: 'notice' }, '/items', {
+//           parameters: { text: $F('text') },
+//           insertion: Insertion.Bottom
+//         });
+
+
        // Prototype
 //       $script = "new Ajax.Updater({ success: '".$update."' }, " .
 //                     "'". self::url(array_filter($paramsMap)) ."', { " .
@@ -194,18 +254,17 @@ class Helpers {
 //                     //" onComplete: $callback " .
 //                  "});";
         
-       /*
-        * new Ajax.Request(url, {
-              method: 'get',
-              onSuccess: function(transport) {
-                var notice = $('notice');
-                if (transport.responseText.match(/href="http:\/\/prototypejs.org/))
-                  notice.update('Yeah! You are in the Top 10!').setStyle({ background: '#dfd' });
-                else
-                  notice.update('Damn! You are beyond #10...').setStyle({ background: '#fdd' });
-              }
-            });
-        */
+//       new Ajax.Request(url, {
+//              method: 'get',
+//              onSuccess: function(transport) {
+//                var notice = $('notice');
+//                if (transport.responseText.match(/href="http:\/\/prototypejs.org/))
+//                  notice.update('Yeah! You are in the Top 10!').setStyle({ background: '#dfd' });
+//                else
+//                  notice.update('Damn! You are beyond #10...').setStyle({ background: '#fdd' });
+//              }
+//            });
+      
         
       // OK!!!
       $func = "ajax_link_". self::getCounter()."()";
@@ -225,6 +284,7 @@ function $func {
        return $script . '<a href="javascript:'. $func .'" target="_self">'. $body .'</a>'; // Tengo que pegar el script para que quede disponible.
 
        //return self::link(array_filter($paramsMap));
+*/
     }
 
     public static function params2url( $params )

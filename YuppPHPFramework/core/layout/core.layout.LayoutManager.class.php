@@ -41,11 +41,36 @@ class LayoutManager {
          $this->referencedJSLibs[] = $path;
    }
    
+   /**
+    * Obtiene el nombre de la principal libreria javscript incluida, null si no se ha incluido una libreria.
+    * Sirve para obtener la implementacion correcta de los helpers javascript que dependen de la libreria js.
+    * TODO: tal vez seria bueno retornar un nombre por defecto si es que no hay una lib incluida.
+    */
+   public function getJSLib()
+   {
+      //print_r($this->referencedJSLibs);
+      // Array ( [0] => /YuppPHPFramework/js/jquery/jquery-1.3.1.min.js )
+    
+      $jslibs = array('prototype','jquery'); //,'mootools','dojo','yui');
+      foreach ($this->referencedJSLibs as $jslibpath)
+      {
+         foreach ($jslibs as $lib)
+         {
+            //if ( String::startsWith($jslib, $lib) )
+            //echo $lib.' '.$jslibpath.'<br/>';
+            if (strpos($jslibpath, $lib) !== false) // Si encuentra la libreria en algun lado de la ruta de inclusion.
+            {
+               return $lib;
+            }
+         }
+      }
+      
+      return NULL;
+   }
+   
    
    public function renderWithLayout( $pagePath )
    {
-      
-      
       // TODO: utilizar $referencedJSLibs para meter en el header las librerias seleccionadas.
       // reglas:
       //  - la vista puede no tener header, si hay js y no hay header, agregar tambien el header.
