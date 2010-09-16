@@ -84,21 +84,29 @@ class HTTPRequest {
 //      
 //      echo "<hr/>".gettype($parsedUrl['port'])."<hr/>";
 
+      $response = new HTTPResponse();
       $result = '';
-      //$r = file_get_contents($url);
-      // TODO: poder devolver numero de error y errstr.
-      $fp = fsockopen($parsedUrl['host'], $parsedUrl['port'], $errno, $errstr, $this->timeout);
-      if ($fp && is_resource($fp))
+      try
       {
-         fputs($fp, $headers); // Envia pedido
-         
-         while (!feof($fp))
+         //$r = file_get_contents($url);
+         // TODO: poder devolver numero de error y errstr.
+         $fp = fsockopen($parsedUrl['host'], $parsedUrl['port'], $errno, $errstr, $this->timeout);
+         if ($fp && is_resource($fp))
          {
-            $result .= fread($fp, self::BUFF_SIZE);
+            fputs($fp, $headers); // Envia pedido
+            
+            while (!feof($fp))
+            {
+               //$result .= fgets($fp, self::BUFF_SIZE);
+               $result .= fread($fp, self::BUFF_SIZE);
+            }
          }
+         fclose($fp); // TODO: si hay keepalive, no cerrar el socket...
       }
-      
-      fclose($fp); // TODO: si hay keepalive, no cerrar el socket...
+      catch (Exception $e)
+      {
+         $response->createResponse( array('HTTP/1.1 404 Not Found') );
+      }
 
 // TODO: probar con HTTPS (ssl)
 //      $this->_fp = fsockopen(($this->_protocol == 'https' ? 'ssl://' : '') . $this->_host, $this->_port);
@@ -107,6 +115,7 @@ class HTTPRequest {
 //      
 //      fclose($this->_fp);
       
+      // Esto de que sirve? siempre da false y nunca entra porque headers siempre tiene algo.
       if (!isset($headers))
       {
          //removes headers
@@ -114,8 +123,7 @@ class HTTPRequest {
          $result=preg_replace($pattern,'',$result);
       }
 
-      $response = new HTTPResponse();
-      if ($result !== "")
+      if ($result !== '')
       {
          $r = preg_split('/\r\n/', $result);
          $response->createResponse($r);
@@ -206,29 +214,37 @@ class HTTPRequest {
       echo '</textarea><br/>';
 */
 
+      $response = new HTTPResponse();
       $result = '';
-      // TODO: poder devolver numero de error y errstr.
-      $fp = fsockopen($parsedUrl['host'], $parsedUrl['port'], $errno, $errstr, $this->timeout);
-      if($fp && is_resource($fp))
+      try
       {
-         fputs($fp, $headers);
-         
-         while (!feof($fp))
+         // TODO: poder devolver numero de error y errstr.
+         $fp = fsockopen($parsedUrl['host'], $parsedUrl['port'], $errno, $errstr, $this->timeout);
+         if($fp && is_resource($fp))
          {
-            $result .= fread($fp, self::BUFF_SIZE);
+            fputs($fp, $headers);
+
+            while (!feof($fp))
+            {
+               $result .= fread($fp, self::BUFF_SIZE);
+            }
          }
+         fclose($fp); // TODO: si hay keepalive, no cerrar el socket...
       }
-      fclose($fp); // TODO: si hay keepalive, no cerrar el socket...
-      
-      if (!$headers)
+      catch (Exception $e)
+      {
+         $response->createResponse( array('HTTP/1.1 404 Not Found') );
+      }
+
+      // Esto de que sirve? siempre da false y nunca entra porque headers siempre tiene algo.
+      if (!isset($headers))
       {
          //removes headers
          $pattern="/^.*\r\n\r\n/s";
          $result=preg_replace($pattern,'',$result);
       }
 
-      $response = new HTTPResponse();
-      if ($result !== "")
+      if ($result !== '')
       {
          $r = preg_split('/\r\n/', $result);
          $response->createResponse($r);

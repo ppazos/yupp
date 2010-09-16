@@ -15,12 +15,11 @@ class HTTPResponse {
    public function createResponse($res = array())
    {
       //version, code y message vienen en la primer posición del array
-      $header = $res[0]; // HTTP/1.1 200 OK
+      $this->headers[0] = $res[0]; // HTTP/1.1 200 OK
       
-      if (empty($header)) throw new Exception('La respuesta es vacia '. __FILE__ .' '.__LINE__);
+      if (empty($this->headers[0])) throw new Exception('La respuesta es vacia '. __FILE__ .' '.__LINE__);
       
-      $headerSplit = preg_split('/ /', $header);
-      
+      $headerSplit = preg_split('/ /', $this->headers[0]);
       $this->version = $headerSplit[0];
       
       if (isset($headerSplit[1]))
