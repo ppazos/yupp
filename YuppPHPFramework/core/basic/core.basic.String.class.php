@@ -104,6 +104,25 @@ class String {
      return preg_replace($pattern, $replacement, $string);
      */
    }
+   
+   /**
+    * Verifica si el string tiene formato de fecha.
+	* FIXME: cuidado que tambien matchea datetimes.
+    */
+   public static function isDate( $string )
+   {
+      $pattern = '/\d\d\d\d-\d\d-\d\d/';
+      return preg_match($pattern, $string, $matches);
+   }
+   
+   /**
+    * Verifica si el string tiene formato de fecha con tiempo.
+    */
+   public static function isDateTime( $string )
+   {
+      $pattern = '/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d/';
+      return preg_match($pattern, $string, $matches);
+   }
 
 }
 
