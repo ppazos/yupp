@@ -20,13 +20,27 @@ YuppLoader::load("core.mvc.form", "YuppForm2");
             return document.layers[elemID]
          }
       }
-     function after_function (responseText, statusText, xhr, $form)
-     {
-       //alert("aaaaaa: "+responseText);
       
-       var div = getObj('content_div');
-       div.innerHTML = responseText;
-     }
+      /*
+      // Handler para jquery
+      function after_function (responseText, statusText, xhr, form)
+      {
+        //alert("aaaaaa: "+responseText);
+      
+        var div = getObj('content_div');
+        div.innerHTML = responseText;
+      }
+      */
+      
+      // Handler para prototype
+      function after_function (res)
+      {
+        //alert("aaaaaa: "+res.responseText);
+      
+        var div = getObj('content_div');
+        div.innerHTML = res.responseText;
+      }
+      
     </script>
   </head>
   <body>

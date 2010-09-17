@@ -92,24 +92,27 @@ class YuppForm2
 	 * se deberia especificar alguna forma de crear la url correcta 
 	 * segun el sistema.
 	 */
-	public function getUrl()
-	{
+   public function getUrl()
+   {
       if ( is_null($this->action_url) )
+      {
          return Helpers :: url(array (
             "component" => $this->component,
             "controller" => $this->controller,
             "action" => $this->action
          ));
-      else
-         return $this->action_url;
-	}
+      }
 
-	public function add($fieldOrGroup)
-	{
+      return $this->action_url;
+   }
+
+   public function add($fieldOrGroup)
+   {
       if ( $fieldOrGroup->isFile() ) $this->hasFileFields = true;
-		$this->fields[] = $fieldOrGroup;
+
+      $this->fields[] = $fieldOrGroup;
       return $this;
-	}
+   }
    
    // Constructores de campos
    // TODO: crear campo bigtext pero HTML.
@@ -170,22 +173,21 @@ class YuppForm2
 class YuppFormField2Group
 {
    public $fieldNumber; // Auxiliar para mostrar los campos del grupo
-   
-	private $name;
-	private $fields = array ();
+   private $name;
+   private $fields = array ();
 
-	public function __construct($name) { $this->name = $name; }
+   public function __construct($name) { $this->name = $name; }
    
    public function getName() { return $this->name; }
 
-	public function add(YuppFormField2 $field)
-	{
-		$field->add("group", $this->name);
-		$this->fields[] = $field;
+   public function add(YuppFormField2 $field)
+   {
+      $field->add("group", $this->name);
+      $this->fields[] = $field;
       return $this;
-	}
+   }
 
-	public function get() { return $this->fields; }
+   public function get() { return $this->fields; }
    
    // Este metodo se necesita para el add de Form que pregunta al campo si es file (para que group tenga la misma interfaz que field)
    public function isFile() { return false; }
@@ -198,37 +200,39 @@ class YuppFormField2
 {
    public $fieldNumber; // Auxiliar para mostrar el campo
    
-	private $label;
-	private $type;
-	private $args = array (); // Atributos particulares de cada campo.
+   private $label;
+   private $type;
+   private $args = array (); // Atributos particulares de cada campo.
 
-	const TEXT     = 1; // input text
-	const HIDDEN   = 2; // input hidden
-	const BIGTEXT  = 3; // textaea
-	//const SELECTOR = 4; // select size>1 multiple? // No senecesario, se hace con select y parametros size y multiple.
-	const SELECT = 4; // select
-	const RADIO    = 5; // input type = radio
-	const CHECK    = 6; // input type = checkbox
-	const SUBMIT   = 7; // input type = submit
+   const TEXT     = 1; // input text
+   const HIDDEN   = 2; // input hidden
+   const BIGTEXT  = 3; // textaea
+   //const SELECTOR = 4; // select size>1 multiple? // No senecesario, se hace con select y parametros size y multiple.
+   const SELECT = 4; // select
+   const RADIO    = 5; // input type = radio
+   const CHECK    = 6; // input type = checkbox
+   const SUBMIT   = 7; // input type = submit
    const DATE     = 8; // 3 selects dia mes anio.
    const PASSWORD = 9;
    const FILE     = 10; // Recordar que si hay archivos para subir el form debe tener el atributo: enctype="multiplart/form-data"
 
-	private function __construct($type, $label = NULL)
-	{
-		$this->label = $label;
-		$this->type = $type;
-	}
+   private function __construct($type, $label = NULL)
+   {
+      $this->label = $label;
+      $this->type = $type;
+   }
 
    // FIXME: los params que agregue extra, que se pongan exactamente iguales a como estan en params en la tag como name=val name=val.
    public function set( $params )
    {
       $this->args = $params;
    }
-	public function add($name, $value)
-	{
-		$this->args[$name] = $value;
-	}
+   
+   public function add($name, $value)
+   {
+      $this->args[$name] = $value;
+   }
+   
 	public function get($name)
 	{
 		if (isset($this->args[$name]))
@@ -296,23 +300,23 @@ class YuppFormField2
       return $f;
    }
 
-	public static function submit($params)
-	{
+   public static function submit($params)
+   {
       $label = $params['label'];
       unset($params['label']); // para que label no aparezca en la lista de params.
-		$f = new YuppFormField2(self::SUBMIT, $label);
+      $f = new YuppFormField2(self::SUBMIT, $label);
       $f->set( $params );
-		return $f;
-	}
+      return $f;
+   }
 
-	public static function text($params)
-	{
+   public static function text($params)
+   {
       $label = $params['label'];
       unset($params['label']); // para que label no aparezca en la lista de params.
-		$f = new YuppFormField2(self::TEXT, $label);
+      $f = new YuppFormField2(self::TEXT, $label);
       $f->set( $params );
-		return $f;
-	}
+      return $f;
+   }
    
    public static function radio($params)
    {
@@ -367,18 +371,15 @@ class YuppFormField2
  */
 class YuppFormDisplay2
 {
-	/**
-	 * 
-	 */
-	private static function displayField(YuppFormField2 $field)//, $fieldNumber)
-	{
+   private static function displayField(YuppFormField2 $field)//, $fieldNumber)
+   {
       $fieldNumber = $field->fieldNumber;
-		// TODO: debe considerar el atributo "group" (es el atributo "name" del radio) ???
+      // TODO: debe considerar el atributo "group" (es el atributo "name" del radio) ???
 
-		$fieldHTML = '<div class="field_container">';
+      $fieldHTML = '<div class="field_container">';
 
-		switch ($field->getType())
-		{
+      switch ($field->getType())
+      {
          case YuppFormField2 :: DATE :
          
             $name = $field->get("name");
@@ -419,7 +420,7 @@ class YuppFormDisplay2
             $fieldHTML .= '</div>';
          
          break;
-			case YuppFormField2 :: TEXT :
+         case YuppFormField2 :: TEXT :
 
             $name = $field->get("name");
             
@@ -439,8 +440,8 @@ class YuppFormDisplay2
             $fieldHTML .= '<div class="label text"><label for="'.$name.'">' . $field->getLabel() . '</label></div>';
             $fieldHTML .= '<div class="field text"><input type="text" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $readOnly . $field->getTagParams() .' /></div>';
 
-			break;
-			case YuppFormField2 :: HIDDEN :
+         break;
+         case YuppFormField2 :: HIDDEN :
          
             $name = $field->get("name");
             if ($name === NULL)
@@ -452,7 +453,7 @@ class YuppFormDisplay2
             
             $fieldHTML .= '<input type="hidden" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' />';
          
-			break;
+         break;
          case YuppFormField2 :: PASSWORD :
          
             $name = $field->get("name");
@@ -465,7 +466,7 @@ class YuppFormDisplay2
             $fieldHTML .= '<div class="field password"><input type="password" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' /></div>';
          
          break;
-			case YuppFormField2 :: BIGTEXT :
+         case YuppFormField2 :: BIGTEXT :
          
             $name = $field->get("name");
             if ($name === NULL)
@@ -485,8 +486,8 @@ class YuppFormDisplay2
                $fieldHTML .= '<div class="field bigtext"><textarea name="'. $name .'"'. $field->getTagParams() .'>'. (($value)?$value:'') .'</textarea></div>';
             }
             
-			break;
-			case YuppFormField2 :: SELECT :
+         break;
+         case YuppFormField2 :: SELECT :
          
             // OJO, al hacer get de los params, estos se borran!.
             $name = $field->get("name");
@@ -508,8 +509,8 @@ class YuppFormDisplay2
             }
             $fieldHTML .= '</select></div>';
          
-			break;
-			case YuppFormField2 :: RADIO :
+         break;
+         case YuppFormField2 :: RADIO :
          
             // OJO, al hacer get de los params, estos se borran!.
             $name = $field->get("name");
@@ -524,8 +525,8 @@ class YuppFormDisplay2
             $fieldHTML .= '<div class="label radio"><label for="radio_'. $fieldNumber .'">' . $field->getLabel() . '</label></div>';
             $fieldHTML .= '<div class="field radio"><input type="radio" id="radio_'. $fieldNumber .'" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $field->getTagParams() .' /></div>';
          
-			break;
-			case YuppFormField2 :: CHECK :
+         break;
+         case YuppFormField2 :: CHECK :
          
             // OJO, al hacer get de los params, estos se borran!.
             $name = $field->get("name");
@@ -544,8 +545,8 @@ class YuppFormDisplay2
             $fieldHTML .= '<div class="label check"><label for="checkbox_'. $fieldNumber .'">' . $field->getLabel() . '</label></div>';
             $fieldHTML .= '<div class="field check"><input type="checkbox" id="checkbox_'. $fieldNumber .'" name="'. $name .'" value="'. $value .'" '. (($field->get("on"))?'checked="true"':'') . $field->getTagParams() .' /></div>';
          
-			break;
-			case YuppFormField2 :: SUBMIT :
+         break;
+         case YuppFormField2 :: SUBMIT :
 
             $action = $field->get("action"); // El get borra el param...
             $name   = $field->get("name");
@@ -562,7 +563,7 @@ class YuppFormDisplay2
             // "value="'. $field->getLabel()
 				$fieldHTML .= '<input type="submit" name="'. $name .'" value="'. $field->getLabel() .'" '. $field->getTagParams() .' /></div>';
 
-			break;
+         break;
          case YuppFormField2 :: FILE :
 
             $name = $field->get("name");
@@ -573,47 +574,95 @@ class YuppFormDisplay2
             $fieldHTML .= '<div class="field file"><input type="file" name="'. $name .'" '. $field->getTagParams() .' /></div>';
 
          break;
-			default :
-			break;
-		}
+         default :
+         break;
+      }
 
-		$fieldHTML .= '</div>';
+      $fieldHTML .= '</div>';
 
-		return $fieldHTML;
-	}
+      return $fieldHTML;
+   }
 
-	/**
-	 * 
-	 */
-	private static function displayGroup(YuppFormField2Group $group)//, &$fieldNumber)
-	{
+
+   private static function displayGroup(YuppFormField2Group $group)//, &$fieldNumber)
+   {
       $fieldNumber = $group->fieldNumber;
-		$groupHTML = '<div class="group">';
+      $groupHTML = '<div class="group">';
       $groupHTML .= '<div class="label">' . $group->getName() . '</label></div>';
       
       $fields = $group->get();
       foreach ( $fields as $field )
-		{
+      {
          $field->fieldNumber = $fieldNumber;
-			//$groupHTML .= self::displayField($field, &$fieldNumber);
+         //$groupHTML .= self::displayField($field, &$fieldNumber);
          $groupHTML .= self::displayField($field);
          $fieldNumber++;
-		}
+      }
 
       // No necesario?
       $fieldNumber--; // por que en el metodo de afuera hace otra suma, asi no suma 2 veces.
 
-		return $groupHTML . '</div>';
-	}
+      return $groupHTML . '</div>';
+   }
 
-	/**
-	 * 
-	 */
-	public static function displayForm(YuppForm2 $form)
-	{
+   private static function display_ajax_form_prototype($form)
+   {
+      $html = '';
+      $html .= h("js", array("name"=>"prototype_161") );
+      
+      $html .= '<script type="text/javascript">' .
+               'Event.observe(window, "load", function() {'.
+               '  Event.observe("'.$form->getId().'", "submit", function(event) {'.
+               '    $("'.$form->getId().'").request({'.
+               '      onSuccess: '. $form->getAjaxCallback() .
+               '    });'.
+               '    Event.stop(event); /* stop the form from submitting */'.
+               '  })'.
+               '});'.
+               '</script>';
+      
+      return $html;
+   }
+   
+   private static function display_ajax_form_jquery($form)
+   {
+      $html = '';
+      $html .= h('js', array('name'=>'jquery/jquery-1.3.1.min'));
+      $html .= h('js', array('name'=>'jquery/jquery.form.2_18'));
+   
+      // TODO: llamar a una funcion JS antes de hacer el request AJAX.
+      // Dependencia con jQuery.
+      //$formHTML .= '<script type="text/javascript">$(document).ready(function() { '.
+      //             '$(\'#'. $form->getId() .'\').ajaxForm(function() {'. $form->getAjaxCallback() . '(); });'. 
+      //             '});</script>';
+      
+      // http://jquery.malsup.com/form/#ajaxForm
+      $html .= '<script type="text/javascript">$(document).ready(function() { '.
+               '  var options = {'.
+               '    success: '. $form->getAjaxCallback() .
+               '  };'.
+               '  $(\'#'. $form->getId() .'\').ajaxForm(options);'. 
+               '  });' .
+               '</script>';
+                   
+      return $html;
+   }
+
+   public static function displayForm(YuppForm2 $form)
+   {
       $formHTML = "";
-		if ( $form->isAjax() )
+      if ( $form->isAjax() )
       {
+         $lm = LayoutManager::getInstance();
+         $jslib = $lm->getJSLib();
+         if (is_null($jslib)) $jslib = 'prototype'; // Libreria por defecto.
+         
+         eval('$formHTML .= self::display_ajax_form_'.$jslib.'($form);');
+         
+         //$formHTML .= self::display_ajax_form_jquery($form);
+         //$formHTML .= self::display_ajax_form_prototype($form);
+         
+         /*
           $formHTML .= h('js', array('name'=>'jquery/jquery-1.3.1.min'));
           $formHTML .= h('js', array('name'=>'jquery/jquery.form.2_18'));
        
@@ -631,38 +680,38 @@ class YuppFormDisplay2
                        };' .
                        '$(\'#'. $form->getId() .'\').ajaxForm(options);'. 
                        '});</script>';
-                       
+         */
       }
       
       $fieldCount = 0;
-		$formHTML .= '<form action="'. $form->getUrl() .'" '.
-                          'id="'. $form->getId() .'" '.
-                          'name="'. $form->getId() .'" '.
-                          'method="'. $form->getMethod() .'" '.
-                          (($form->hasFileFields())?'enctype="multipart/form-data"':'') .'>';
+      $formHTML .= '<form action="'. $form->getUrl() .'" '.
+                   'id="'. $form->getId() .'" '.
+                   'name="'. $form->getId() .'" '.
+                   'method="'. $form->getMethod() .'" '.
+                   (($form->hasFileFields())?'enctype="multipart/form-data"':'') .'>';
       
       $fieldsOrGroups = $form->get();
       foreach ($fieldsOrGroups as $fieldOrGroup)
-		{
+      {
          $fieldCount++;
          $fieldOrGroup->fieldNumber = $fieldCount;
          
-			if ($fieldOrGroup instanceof YuppFormField2)
-			{
-				//$formHTML .= self::displayField($fieldOrGroup, &$fieldCount);
+         if ($fieldOrGroup instanceof YuppFormField2)
+         {
+            //$formHTML .= self::displayField($fieldOrGroup, &$fieldCount);
             $formHTML .= self::displayField($fieldOrGroup);
-			}
-			else
-			{
-				//$formHTML .= self::displayGroup($fieldOrGroup, &$fieldCount);
+         }
+         else
+         {
+            //$formHTML .= self::displayGroup($fieldOrGroup, &$fieldCount);
             $formHTML .= self::displayGroup($fieldOrGroup);
-			}
-		}
-      
-		$formHTML .= '</form>';
+         }
+      }
+
+      $formHTML .= '</form>';
       
       echo $formHTML;
-	}
+   }
 
 }
 ?>
