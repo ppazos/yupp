@@ -13,8 +13,8 @@ class DisplayHelper {
           $ctx = YuppContext::getInstance();
        	 $locale = $ctx->getLocale(); // se que siempre hay un locale valido.
        } 
-       
-    	 $m = I18nMessage::getInstance();
+
+       $m = I18nMessage::getInstance();
        return $m->g( $key, $locale, $defaultMessage );
     }
 
@@ -33,7 +33,7 @@ class DisplayHelper {
 
     public static function errors( $po )
     {
-    	 if ($po->hasErrors())
+       if ($po->hasErrors())
        {
           echo "<ul>";
           foreach ( $po->getErrors() as $attr => $errors )
@@ -60,7 +60,7 @@ class DisplayHelper {
      */
     public static function model( $pos, $mode, $clazz = NULL )
     {
-    	 switch ($mode)
+       switch ($mode)
        {
           case "list": return self::display_list( $pos, $clazz ); // FIXME: clazz != NULL
           break;
@@ -126,13 +126,10 @@ class DisplayHelper {
              {
                 $res .= $po->aGet($attr);
              }
-
              $res .= '</td>';
           }
-
           $res .= '</tr>';
        }
-
        $res .= '</table>';
 
        return $res;
@@ -162,7 +159,7 @@ class DisplayHelper {
               $maxStringLength = NULL;
               if ( $type === Datatypes::TEXT )
               {
-              	  $maxLengthConstraint = $po->getConstraintOfClass( $attr, 'MaxLengthConstraint' );
+                 $maxLengthConstraint = $po->getConstraintOfClass( $attr, 'MaxLengthConstraint' );
                  if ($maxLengthConstraint !== NULL) $maxStringLength = $maxLengthConstraint->getValue();
               }
               
@@ -364,10 +361,10 @@ class DisplayHelper {
      */
     public static function calendar( $name, $value )
     {
-       echo '<input type="text" name="day"   id="day" />
-          <input type="text" name="month" id="month" />
-          <input type="text" name="year"  id="year" />
-          <div id="calendarContainer"></div>';
+       echo '<input type="text" name="day" id="day" />
+             <input type="text" name="month" id="month" />
+             <input type="text" name="year" id="year" />
+             <div id="calendarContainer"></div>';
 
        echo h('css', array('name'=>'yui/calendar/calendar'));
        echo h('js', array('name'=>'yui/yahoo/yahoo-min'));
