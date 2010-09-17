@@ -230,10 +230,7 @@ function $func {
        
        eval('$ret = self::ajax_link_'.$jslib.'($paramsMap, $body, $before, $callback);');
        
-       // parse error, expecting `T_STRING' or `T_VARIABLE' or `'$'' in C:\wamp\www\YuppPHPFramework\core\mvc\core.mvc.Helpers.class.php on line 207
-       //return self::{"ajax_link_$jslib"}($paramsMap, $body);
        return $ret;
-       
        
 /*
        //Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
@@ -435,7 +432,7 @@ function $func {
       
        $url = self::url( array('component' => 'core', 'controller' => 'core', 'action' => 'changeLocale') );
        $res = '<form action="'. $url .'" style="width:270px; margin:0px; padding:0px;">';
-    	 $res .= '<select name="locale">';
+       $res .= '<select name="locale">';
        
        foreach ( $config->getAvailableLocales() as $locale )
        {
@@ -446,7 +443,6 @@ function $func {
        $res .= '<input type="hidden" name="back_component"  value="'. $ctx->getComponent() .'" />';
        $res .= '<input type="hidden" name="back_controller" value="'. $ctx->getController() .'" />';
        $res .= '<input type="hidden" name="back_action"     value="'. $ctx->getAction() .'" />';
-       
        $res .= '<input type="submit" value="Cambiar" />';
        $res .= '</form>';
        
