@@ -1,43 +1,57 @@
 <?php
 /*
  * Created on 23/03/2008
+ * Modified on 19/09/2010
  * lapagina.view.php
  */
 
 $m = Model::getInstance();
 
-?>
+global $_base_dir;
 
+?>
 <html>
-   <head>
-      <style>
-      
+  <head>
+    <style>
+      body {
+         font-family: arial, verdana, tahoma;
+         font-size: 12px;
+         background-color: #efefef;
+      }
       table {
-         border: 2px solid #000080;
+         border: 1px solid #000;
          /* spacing: 0px; */
          border-collapse: separate;
          border-spacing: 0px;
       }
-      
-      th {
-         border: 1px solid #000080;
-         padding: 5px;
-         background-color: #000080;
-         color: #fff;
-      }
-      
       td {
-         border: 1px solid #69c;
-         padding: 5px;
+        border-bottom: 1px solid #ddd;
+        padding: 5px;
+        background-color: #f5f5f5;
       }
-      
-      </style>
-   </head>
-   <body>
-      
-      <h1>Create</h1>
-      
-      <div align="center"><?php echo $m->flash('message'); ?></div>
+      #actions {
+        background: #fff url(<?php echo $_base_dir; ?>/images/shadow.jpg) bottom repeat-x;
+        border: 1px solid #ccc;
+        border-style: solid none solid none;
+        padding: 7px 12px;
+      }
+      #actions a {
+        padding-right: 5px;
+        padding-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Create</h1>
+
+    <div align="center"><?php echo $m->flash('message'); ?></div>
+
+    <?php $clazz = $m->get('object')->aGet('class'); ?>
+
+    <div id="actions">
+      <a href="list?class=<?php echo $clazz ?>">List</a>
+    </div>
+    <br/>
       
       <!--
       DE ESTA PAGINA TENDRIA QUE VER EL TEMA DEL BINDINDG CON EL MODELO AL SUBMITEAR.<br/><br/>
