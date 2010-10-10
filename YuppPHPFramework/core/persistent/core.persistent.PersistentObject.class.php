@@ -1740,7 +1740,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
    {
       // Si es un atributo de referencia de aosciacion hasOne (como email_id), me fijo en el id del elemento! me fijo si tengo "email" en hasOne.
       // $refAttrName = DatabaseNormalization::simpleAssoc( $attr );
-//      Logger::getInstance()->error( "Pido attr getAttributeValue(): " . $attr);
+      //Logger::getInstance()->error( "Pido attr getAttributeValue(): " . $attr);
 
 //      echo "<h1>getAttributeValue getAssocRoleName: $attr</h1>";
 //      $attr = self::getAssocRoleName( $attr ); // Podria tener codificador el nombre de la asociacion.

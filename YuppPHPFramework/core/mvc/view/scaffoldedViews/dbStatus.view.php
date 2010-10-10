@@ -58,7 +58,7 @@ global $_base_dir;
       }
       #apps li {
        width: 460px;
-       min-height: 200px;
+       min-height: 140px;
        /*height: auto;*/ /* necesario para que el anchor se expanda al alto 100% */
        /*_height: 100px;*/ /* IE6 */
        /*border: 1px solid #000;*/
@@ -107,10 +107,12 @@ global $_base_dir;
          padding-right: 0px;
          float: left;
       }
-      
-      .classes {
+
+      .info {
+         display: block;
+         margin-top: 40px;
          overflow: auto;
-         height: 190px;
+         height: 100px;
       }
       
       table#top {
@@ -158,7 +160,6 @@ global $_base_dir;
         </td>
       </tr>
     </table>
-    
     <div id="actions">
       <?php echo h('link', array(
                    'component'=>'core',
@@ -166,51 +167,76 @@ global $_base_dir;
                    'action'=>'createApp',
                    'body'=>'Nueva Aplicacion'));?>
     </div>
-    
     <div id="apps">
       <!-- fixme: no deberia mostrarse si el modo es produccion, esto es solo para dev -->
       <h2>Informacion del modelo</h2>
       Muestra que tablas fueron generadas para el modelo y que tablas falta generar, 
       y permite generar las tablas que falten.<br/><br/>
       <?php
-         $allTablesCreated = $m->get('allTablesCreated');
-         if ($allTablesCreated !== NULL)
-         {
-            if (!$allTablesCreated)
-            {
-               echo "Existe modelo para el que no se generaron las tablas &iquest;desea crear las tablas ahora?<br/>";
-               echo "<h3>";
-               echo h("link",
-                      array("action" => "createModelTables",
-                            "body"   => "Crear tablas"));
-               echo "</h3>";
-            }
-            else
-            {
-               echo "Se generaron todas las tablas para el modelo.<br/>";
-            }
-         }
+        $allTablesCreated = $m->get('allTablesCreated');
+        if ($allTablesCreated !== NULL)
+        {
+          if (!$allTablesCreated)
+          {
+            echo "Existe modelo para el que no se generaron las tablas &iquest;desea crear las tablas ahora?<br/>";
+            echo "<h3>";
+            echo h("link",
+                   array("action" => "createModelTables",
+                         "body"   => "Crear tablas"));
+            echo "</h3>";
+          }
+          else
+          {
+            echo "<h3>Se generaron todas las tablas para el modelo.</h3>";
+          }
+        }
       ?>
-       
       <ul>
-      <?php
-        $componentModelClasses = $m->get('componentModelClasses');
-        foreach ($componentModelClasses as $component => $classInfo) :
-      ?>
+        <?php
+          $componentModelClasses = $m->get('appModelClasses');
+          foreach ($componentModelClasses as $appName => $classInfo) :
+        ?>
         <li>
-          <div class="app_details classes">
-           <?php
-              echo "<h3>Clases de $component:</h3>";
-              foreach ( $classInfo as $class => $info )
+          <div class="app_details">
+            <div class="app_icon">
+              <?php
+                // Icono de la aplicacion
+                // Si no existe la imagen del icono de la aplicacion, muestra la imagen por defecto.
+                try {
+                  echo h('img', array('component'=>$appName, 'src'=>'app_64.png', 'w'=>64, 'h'=>64));
+                } catch (Exception $e) {
+                  echo h('img', array('src'=>'app_64.png', 'w'=>64, 'h'=>64));
+                }
+              ?>
+            </div>
+            <?php
+              // Datasource
+              $cfg = YuppConfig::getInstance();
+              $datasource = $cfg->getDatasource($appName);
+           
+              echo '<h3>Clases del modelo de "'. $appName .'":</h3>';
+              echo '<div class="info">';
+              if ( count($classInfo) == 0 )
               {
-                 echo  '<div><b>'. $class .'</b> se guarda en la tabla: <b>'. $info['tableName'] .'</b> (' . $info['created'] .')</div>';
+                echo 'No hay clases definidas';
               }
-           ?>
+              else
+              {
+                foreach ( $classInfo as $class => $info )
+                {
+                  echo '<b>'. $class .'</b> se guarda en la tabla: <b>'. 
+                       $info['tableName'] .'</b> (' . $info['created'] .')<br/>';
+                }
+              }
+              echo '</div>';
+              //echo '<br/><br/>';
+              //print_r($datasource);
+            ?>
           </div>
         </li>
-      <?php
-         endforeach;
-      ?>
+        <?php
+          endforeach;
+        ?>
       </ul>
     </div>
   </body>

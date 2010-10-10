@@ -135,7 +135,11 @@ class PersistentManager {
       $po_loader->setManager( $this ); // Inversion Of Control
       $this->po_loader = $po_loader; // Siempre viene una estrategia, getInstance se encarga de eso.
       
-      $this->dal = DAL::getInstance();
+      //$this->dal = DAL::getInstance();
+      
+      $ctx = YuppContext::getInstance();
+      $appName = $ctx->getComponent();
+      $this->dal = new DAL($appName); // FIXME: de donde saco el nombre de la app actual???
    }
 
    /**
@@ -247,7 +251,7 @@ class PersistentManager {
       $refObj = NULL;
       if ( $owner->getHasManyType($ownerAttr) === PersistentObject::HASMANY_LIST )
       {
-      	$refObj = new ObjectReference( array(
+         $refObj = new ObjectReference( array(
                                           "owner_id" => $owner_id,
                                           "ref_id"   => $ref_id,
                                           "type"     => $relType,
@@ -708,7 +712,7 @@ class PersistentManager {
     */
    private function get_mti_object_byData( $classLoaded, $attrValues )
    {
-   	Logger::getInstance()->pm_log("PersistentManager.get_mti_object_byData: CLASS LOADED: " . $classLoaded);
+      Logger::getInstance()->pm_log("PersistentManager.get_mti_object_byData: CLASS LOADED: " . $classLoaded);
       //Logger::struct( $attrValues, "ATTR VALUES" );
       
       //$dal = DAL::getInstance();
@@ -890,7 +894,7 @@ class PersistentManager {
       
       // $data son $attrValues.
       
-   	$obj = new $class(); // Instancia a devolver, instanciado en la clase correcta.
+      $obj = new $class(); // Instancia a devolver, instanciado en la clase correcta.
 
       // Carga atributos simples
       foreach ($data as $colname => $value)
@@ -1157,7 +1161,7 @@ class PersistentManager {
             }
             else // Si ya esta cargado, la instancia que se asocia es la ya cargada, no la cargada ahora.
             {
-            	$a_many_obj = ArtifactHolder::getInstance()->getModel( $class, $a_many_obj->getId() ); // Me quedo con el objeto cargado antes!
+               $a_many_obj = ArtifactHolder::getInstance()->getModel( $class, $a_many_obj->getId() ); // Me quedo con el objeto cargado antes!
             }
 
             // TODO: SOPORTE PARA LISTAS: TICKET #7
@@ -1299,7 +1303,7 @@ class PersistentManager {
       
       if ( $obj->getHasManyType($hmattr) === PersistentObject::HASMANY_LIST )
       {
-      	$q->addOrder("ref", "ord", "ASC"); // Orden ascendente por atributo ORD de la tabla intermedia.
+         $q->addOrder("ref", "ord", "ASC"); // Orden ascendente por atributo ORD de la tabla intermedia.
       }
       
       Logger::getInstance()->pm_log("PersistentManager.get_many_assoc_lazy query ". __FILE__ ." ". __LINE__);
@@ -1470,7 +1474,7 @@ class PersistentManager {
 
       if (!array_key_exists('sort',$params))
       {
-      	$params['sort'] = 'id';
+         $params['sort'] = 'id';
          $params['dir'] = 'asc';
       }
       else if  (!array_key_exists('dir',$params))
@@ -1497,7 +1501,7 @@ class PersistentManager {
           $cond_or = Condition::_OR();
           foreach ($scs as $subclass)
           {
-          	  $cond_or->add( Condition::EQ($objTableName, "class", $subclass) );
+               $cond_or->add( Condition::EQ($objTableName, "class", $subclass) );
           }
           $cond->add( $cond_or );
       }
@@ -1580,7 +1584,7 @@ class PersistentManager {
     */
    private function findByAttributeMatrix( PersistentObject $instance, Condition $condition, ArrayObject $params )
    {
-   	//$dal = DAL::getInstance();
+      //$dal = DAL::getInstance();
       $tableName = YuppConventions::tableName( $instance );
 
       // Quiero solo los registros de las subclases y ella misma.
@@ -1820,7 +1824,7 @@ class PersistentManager {
             }
             else if ($attr === 'id')
             {
-            	$this->dal->delete2( $persistentInstance->getClass(), $value, $logical ); 
+               $this->dal->delete2( $persistentInstance->getClass(), $value, $logical ); 
             }
          }
          
@@ -1841,7 +1845,7 @@ class PersistentManager {
             // Quiero el PO de clase $persistentInstance->getClass() que tenga el id de 
             // $persistentInstance en su atributo super_id_get_class($persistentInstance).
             //
-         	$cins = new $cclass();
+            $cins = new $cclass();
             $tableName = YuppConventions::tableName( $cins ); // tableName es de la tabla con la ultima clase de la estructura de herencia!
             
             // Con el id del super_id del PO que me pasan y la tabla de la ultima clase de la estructura de herencia, 
@@ -1863,7 +1867,7 @@ class PersistentManager {
 
 //            foreach( $data_matrix as $attr => $value )
 //            {
-//            	if (YuppConventions::isRefName($attr))
+//               if (YuppConventions::isRefName($attr))
 //               {
 //                  Logger::getInstance()->log( "REF NAME: " . $attr );
 //                  $class = YuppConventions::superclassFromRefName($attr);
@@ -1882,7 +1886,7 @@ class PersistentManager {
          }
          else // si ya soy la ultima instancia
          {
-         	$mtids = $persistentInstance->getMultipleTableIds();
+            $mtids = $persistentInstance->getMultipleTableIds();
             
 //            foreach( $mtids as $class => $id )
 //            {
@@ -1970,15 +1974,19 @@ class PersistentManager {
     * Genera la tabla para una clase y todas las tablas intermedias 
     * para sus relaciones hasMany de la que son suyas.
     * 
+    * Si dalForApp es NULL se usa this->dal, de lo contrario se usa esa DAL.
+    * 
     */
-   private function generate( $ins )
+   private function generate( $ins, $dalForApp = NULL )
    {
       Logger::getInstance()->pm_log("PersistentManager::generate");
       
       //Logger::struct( $ins, "GENERATE INS" );
       
-      //$dal = DAL::getInstance();
-
+      // La DAL que se va a usar
+      $dal = $this->dal;
+      if ($dalForApp !== NULL) $dal = $dalForApp;
+      
       // TODO: Si la tabla existe deberia hacer un respaldo y borrarla y generarla de nuevo.
       //DROP TABLE IF EXISTS `acceso`;
 
@@ -2047,7 +2055,7 @@ class PersistentManager {
       {
          if ( $attr !== 'id' )
          {
-         	$cols[] = array(
+            $cols[] = array(
                         'name' => $attr,
                         'type' => $type,
                         'nullable' => (DatabaseNormalization::isSimpleAssocName( $attr )) ? true : $ins->nullable( $attr ) // FIXME: si es un atributo de una subclase (nivel 2 o mas, deberia ser nullable independientemente de la restriccion nullable).
@@ -2095,7 +2103,7 @@ class PersistentManager {
       */
       // =========================================================
 
-      $this->dal->createTable2($tableName, $pks, $cols, $ins->getConstraints());      
+      $dal->createTable2($tableName, $pks, $cols, $ins->getConstraints());      
 
       // Crea tablas intermedias para las relaciones hasMany.
       // Estas tablas deberan ser creadas por las partes que no tienen el belongsTo, o sea la clase duenia de la relacion.
@@ -2126,17 +2134,17 @@ class PersistentManager {
             {
                if ( $ins->isOwnerOf( $attr ) )
                {
-                  $this->generateHasManyJoinTable($ins, $attr, $assocClassName);
+                  $this->generateHasManyJoinTable($ins, $attr, $assocClassName, $dal);
                }
             }
             else if ( $ins->attributeDeclaredOnThisClass( $attr ) ) // Para generar la tabla de JOIN debo tener al atributo declarado en mi.
             {
-               $this->generateHasManyJoinTable($ins, $attr, $assocClassName);
+               $this->generateHasManyJoinTable($ins, $attr, $assocClassName, $dal);
             }
          } // si el hasMany no es con migo mismo.
          else if ( $ins->attributeDeclaredOnThisClass( $attr ) ) // Para generar la tabla de JOIN debo tener al atributo declarado en mi.
          {
-            $this->generateHasManyJoinTable($ins, $attr, $assocClassName);          
+            $this->generateHasManyJoinTable($ins, $attr, $assocClassName, $dal);          
          }
       }
 
@@ -2144,7 +2152,7 @@ class PersistentManager {
       
    } // generate
    
-   private function generateHasManyJoinTable($ins, $attr, $assocClassName)
+   private function generateHasManyJoinTable($ins, $attr, $assocClassName, $dal)
    {
       //$dal = DAL::getInstance();
       $tableName = YuppConventions::relTableName( $ins, $attr, new $assocClassName() );
@@ -2213,7 +2221,7 @@ class PersistentManager {
       }
       */
   
-      $this->dal->createTable2( $tableName, $pks, $cols, array() );
+      $dal->createTable2( $tableName, $pks, $cols, array() );
 
    } // generateHasManyJoinTable
 
@@ -2227,270 +2235,290 @@ class PersistentManager {
    {
       Logger::getInstance()->pm_log("PersistentManager::generateAll ======");
       
-   	// Todas las clases del primer nivel del modelo.
-      $A = ModelUtils::getSubclassesOf( 'PersistentObject' ); // FIXME> no es recursiva!
-
-      // Se utiliza luego para generar FKs.
-      $generatedPOs = array();
-
-      foreach( $A as $clazz )
+      $yupp = new Yupp();
+      $appNames = $yupp->getAppNames();
+      
+      foreach ($appNames as $appName)
       {
-         //Logger::getInstance()->pm_log("foreach $clazz " . __FILE__ . " " . __LINE__);
-         
-         $struct = MultipleTableInheritanceSupport::getMultipleTableInheritanceStructureToGenerateModel( $clazz );
-
-         //Logger::struct( $struct, "MTI Struct" . __FILE__ . " " . __LINE__);
-
-         // struct es un mapeo por clave las clases que generan una tabla y valor las clases que se mapean a esa tabla.
-         // TODO: para cada tabla que sea generada, que no sea la tabla de la superclase (la que hereda de PO) tiene que inyectarse un 
-         //       atributo "super_id", que va a ser FK a la tabla de la superclase (distinta a la que se almacena la subclase).
-         //       Entonces, los atributos que se debem megear son los de las claves y las clases valor en este mapeo.
-         
-         foreach ($struct as $class => $subclassesOnSameTable)
-         {
-            // Instancia que genera tabla
-         	$c_ins = new $class(); // FIXME: supongo que ya tiene withTable, luego veo el caso que no se le ponga WT a la superclase...
-            // FIXME: como tambien tiene los atributos de las superclases y como van en otra tabla, hay que sacarlos.
-            
-            // Para cara subclase que se mapea en la misma tabla
-            foreach ( $subclassesOnSameTable as $subclass )
-            { 
-               //Logger::getInstance()->pm_log( "Subclass on same table $class -> $subclass" . __FILE__ . " " . __LINE__);
-               
-               $sc_ins = new $subclass(); // Para setear los atributos.
-               
-               $props = $sc_ins->getAttributeTypes();
-               $hone  = $sc_ins->getHasOne();
-               $hmany = $sc_ins->getHasMany();
-               
-               // FIXME: si el artibuto no es de una subclase parece que tambien pone nullable true...
-               
-               // Agrega constraint nullable true, para que los atributos de las subclases
-               // puedan ser nulos en la tabla, para que funcione bien el mapeo de herencia de una tabla.
-               //Logger::getInstance()->pm_log( "Para cada attr de: $subclass " . __FILE__ . " " . __LINE__);
-               foreach ($props as $attr => $type)
-               {
-                  // FIXME: esta parte seria mas facil si simplemente cuando la clase tiene la constraint 
-                  // y le seteo otra del mismo tipo para el mismo atributo, sobreescriba la anterior.
-
-                  $constraint = $sc_ins->getConstraintOfClass( $attr, 'Nullable' );
-                  if ($constraint !== NULL)
-                  {
-                     //Logger::getInstance()->log( "CONTRAINT NULLABLE EXISTE!");
-                     // Si hay, setea en true
-                  	$constraint->setValue(true);
-                  }
-                  else
-                  {
-                     // Si no hay, agrega nueva
-                     //Logger::getInstance()->log( "CONTRAINT NULLABLE NO EXISTE!, LA AGREGA");
-                  	$sc_ins->addConstraints($attr, array(Constraint::nullable(true)));
-                  }
-               }
-               
-               //Logger::getInstance()->pm_log( "Termina con las constraints ======= " . __FILE__ . " " . __LINE__);
-               
-               // Se toma luego de modificar las restricciones
-               $constraints = $sc_ins->getConstraints();
-               
-               foreach( $props       as $name => $type ) $c_ins->addAttribute($name, $type);
-               foreach( $hone        as $name => $type ) $c_ins->addHasOne($name, $type);
-               foreach( $hmany       as $name => $type ) $c_ins->addHasMany($name, $type);
-               
-               // Agrego las constraints al final porque puedo referenciar atributos que todavia no fueron agregados.
-               foreach( $constraints as $attr => $constraintList ) $c_ins->addConstraints($attr, $constraintList);
-            }
-            
-            $parent_class = get_parent_class($c_ins);
-            if ( $parent_class !== 'PersistentObject' ) // Si la instancia no es de primer nivel
-            {
-               // La superclase de c_ins se mapea en otra tabla, saco esos atributos...
-               $suc_ins = new $parent_class();
-               $c_ins = PersistentObject::less($c_ins, $suc_ins); // Saco los atributos de la superclase
-            }
-
-            // FKs
-            // Inyecto FKs de las subclases a las superclases (solo a la principal, no a las subclases de ella que se mapean en la misma tabla y son superclases mias)
-            // Ejemplo, si -> es "hereda de" y (wt) es que tiene definido "withTable": F->E(wt)->D->C(wt)->B->A,
-            // Para generar la tabla de E-F, tengo que ponerle los ids de C y A (superclases principales que se guardan en otras tablas).
-            // PAra generar la tabla de D-C, tengo que ponerle el id de A.
-            
-            //Logger::struct( $struct, "Estructura para generar las tablas" );
-            
-            // Recorro la estructura para arriba, hasta el PO
-
-            while ( $parent_class !== 'PersistentObject' )
-            {
-            	if ( array_key_exists($parent_class, $struct) ) // Si es una clase principal
-               {
-                  // FIXME: el nombre del atributo deberia se parte de las convenciones o de DB NORMALIZATION!
-               	$c_ins->addAttribute( YuppConventions::superclassRefName($parent_class), // super_id_nomclase
-                                        Datatypes::INT_NUMBER );
-                                        
-                  //Logger::getInstance()->log( "Inyecta super_id a: " . $parent_class );
-               }
-               
-               $parent_class = get_parent_class($parent_class); // Le puedo pasar instancias o nombres de clases!
-            }
-            // /Inyecto FKs
-            
-            
-            $tableName = YuppConventions::tableName( $c_ins );
-//            echo __FILE__ . ' ' . __LINE__ . " $tableName<br/>";
-            
-            // Si la tabla ya existe, no la crea.
-            if ( !DAL::getInstance()->tableExists( $tableName ) )
-            {
-               // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
-               $this->generate( $c_ins );
-            
-               // Para luego generar FKs.
-               $generatedPOs[] = $c_ins;
-            }
-         } // foreach ($struct as $class => $subclassesOnSameTable)
-      } // foreach( $A as $clazz )
-      
-      
-      // ======================================================================
-      // Crear FKs en la base.
-      
-      //Logger::struct( $generatedPOs, "GENERATED OBJS" );
-      
-      foreach ($generatedPOs as $ins)
-      {
-         $tableName = YuppConventions::tableName( $ins );
-         
-         $fks = array();
-         
-         // FKS super_id_XXX
-         $mti_attrs = $ins->getMTIAttributes();
-         
-         //Logger::struct( $mti_attrs, "MTI ATTRS" );
-         //Logger::struct( $ins, "OBJ" );
-         
-         foreach ( $mti_attrs as $attr )
-         {
-            // $attr = super_id_unaClase
-            $refClass     = YuppConventions::superclassFromRefName( $attr );
-            $refTableName = YuppConventions::tableName( $refClass );
-            
-            $fks[] = array(
-                      'name'    => $attr,
-                      'table'   => $refTableName,
-                      'refName' => 'id' // Se que esta referencia es al atributo "id".
-                     );
-         }
-         
-         
-         // FKs hasOne
-         $ho_attrs = $ins->getHasOne();
-         foreach ( $ho_attrs as $attr => $refClass )
-         {
-            // Problema: pasa lo mismo que pasaba en YuppConventions.relTableName,
-            // esta tratando de inyectar la FK en la tabla incorrecta porque la instancia
-            // es de una superclase de la clase donde se declara la relacion HasOne,
-            // entonces hay que verificar si una subclase no tiene ya el atributo hasOne
-            // declarado, para asegurarse que es de la instancia actual y no intentar generar
-            // la FK si no lo es.
-            
-            $instConElAtributoHasOne = NULL;
-            $subclasses = ModelUtils::getAllAncestorsOf( $ins->getClass() );
-            
-            foreach ( $subclasses as $aclass )
-            {
-               $ains = new $aclass();
-               if ( $ains->hasOneOfThis( $refClass ) )
-               {
-                  //Logger::getInstance()->log( $ains->getClass() . " TIENE UNO DE: $refClass" );
-                  $instConElAtributoHasOne = $ains; // EL ATRIBUTO ES DE OTRA INSTANCIA!
-                  break;
-               }
-            }
-            
-            // Si el atributo de FK hasOne es de la instancia actual, se genera:
-            if ( $instConElAtributoHasOne === NULL )
-            {
-               // Para ChasOne esta generando "chasOne", y el nombre de la tabla que aparece en la tabla es "chasone".
-               $refTableName = YuppConventions::tableName( $refClass );
-               
-               $fks[] = array(
-                         'name'    => DatabaseNormalization::simpleAssoc($attr), // nom_id, $attr = nom
-                         'table'   => $refTableName,
-                         'refName' => 'id' // Se que esta referencia es al atributo "id".
-                        );
-            }
-         }
-         
-         
-         // FKs tablas intermedias HasMany
-         $hasMany = $ins->getHasMany();
-         
-         //Logger::struct( $hasMany, "HAS MANY!" );
-         
-//         Logger::getInstance()->pm_log("OwnerClass: " . $ins->getClass() . " " . __FILE__ . " " . __LINE__);
-//         Logger::getInstance()->pm_log("OwnerTable: " . YuppConventions::tableName( $ins->getClass() ) . " " . __FILE__ . " " . __LINE__);
-
-         foreach ( $hasMany as $attr => $assocClassName )
-         {
-            //Logger::getInstance()->pm_log("AssocClassName: $assocClassName, attr: $attr");
-            
-            if ( $ins->isOwnerOf( $attr ) ) // VERIFY, FIXME, TODO: Toma la asuncion de que el belongsTo es por clase. Podria generar un problema si tengo dos atributos de la misma clase pero pertenezco a uno y no al otro porque el modelo es asi.
-            {
-               $hm_fks = array();
-               $hasManyTableName = YuppConventions::relTableName( $ins, $attr, new $assocClassName() );
-   
-               // "owner_id", "ref_id" son FKs.
-   
-               // ===============================================================================
-               // El nombre de la tabla owner para la FK debe ser el de la clase 
-               // donde se declara el attr hasMany,
-               // no para el ultimo de la estructura de MTI (como pasaba antes).
-               $classes = ModelUtils::getAllAncestorsOf( $ins->getClass() );
-      
-               //Logger::struct( $classes, "Superclases de " . $ins1->getClass() );
-               
-               $instConElAtributoHasMany = $ins; // En ppio pienso que la instancia es la que tiene el atributo masMany.
-               foreach ( $classes as $aclass )
-               {
-                  $_ins = new $aclass();
-                  if ( $_ins->hasManyOfThis( $assocClassName ) )
-                  {
-                     //Logger::getInstance()->log("TIENE MANY DE " . $ins2->getClass());
-                     $instConElAtributoHasMany = $_ins;
-                     break;
-                  }
-                  
-                  //Logger::struct( $ins, "Instancia de $aclass" );
-               }
-               // ===============================================================================
-               
-               $hm_fks[] = array(
-                         'name'    => "owner_id",
-                         'table'   => YuppConventions::tableName( $instConElAtributoHasMany->getClass() ), // FIXME: Genera link a gs (tabla de G1) aunque el atributo sea declarado en cs (tabla de C1). Esto puede generar problemas al cargar (NO PASA NADA AL CARGAR, ANDA FENOMENO!), aunque la instancia es la misma, deberia hacer la referencia a la tabla correspondiente a la instancia que declara el atributo, solo por consistencia y correctitud.
-                         'refName' => 'id' // Se que esta referencia es al atributo "id".
-                        );
-   
-               $hm_fks[] = array(
-                         'name'    => "ref_id",
-                         'table'   => YuppConventions::tableName( $assocClassName ),
-                         'refName' => 'id' // Se que esta referencia es al atributo "id".
-                        );
-                        
-               // Genera FKs
-               DAL::getInstance()->addForeignKeys($hasManyTableName, $hm_fks);
-            }
-         } // foreach hasMany
-         
-         // Genera FKs
-         DAL::getInstance()->addForeignKeys($tableName, $fks);
-      }
+          $dalForApp = new DAL($appName); // No puedo usar this->dal porque esta configurada para 'core'
+        
+          // Todas las clases del primer nivel del modelo.
+          $A = ModelUtils::getSubclassesOf( 'PersistentObject', $appName ); // FIXME> no es recursiva!
+    
+//    echo $appName.'<br/>';
+//    print_r($A);
+//    echo '<br/>';
+    
+          // Se utiliza luego para generar FKs.
+          $generatedPOs = array();
+    
+          foreach( $A as $clazz )
+          {
+             //Logger::getInstance()->pm_log("foreach $clazz " . __FILE__ . " " . __LINE__);
+             
+             $struct = MultipleTableInheritanceSupport::getMultipleTableInheritanceStructureToGenerateModel( $clazz );
+    
+             //Logger::struct( $struct, "MTI Struct" . __FILE__ . " " . __LINE__);
+    
+             // struct es un mapeo por clave las clases que generan una tabla y valor las clases que se mapean a esa tabla.
+             // TODO: para cada tabla que sea generada, que no sea la tabla de la superclase (la que hereda de PO) tiene que inyectarse un 
+             //       atributo "super_id", que va a ser FK a la tabla de la superclase (distinta a la que se almacena la subclase).
+             //       Entonces, los atributos que se debem megear son los de las claves y las clases valor en este mapeo.
+             
+             foreach ($struct as $class => $subclassesOnSameTable)
+             {
+                // Instancia que genera tabla
+                $c_ins = new $class(); // FIXME: supongo que ya tiene withTable, luego veo el caso que no se le ponga WT a la superclase...
+                // FIXME: como tambien tiene los atributos de las superclases y como van en otra tabla, hay que sacarlos.
+                
+                // Para cara subclase que se mapea en la misma tabla
+                foreach ( $subclassesOnSameTable as $subclass )
+                { 
+                   //Logger::getInstance()->pm_log( "Subclass on same table $class -> $subclass" . __FILE__ . " " . __LINE__);
+                   
+                   $sc_ins = new $subclass(); // Para setear los atributos.
+                   
+                   $props = $sc_ins->getAttributeTypes();
+                   $hone  = $sc_ins->getHasOne();
+                   $hmany = $sc_ins->getHasMany();
+                   
+                   // FIXME: si el artibuto no es de una subclase parece que tambien pone nullable true...
+                   
+                   // Agrega constraint nullable true, para que los atributos de las subclases
+                   // puedan ser nulos en la tabla, para que funcione bien el mapeo de herencia de una tabla.
+                   //Logger::getInstance()->pm_log( "Para cada attr de: $subclass " . __FILE__ . " " . __LINE__);
+                   foreach ($props as $attr => $type)
+                   {
+                      // FIXME: esta parte seria mas facil si simplemente cuando la clase tiene la constraint 
+                      // y le seteo otra del mismo tipo para el mismo atributo, sobreescriba la anterior.
+    
+                      $constraint = $sc_ins->getConstraintOfClass( $attr, 'Nullable' );
+                      if ($constraint !== NULL)
+                      {
+                         //Logger::getInstance()->log( "CONTRAINT NULLABLE EXISTE!");
+                         // Si hay, setea en true
+                         $constraint->setValue(true);
+                      }
+                      else
+                      {
+                         // Si no hay, agrega nueva
+                         //Logger::getInstance()->log( "CONTRAINT NULLABLE NO EXISTE!, LA AGREGA");
+                         $sc_ins->addConstraints($attr, array(Constraint::nullable(true)));
+                      }
+                   }
+                   
+                   //Logger::getInstance()->pm_log( "Termina con las constraints ======= " . __FILE__ . " " . __LINE__);
+                   
+                   // Se toma luego de modificar las restricciones
+                   $constraints = $sc_ins->getConstraints();
+                   
+                   foreach( $props       as $name => $type ) $c_ins->addAttribute($name, $type);
+                   foreach( $hone        as $name => $type ) $c_ins->addHasOne($name, $type);
+                   foreach( $hmany       as $name => $type ) $c_ins->addHasMany($name, $type);
+                   
+                   // Agrego las constraints al final porque puedo referenciar atributos que todavia no fueron agregados.
+                   foreach( $constraints as $attr => $constraintList ) $c_ins->addConstraints($attr, $constraintList);
+                }
+                
+                $parent_class = get_parent_class($c_ins);
+                if ( $parent_class !== 'PersistentObject' ) // Si la instancia no es de primer nivel
+                {
+                   // La superclase de c_ins se mapea en otra tabla, saco esos atributos...
+                   $suc_ins = new $parent_class();
+                   $c_ins = PersistentObject::less($c_ins, $suc_ins); // Saco los atributos de la superclase
+                }
+    
+                // FKs
+                // Inyecto FKs de las subclases a las superclases (solo a la principal, no a las subclases de ella que se mapean en la misma tabla y son superclases mias)
+                // Ejemplo, si -> es "hereda de" y (wt) es que tiene definido "withTable": F->E(wt)->D->C(wt)->B->A,
+                // Para generar la tabla de E-F, tengo que ponerle los ids de C y A (superclases principales que se guardan en otras tablas).
+                // PAra generar la tabla de D-C, tengo que ponerle el id de A.
+                
+                //Logger::struct( $struct, "Estructura para generar las tablas" );
+                
+                // Recorro la estructura para arriba, hasta el PO
+    
+                while ( $parent_class !== 'PersistentObject' )
+                {
+                   if ( array_key_exists($parent_class, $struct) ) // Si es una clase principal
+                   {
+                      // FIXME: el nombre del atributo deberia se parte de las convenciones o de DB NORMALIZATION!
+                      $c_ins->addAttribute( YuppConventions::superclassRefName($parent_class), // super_id_nomclase
+                                            Datatypes::INT_NUMBER );
+                                            
+                      //Logger::getInstance()->log( "Inyecta super_id a: " . $parent_class );
+                   }
+                   
+                   $parent_class = get_parent_class($parent_class); // Le puedo pasar instancias o nombres de clases!
+                }
+                // /Inyecto FKs
+                
+                
+                $tableName = YuppConventions::tableName( $c_ins );
+    //            echo __FILE__ . ' ' . __LINE__ . " $tableName<br/>";
+                
+                // FIXME:
+                // FIXME: esta operacion necesita instanciar una DAL por cada aplicacion.
+                // La implementacion esta orientada a la clase, no a la aplicacion, hay que modificarla.
+                
+                // Si la tabla ya existe, no la crea.
+                //if ( !DAL::getInstance()->tableExists( $tableName ) )
+                if ( !$dalForApp->tableExists( $tableName ) )
+                {
+                   // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
+                   $this->generate( $c_ins, $dalForApp );
+                
+                   // Para luego generar FKs.
+                   $generatedPOs[] = $c_ins;
+                }
+             } // foreach ($struct as $class => $subclassesOnSameTable)
+          } // foreach( $A as $clazz )
+          
+          
+          // ======================================================================
+          // Crear FKs en la base.
+          
+          //Logger::struct( $generatedPOs, "GENERATED OBJS" );
+          
+          foreach ($generatedPOs as $ins)
+          {
+             $tableName = YuppConventions::tableName( $ins );
+             
+             $fks = array();
+             
+             // FKS super_id_XXX
+             $mti_attrs = $ins->getMTIAttributes();
+             
+             //Logger::struct( $mti_attrs, "MTI ATTRS" );
+             //Logger::struct( $ins, "OBJ" );
+             
+             foreach ( $mti_attrs as $attr )
+             {
+                // $attr = super_id_unaClase
+                $refClass     = YuppConventions::superclassFromRefName( $attr );
+                $refTableName = YuppConventions::tableName( $refClass );
+                
+                $fks[] = array(
+                          'name'    => $attr,
+                          'table'   => $refTableName,
+                          'refName' => 'id' // Se que esta referencia es al atributo "id".
+                         );
+             }
+             
+             
+             // FKs hasOne
+             $ho_attrs = $ins->getHasOne();
+             foreach ( $ho_attrs as $attr => $refClass )
+             {
+                // Problema: pasa lo mismo que pasaba en YuppConventions.relTableName,
+                // esta tratando de inyectar la FK en la tabla incorrecta porque la instancia
+                // es de una superclase de la clase donde se declara la relacion HasOne,
+                // entonces hay que verificar si una subclase no tiene ya el atributo hasOne
+                // declarado, para asegurarse que es de la instancia actual y no intentar generar
+                // la FK si no lo es.
+                
+                $instConElAtributoHasOne = NULL;
+                $subclasses = ModelUtils::getAllAncestorsOf( $ins->getClass() );
+                
+                foreach ( $subclasses as $aclass )
+                {
+                   $ains = new $aclass();
+                   if ( $ains->hasOneOfThis( $refClass ) )
+                   {
+                      //Logger::getInstance()->log( $ains->getClass() . " TIENE UNO DE: $refClass" );
+                      $instConElAtributoHasOne = $ains; // EL ATRIBUTO ES DE OTRA INSTANCIA!
+                      break;
+                   }
+                }
+                
+                // Si el atributo de FK hasOne es de la instancia actual, se genera:
+                if ( $instConElAtributoHasOne === NULL )
+                {
+                   // Para ChasOne esta generando "chasOne", y el nombre de la tabla que aparece en la tabla es "chasone".
+                   $refTableName = YuppConventions::tableName( $refClass );
+                   
+                   $fks[] = array(
+                             'name'    => DatabaseNormalization::simpleAssoc($attr), // nom_id, $attr = nom
+                             'table'   => $refTableName,
+                             'refName' => 'id' // Se que esta referencia es al atributo "id".
+                            );
+                }
+             }
+             
+             
+             // FKs tablas intermedias HasMany
+             $hasMany = $ins->getHasMany();
+             
+             //Logger::struct( $hasMany, "HAS MANY!" );
+             
+    //         Logger::getInstance()->pm_log("OwnerClass: " . $ins->getClass() . " " . __FILE__ . " " . __LINE__);
+    //         Logger::getInstance()->pm_log("OwnerTable: " . YuppConventions::tableName( $ins->getClass() ) . " " . __FILE__ . " " . __LINE__);
+    
+             foreach ( $hasMany as $attr => $assocClassName )
+             {
+                //Logger::getInstance()->pm_log("AssocClassName: $assocClassName, attr: $attr");
+                
+                if ( $ins->isOwnerOf( $attr ) ) // VERIFY, FIXME, TODO: Toma la asuncion de que el belongsTo es por clase. Podria generar un problema si tengo dos atributos de la misma clase pero pertenezco a uno y no al otro porque el modelo es asi.
+                {
+                   $hm_fks = array();
+                   $hasManyTableName = YuppConventions::relTableName( $ins, $attr, new $assocClassName() );
+       
+                   // "owner_id", "ref_id" son FKs.
+       
+                   // ===============================================================================
+                   // El nombre de la tabla owner para la FK debe ser el de la clase 
+                   // donde se declara el attr hasMany,
+                   // no para el ultimo de la estructura de MTI (como pasaba antes).
+                   $classes = ModelUtils::getAllAncestorsOf( $ins->getClass() );
+          
+                   //Logger::struct( $classes, "Superclases de " . $ins1->getClass() );
+                   
+                   $instConElAtributoHasMany = $ins; // En ppio pienso que la instancia es la que tiene el atributo masMany.
+                   foreach ( $classes as $aclass )
+                   {
+                      $_ins = new $aclass();
+                      if ( $_ins->hasManyOfThis( $assocClassName ) )
+                      {
+                         //Logger::getInstance()->log("TIENE MANY DE " . $ins2->getClass());
+                         $instConElAtributoHasMany = $_ins;
+                         break;
+                      }
+                      
+                      //Logger::struct( $ins, "Instancia de $aclass" );
+                   }
+                   // ===============================================================================
+                   
+                   $hm_fks[] = array(
+                             'name'    => "owner_id",
+                             'table'   => YuppConventions::tableName( $instConElAtributoHasMany->getClass() ), // FIXME: Genera link a gs (tabla de G1) aunque el atributo sea declarado en cs (tabla de C1). Esto puede generar problemas al cargar (NO PASA NADA AL CARGAR, ANDA FENOMENO!), aunque la instancia es la misma, deberia hacer la referencia a la tabla correspondiente a la instancia que declara el atributo, solo por consistencia y correctitud.
+                             'refName' => 'id' // Se que esta referencia es al atributo "id".
+                            );
+       
+                   $hm_fks[] = array(
+                             'name'    => "ref_id",
+                             'table'   => YuppConventions::tableName( $assocClassName ),
+                             'refName' => 'id' // Se que esta referencia es al atributo "id".
+                            );
+                            
+                   // Genera FKs
+                   //DAL::getInstance()->addForeignKeys($hasManyTableName, $hm_fks);
+                   $dalForApp->addForeignKeys($hasManyTableName, $hm_fks);
+                }
+             } // foreach hasMany
+             
+             // Genera FKs
+             //DAL::getInstance()->addForeignKeys($tableName, $fks);
+             $dalForApp->addForeignKeys($tableName, $fks);
+             
+          } // foreach PO
+      } // foreach app
    } // generateAll
    
    
    // para getMultipleTableInheritance que filtre la solucion.
 //   function filter_not_null( $array )
 //   {
-//   	return $array !== NULL;
+//      return $array !== NULL;
 //   }
 
    /** ES COMO LO CONTRARIO DE SAVE_ASSOC, pero para solo un registro. save_assoc( PersistentObject &$owner, PersistentObject &$child, $ownerAttr )
@@ -2560,7 +2588,7 @@ class PersistentManager {
    /*
    public static function isMappedOnSameTableSubclass( $class, $subclass )
    {
-   	// TODO: pasando instancias seria mas rapido...
+      // TODO: pasando instancias seria mas rapido...
       
       $c_ins = new $class();
       $sc_ins = new $subclass();
@@ -2579,7 +2607,7 @@ class PersistentManager {
     */
    public static function isMappedOnSameTable( $class1, $class2 )
    {
-   	// TODO
+      // TODO
       // el caso superclase subclase lo handlea isMappedOnSameTableSubclass.
 
       $table1 = YuppConventions::tableName( $class1 );
@@ -2594,7 +2622,7 @@ class PersistentManager {
       // Chekeo ambos casos de subclass primero...
       if ( is_subclass_of($class1, $class2) )
       {
-      	return self::isMappedOnSameTableSubclass( $class1, $class2 );
+         return self::isMappedOnSameTableSubclass( $class1, $class2 );
       }
       else if ( is_subclass_of($class2, $class1) )
       {
@@ -2606,7 +2634,7 @@ class PersistentManager {
          $c2_ins = new $class1();
       
          // SOLUCION COMPLICADA PERO CORRECTA.
-      	// Me tengo que fijar si pertenecen a la misma estructura de herencia (si son primas o hermanas).
+         // Me tengo que fijar si pertenecen a la misma estructura de herencia (si son primas o hermanas).
          // Luego me fijo en alguna superclase comun y desde ahi busco en que tabla se mapean.
          // ...
          

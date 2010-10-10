@@ -27,7 +27,9 @@ class DatabaseMySQL {
    {
       //Logger::getInstance()->log("DatabaseMySQL::connect " . $dbhost ." ". $dbuser ." ". $dbpass ." ". $dbName);
 
-      $this->connection = mysql_connect($dbhost, $dbuser, $dbpass);
+      // Se le pasa new_link=true para que si se le pasan los mismos parametros, igual cree una nueva conexion, si no devuelve la vieja conexion.
+      // Asi, las conexiones de distintas apps son manejadas de forma independiente, aun si usan la misma BD.
+      $this->connection = mysql_connect($dbhost, $dbuser, $dbpass, true);
 
       //echo "SE CONECTA<br/>";
       //print_r( $this->connection );

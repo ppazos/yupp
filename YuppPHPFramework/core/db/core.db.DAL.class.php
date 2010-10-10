@@ -54,26 +54,46 @@ class DAL {
    private $db;
 
    // TODO: POR AHORA LOS DATOS PARA ACCEDER A LA BD SE CONFIGURAR AQUI...
+   private $appName; // Aplicacion para la que se configura la DAL
    private $url;
    private $user;
    private $pass;
    private $database;
 
+   /*
    private static $instance = NULL;
 
-   public static function getInstance()
+   public static function getInstance($appName)
    {
-   	if (!self::$instance) self::$instance = new DAL();
+      if (!self::$instance) self::$instance = new DAL($appName);
       return self::$instance;
    }
+   */
 
-   private function __construct()
+   public function __construct($appName)
    {
       Logger::getInstance()->log("DAL::construct");
       
       // ===============================================
       $cfg = YuppConfig::getInstance();
-      $datasource = $cfg->getDatasource();
+      
+      // TODO: pasarle el nombre de la app actual.
+      // FIXME: esto no funciona si el componente es "core",
+      //        y trabajo con distintos componentes, por ejemplo
+      //        al generar todas las tablas en las dbs.
+      //        Necesito pasarle como parametro al constructor
+      //        de DAL el nombre de la app para la cual quiero
+      //        el datasource, y que sea PM el que obtenga el
+      //        appName correcto, sea del contexto o porque genere
+      //        las tablas para una app particular.
+      //$ctx = YuppContext::getInstance();
+      //$appName = $ctx->getComponent();
+      
+      $this->appName = $appName;
+      
+      Logger::getInstance()->log("appName: $appName");
+      
+      $datasource = $cfg->getDatasource($appName);
       
       // FIXME: Esto es solo para mysql y postgres =====
       $this->url      = $datasource['url'];
@@ -87,7 +107,8 @@ class DAL {
       
       // TODO: deberia tener una fabrica con esto adentro, y la fabrica tal vez deberia cargar
       // las clases automaticamente en lugar de ir agregando cada tipo de conector en el switch.
-      switch( $cfg->getDatabaseType() )
+      //switch( $cfg->getDatabaseType() )
+      switch( $datasource['type'] )
       {
          case YuppConfig::DB_MYSQL:
             YuppLoader::load( "core.db", "DatabaseMySQL" );
@@ -101,6 +122,8 @@ class DAL {
             YuppLoader::load( "core.db", "DatabasePostgreSQL" );
             $this->db = new DatabasePostgreSQL();
          break;
+         default:
+            throw new Exception('datasource type no soportado: '.$datasource['type']);
       }
       
       // TODO: que dmbs desde config, perfecto para factory pattern.
@@ -109,7 +132,7 @@ class DAL {
 
    public function __destruct()
    {
-      Logger::getInstance()->log("DAL::destruct");
+      Logger::getInstance()->log("DAL::destruct ". $this->appName);
       $this->db->disconnect();
    }
 
@@ -202,7 +225,7 @@ class DAL {
          // FIXME: arreglo rapido porque no hay constraints para id, ver el sig. FIXME en PersistentManager en linea 2203
          // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
          $constraintsOrNull = (isset($constraints[$pk['name']])) ? $constraints[$pk['name']] : NULL;
-      	$q_pks .= $pk['name'] . " " . 
+         $q_pks .= $pk['name'] . " " . 
                    $this->db->getDBType($pk['type'], $constraintsOrNull ) . " " .
                    ((array_key_exists('default', $pk)) ? "DEFAULT " . $pk['default'] : '') . // si hay default lo pone 
                    " PRIMARY KEY, "; // TODO!
@@ -391,7 +414,7 @@ class DAL {
 
          if (array_key_exists("sort", $params) && $params['sort'])
          {
-         	$orderBy = " ORDER BY ". $params["sort"] ." ". $params["dir"] ."";
+            $orderBy = " ORDER BY ". $params["sort"] ." ". $params["dir"] ."";
          }
       }
 
@@ -438,7 +461,7 @@ class DAL {
       Logger::add( Logger::LEVEL_DAL, "DAL::delete " . __LINE__ );
       
       if ( $class === NULL ) throw new Exception("DAL.delete: class no puede ser null");
-   	if ( $id    === NULL ) throw new Exception("DAL.delete: id no puede ser null");
+      if ( $id    === NULL ) throw new Exception("DAL.delete: id no puede ser null");
       
       $tableName = YuppConventions::tableName( $class );
       
@@ -452,7 +475,7 @@ class DAL {
     */
    public function deleteFromTable( $tableName, $id, $logical )
    {
-   	if ($logical)
+      if ($logical)
       {
          Logger::add( Logger::LEVEL_DAL, "DAL::delete LOGICAL " . __LINE__ );
          
@@ -598,7 +621,7 @@ class DAL {
          
          $obj->setId( $this->generateNewId($tableName) );
          
-      	// Ahora inserta...
+         // Ahora inserta...
          Logger::getInstance()->dal_log("insert_query call " . __FILE__ . " " . __LINE__ );
          $this->insert_query( $obj, $tableName );
       }
@@ -622,11 +645,11 @@ class DAL {
             // Soporte para MTI
             if ( !PersistentManager::isMappedOnSameTable($obj->getClass(), $partialInstance->getClass()) )
             {
-            	$obj->addMultipleTableId($partialInstance->getClass(), $partialInstance->getId());
+               $obj->addMultipleTableId($partialInstance->getClass(), $partialInstance->getId());
             }
             else
             {
-            	$obj->setId( $partialInstance->getId() ); // Seteo el id del objeto
+               $obj->setId( $partialInstance->getId() ); // Seteo el id del objeto
             }
       
             // ESTO SE DEBERIA HACER EN PM!
@@ -658,7 +681,7 @@ class DAL {
                   
                   if ( $partialInstance->hasAttribute( $superIdAttr ) )
                   {
-                  	$partialInstance->aSet( $superIdAttr, $id );
+                     $partialInstance->aSet( $superIdAttr, $id );
                   }
                }
             }
@@ -854,7 +877,7 @@ class DAL {
     */
    public function tableExists( $tableName ) //: boolean
    {
-      Logger::getInstance()->dal_log("DAL::tableExists $tableName");
+      Logger::getInstance()->dal_log("DAL::tableExists $tableName en ".$this->database.' para '.$this->appName);
       return $this->db->tableExists($tableName);
    }
    
