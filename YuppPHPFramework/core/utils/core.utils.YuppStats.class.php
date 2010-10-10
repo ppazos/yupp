@@ -116,14 +116,14 @@ class YuppStats
                 "./core/support",
                 "./core/utils",
                 "./core/web",
-                "./components/core/controllers",
+                "./apps/core/controllers",
                 //"./model", // es de usuario!
-                //"./components/blog", // es de usuario!
-                //"./components/blog/controllers", // es de usuario!
-                //"./components/blog/views", // es de usuario!
-                //"./components/blog/views/comentario", // es de usuario!
-                //"./components/blog/views/entradaBlog", // es de usuario!
-                //"./components/blog/views/usuario" // es de usuario!
+                //"./apps/blog", // es de usuario!
+                //"./apps/blog/controllers", // es de usuario!
+                //"./apps/blog/views", // es de usuario!
+                //"./apps/blog/views/comentario", // es de usuario!
+                //"./apps/blog/views/entradaBlog", // es de usuario!
+                //"./apps/blog/views/usuario" // es de usuario!
               );
               
       $stats = new YuppStats();

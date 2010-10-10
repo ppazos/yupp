@@ -25,10 +25,10 @@ class ModelUtils {
     public static function getModelClasses( $component )
     {
     	  // el directorio del modelo es fijo, pero lo tengo que sacar de una configuracion, no hardcoded aca.
-        //$components = PackageNames::getComponentNames();
+        //$apps = PackageNames::getComponentNames();
         
         $classNames = array();
-        //foreach ( $components as $component )
+        //foreach ( $apps as $component )
         //{
             $package = "$component/model"; // TODO: si hay subdirectorios, devolverlos tambien.
             
@@ -99,38 +99,60 @@ class ModelUtils {
        return $res;
     }
 
+   // FIXME: auxiliar para getSubclassesOf, deberia estar en basic/array
+   public static function array_flatten($a)
+   {
+      if (count($a) == 0) return $a; // Ojo: sin esto falla para $a=array()
+      foreach($a as $k=>$v) $a[$k] = (array)$v;
+      return call_user_func_array('array_merge', $a);
+   }
+
     /**
      * getSubclassesOf
      * Devuelve una lista de nombres de clases hijas de clazz.
      * Por ejemplo, si clazz es PersistentObject, da todas las clases de primer nivel del modelo definido.
      * 
      * @param string $clazz nombre de una clase de modelo (tambien puede ser PersistentObject).
-     * 
+     * @param string $appName nombre de la aplicacion para la que se quieren las subclases. Si es NULL, se dan las subclases en cualquier app.
      */
-    public function getSubclassesOf( $clazz )
+    public static function getSubclassesOf( $clazz, $appName = NULL )
     {
+        //Logger::struct( $appName, "getSubclassesOf(appName) ".__FILE__." ".__LINE__ );
+        
         // chekear el class loader, viendo de las clases cargadas cuales son hijas directas de $clazz.
 
         // Esto en realidad se deberia hacer con getLoadedModelClasses
         // porque ModelUtils es para resolver temas de las clases del modelo.
-        //$loadedClasses = YuppLoader::getLoadedClasses();
-        $loadedClasses = YuppLoader::getLoadedModelClasses();
+        $classes = YuppLoader::getLoadedModelClasses();
         
+        // Solo quiero las clases de esta aplicacion
+        if ($appName !== NULL)
+        {
+            $classes = array();
+           
+            // FIXME: Mismo codigo que CoreController.dbStatus
+            $app = new App($appName);
+            $modelClassFileNames = $app->getModel();
+           
+            // Logger::struct( $modelClassFileNames, "modelClassFileNames ".__FILE__." ".__LINE__ );
+            $modelClassFileNames = self::array_flatten($modelClassFileNames);
+            
+            $fn = new FileNames();
+            foreach ($modelClassFileNames as $classFileName)
+            {
+                $fileInfo = $fn->getFileNameInfo($classFileName);
+                $className = $fileInfo['name'];
+                $classes[] = $className;
+            }
+        }
+
         //print_r ( YuppLoader::getLoadedClasses() ); // tiene claves class, filename y package
         //echo "<br/>";
         //print_r ( YuppLoader::getLoadedModelClasses() ); // solo tiene class sin clave
         
         $res = array();
 
-        /* Con getLoadedModelClasses se obtiene un array de nombres de clases, no classInfo
-        foreach ( $loadedClasses as $classInfo ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
-        {
-            // class info tiene: package, class y filename.
-        	   if ( get_parent_class( $classInfo['class'] ) == $clazz ) $res[] = $classInfo['class'];
-        }
-        */
-        
-        foreach ( $loadedClasses as $loadedClass ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
+        foreach ( $classes as $loadedClass ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
         {
             if ( get_parent_class( $loadedClass ) == $clazz ) $res[] = $loadedClass;
         }
@@ -195,16 +217,16 @@ class ModelUtils {
     
     public static function getComponentForModelClass( $classname )
     {
-       $components = PackageNames::getComponentNames();
-       foreach ( $components as $component )
+       $apps = PackageNames::getComponentNames();
+       foreach ( $apps as $app )
        {
           // FIXME: si la clase esta definida en un subdir de /model no la encuentra.
          
           // TODO: que el nombre de la clase se obtenga desde las convenciones, la path tambien.
-          $path = "./components/$component/model/$component.model.$classname.class.php";
+          $path = "./apps/$app/model/$component.model.$classname.class.php";
           if ( file_exists( $path ) )
           {
-             return $component;
+             return $app;
           }
        }
        
