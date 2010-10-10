@@ -16,6 +16,7 @@ class YuppContext {
    private $locale = "es"; // actual locale seleccionado, en su forma de string, es_UY_xxxx
    
    // FIXME: el modo deberia ser configurable, no deberia estar aca fijo.
+   // FIXME: el modo se define en YuppConfig, no deberia duplicarse. De ultima si se quiere acceder al modo de ejecucion desde el contexto, que haya una operacion aca, que lo lea desde YuppConfig.
    private $mode   = YuppConfig::MODE_DEV; // Modo de ejecucion 
    
 
