@@ -32,7 +32,7 @@ class LayoutManager {
       
       // Busca la ubicacion en un componente particular
        if ( array_key_exists('component', $params) ) 
-          $path .= '/components/'. $params['component'] .'/javascript/'. $params['name'] .'.js';
+          $path .= '/apps/'. $params['component'] .'/javascript/'. $params['name'] .'.js';
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
           $path .= '/js/' . $params['name'] . '.js';
        
@@ -182,7 +182,7 @@ class LayoutManager {
          
          $ctx = YuppContext::getInstance();
          
-         $path = "components/". $ctx->getComponent() ."/views/" . $layout . ".layout.php";
+         $path = 'apps/'. $ctx->getComponent() .'/views/' . $layout . '.layout.php';
          
          if (!file_exists($path)) throw new Exception("El layout $layout no existe en la ruta: $path " . __FILE__ . " " . __LINE__);
          
