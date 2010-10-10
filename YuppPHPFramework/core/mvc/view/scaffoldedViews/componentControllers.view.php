@@ -10,9 +10,9 @@
     <h1>Componente: <?php echo $component; ?></h1>
     <h2>Controladores:</h2>
     <?php
-      $component_dir = dir("./components/".$component."/controllers");
+      $component_dir = dir("./apps/".$component."/controllers");
       $suffix = "Controller.class.php";
-      $prefix = "components.".$component.".controllers.";
+      $prefix = "apps.".$component.".controllers.";
       echo "<ul>";
       while (false !== ($controller = $component_dir->read()))
       {
