@@ -13,11 +13,11 @@
 // TODO: mover a yupp/config (sacar de core)
 
 class YuppConfig {
-	
+   
    private static $instance = NULL;
    public static function getInstance()
    {
-   	if (self::$instance === NULL) self::$instance = new YuppConfig();
+      if (self::$instance === NULL) self::$instance = new YuppConfig();
       return self::$instance;
    }
    
@@ -47,7 +47,12 @@ class YuppConfig {
    /**
     * Que base de datos se utiliza. Debe estar en la lista $available_database_types.
     */
-   private $database_type = self::DB_MYSQL;
+   //private $database_type = self::DB_MYSQL;
+   
+   
+   // Configuracion de DBs por app
+   private $app_datasources = array();
+   
    
    /**
     * Configuraciones de las bases de dato disponibles.
@@ -55,6 +60,7 @@ class YuppConfig {
     * Tener varias configuraciones permite cambiar facilmente de base solo cambiando $database_type.
     * Las keys deben estar en $available_database_types.
     */
+   /*
    private $dev_datasource = array(
                                self::DB_MYSQL =>
                                   array( 'url' => 'localhost',
@@ -72,6 +78,85 @@ class YuppConfig {
                                          'pass' => 'root',
                                          'database' => 'yupp_dev')
                              );
+   */
+   private $default_datasource = array(
+                                   self::MODE_DEV  => array(
+                                     'type'     => self::DB_MYSQL,
+                                     'url'      => 'localhost',
+                                     'user'     => 'root',
+                                     'pass'     => '',
+                                     'database' => 'yupp_dev'
+                                   ),
+                                   self::MODE_PROD => array(
+                                     'type'     => self::DB_MYSQL,
+                                     'url'      => 'localhost',
+                                     'user'     => 'root',
+                                     'pass'     => '',
+                                     'database' => 'yupp_prod'
+                                   ),
+                                   self::MODE_TEST => array(
+                                     'type'     => self::DB_MYSQL,
+                                     'url'      => 'localhost',
+                                     'user'     => 'root',
+                                     'pass'     => '',
+                                     'database' => 'yupp_test'
+                                   )
+                                 );
+   
+   
+   // TODO: agregar que cada app pueda definir db tambien por modo de ejecucion.
+   
+   
+   /**
+    * Devuelve la informacion de conexion a la base de datos.
+    * @param mode dev, prod, test.
+    */
+   //public function getDatasource( $mode = self::MODE_DEV )
+   public function getDatasource( $appName = NULL )
+   {
+      // Si viene appName y no tengo la configuracion cargada
+      if ($appName !== NULL)
+      {
+         if (!array_key_exists($appName, $this->app_datasources))
+         {
+            //echo 'Inclusion config'.$appName.'<br/>';
+            $appConfigFile = './apps/'.$appName.'/db_config.php';
+             
+            // Trato de cargarla, puede ser que no tenga archivo de configuracion.
+            if (file_exists($appConfigFile))
+            {
+               include_once($appConfigFile);
+          
+               $this->app_datasources[$appName] = $db; // $db se define en el archivo de configuracion.
+               
+               // TODO: al igual que el datasource por defecto, el de cada app deberia depender del modo de ejecucion.
+               return $this->app_datasources[$appName];
+            }
+             
+             // No hay config para la app, devuelve la configuracion por defecto.
+         }
+         else // Si existe la config cargada para esa app
+         {
+            return $this->app_datasources[$appName];
+         }
+      }
+
+      // Si llega aca es porque, la app no tiene archivo de configuracion, o porque no se paso un nombre de app para cargar su config.
+      
+      //Logger::getInstance()->log("YuppConfig: datasource por defecto");
+      
+      // Discucion por mode
+      return $this->default_datasource[$this->currentMode];
+   }
+   
+   /**
+    * Devuelve el DBMS seleccionado.
+    */
+   public function getDatabaseType()
+   {
+      //return $this->database_type;
+      return $this->default_datasource[$this->currentMode]['type'];
+   }
    
    // ==================================================
    // / Configuracion de la base de datos
@@ -123,36 +208,17 @@ class YuppConfig {
       return array( self::MODE_DEV, self::MODE_PROD, self::MODE_TEST );
    }
    
-   
    /**
     * Devuelve los locales disponibles.
     */
    public function getAvailableLocales()
    {
-   	return $this->available_locales;
-   }
-   
-   /**
-    * Devuelve la informacion de conexion a la base de datos.
-    * @param mode dev, prod, test.
-    */
-   public function getDatasource( $mode = self::MODE_DEV )
-   {
-      // TODO: discucion por mode...
-   	return $this->dev_datasource[ $this->database_type ];
-   }
-   
-   /**
-    * Devuelve el DBMS seleccionado.
-    */
-   public function getDatabaseType()
-   {
-   	return $this->database_type;
+      return $this->available_locales;
    }
    
    public function getCurrentMode()
    {
-   	return $this->currentMode;
+      return $this->currentMode;
    }
    
    /**
@@ -160,9 +226,8 @@ class YuppConfig {
     */
    public function getModeDefaultMapping()
    {
-   	return $this->modeDefaultMapping[ $this->currentMode ];
+      return $this->modeDefaultMapping[ $this->currentMode ];
    }
-   
 }
 
 ?>
