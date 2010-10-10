@@ -28,7 +28,7 @@ class FileNames {
     public static function getClassFilename( $package, $clazz )
     {
        // Si no me viene package, igual tiro el nombre bien.
-    	  return (($package !== NULL && $package !=="")? $package . '.' : "") . $clazz . '.class.php';
+         return (($package !== NULL && $package !=="")? $package . '.' : "") . $clazz . '.class.php';
     }
 
     public static function getInterfaceFilename( $package, $interface )
@@ -43,7 +43,7 @@ class FileNames {
 
     public static function getFilenameInfo( $filename )
     {
-    	  $res = array();
+        $res = array();
 
         // paquete.nombre.tipo
         if ( preg_match("/(.*)\.(.*)\.(.*)\.php$/i", $filename, $matches) )

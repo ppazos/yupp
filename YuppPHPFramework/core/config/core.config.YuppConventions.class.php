@@ -18,7 +18,7 @@ class YuppConventions {
     */
    public static function superclassRefName( $superclassName )
    {
-   	//return "super_id_" . $superclassName; //strtolower($superclassName);
+      //return "super_id_" . $superclassName; //strtolower($superclassName);
       // TODO: si lo paso a lower, luego puedo no obtener el nombre exacto.
       return "super_id_" . strtolower($superclassName);
    }
@@ -53,7 +53,7 @@ class YuppConventions {
     */
    public static function isRefName( $ref )
    {
-   	return String::startsWith($ref, "super_id_");
+      return String::startsWith($ref, "super_id_");
    }
    
    /**
@@ -61,9 +61,9 @@ class YuppConventions {
     */
    public static function getModelPath( $package )
    {
-   	//return "./components/$component/model";
-      //return "./components/" . strtr($package, ".", "/"); // Correccion para poder poner subdirectorios en /model.
-      return "components/" . strtr($package, ".", "/"); // Correccion para poder poner subdirectorios en /model.
+      //return "./apps/$component/model";
+      //return "./apps/" . strtr($package, ".", "/"); // Correccion para poder poner subdirectorios en /model.
+      return "apps/" . strtr($package, ".", "/"); // Correccion para poder poner subdirectorios en /model.
    }
    
     
@@ -98,10 +98,10 @@ class YuppConventions {
       }
       else
       {
-      	$superclaseNivel1 = $ins->getClass();
+         $superclaseNivel1 = $ins->getClass();
          while ( ($parent = get_parent_class($superclaseNivel1)) !== 'PersistentObject' )
          {
-         	$superclaseNivel1 = $parent;
+            $superclaseNivel1 = $parent;
          }
          
          $tableName = $superclaseNivel1;
@@ -157,7 +157,7 @@ class YuppConventions {
       $instConElAtributoHasMany = $ins1; // En ppio pienso que la instancia es la que tiene el atributo masMany.
       foreach ( $classes as $aclass )
       {
-      	//$ins = new $aclass();
+         //$ins = new $aclass();
          $ins = new $aclass(NULL, true);
          //if ( $ins->hasManyOfThis( $ins2->getClass() ) ) // la clase no es la que tenga el atributo, debe ser en la que se declara el atributo
          if ( $ins->attributeDeclaredOnThisClass($inst1Attr) )

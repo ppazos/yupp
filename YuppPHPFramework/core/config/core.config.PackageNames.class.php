@@ -29,7 +29,7 @@ class PackageNames {
 
 //    public function getModelPackagePath( $component )
 //    {
-//    	  return "./components/$component/model";
+//    	  return "./apps/$component/model";
 //    }
 
 
@@ -42,10 +42,10 @@ class PackageNames {
    {
       $componentNames = array();
       
-    	$dir = dir('./components');
+    	$dir = dir('./apps');
       while (false !== ($component = $dir->read()))
       {
-         if ( !String::startsWith( $component,"." ) && $component !== "core" && is_dir('./components/'.$component))
+         if ( !String::startsWith( $component,"." ) && $component !== "core" && is_dir('./apps/'.$component))
          {
             $componentNames[] = $component;
          }
