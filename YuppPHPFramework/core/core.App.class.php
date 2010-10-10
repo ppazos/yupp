@@ -16,7 +16,7 @@ class App {
    function __construct( $name )
    {
       $this->name = $name;
-      $this->path = './components/'. $name;
+      $this->path = './apps/'. $name;
    }
    
    public function getName()
@@ -67,7 +67,8 @@ class App {
       else
       {
           // FIXME: log
-          echo 'No existe $package '.__FILE__.' '. __LINE__.'<br/>';
+          // Simplemente la app no tiene paquete /model
+          //echo 'No existe '. $package .' '.__FILE__.' '. __LINE__.'<br/>';
           // devuelve array vacio
       }
       
@@ -108,7 +109,7 @@ class App {
       // El nombre de la clase es el que viene en la url + 'Controller''
       $controllerClassName = strtoupper($controller[0]) . substr($controller, 1) . "Controller";
 
-      YuppLoader::load( 'components.'. $this->name .'.controllers', $controllerClassName );
+      YuppLoader::load( 'apps.'. $this->name .'.controllers', $controllerClassName );
       
       // TODO:
       // c = new controllerClassName(params)
@@ -125,7 +126,7 @@ class App {
     */
    public function hasBootstrap()
    {
-      $path2BS = 'components/'.$this->name.'/bootstrap';
+      $path2BS = 'apps/'.$this->name.'/bootstrap';
       $package = strtr($path2BS, '/', '.');
       $bsFile = './'.$path2BS.'/'.$package.'.Bootstrap.script.php';
       
@@ -176,15 +177,15 @@ class App {
    {
       $normalizedName = String::toUnderscore( $name );
       $appStruct = array(
-         './components/'.$normalizedName,
-         './components/'.$normalizedName.'/controllers',
-         './components/'.$normalizedName.'/model',
-         './components/'.$normalizedName.'/views',
-         './components/'.$normalizedName.'/services',
-         './components/'.$normalizedName.'/i18n',
-         './components/'.$normalizedName.'/bootstrap',
-         './components/'.$normalizedName.'/config',
-         './components/'.$normalizedName.'/utils'
+         './apps/'.$normalizedName,
+         './apps/'.$normalizedName.'/controllers',
+         './apps/'.$normalizedName.'/model',
+         './apps/'.$normalizedName.'/views',
+         './apps/'.$normalizedName.'/services',
+         './apps/'.$normalizedName.'/i18n',
+         './apps/'.$normalizedName.'/bootstrap',
+         './apps/'.$normalizedName.'/config',
+         './apps/'.$normalizedName.'/utils'
          // TODO: filters & mappings
       );
       
@@ -215,14 +216,14 @@ class App {
           $templateController = FileSystem::read('./core/app/templates/TemplateController.class.php');
           $templateController = str_replace('Template', $params['controller'], $templateController);
           
-          echo './components/'.$normalizedName.'/controllers/components.'.$normalizedName.'.controllers.'.String::firstToUpper($params['controller']).'Controller.class.php';
+          echo './apps/'.$normalizedName.'/controllers/apps.'.$normalizedName.'.controllers.'.String::firstToUpper($params['controller']).'Controller.class.php';
           
-          FileSystem::write('./components/'.$normalizedName.'/controllers/components.'.$normalizedName.'.controllers.'.String::firstToUpper($params['controller']).'Controller.class.php',
+          FileSystem::write('./apps/'.$normalizedName.'/controllers/apps.'.$normalizedName.'.controllers.'.String::firstToUpper($params['controller']).'Controller.class.php',
                             $templateController);
        }
        
        
-       FileSystem::write('./components/'.$normalizedName.'/app.xml', $appDescriptor);
+       FileSystem::write('./apps/'.$normalizedName.'/app.xml', $appDescriptor);
    } 
    
    public function hasTests()
