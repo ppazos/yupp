@@ -100,10 +100,10 @@ class RequestManager {
       // *******************************************************************************
 
       // FIXME: no armar esto a mano, pedirselo a alguna clase de convensiones o la nueva clase App.
-      $componentPath       = "components/".$lr['component'];
+      $componentPath       = "apps/".$lr['component'];
       $controllerClassName = String::firstToUpper($lr['controller']) . "Controller";
-      $controllerFileName  = "components.".$lr['component'].".controllers.".$controllerClassName.".class.php";
-      $controllerPath      = "components/".$lr['component']."/controllers/".$controllerFileName;
+      $controllerFileName  = "apps.".$lr['component'].".controllers.".$controllerClassName.".class.php";
+      $controllerPath      = "apps/".$lr['component']."/controllers/".$controllerFileName;
       
       
       //Logger::struct( $lr, "LOGICAR ROUTE 3 " .__FILE__.' '.__LINE__ );
@@ -143,7 +143,7 @@ class RequestManager {
       //Logger::struct( $filter->getParams(), "FILTER->getParams" );
       
       // Verificacion de controller filters (v0.1.6.3)
-      $controllerFiltersPath = "components/".$lr['component']."/ComponentControllerFilters.php"; // Nombre y ubicacion por defecto.
+      $controllerFiltersPath = "apps/".$lr['component']."/ComponentControllerFilters.php"; // Nombre y ubicacion por defecto.
       $controllerFiltersInstance = NULL;
       if ( file_exists($controllerFiltersPath) ) // TODO: no ir al filesystem en cada request, una vez que se pone en prod se debe saber que el archivo existe o no.
       {
@@ -289,8 +289,8 @@ class RequestManager {
       // Configuro el command para la view...
       // OJO DEBERIA PODER MOSTRAR PAGINAS DE CUALQUIER COMPONENTE!!! LOS TIPOS NO VAN A PONER SUS PAGINAS EN /CORE...
       // Si la pagina es fisica
-      //$pagePath = "components/".$lr['component']."/views/".$command->viewName().".view.php"; // ViewName incluye el controller.
-      $pagePath = "components/".$logic_route['component']."/views/".$logic_route['controller']."/".$command->viewName().".view.php";
+      //$pagePath = "apps/".$lr['component']."/views/".$command->viewName().".view.php"; // ViewName incluye el controller.
+      $pagePath = "apps/".$logic_route['component']."/views/".$logic_route['controller']."/".$command->viewName().".view.php";
       
       // Si la ruta referenciada no existe, intento mostrar la vista de scafolding correspondiente
       // a la accion, pero las acciones con vistas dinamicas son solo para acciones: "show","list","edit","create".
