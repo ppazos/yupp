@@ -1,8 +1,4 @@
 <?php
-/*
- * Created on 23/03/2008
- * lapagina.view.php
- */
 
 $m = Model::getInstance();
 
@@ -19,9 +15,9 @@ global $_base_dir;
       }
       table {
         border: 1px solid #000;
-         /* spacing: 0px; */
-         border-collapse: separate;
-         border-spacing: 0px;
+        /* spacing: 0px; */
+        border-collapse: separate;
+        border-spacing: 0px;
       }
       td {
         border-bottom: 1px solid #ddd;

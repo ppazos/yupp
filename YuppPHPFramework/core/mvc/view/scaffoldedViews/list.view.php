@@ -1,9 +1,4 @@
 <?php
-/*
- * Created on 23/03/2008
- * Modified on 19/09/2010
- * lapagina.view.php
- */
 
 $m = Model::getInstance();
 
