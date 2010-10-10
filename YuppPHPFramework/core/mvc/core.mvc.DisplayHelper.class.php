@@ -21,7 +21,7 @@ class DisplayHelper {
 /*
     public static function template( $component, $viewDir, $template, $params )
     {
-    	 // Necesito buscar el template en /components/$component/view/$viewDir/$template.template.php
+    	 // Necesito buscar el template en /apps/$component/view/$viewDir/$template.template.php
        // Con los params que se me pasan, tengo que dejarlos accesibles para el script en ese template.
        
        // El primero lo cargaria con el class loader.

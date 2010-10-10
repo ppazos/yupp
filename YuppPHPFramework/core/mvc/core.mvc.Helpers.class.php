@@ -336,8 +336,8 @@ function $func {
           $params['controller'] = NULL;
           $params = array_filter($params); // Saca nulls // ['params']; // opcional, es un mapa.
 
-          //$url = $_base_dir ."/components/". $component ."/views/". $controller;
-          $url = "./components/". $component ."/views/". $controller;
+          //$url = $_base_dir ."/apps/". $component ."/views/". $controller;
+          $url = "./apps/". $component ."/views/". $controller;
           
        } // template
 
@@ -373,7 +373,7 @@ function $func {
        
        // Busca la ubicacion en un componente particular
        if ( array_key_exists('component', $params) ) 
-          $src = '/components/'. $params['component'] .'/images/'. $params['src'];
+          $src = '/apps/'. $params['component'] .'/images/'. $params['src'];
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
           $src = '/images/'. $params['src'];
        
@@ -403,7 +403,7 @@ function $func {
        /*
        // Busca la ubicacion en un componente particular
        if ( array_key_exists('component', $params) ) 
-          $res = '<script type="text/javascript" src="'. $_base_dir .'/components/'. $params['component'] .'/javascript/'. $params['name'] .'.js"></script>';
+          $res = '<script type="text/javascript" src="'. $_base_dir .'/apps/'. $params['component'] .'/javascript/'. $params['name'] .'.js"></script>';
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
           $res = '<script type="text/javascript" src="' . $_base_dir . '/js/' . $params['name'] . '.js"></script>';
        
@@ -417,7 +417,7 @@ function $func {
        global $_base_dir;
        
        if ( array_key_exists('component', $params) ) 
-          $res = '<link type="text/css" rel="stylesheet" href="'. $_base_dir .'/components/'. $params['component'] .'/css/'. $params['name'] .'.css" />';
+          $res = '<link type="text/css" rel="stylesheet" href="'. $_base_dir .'/apps/'. $params['component'] .'/css/'. $params['name'] .'.css" />';
        else
           $res = '<link type="text/css" rel="stylesheet" href="'. $_base_dir .'/css/'. $params['name'] .'.css" />';
        
