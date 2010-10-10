@@ -51,7 +51,7 @@ class Executer {
 //   echo "Controller Class Name 1: $controllerClassName<br/>";
    
            // Ya se verifico en RequestManager que el controller existe.
-           YuppLoader::load( "components.". $ctx->getComponent() .".controllers", $controllerClassName );
+           YuppLoader::load( "apps.". $ctx->getComponent() .".controllers", $controllerClassName );
 
            // Debe verificar si tiene la accion y si la puede ejecutar, si no va a index.
            // FIXME: para que pasarle el nombre del controller al mismo controller???

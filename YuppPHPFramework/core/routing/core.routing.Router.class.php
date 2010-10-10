@@ -176,7 +176,7 @@ class Router {
       // si no hay mapping para el componente, o si el que hay no matchea,
       // busca el Mapping de Core.
       $mapping = NULL;
-      $mappingPath = "components/".$this->requested_route['component']."/ComponentMapping.php";
+      $mappingPath = "apps/".$this->requested_route['component']."/ComponentMapping.php";
       if ( file_exists($mappingPath) )
       {
          include_once( $mappingPath );
@@ -189,7 +189,7 @@ class Router {
          {
             // Va al mapping por defecto
             // Siempre existe
-            $mappingPath = "components/core/ComponentMapping.php";
+            $mappingPath = "apps/core/ComponentMapping.php";
             include_once( $mappingPath );
             $mapping = new ComponentMapping();
             
@@ -201,7 +201,7 @@ class Router {
       {
          // Va al mapping por defecto
          // Siempre existe
-         $mappingPath = "components/core/ComponentMapping.php";
+         $mappingPath = "apps/core/ComponentMapping.php";
          include_once( $mappingPath );
          $mapping = new ComponentMapping();
          
