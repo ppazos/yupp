@@ -168,7 +168,7 @@ class ModelUtils {
     {
         //echo "<h1>ModelUtils.getAllSubclassesOf $clazz</h1>";
         
-    //Logger::struct( get_declared_classes(), "Declared classes ".__FILE__." ".__LINE__ );
+        //Logger::struct( get_declared_classes(), "Declared classes ".__FILE__." ".__LINE__ );
         
         // Esto en realidad se deberia hacer con getLoadedModelClasses
         // porque ModelUtils es para resolver temas de las clases del modelo.
@@ -192,7 +192,10 @@ class ModelUtils {
         
         foreach ( $loadedClasses as $loadedClass ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
         {
-            if ( is_subclass_of( $loadedClass, $clazz ) ) $res[] = $loadedClass;
+            if ( class_exists($loadedClass))
+            {
+                if ( is_subclass_of( $loadedClass, $clazz ) ) $res[] = $loadedClass;
+            }
         }
 
         return $res;

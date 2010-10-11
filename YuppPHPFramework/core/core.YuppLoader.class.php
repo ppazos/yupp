@@ -102,13 +102,13 @@ class YuppLoader {
    private function _getLoadedModelClasses()
    {
       $res = array();
+      
       foreach( $this->loadedClasses as $fileInfo )
       {
          if ( PackageNames::isModelPackage( $fileInfo['package'] ) )
          {
             $res[] = $fileInfo['class'];
          }
-         //else print_r($fileInfo);
       }
       return $res;
    }
@@ -409,7 +409,7 @@ class YuppLoader {
          }
          else
          {
-             include_once $incPath;
+            include_once $incPath;
          }
       }
    }
