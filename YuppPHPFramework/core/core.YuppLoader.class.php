@@ -385,9 +385,7 @@ class YuppLoader {
    {
       $cl = YuppLoader :: getInstance();
 
-// ERROR: no recarga las clases del modelo que estan en subdirectorios!
-
-//print_r( $cl->loadedClasses );
+      // FIXME: no recarga las clases del modelo que estan en subdirectorios!
 
       foreach ($cl->loadedClasses as $classInfo)
       {
@@ -396,7 +394,6 @@ class YuppLoader {
          
          if (PackageNames::isModelPackage($package))
          {
-            //$path = YuppConventions::getModelPath(PackageNames::getModelPackageComponent( $package ));
             $path = YuppConventions::getModelPath( $package );
          }
          else // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
@@ -406,15 +403,16 @@ class YuppLoader {
          
          $incPath = $path . "/" . $classInfo['filename'];
          
-//         echo "refresh: $incPath<br/>";
-
          if (!is_file($incPath))
-            throw new Exception("YuppLoader::refresh() - ruta de inclusion errada ($incPath)");
-
-         //    echo "INCLUDE: $incPath <br/>";
-         include_once $incPath;
+         {
+            //throw new Exception("YuppLoader::refresh() - ruta de inclusion errada ($incPath)");
+         }
+         else
+         {
+             include_once $incPath;
+         }
       }
    }
-
 }
+
 ?>
