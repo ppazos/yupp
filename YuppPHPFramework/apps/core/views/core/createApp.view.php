@@ -29,7 +29,12 @@ $m = Model::getInstance();
       }
       label {
          display: inline-block;
-         width: 80px;
+         width: 210px;
+         vertical-align: top;
+         text-align: right;
+      }
+      input[type=text], textarea {
+          width: 200px;
       }
     </style>
   </head>
@@ -40,7 +45,7 @@ $m = Model::getInstance();
       
     <form action="<?php echo h('url', array('action'=>'createApp')); ?>" method="post">
         
-        <label>Nombre:</label>
+        <label>Nombre de la aplicaci&oacute;n:</label>
         <input type="text" name="name" value="" />
         <br/>
         
@@ -49,10 +54,10 @@ $m = Model::getInstance();
         <br/>
         
         <label>Lenguages:</label>
-        <input type="text" name="langs" value="" />
+        <input type="text" name="langs" value="" /> (ejemplo: es en it pt)
         <br/><br/>
         
-        <label>Controlador:</label>
+        <label>Nombre del controlador principal:</label>
         <input type="text" name="controller" value="" />
         <br/><br/>
       
