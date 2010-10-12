@@ -25,8 +25,7 @@
 
 =Cambios con respecto a la versión 0.2.1=
 
-  * http://code.google.com/p/yupp/issues/detail?id=34 (Configuración por componente
-)
+  * http://code.google.com/p/yupp/issues/detail?id=34 (Configuración por componente)
   * http://code.google.com/p/yupp/issues/detail?id=44 (Agregar un app descriptor a cada componente)
   * http://code.google.com/p/yupp/issues/detail?id=58 (Problemas con querys por valores nulos en MySQL)
   * Otras correcciones menores.
