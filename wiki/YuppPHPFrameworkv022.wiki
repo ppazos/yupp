@@ -23,17 +23,14 @@
   * Tener el módulo de Apache MOD_REWRITE instalado y activado.
 
 
-=Cambios con respecto a la versión 0.2.0=
+=Cambios con respecto a la versión 0.2.1=
 
-  * Se completa la definicion de componentes para que sean auto-contenidos
-    (modelo, controllers, vistas, filtros, mappings, i18n, etc)
-    * Se hizo la generación de estructuras para nuevas aplicaciones.
-  * Mensajes de errores de validación ahora son internacionalizables.
-  * Se creó la primer versión de Yupp Desktop, desde donde ser permite
-    el acceso a las aplicaciones, la generación de tablas y la creación
-    de nuevas aplicaciones de forma simple.
-  * Nuevo componente de testing para crear y ejecutar casos de prueba de forma automática.
-  * Correcciones al paquete http.
+  * http://code.google.com/p/yupp/issues/detail?id=34 (Configuración por componente
+)
+  * http://code.google.com/p/yupp/issues/detail?id=44 (Agregar un app descriptor a cada componente)
+  * http://code.google.com/p/yupp/issues/detail?id=58 (Problemas con querys por valores nulos en MySQL)
+  * Otras correcciones menores.
+
 
 =¿Que contiene esta liberación?=
 
