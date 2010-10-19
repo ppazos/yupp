@@ -77,3 +77,14 @@ mysql_connect() [function.mysql-connect]: Access denied for user 'root'@'localho
                                          'database' => 'C:\\wamp\\sqlitemanager\\test.sqlite')
                              );
 }}}
+
+
+== Pregunta 5 ==
+
+  * *Al instalar la aplicación Hello World me da un error:*
+
+{{{
+Fatal error: Class 'Persona' not found in C:\wamp\www\Yupp_PHP_Framework_v0.2.2\core\mvc\core.mvc\YuppController.class.php: eval()'d code on line 1.
+}}}
+
+  * Prueba borrar la sesión y el caché de tu navegador (también puedes probar cerrando y abriendo el navegador o usando otro navegador). El problema está en que Yupp guarda datos en la sesión, y al instalar una nueva aplicación con un navegador abierto, tratará de acceder a objetos que no están en ese caché, provocando el error.
