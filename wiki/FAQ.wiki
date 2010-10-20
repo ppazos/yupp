@@ -1,6 +1,9 @@
 #labels faq,yupp,preguntas,consultas,problemas,soluciones,consejos,Featured
 = Preguntas Frecuentes =
 
+Este es un espacio donde se listan las preguntas más frecuentes.
+Si tienes alguna duda sobre la instalación y el funcionamiento del framework, por favor publícala en nuestro grupo de discusión: [http://groups.google.com/group/yuppframeworkphp]
+
 == Pregunta 1 ==
 
   * *Estoy corriendo por primera vez el framework en AppServ (un compilado con Apache, PHP  y MySQL), y me sale este error:*
