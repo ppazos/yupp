@@ -1,7 +1,7 @@
 #labels faq,yupp,preguntas,consultas,problemas,soluciones,consejos,Featured
 = Preguntas Frecuentes =
 
-== Pregunta 0 ==
+== Pregunta 1 ==
 
   * *Estoy corriendo por primera vez el framework en AppServ (un compilado con Apache, PHP  y MySQL), y me sale este error:*
 {{{
@@ -15,21 +15,6 @@ More information about this error may be available in the server error log.
 }}}
 
   * Verifica que tienes activo el módulo "rewrite_module" de Apache. Esto lo haces verificando que la línea *LoadModule rewrite_module modules/mod_rewrite.so* está descomentada en el archivo de configuración de Apache (httpd.conf).
-
-
-== Pregunta 1 ==
-
-  * *Obtengo el siguiente error al ejecutar el framework*
-{{{
-Warning: Call-time pass-by-reference has been deprecated; If you would
-like to pass it by reference, modify the declaration of [runtime
-function name](). If you would like to enable call-time pass-by-
-reference, you can set allow_call_time_pass_reference to true in your
-INI file. in C:\wamp\www\femi\core\persistent
-\core.persistent.PersistentObject.class.php on line 1173
-}}}
-
-  * Debes editar el archivo PHP.INI que se encuentra en el directorio donde tienes instalado PHP, buscas la línea donde dice "allow_call_time_pass_reference = Off" y lo cambias por "allow_call_time_pass_reference = On". Con eso debería funcionar sin problemas.
 
 
 == Pregunta 2 ==
