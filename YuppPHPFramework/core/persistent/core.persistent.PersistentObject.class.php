@@ -1163,7 +1163,14 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                // correctamente de la base, debo guardarme el id de la superclase de $obj
                // que es la clase del atributo hasOne $attr.
                $refId = $obj->getId();
-               if ( $type !== $obj->getClass() ) // Si el tipo del atributo declarado no es el del objeto relacionado (el de el objeto debe ser una subclase del declarado).
+               
+               // Si el tipo del atributo declarado no es el del objeto relacionado
+               // (el de el objeto debe ser una subclase del declarado).
+               // Y si se mapean en distintas tablas (si se mapean en la misma, el id
+               // del objeto y el de su superclase es el mismo).
+               if ( $type !== $obj->getClass() &&
+                    !PersistentManager::isMappedOnSameTable( $type, $obj->getClass() )
+                   )
                {
                   //$superClass = $obj->getSuperClassWithDeclaredAttribute($attr);
                   $refId = $obj->getMultipleTableId( $type ); // $obj->super_id_SuperClass
