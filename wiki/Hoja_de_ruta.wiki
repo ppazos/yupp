@@ -1,16 +1,17 @@
 #labels Phase-Requirements,Featured
-=¡ Ya estamos en v0.2.2 !=
+*¡ Ya estamos en v0.2.2 !*
 
-http://code.google.com/p/yupp/downloads/list 
+  * http://code.google.com/p/yupp/downloads/list 
+
 
 <wiki:toc max_depth="3" />
+
 
 En el momento tenemos un framework completo y funcional, con componentes de ORM (Mapeo Objeto-Relacional) y MVC (Model-View-Controller).
 
 Igualmente todavía queda mucho para mejorar el framework, para arreglar arreglar, testear y documentar.
 
 Si te interesa participar en alguna de estas áreas puedes hacérnoslo saber publicando un nuevo debate, son todos bienvenidos!
-
 
 Aquí listaremos ideas y tareas pendientes  las iremos acomodando en las sucesivas liberaciones, intentando liberar una versión cada 3 o 4 semanas, y cada paso no tendrá mas de 4 o 5 tareas a realizar, para poder hacerlas en tiempo y forma, claro que esto depende de la complejidad de las tareas.
 
@@ -66,7 +67,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
     * Se agregó el método addCustomParams en la clase routing.Filter
 
 
-==v0.1.6-3:==
+==v0.1.6-3: liberado==
 
   * Implementacion de helpers para formularios y formularios ajax, utiliza el plugin forms de jQuery.
   * Helpers: Correccion de compatibilidad con PHP 5.2.8
