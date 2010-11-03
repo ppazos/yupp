@@ -14,43 +14,41 @@ Si te interesa participar en alguna de estas áreas puedes hacérnoslo saber pub
 
 Aquí listaremos ideas y tareas pendientes  las iremos acomodando en las sucesivas liberaciones, intentando liberar una versión cada 3 o 4 semanas, y cada paso no tendrá mas de 4 o 5 tareas a realizar, para poder hacerlas en tiempo y forma, claro que esto depende de la complejidad de las tareas.
 
-
 Para los problemas y errores que vayamos encontrando empezaremos a utilizar: http://code.google.com/p/yupp/ que tiene un sistema de tickets incorporado. Voy a estar migrando los tickets que tengo en un repositorio local para ahi, asi todo el mundo tiene acceso y quien quiera puede realizar alguna tarea y ayudar a avanzar. Luego definiremos un proceso de contribuyentes asi gente que esté interesada en el proyecto pueda mandar código corregido (patch).
 
- 
 
-==v0.1.3:==
+==v0.1.3: liberado==
 
   * Soporte para layouts (basico, basado en una tag)
   * Implementar soporte para serializacion de modelo a JSON (basico, para mejorar y completar mas adelante)
   * Soporte para SQLite
 
 
-==v0.1.4:==
+==v0.1.4: liberado==
 
   * Integración con Prototype JS 
   * TICKET #29: corregir las consultas SQL para hacer listados, de forma de disminuir la cantidad de datos cargada. 
   * Se hicieron multiples mejoras tanto al componente MVC como al compoente de persistencia ver lista de cambios: http://www.simplewebportal.net/host/1022.htm 
 
 
-==v0.1.5:==
+==v0.1.5: liberado==
 
   * Implementar el mapeo de herencia sobre multiples tablas (ahora se usa la estrategia de herencia por tabla) [AHORA ESTOY TRABAJANDO EN ESTO!]
 
 
-==v0.1.6:==
+==v0.1.6: liberado==
 
   * Agregar tipos a los atributos hasMany (colection, set, list).
   * Agregar interfaz para generar las tablas de la base de datos.
   * Implementar custom validators para validación automática de información.
 
 
-==v0.1.6-1:==
+==v0.1.6-1: liberado==
 
   * Agregar el chequeo de que si la vista que referencia el retorno "render" de una acción de un controller no existe, que intente buscar en las vistas de scaffolding dinámico una vista con el mismo nombre de la acción y le pase como parámetro la clase del modelo. Esto sirve para que no sea necesario generar las vistas "list", "show", "create" y "edit" mientras se está desarrollando. Sería bueno mostrar un pequeño warning en la página cuando se detectó que la vista no existe y se encontró una vista en scaffolding. Si ni siquiera se encuentra una vista en scaffolding dinámico, ahí se muestra diréctamente un error (debería lanzar una excepción).
 
 
-==v0.1.6-2:==
+==v0.1.6-2: liberado==
 
   * Correccion en PersistentManager.generate() para que genere todas las tablas intermedias con la columna "ord" que se utiliza cuando el atributo hasMany es de tipo LIST, cuando es de tipo SET o COLLECTION, no se toma en cuenta.
   * Se agregó soporte para incluir CSS o imagenes desde un componente. Para esto se modificó el helper "css" y se agregó el helper "img".
@@ -78,7 +76,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Correccion de metodo PersistentObject.hasErrors, tenia un error en la condicion.
 
 
-==v0.1.6-4:==
+==v0.1.6-4: liberado==
 
   * Se corrigió y mejoró el web flow.
   * Se agrego el metodo 'validateOnly' a la clase PersistentObject.
@@ -90,7 +88,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Corrección de restricción de email.
 
 
-==v0.1.6-5:==
+==v0.1.6-5: liberado==
 
   * Corregida la comparación de strings para generar consultas MySQL (donde el "=" no considera mayúsculas y minúsculas)
     * Para esto se reescribió completamente el componente que genera las consultas SQL, para que considera las particularidades de cada DBMS (MySQL, SQLite, PostgreSQL, etc)
@@ -102,7 +100,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Se corrije el metodo PersistentObject.validate() para que priorice la validacion de nulos y vacios sobre el resto de las validaciones. Ahora si un valor es nullable(true) y tambien debe ser email(), la validacion de un valor vacio da true, antes fallaba en la validacion de email.
 
 
-==v0.1.6-6:==
+==v0.1.6-6: liberado==
 
   * Correcciones menores en la clase Contraints.
   * El método PersistentObject.setProperties() ahora hace trim de los valores antes de asginarlos a los campos, esto es para evitar el llenado accidental de datos con espacios en blanco delante o detrás del valor ingresado.
@@ -111,7 +109,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Correccion en el mapeo de herencia de tabla múltiple para soportar modelos de relaciones y herencia complejos (PersistentManager, PersistentObject, MultipleTableInheritanceSupport).
 
 
-==v0.1.6-7:==
+==v0.1.6-7: liberado==
 
   * Agregamos que se permita tener varios subdirectorios dentro del directorio de clases de modelo, permitiendo ordenar las clases del modelo cuando son muchas.
   * Se corrige el método ModelUtils.getModelClasses() para poder crear subdirectorios en el directorio del modelo de un componente y asi mejorar la organización de las clases del modelo.
@@ -121,7 +119,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Se corrije el metodo YuppController::getFlash() y se hace limpieza.
 
 
-==v0.1.7:==
+==v0.1.7: liberado==
 
   * Se corrije un bug que se liberó con Yupp 0.1.6.7 en la clase routing.Executer, pasaba cuando se retornaba null de una accion de un controller.
   * Corrección de DatabaseMySQL en consultas que buscan por strings numéricos.
@@ -132,14 +130,14 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Correcciones a DAL, PersistentObject y PersistentManager.
 
 
-==v0.1.8:==
+==v0.1.8: liberado==
 
   * http://code.google.com/p/yupp/issues/detail?id=19 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=22 (HECHO)
   * Creación de juegos de test para validar el ORM (HECHO 30%).
 
 
-==v0.1.9:==
+==v0.1.9: liberado==
 
   * Implementar soporte para serializacion de instancias del modelo persistente a XML
   * Crear demos/tests de los helpers
@@ -148,7 +146,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Se corrigieron bugs en PersistenManager, Helpers, RequestManager, YuppForm2 y String.
 
 
-==v0.2.0:==
+==v0.2.0: liberado==
 
   * http://code.google.com/p/yupp/issues/detail?id=32 (Mejorar la inclusión de librerías JavaScript) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=33  (Creación de agregaciones para las consultas creadas con Query) (HECHO)
@@ -156,7 +154,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Corrección en la clase HTTPResponse que parseaba mal la respuesta a HTTPRequest.
 
 
-==v0.2.1:==
+==v0.2.1: liberado==
 
   * Completar la definicion de componentes para que sean auto-contenidos (modelo, controllers, vistas, filtros, mappings, i18n, etc) (HECHO)
   * Se hizo la generación de estructuras para nuevas aplicaciones (http://code.google.com/p/yupp/issues/detail?id=47)
@@ -166,17 +164,12 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Correcciones al paquete http.
 
 
-==v0.2.2:==
+==v0.2.2: estamos aquí==
 
   * http://code.google.com/p/yupp/issues/detail?id=34 (Configuración por componente) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=44 (Agregar un app descriptor a cada componente) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=58 (Problemas con querys por valores nulos en MySQL) (HECHO)
   * Otras correcciones menores.
-
-
-***** ESTAMOS AQUI *****
-***** ESTAMOS AQUI *****
-***** ESTAMOS AQUI *****
 
 
 ==v0.2.3:==
