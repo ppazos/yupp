@@ -180,10 +180,9 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 
 ==v0.2.3:==
 
-  * Scaffolding dinamico para vistas y acciones (si la accion no existe pero la vista si, que muestre la vista).
-
+  * http://code.google.com/p/yupp/issues/detail?id=61 (Scaffolding dinamico para vistas sin acciones)
   * http://code.google.com/p/yupp/issues/detail?id=31 (Flexibilizar el retorno de las acciones de los controllers)
-
+  * http://code.google.com/p/yupp/issues/detail?id=12 (Mejorar la vista de scaffolding dinámico para hasOne)
   * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
 
 
