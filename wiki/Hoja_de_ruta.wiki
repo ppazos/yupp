@@ -167,20 +167,14 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 
 ==v0.2.2:==
 
-  * http://code.google.com/p/yupp/issues/detail?id=34 (Configuración por componente
-) (HECHO)
+  * http://code.google.com/p/yupp/issues/detail?id=34 (Configuración por componente) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=44 (Agregar un app descriptor a cada componente) (HECHO)
-
   * http://code.google.com/p/yupp/issues/detail?id=58 (Problemas con querys por valores nulos en MySQL) (HECHO)
-
   * Otras correcciones menores.
 
 
-
 ***** ESTAMOS AQUI *****
-
 ***** ESTAMOS AQUI *****
-
 ***** ESTAMOS AQUI *****
 
 
