@@ -3,6 +3,7 @@
 
 http://code.google.com/p/yupp/downloads/list 
 
+<wiki:toc max_depth="3" />
 
 En el momento tenemos un framework completo y funcional, con componentes de ORM (Mapeo Objeto-Relacional) y MVC (Model-View-Controller).
 
