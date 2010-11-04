@@ -1,9 +1,10 @@
 <?php
 
+YuppLoader::load('tests.model.i006', 'Recipiente1');
+
 /**
  * Clase modelo para el test I006.
  */
-
 class Vaso1 extends Recipiente1
 {
    function __construct($args = array (), $isSimpleInstance = false)

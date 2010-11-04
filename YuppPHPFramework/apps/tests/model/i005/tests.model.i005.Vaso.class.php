@@ -4,6 +4,8 @@
  * Clase modelo para el test I005.
  */
 
+YuppLoader::load('tests.model.i005', 'Recipiente');
+
 class Vaso extends Recipiente
 {
    function __construct($args = array (), $isSimpleInstance = false)
