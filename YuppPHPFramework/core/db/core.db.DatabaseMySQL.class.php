@@ -50,7 +50,7 @@ class DatabaseMySQL {
       //echo "Select DB: " . $dbName . " " . $this->connection . "<br />";
       if ( ! mysql_select_db ($dbName, $this->connection) ) // Por si estoy trabajando con muchas conecciones
       {
-         throw new Exception("Error seleccionando la tabla <b>$dbName</b> de la base de datos.");
+         throw new Exception("Error seleccionando la base de datos <b>$dbName</b>. Verificar que existe.");
       }
    }
 
