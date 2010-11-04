@@ -6,6 +6,7 @@ class YuppController {
 
     protected $flash = array(); // Sirve para que el usuario ponga elementos que se van a poder acceder desde el view, de forma sencilla (es parecido a un model pero se pasa de forma distinta, ver el CoreController).
 
+    protected $appName;
     protected $controllerName;
     protected $actionName;
     
@@ -42,12 +43,10 @@ class YuppController {
     function __construct(ArrayObject $params)
     {
        $ctx = YuppContext::getInstance();
-       //$component  = $ctx->getComponent();
+
+       $this->appName        = $ctx->getComponent();
        $this->controllerName = $ctx->getController();
        $this->actionName     = $ctx->getAction();
-        
-       //$this->controllerName = $controllerName;
-       //$this->actionName     = $actionName;
        $this->params         = $params;
     }
 
@@ -57,6 +56,11 @@ class YuppController {
        if (method_exists($this, $method . 'Action'))
        {
           return $this->{$method . 'Action'}( $args );
+       }
+       // Es una vista que no tiene acciones? http://code.google.com/p/yupp/issues/detail?id=61
+       else if (file_exists('apps/'.$this->appName.'/views/'.$this->controllerName.'/'.$this->actionName.'.view.php'))
+       {
+           return $this->render($this->actionName);
        }
 
        throw new Exception('La accion <b>' . $method . '</b> no existe.');
