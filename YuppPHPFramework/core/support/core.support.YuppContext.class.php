@@ -19,14 +19,16 @@ class YuppContext {
    // FIXME: el modo se define en YuppConfig, no deberia duplicarse. De ultima si se quiere acceder al modo de ejecucion desde el contexto, que haya una operacion aca, que lo lea desde YuppConfig.
    private $mode   = YuppConfig::MODE_DEV; // Modo de ejecucion 
    
+   private static $instance = NULL;
 
    //private static $instance = NULL;
    public static function getInstance()
    {
       // Deberia ser persistente asi concervo el locale entre requests... pero puede haber problemas con los params, aunque los params se resetean en cada request.
-      //if (self::$instance === NULL) self::$instance = new YuppContext();
-      //return self::$instance;
+      if (self::$instance === NULL) self::$instance = new YuppContext();
+      return self::$instance;
       
+      /*
       $instance = NULL;
       if ( !YuppSession::contains("_yupp_context_singleton_instance") )
       {
@@ -37,8 +39,8 @@ class YuppContext {
       {
          $instance = YuppSession::get("_yupp_context_singleton_instance");
       }
-
       return $instance;
+      */
    }
     
    private function __construct() {}
@@ -75,10 +77,12 @@ class YuppContext {
     
    public function setModel( $model ) { $this->model = $model; }
    public function getModel()          { return $this->model; }
-    
+   
+   /*
    public function update()
    {
       YuppSession::set("_yupp_context_singleton_instance", $this); // actualizo la variable en la session...
    }
+   */
 }
 ?>

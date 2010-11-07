@@ -137,7 +137,7 @@ class RequestManager {
       $ctx->setComponent ( $lr['component'] );
       $ctx->setController( $lr['controller'] );
       $ctx->setAction    ( $lr['action'] );
-      $ctx->update();
+      //$ctx->update();
       /// ACTUALIZAR CONTEXTO ///
         
       //Logger::struct( $filter->getParams(), "FILTER->getParams" );
@@ -343,7 +343,7 @@ class RequestManager {
       
       /// ACTUALIZAR CONTEXTO ///
       $context->setModel ( $model );
-      $context->update();
+      //$context->update();
       /// ACTUALIZAR CONTEXTO ///
       
       //Logger::struct( $context, __FILE__ . " " . __LINE__ );
