@@ -135,10 +135,11 @@ class PersistentManager {
       $po_loader->setManager( $this ); // Inversion Of Control
       $this->po_loader = $po_loader; // Siempre viene una estrategia, getInstance se encarga de eso.
       
-      //$this->dal = DAL::getInstance();
-      
       $ctx = YuppContext::getInstance();
       $appName = $ctx->getComponent();
+      
+      Logger::getInstance()->pm_log("PM::__construct appName: " . $appName);
+      
       $this->dal = new DAL($appName); // FIXME: de donde saco el nombre de la app actual???
    }
 
