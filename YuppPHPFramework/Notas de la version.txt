@@ -1,12 +1,12 @@
-﻿=NOTAS DE LA VERSIóN:=
+﻿=NOTAS DE LA VERSION:=
 
-  * Versión 0.2.2 de Yupp PHP Framework
+  * Versión 0.2.3 de Yupp PHP Framework
 
 
 =Incluye los siguientes componentes:=
 
-  * versión 0.9.5 del YORM (Yupp Object Relational Mapping)
-  * versión 0.4.1 del YMVC (Yupp Model View Controller)
+  * versión 0.9.6 del YORM (Yupp Object Relational Mapping)
+  * versión 0.4.2 del YMVC (Yupp Model View Controller)
   * versión 0.1.1 del Yupp Desktop
 
 
@@ -22,17 +22,15 @@
   * Tener el módulo de Apache MOD_REWRITE instalado y activado.
 
 
-=Cambios con respecto a la versión 0.2.0=
+Preguntas frecuentes: http://code.google.com/p/yupp/wiki/FAQ
 
-  * Se completa la definicion de componentes para que sean auto-contenidos
-    (modelo, controllers, vistas, filtros, mappings, i18n, etc)
-    * Se hizo la generación de estructuras para nuevas aplicaciones.
-  * Mensajes de errores de validación ahora son internacionalizables.
-  * Se creó la primer versión de Yupp Desktop, desde donde ser permite
-    el acceso a las aplicaciones, la generación de tablas y la creación
-    de nuevas aplicaciones de forma simple.
-  * Nuevo componente de testing para crear y ejecutar casos de prueba de forma automática.
-  * Correcciones al paquete http.
+
+=Cambios con respecto a la versión 0.2.2=
+
+  * http://code.google.com/p/yupp/issues/detail?id=61 (Scaffolding dinamico para vistas sin acciones)
+  * http://code.google.com/p/yupp/issues/detail?id=62 (Error al correr el bootstrap de las aplicaciones con configuracion de BD aparte)
+  * http://code.google.com/p/yupp/issues/detail?id=31 (Flexibilizar el retorno de las acciones de los controllers)
+  * http://code.google.com/p/yupp/issues/detail?id=12 (Mejorar la vista de scaffolding dinámico para hasOne)
 
 =¿Que contiene esta liberación?=
 
@@ -52,12 +50,10 @@
   * Validacion automatica de informacion
 
 
-  También cuenta con aplicaciones de ejemplo "Hello World" y "Movix".
-  Mostrando la aplicación mínima que se puede crear con el framework y una
-  aplicación para catalogar películas.
+Descarga aplicaciones: http://code.google.com/p/yupp-apps/downloads/list
 
 
-=Para correr el ejemplo=
+=Para correr el framework=
 
 Debes tener un servidor Apache con soporte para PHP corriendo.
 Debes tener PHP 5.2.x o superior.
@@ -78,10 +74,10 @@ De aquí en adelante asumimos que yupp se encuentra en la ruta "servidor/www/yup
   se debe editar la informacion presente en el archivo:
 
   "/core/config/core.config.YuppConfig.class.php",
-  modificando el campo $dev_datasource, estableciendo los valores correctos
+  modificando el campo $default_datasource, estableciendo los valores correctos
   para cada clave de dicho array: url, user, pass y database.
 
-  Y se debe crear la base de datos con el nombre que hayas configurado en
+  Debes crear la base de datos con el nombre que configurado en
   "/core/config/core.config.YuppConfig.class.php" en el campo "database"
   antes de correr el framework.
 
