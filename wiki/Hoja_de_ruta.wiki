@@ -177,7 +177,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 
   * http://code.google.com/p/yupp/issues/detail?id=61 (Scaffolding dinamico para vistas sin acciones) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=62 (Error al correr el bootstrap de las aplicaciones con configuracion de BD aparte) (HECHO)
-  * http://code.google.com/p/yupp/issues/detail?id=31 (Flexibilizar el retorno de las acciones de los controllers)
+  * http://code.google.com/p/yupp/issues/detail?id=31 (Flexibilizar el retorno de las acciones de los controllers) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=12 (Mejorar la vista de scaffolding dinámico para hasOne) (HECHO)
 
 
