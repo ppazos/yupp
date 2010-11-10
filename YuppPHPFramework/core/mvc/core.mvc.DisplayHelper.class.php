@@ -11,7 +11,7 @@ class DisplayHelper {
        if ( $locale === NULL )
        {
           $ctx = YuppContext::getInstance();
-       	 $locale = $ctx->getLocale(); // se que siempre hay un locale valido.
+           $locale = $ctx->getLocale(); // se que siempre hay un locale valido.
        } 
 
        $m = I18nMessage::getInstance();
@@ -21,7 +21,7 @@ class DisplayHelper {
 /*
     public static function template( $component, $viewDir, $template, $params )
     {
-    	 // Necesito buscar el template en /apps/$component/view/$viewDir/$template.template.php
+        // Necesito buscar el template en /apps/$component/view/$viewDir/$template.template.php
        // Con los params que se me pasan, tengo que dejarlos accesibles para el script en ese template.
        
        // El primero lo cargaria con el class loader.
@@ -179,11 +179,33 @@ class DisplayHelper {
         $attrs = $po->getAttributeTypes();
         foreach ( $attrs as $attr => $type )
         {
-           // Los atributos inyectados no se deberian poder editar!
            $res .= '<tr><td>';
            $res .= $attr; // TODO: Habria que ver si esto es i18n, deberia haber algun "display name" asociado al nombre del campo.
            $res .= '</td><td>';
            $res .= self::field_to_html_show( $attr, $type, $po->aGet($attr) );
+           $res .= '</td></tr>';
+        }
+        
+        // Muestro hasOne: http://code.google.com/p/yupp/issues/detail?id=12
+        $hone = $po->getHasOne();
+        foreach ( $hone as $attr => $clazz )
+        {
+           $res .= '<tr><td>';
+           $res .= $attr; // TODO: Habria que ver si esto es i18n, deberia haber algun "display name" asociado al nombre del campo.
+           $res .= '</td><td>';
+           
+           $relObj = $po->aGet($attr);
+           
+           // Link a vista de scaffolding del objeto relacionado con hasOne
+           $res .= h('link', array(
+                     'component'  => 'core',
+                     'controller' => 'core',
+                     'action'     => 'show',
+                     'class'      => $relObj->getClass(),
+                     'id'         => $relObj->getId(),
+                     'body'       => $relObj->getClass() . ' ['. $relObj->getId() .']'
+                   ));
+           
            $res .= '</td></tr>';
         }
         $res .= '</table>';
@@ -201,7 +223,7 @@ class DisplayHelper {
           case Datatypes::TEXT:
              if ($maxStringLength !== NULL)
              {
-             	 if ($maxStringLength > 100) $res = '<textarea name="'. $fieldName .'">'. $value .'</textarea>';
+                if ($maxStringLength > 100) $res = '<textarea name="'. $fieldName .'">'. $value .'</textarea>';
                 else $res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
              }
              else
@@ -215,7 +237,7 @@ class DisplayHelper {
           break;
           case Datatypes::BOOLEAN:
                 //$res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
-                 // TODO I18n
+                // TODO I18n
                 //$res = '<select><option '. (($value)?'selected="true"':'') .'>TRUE</option><option '. ((!$value)?'selected="true"':'') .'>FALSE</option></select>';
                 $res = '<input type="checkbox" '. (($value)?'checked="true"':'') .' />';
           break;

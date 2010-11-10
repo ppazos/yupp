@@ -40,20 +40,19 @@ class ViewCommand {
     public function params()     { return $this->params; }
     public function param($name) { return $this->params[$name]; }
     
-    public function flash($name = NULL) {
+    public function flash($name = NULL)
+    {
       //print_r($this->flash);
       //echo (($name === NULL) ? "A" : "B");
       //return (($name === NULL) ? $this->flash : $this->flash[$name]);
-      if ($name === NULL)
-      {
-         return $this->flash;
-      }
+      if ($name === NULL) return $this->flash;
+
       return $this->flash[$name];
     }
     
     public function getString()
     {
-    	return $this->_string;
+       return $this->_string;
     }
 
     /*
@@ -80,7 +79,7 @@ class ViewCommand {
     public static function display($viewName, $params, $flash)
     {
        $c           = new ViewCommand();
-    	 $c->viewName = $viewName;
+       $c->viewName = $viewName;
        $c->command  = self::DISPLAY_COMMAND; // VERIFICAR que es un comando valido.
        $c->params   = $params;
        $c->flash    = $flash;
@@ -91,7 +90,7 @@ class ViewCommand {
     {
        $c          = new ViewCommand();
        $c->_string = $string;
-       $c->command  = self::STRING_DISPLAY_COMMAND; // VERIFICAR que es un comando valido.
+       $c->command = self::STRING_DISPLAY_COMMAND; // VERIFICAR que es un comando valido.
 
        return $c;
     }
@@ -101,7 +100,7 @@ class ViewCommand {
      */
     public function setPagePath($pagePath)
     {
-    	 $this->pagePath = $pagePath;
+        $this->pagePath = $pagePath;
     }
 
     public function show()
@@ -111,6 +110,5 @@ class ViewCommand {
        print_r( $this->params );
        echo "</pre>";
     }
-
 }
 ?>
