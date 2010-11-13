@@ -1,0 +1,19 @@
+function format_sql_array($array)
+{
+    $SQLstring = "";
+    foreach($array as $item)
+      {
+        $SQLstring .= "'$item',";
+      }
+    $SQLstring = rtrim($SQLstring, ",");
+    $SQLstring = str_replace("'',", "", $SQLstring);
+    return $SQLstring;
+}
+
+Example:
+$my_array = array("red", "blue", "green");
+$sql_array = format_sql_array($my_array);
+//$sql_array is now "'red','blue','green'"
+
+Sample SQL:
+$SQL = "SELECT FROM colors_table WHERE color IN($sql_array)";
