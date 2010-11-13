@@ -192,7 +192,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Agregar soporte para XSL en la generación de XML a partir de clases del modelo.
 
 
-==v0.2.5:==
+==v0.2.5: codename Genesis==
 
   * Integracion de modos de desarrollo, produccion y testing, y definición del comportamiento del sistema en cada modo.
   * Poder hacer otros campos complejos de forms por fuera de YuppForms, p.e. fecha, HTML, etc.
@@ -210,7 +210,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Integración con otras librerías JS/FX/AJAX
 
 
-==v0.3.0:==
+==v0.3.0: codename Deep Purple==
 
   * Soporte para Web Services (exponer WS mediante SOAP, Yupp ya es REST, manejar requests, parámetros, attachs, etc, procesar resultado)  
   * Soporte para internacionalización automática de fechas
@@ -222,17 +222,18 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 
 
 
-==v0.4.0:==
+==v0.4.0: codename U2==
 
   * Arquitectura de plugins: componentes de bajo nivel capaces de ser instalados y usados por varios componentes (ajax, helpers, integracion con otras librerias p.e. javascript, WS, ORM externo, etc).
 
 
-v0.4.5:
+==v0.4.5:==
 
   * Integración del YORM con sistemas externos mediante WS:
     * Soporte para fuentes de datos JSON 
     * Soporte para fuentes de datos XML 
 
+==v0.5.0: codename The Beatles==
 
 
 Algunos temas importantes a organizar:
