@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<app>
+  <name>{appName}</name>
+  <description>{appDescription}</description>
+  <version>0.1</version>
+  <langs>{appLangs}</langs>
+  <code></code>
+  <tags></tags>
+  <site></site>
+  <docs></docs>
+  <update></update>
+  <entry_point>
+    <controller>{epController}</controller>
+    <action>{epAction}</action>
+  </entry_point>
+</app>
