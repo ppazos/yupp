@@ -191,6 +191,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
   * Agregar soporte para XSL en la generación de XML a partir de clases del modelo.
   * Mejora de helper "img" para tomar parámetros extra, como "align", y agregarlos a la tag img generada. (HECHO)
+  * http://code.google.com/p/yupp/issues/detail?id=64 (Error introducido en la versión 0.2.3, donde no se recordaba el locale entre requests al cambiar el idioma) (HECHO)
 
 
 ==v0.2.5: codename Genesis==
