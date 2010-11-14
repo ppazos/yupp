@@ -377,12 +377,32 @@ function $func {
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
           $src = '/images/'. $params['src'];
        
+       unset($params['src']);
+       
+       // FIXME: retornar una imagen por defecto
        if (!file_exists('./'.$src)) throw new Exception('La imagen '. $src .' no existe');
        
        $res = '<img src="'. $_base_dir . $src .'"';
-       if ( isset($params['w']) )    $res .= ' width="'.  $params['w'] .'"';
-       if ( isset($params['h']) )    $res .= ' height="'. $params['h'] .'"';
-       if ( isset($params['text']) ) $res .= ' alt="'.    $params['text'] .'"';
+       if ( isset($params['w']) )
+       {
+          $res .= ' width="'. $params['w'] .'"';
+          unset($params['w']);
+       }
+       if ( isset($params['h']) )
+       {
+          $res .= ' height="'. $params['h'] .'"';
+          unset($params['h']);
+       }
+       if ( isset($params['text']) )
+       {
+          $res .= ' alt="'. $params['text'] .'"';
+          unset($params['text']);
+       }
+       
+       foreach ($params as $name=>$value)
+       {
+          $res .= ' '. $name .'="'. $value .'"';
+       }
        
        return $res . "/>";
     }
