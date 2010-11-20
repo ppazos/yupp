@@ -185,7 +185,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 
 ==v0.2.4:==
 
-  * http://code.google.com/p/yupp/issues/detail?id=67 (Implementar el dirty bit para mejorar la performance de las operaciones de update)
+  * http://code.google.com/p/yupp/issues/detail?id=67 (Implementar el dirty bit para mejorar la performance de las operaciones de update) (HECHO, falta hacer un caso de testing con un modelo relatiamente complejo para detectar que si se carga una instancia de la base y se hace "save", es más rápido con el dirty bit que sin él, porque siempre hace update y salva en cascada todo, sin ver si fue alterado algún dato).
   * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo)
   * http://code.google.com/p/yupp/issues/detail?id=53 (generar vistas para errores http comunes)
   * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
