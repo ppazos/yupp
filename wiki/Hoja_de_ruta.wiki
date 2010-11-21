@@ -188,7 +188,6 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * http://code.google.com/p/yupp/issues/detail?id=67 (Implementar el dirty bit para mejorar la performance de las operaciones de update) (HECHO, falta hacer un caso de testing con un modelo relatiamente complejo para detectar que si se carga una instancia de la base y se hace "save", es más rápido con el dirty bit que sin él, porque siempre hace update y salva en cascada todo, sin ver si fue alterado algún dato).
   * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo)
   * http://code.google.com/p/yupp/issues/detail?id=53 (generar vistas para errores http comunes)
-  * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
   * Agregar soporte para XSL en la generación de XML a partir de clases del modelo.
   * Mejora de helper "img" para tomar parámetros extra, como "align", y agregarlos a la tag img generada. (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=64 (Error introducido en la versión 0.2.3, donde no se recordaba el locale entre requests al cambiar el idioma) (HECHO)
@@ -196,7 +195,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 
 ==v0.2.5: codename Genesis==
 
-  * Integracion de modos de desarrollo, produccion y testing, y definición del comportamiento del sistema en cada modo.
+  * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
   * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
   * Poder hacer otros campos complejos de forms por fuera de YuppForms, p.e. fecha, HTML, etc.
   * Corregir información duplicada de ObjectReference en PersistentManager.generate, cuando se generan las tablas intermedias de relaciones hasMany.
@@ -206,13 +205,14 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * http://code.google.com/p/yupp/issues/detail?id=39 (Agregar soporte a Yupp Paths)
   * TICKET #38 (numeracion vieja): terminar las funcionalidades para inspeccionar la base de datos.
   * Verificación de errores y comportamiento robusto (soporte de mal pasaje de urls y parámetros)
+ * http://code.google.com/p/yupp/issues/detail?id=16 (Verificar si la clase UrlProcessing es necesaria)
 
 
 ==v0.2.8:==
 
   * Integración con otras librerías JS/FX/AJAX
   * http://code.google.com/p/yupp/issues/detail?id=36 (Operaciones de inspeccion)
-
+  * Integracion de modos de desarrollo, produccion y testing, y definición del comportamiento del sistema en cada modo.
 
 ==v0.3.0: codename Deep Purple==
 
