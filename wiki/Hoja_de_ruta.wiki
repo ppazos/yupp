@@ -197,19 +197,21 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 ==v0.2.5: codename Genesis==
 
   * Integracion de modos de desarrollo, produccion y testing, y definición del comportamiento del sistema en cada modo.
+  * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
   * Poder hacer otros campos complejos de forms por fuera de YuppForms, p.e. fecha, HTML, etc.
   * Corregir información duplicada de ObjectReference en PersistentManager.generate, cuando se generan las tablas intermedias de relaciones hasMany.
 
 
 ==v0.2.7:==
-
-  * TICKET #38: terminar las funcionalidades para inspeccionar la base de datos.
+  * http://code.google.com/p/yupp/issues/detail?id=39 (Agregar soporte a Yupp Paths)
+  * TICKET #38 (numeracion vieja): terminar las funcionalidades para inspeccionar la base de datos.
   * Verificación de errores y comportamiento robusto (soporte de mal pasaje de urls y parámetros)
 
 
 ==v0.2.8:==
 
   * Integración con otras librerías JS/FX/AJAX
+  * http://code.google.com/p/yupp/issues/detail?id=36 (Operaciones de inspeccion)
 
 
 ==v0.3.0: codename Deep Purple==
