@@ -214,16 +214,17 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * http://code.google.com/p/yupp/issues/detail?id=36 (Operaciones de inspeccion)
   * Integracion de modos de desarrollo, produccion y testing, y definición del comportamiento del sistema en cada modo.
 
+
 ==v0.3.0: codename Deep Purple==
 
   * Soporte para Web Services (exponer WS mediante SOAP, Yupp ya es REST, manejar requests, parámetros, attachs, etc, procesar resultado)  
   * Soporte para internacionalización automática de fechas
+  * Mejoras para performance (corregir inclusiones en index.php y hacer solo las necesarias).
 
 
 ==v0.3.5:==
 
   * Capacidad de instalar y desinstalar aplicaciones a modo de sistema operativo instalando y desinstalando programas.
-
 
 
 ==v0.4.0: codename U2==
