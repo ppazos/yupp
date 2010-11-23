@@ -9,6 +9,14 @@ class Logger {
    private $active = true;
    private static $instance = NULL;
 
+   // Para guardar logs en archivo.
+   private $file = NULL;
+   
+   public function setFile($filename)
+   {
+      $this->file = $filename;
+   }
+
    // Para guardar arbol de logs =======
    
    // Matrix cant. llamadas / nivel
@@ -30,7 +38,7 @@ class Logger {
 
    public static function add( $index, $message = "" )
    {
-   	$log = Logger::getInstance();
+      $log = Logger::getInstance();
       $log->_add($index, $message);
    }
    
@@ -54,17 +62,17 @@ class Logger {
    public function _printTree()
    {
       $string = "";
-   	foreach ($this->buffer as $levels)
+      foreach ($this->buffer as $levels)
       {
          for ($i=0; $i<4; $i++)
          {
-         	if ($levels[$i] !== NULL)
+            if ($levels[$i] !== NULL)
             {
-            	for ($j=0; $j<$i; $j++) $string .= "   "; // tantos tabs como el nivel
+               for ($j=0; $j<$i; $j++) $string .= "   "; // tantos tabs como el nivel
                
                switch ( $i )
                {
-               	case 0: $string .= "* " . self::LEVEL_KEY_PO  . " *: "; break;
+                  case 0: $string .= "* " . self::LEVEL_KEY_PO  . " *: "; break;
                   case 1: $string .= "* " . self::LEVEL_KEY_PM  . " *: "; break;
                   case 2: $string .= "* " . self::LEVEL_KEY_DAL . " *: "; break;
                   case 3: $string .= "* " . self::LEVEL_KEY_DB  . " *: "; break;
@@ -91,6 +99,16 @@ class Logger {
    public static function struct( $obj, $msg = "" )
    {
       $log = self::getInstance();
+      if ($log->file !== NULL)
+      {
+         $txt = "<pre> $msg<br/>";
+         $txt .= print_r( $obj, true );
+         $txt .= "</pre>";
+         FileSystem::appendLine($log->file, $txt);
+         
+         return;
+      }
+      
       echo "<pre> $msg<br/>";
       print_r( $obj );
       echo "</pre>";
@@ -101,19 +119,37 @@ class Logger {
       $log = self::getInstance();
       if ($log->active)
       {
+         if ($log->file !== NULL)
+         {
+            $txt = (($tag)?"<$tag>":"") . $msg . (($tag)?"</$tag>":"");
+            FileSystem::appendLine($log->file, $txt);
+            return;
+         }
+          
          echo (($tag)?"<$tag>":"") . $msg . (($tag)?"</$tag>":"");
       }
    }
 
    public function off()
    {
-   	$this->active = false;
+      $this->active = false;
+   }
+   
+   public function on()
+   {
+      $this->active = true;
    }
 
    public function log( $msg )
    {
       if ($this->active)
       {
+         if ($this->file !== NULL)
+         {
+            $txt = "[" . $msg . "]";
+            FileSystem::appendLine($this->file, $txt);
+            return;
+         }
          echo "[" . $msg . "]<br />";
       }
    }
@@ -153,7 +189,13 @@ class Logger {
    {
       if ($this->active)
       {
-     	   echo '<div style="background: #f00; border: 1px solid #000; color: #fff;">';
+         if ($this->file !== NULL)
+         {
+            $txt = "[" . $msg . "]";
+            FileSystem::appendLine($this->file, $txt);
+            return;
+         }
+         echo '<div style="background: #f00; border: 1px solid #000; color: #fff;">';
          echo "\t\t" . $msg;
          echo '</div>';
       }
@@ -164,6 +206,12 @@ class Logger {
    {
       if ($this->active)
       {
+         if ($this->file !== NULL)
+         {
+            $txt = "[" . $msg . "]";
+            FileSystem::appendLine($this->file, $txt);
+            return;
+         }
          echo '<div style="background: #00f; border: 1px solid #000; color: #fff;">';
          echo "\t" . $msg;
          echo '</div>';
@@ -175,6 +223,12 @@ class Logger {
    {
       if ($this->active)
       {
+         if ($this->file !== NULL)
+         {
+            $txt = "[" . $msg . "]";
+            FileSystem::appendLine($this->file, $txt);
+            return;
+         }
          echo '<div style="background: #ff0; border: 1px solid #000; color: #000;">';
          echo "\t\t\t" . $msg;
          echo '</div>';
@@ -185,6 +239,12 @@ class Logger {
    {
       if ($this->active)
       {
+         if ($this->file !== NULL)
+         {
+            $txt = "[" . $msg . "]";
+            FileSystem::appendLine($this->file, $txt);
+            return;
+         }
          echo '<div style="background: #0f0; border: 1px solid #000; color: #000;">';
          echo $msg;
          echo '</div>';
@@ -193,9 +253,14 @@ class Logger {
 
    public function artholder_log($msg)
    {
-      $log = self::getInstance();
-      if ($log->active)
+      if ($this->active)
       {
+         if ($this->file !== NULL)
+         {
+            $txt = "[" . $msg . "]";
+            FileSystem::appendLine($this->file, $txt);
+            return;
+         }
          echo '<div style="background: #fa0; border: 1px solid #000; color: #000;">';
          echo $msg;
          echo '</div>';
