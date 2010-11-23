@@ -106,18 +106,28 @@ class YuppStats
       
       $dirs = array (
                 "./core",
+                "./core/app/templates",
                 "./core/basic",
                 "./core/config",
-                "./core/db", "./core/db/criteria2",
+                "./core/db",
+                "./core/db/criteria2",
+                "./core/http",
                 "./core/layout",
-                "./core/mvc", "./core/mvc/form", "./core/mvc/view", "./core/mvc/webflow",
+                "./core/mvc",
+                "./core/mvc/form",
+                "./core/mvc/view/error",
+                "./core/mvc/view/scaffoldedViews",
+                "./core/mvc/webflow",
                 "./core/persistent",
                 "./core/routing",
                 "./core/support",
+                "./core/testing",
                 "./core/utils",
+                "./core/validation",
                 "./core/web",
+                "./apps/core",
                 "./apps/core/controllers",
-                //"./model", // es de usuario!
+                "./apps/core/views",
                 //"./apps/blog", // es de usuario!
                 //"./apps/blog/controllers", // es de usuario!
                 //"./apps/blog/views", // es de usuario!
