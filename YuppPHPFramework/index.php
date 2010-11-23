@@ -51,8 +51,6 @@ YuppLoader :: load("core", "FileSystem");
 YuppLoader :: load("core.utils", "Logger");
 
 // La DB a incluir ahora se resuelve en DAL.
-//YuppLoader::load( "core.db",         "DatabaseMySQL" );
-//YuppLoader::load( "core.db",         "DatabaseSQLite" ); // test, deberia haber un cargador dependiendo de la config del dbms.
 YuppLoader :: load("core.db", "Datatypes");
 YuppLoader :: load("core.db", "DAL");
 
@@ -66,15 +64,19 @@ YuppLoader :: load("core.routing", "Router");
 YuppLoader :: load("core.routing", "YuppControllerFilter"); // FIXME: no deberia ser parte del paquete routing, esta aca solo porque es usada desde el Executer...
 YuppLoader :: load("core.routing", "Executer");
 
-YuppLoader :: load("core.utils", "YuppStats");
+//YuppLoader :: load("core.utils", "YuppStats");
 
 // ============================================================
 // Configuro logger para que no muestre mensajes:
 // Comentar esta linea para ver los logs.
 Logger::getInstance()->off(); 
+//Logger::getInstance()->setFile("logger.txt");
 // ============================================================
 
 // Carga clases del modelo.
+// FIXME: deberia cargar solo las clases del modelo de la app actual.
+// Y el metodo deberia ser un proxy en App, tal que cargue las clases de esa app.
+// Solo sacando esta linea, los pedidos que se pueden hacer por minuto aumentan en un 70%.
 YuppLoader :: loadModel();
 
 //[SCRIPT_NAME] => /Persistent/index.php
@@ -95,6 +97,7 @@ try
 }
 catch (Exception $e)
 {
+   // FIXME: mostrar la vista de error 500
    echo '<html><body>';
      echo '<h1>Ha ocurrido un error!</h1>'; // TODO: i18n
      echo '<div style="border:1px solid #333; padding:10px; width:800px;">';
