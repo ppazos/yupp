@@ -85,6 +85,9 @@ class DisplayHelper {
        $res .= '<tr>';
        foreach ($attrs as $attr => $type )
        {
+           // No quiero mostrar la columna 'deleted'
+           if ( $attr === 'deleted') continue;
+           
            $res .= '<th>';
 
            // FIXME: Problema, necesito los params actuales para saber que clase estoy mostrando, pero no tengo acceso. NO, ME PASAN LA CLASE!
@@ -114,6 +117,9 @@ class DisplayHelper {
           //$attrs = $po->getAttributeTypes();
           foreach ( $attrs as $attr => $type )
           {
+             // No quiero mostrar la columna 'deleted'
+             if ( $attr === 'deleted') continue;
+           
              $res .= '<td>';
 
              if ($attr == "id")
