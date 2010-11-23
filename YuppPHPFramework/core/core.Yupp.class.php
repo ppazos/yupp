@@ -35,6 +35,11 @@ class Yupp {
     {
        // TODO
     }
+    
+    public static function appExists( $appName )
+    {
+        return file_exists('apps/'.$appName);
+    }
 }
 
 ?>
