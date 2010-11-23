@@ -45,6 +45,15 @@ class YuppSession {
    {
       return isset($_SESSION[ $key ]);
    }
+   
+   // Para testing
+   // Muestra el contenido de la sesion actual
+   public static function dump()
+   {
+      echo '<pre>';
+      print_r( $_SESSION );
+      echo '</pre>';
+   }
 }
 
 ?>
