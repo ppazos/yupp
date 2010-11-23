@@ -33,7 +33,7 @@ class ArtifactHolder {
     */
    public function addModel( PersistentObject &$obj )
    {
-      Logger::artholder_log("ArtifactHolder.addModel " . get_class($obj));
+      Logger::getInstance()->artholder_log("ArtifactHolder.addModel " . get_class($obj));
 
       $class = get_class($obj);
       $id = $obj->getId();
@@ -53,7 +53,7 @@ class ArtifactHolder {
     */
    public function getModel( $class, $id )
    {
-      Logger::artholder_log("ArtifactHolder.getModel " . $class . " " . $id);
+      Logger::getInstance()->artholder_log("ArtifactHolder.getModel " . $class . " " . $id);
       
       if ( !isset($this->model[$class]) ) return NULL;
       if ( !isset($this->model[$class][$id]) ) return NULL;
@@ -68,7 +68,7 @@ class ArtifactHolder {
     */
    public function existsModel( $class, $id )
    {
-      Logger::artholder_log("ArtifactHolder.existsModel " . $class . " " . $id);
+      Logger::getInstance()->artholder_log("ArtifactHolder.existsModel " . $class . " " . $id);
 
       return ( $this->getModel($class, $id) != NULL );
    }
