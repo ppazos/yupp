@@ -185,46 +185,56 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 
 ==v0.2.4:==
 
-  * http://code.google.com/p/yupp/issues/detail?id=67 (Implementar el dirty bit para mejorar la performance de las operaciones de update) (HECHO, falta hacer un caso de testing con un modelo relatiamente complejo para detectar que si se carga una instancia de la base y se hace "save", es más rápido con el dirty bit que sin él, porque siempre hace update y salva en cascada todo, sin ver si fue alterado algún dato).
-  * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo)
-  * http://code.google.com/p/yupp/issues/detail?id=53 (generar vistas para errores http comunes)
-  * Agregar soporte para XSL en la generación de XML a partir de clases del modelo.
+  * http://code.google.com/p/yupp/issues/detail?id=67 (Implementar el dirty bit para mejorar la performance de las operaciones de update) (HECHO).
+  * http://code.google.com/p/yupp/issues/detail?id=53 (generar vistas para errores http comunes) (HECHO)
   * Mejora de helper "img" para tomar parámetros extra, como "align", y agregarlos a la tag img generada. (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=64 (Error introducido en la versión 0.2.3, donde no se recordaba el locale entre requests al cambiar el idioma) (HECHO)
+  * Además se hicieron:
+    * Mejoras al Logger para poder loguear a un archivo.
+    * Mejoras en los helpers que generan vistas dinámicas.
+    * Correcciones en la clase ArtifactHolder.
+    * Se crea la clase Timer para medir tiempos de ejecución.
+    * Se agregan paquetes faltantes en el cálculo de las LOCs en la clase YuppStats.
+    * Se agrega el método appExists($appName) en la clase Yupp.
+    * Se agrega metodo dump para debug en clase YuppSession.
+    * Se agregan tests de dirty bits a la aplicación "tests".
+    * Correción en CoreController para poder ejecutar bootstraps de aplicaciones con su propia configuración de la base de datos.
 
 
 ==v0.2.5: codename Genesis==
 
-  * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
+  * Agregar soporte para XSL en la generación de XML a partir de clases del modelo.
+  * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo)
   * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
-  * Poder hacer otros campos complejos de forms por fuera de YuppForms, p.e. fecha, HTML, etc.
-  * Corregir información duplicada de ObjectReference en PersistentManager.generate, cuando se generan las tablas intermedias de relaciones hasMany.
 
 
 ==v0.2.7:==
+
+  * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
   * http://code.google.com/p/yupp/issues/detail?id=39 (Agregar soporte a Yupp Paths)
   * TICKET #38 (numeracion vieja): terminar las funcionalidades para inspeccionar la base de datos.
-  * Verificación de errores y comportamiento robusto (soporte de mal pasaje de urls y parámetros)
- * http://code.google.com/p/yupp/issues/detail?id=16 (Verificar si la clase UrlProcessing es necesaria)
 
 
 ==v0.2.8:==
 
-  * Integración con otras librerías JS/FX/AJAX
-  * http://code.google.com/p/yupp/issues/detail?id=36 (Operaciones de inspeccion)
+  * Poder hacer otros campos complejos de forms por fuera de YuppForms, p.e. fecha, HTML, etc.
+  * Corregir información duplicada de ObjectReference en PersistentManager.generate, cuando se generan las tablas intermedias de relaciones hasMany.
   * Integracion de modos de desarrollo, produccion y testing, y definición del comportamiento del sistema en cada modo.
 
 
 ==v0.3.0: codename Deep Purple==
 
-  * Soporte para Web Services (exponer WS mediante SOAP, Yupp ya es REST, manejar requests, parámetros, attachs, etc, procesar resultado)  
+  * http://code.google.com/p/yupp/issues/detail?id=36 (Operaciones de inspeccion)  
+  * Capacidad de instalar y desinstalar aplicaciones a modo de sistema operativo instalando y desinstalando programas.
   * Soporte para internacionalización automática de fechas
-  * Mejoras para performance (corregir inclusiones en index.php y hacer solo las necesarias).
+  * http://code.google.com/p/yupp/issues/detail?id=16 (Verificar si la clase UrlProcessing es necesaria)
 
 
 ==v0.3.5:==
 
-  * Capacidad de instalar y desinstalar aplicaciones a modo de sistema operativo instalando y desinstalando programas.
+  * Mejoras para performance (corregir inclusiones en index.php y hacer solo las necesarias).
+  * Integración con otras librerías JS/FX/AJAX
+  * Verificación de errores y comportamiento robusto (soporte de mal pasaje de urls y parámetros)
 
 
 ==v0.4.0: codename U2==
@@ -238,18 +248,17 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
     * Soporte para fuentes de datos JSON 
     * Soporte para fuentes de datos XML 
 
+
 ==v0.5.0: codename The Beatles==
+
+  * ...
 
 
 Algunos temas importantes a organizar:
 
-
+  * Soporte para Web Services (exponer WS mediante SOAP, Yupp ya es REST, manejar requests, parámetros, attachs, etc, procesar resultado)
   * Soporte para controles de GUI complejos (desde helpers, integrados con alguna lib javascript y posiblemente con ajax y fx)
-
-
   * Generación automática del modelo a partir de una base de datos existente.
-
-  * @TODO...
 
 
 Algunos temas que se irán haciendo a medida que haya tiempo:
@@ -258,16 +267,12 @@ Algunos temas que se irán haciendo a medida que haya tiempo:
 
   * Característica YORM: campos calculados. Que se puedan definir funciones asociadas a campos y cuando se salva una instancia estas funciones se ejecutan y se asigna el valor resultante al campo. El framework agregaría la ejecución de esos métodos, para que el usuario no tenga que invocarlos él mismo cada vez que va a guardar algo. Esto sirve para calcular campos en función de los otros campos de la clase, incluyendo sus atributos relacionados, por ejemplo si se tiene una factura con líneas, el total de la factura se calcula a partir del parcial de cada línea.
 
-
   * PHPDoc de los paquetes core y db
   * PHPDoc del módulo persistent
   * PHPDoc del módulo mvc
   * TICKET #53: agregar tipos de datos para representar strings chicos y muy grandes.
-
   * Corregir generación de FKs en SQLite.
-
   * Agregar el tipo de hasMany "ORDERED_SET", que se comporta como un SET y como una LIST (no permite repetidos y conserva el orden).
-
  
 
 Ideas y nuevas características:
