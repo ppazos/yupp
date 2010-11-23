@@ -183,7 +183,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * http://code.google.com/p/yupp/issues/detail?id=12 (Mejorar la vista de scaffolding dinámico para hasOne) (HECHO)
 
 
-==v0.2.4:==
+==v0.2.4: en svn==
 
   * http://code.google.com/p/yupp/issues/detail?id=67 (Implementar el dirty bit para mejorar la performance de las operaciones de update) (HECHO).
   * http://code.google.com/p/yupp/issues/detail?id=53 (generar vistas para errores http comunes) (HECHO)
