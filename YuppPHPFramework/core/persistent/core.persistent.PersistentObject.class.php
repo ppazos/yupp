@@ -66,16 +66,58 @@ class PersistentObject {
    protected $errors = array();          // Mensajes de validacion, misma estructura que constraints.
    protected $validated = false;         // Bandera que indica si fue validada con validate()
    
+   
+   // Optimizaciones para save y update
    // TODO: usar esta bandera para optimizar la salvada.
    protected $dirty = false;             // Bandera que indica si una instancia cargada desde la base fue modificada.
                                          // Se considera que ls instnacias que fueron creadas y no guardadas (no tienen
                                          // id asignado) son tambien dirty aunque el campo "dirty" sea false.
+   protected $dirtyOne  = false;
+   protected $dirtyMany = false;         // Marca una modificacion en las relaciones hasMany, pero no indica que los campos
+                                         // o asociaciones hasOne fueron modificados, para eso se usa el $dirty.
+   // /Optimizaciones para save y update
+
 
    protected $multipleTableIds = array(); // Array asociativo por Nombre-de-superclas, y valor el id en la tabla correspondiente.
                                           // Este atributo sirve para realizar las operaciones del save (update) sin tener que 
                                           // consultar los ids de las instancias parciales en sus respecivas tablas, asi ya 
                                           // cuando carga la instancia se cargan los ids de las instancias parciales (en cada tabla) 
                                           // en este array.
+
+   /**
+    * Apaga las banderas de dirty, se usa para luego de cargar de la base,
+    * porque en el proceso de carga prende las banderas, pero es solo
+    * una carga de lo que hay, no un cambio real que haga dirty a
+    * la instancia de PO.
+    */
+   public function resetDirty()
+   {
+      $this->dirty = false;
+      $this->dirtyOne = false;
+      $this->dirtyMany = false;
+   }
+   public function resetDirtyMany()
+   {
+      $this->dirtyMany = false;
+   }
+   
+   // Apaga los dirty bits que no esten ya dirty
+   public function isClean()
+   {
+      return ($this->dirty ||$this->dirtyOne || $this->dirtyMany );
+   }
+   public function isDirty()
+   {
+      return $this->dirty;
+   }
+   public function isDirtyOne()
+   {
+      return $this->dirtyOne;
+   }
+   public function isDirtyMany()
+   {
+      return $this->dirtyMany;
+   }
 
    public function getMultipleTableIds()
    {
@@ -483,6 +525,30 @@ class PersistentObject {
       // FIXME: no deberia poder modificar valor de atributos inyectados, el comportamiento posterior es impredecible.
       foreach ( $args as $attr => $value )
       {
+         // FIXME: hace lo mismo que setProperties pero distinto
+         if ( array_key_exists($attr, $this->attributeTypes) )
+         {
+            $this->attributeValues[$attr] = $value;
+             
+            // Si es una instancia nueva, siempre estara dirty si le pongo valores simples.
+            $this->dirty = true;
+         }
+         if ( array_key_exists($attr, $this->hasOne) )
+         {
+            $this->attributeValues[$attr] = $value;
+             
+            // Si es una instancia nueva, siempre estara dirty si le pongo valores simples.
+            $this->dirtyOne = true;
+         }
+         if ( array_key_exists($attr, $this->hasMany) )
+         {
+            $this->attributeValues[$attr] = $value;
+             
+            // Si es una instancia nueva, siempre estara dirty si le pongo valores simples.
+            $this->dirtyMany = true;
+         }
+         
+         /*
           // OJO, PUEDO INICIALIZAR ATRIBUTOS EN HASONE Y HASMANY TAMBIEN, EL PREGUNTAR PUEDE SERVIR PARA HACER CHECKEOS SOBRE EL VALOR QUE SE PASA, si en un PO para hasOne, si es un array para hasMany.
           if ( array_key_exists($attr, $this->attributeTypes) ||
                array_key_exists($attr, $this->hasOne) ||
@@ -492,6 +558,7 @@ class PersistentObject {
              // con respecto a las constraints. Esto es un setAttrbuteValue( $attr ) pero mas rapido...
              $this->attributeValues[$attr] = $value;
           }
+          */
       }
    } // construct
 
@@ -548,7 +615,14 @@ class PersistentObject {
             // TODO: Chekeos de tipos...
             // WARNING: Esto solo setea atributos simples! Hay que ver si puedo hacer el tema de setear atributos de clases asociadas... (depende de la notacion de las keys de params)
             // SI HAGO TODO EL CHEKEO EN setAttributeValue, solo llamo a esa y listo...
+            
+             // FIXME: si es un objeto tambien le hago trim???, es porque setProperties es solo para
+             //        atrbutos simples (que pasa con numeros y booleanos con trim???)
             $this->attributeValues[ $attr ] = trim( $params[$attr] );
+            
+            // Marco como dirty en atributos simples (asignar en cada loop del for es mas barato
+            // que estar chequeando si se modifico un campo y setear afuera del loop).
+            $this->dirty = true;
          }
       }
    }
@@ -874,16 +948,16 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
 
       if ( is_array($this->constraints) )
       {
-         Logger::getInstance()->po_log("PO:save A");
+         //Logger::getInstance()->po_log("PO:validate A");
          
          // Para cada campo
          foreach ( $this->constraints as $attr => $constraintArray )
          {
-            Logger::getInstance()->po_log("PO:save B ($attr)");
+            //Logger::getInstance()->po_log("PO:validate B ($attr)");
             
             foreach ( $constraintArray as $constraint )
             {
-               Logger::getInstance()->po_log("PO:save C");
+               //Logger::getInstance()->po_log("PO:validate C");
                
                // FIXME: para no tener que verificar si un atributo que es de la clase tenga un valor,
                //        al inicializar la clase pasandole un array con algunos valores, deberia poner
@@ -897,7 +971,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                $value = ( (array_key_exists($attr, $this->attributeValues)) ? $this->attributeValues[$attr] : NULL );
                if ( get_class($constraint) === 'Nullable' )
                {
-                  Logger::getInstance()->po_log("PO:save D (nullable)");
+                  //Logger::getInstance()->po_log("PO:validate D (nullable)");
                   
                   if ( $value === NULL && $constraint->evaluate($value) ) // Si valor nulo y valida => nullable(true)
                   {
@@ -907,7 +981,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                }
                else if ( get_class($constraint) === 'BlankConstraint' )
                {
-                  Logger::getInstance()->po_log("PO:save E (blank)");
+                  //Logger::getInstance()->po_log("PO:validate E (blank)");
                   
                   if ( $value === "" && $constraint->evaluate($value) ) // Si valor vacio y valida => blank(true)
                   {
@@ -918,7 +992,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
               
                if ( !$constraint->evaluate($value) )
                {
-                  Logger::getInstance()->po_log("PO:save F (invalido!) constraint:". get_class($constraint));
+                  //Logger::getInstance()->po_log("PO:validate F (invalido!) constraint:". get_class($constraint));
                   
                   $valid = false;
 
@@ -1447,17 +1521,10 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
    // Ahora esta es setAttributeValue
    public function aSet( $attribute, $value )
    {
-      // CODIGO COPIADO DE setAttributeValue.
-      // Modificaciones:
-      //
       // Chekeo is_scalar para seteo de atributos simples.
       // Se agregaron returns para los casos de seteo correcto.
       // Chekeo de is_null para hasOne.
       // Consideracion de valor null para hasOne.
-      //
-      
-      //Logger::struct( $this->attributeTypes );
-      //Logger::struct( $this->attributeValues );
 
       // VERIFY: CUal es la joda de discutir en que lista esta si al final hago lo mismo ???
       // SIRVE PARA VERIFICAR QUE LO QUE ESTOY SETEANDO ES VALIDO.
@@ -1487,6 +1554,10 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                // TODO: verificar que el tipo del dato corresponde con el tipo del campo.
                $this->attributeValues[ $attribute ] = $value;
             }
+            
+            // Marca como modificada
+            $this->dirty = true;
+            
             return;
          }
          else
@@ -1496,9 +1567,8 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
       }
       else // FIXME OPTIMIZACION: aqui deberia buscar por hasMany y hasOne, y recien cuando veo que no encuentro, hacer la busqueda por parecidos.
       {
-         // Pruebo si el attribute no es el nombre de la columna
-         // que corresponde con algun atributo de esta clase en
-         // el ORM.
+         // Pruebo si el attribute no es el nombre de la columna que
+         // corresponde con algun atributo de esta clase en el ORM.
          foreach ( $this->attributeTypes as $classAttr => $type )
          {
             if ( DatabaseNormalization::col($classAttr) == $attribute )
@@ -1506,6 +1576,10 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                if ( is_null($value) || is_scalar($value) )
                {
                   $this->attributeValues[ $classAttr ] = $value;
+                  
+                  // Marca como modificada
+                  $this->dirty = true;
+                  
                   return;
                }
                else
@@ -1520,8 +1594,8 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
               // en la tabla guarda 'normalizedname' todo en minusculas (por YuppConventions).
               // Se debe hacer idem para hasOne y hasMany
       
-      // Para checkear hasOne o hasMany tengo que fijarme por el nombre del atribtuo que puede tener el nombre de la asociacion.
-      // $attribute no es atributo simple.
+      // Para checkear hasOne o hasMany tengo que fijarme por el nombre del atribtuo
+      // que puede tener el nombre de la asociacion. $attribute no es atributo simple.
       $full_attribute = $this->getFullAttributename( $attribute ); // Podria tener codificador el nombre de la asociacion.
                                                                    // SE PIERDE EL ATRIBUTO SI ES UN ATRIBUTO SIMPLE!!!!!!
 
@@ -1536,6 +1610,9 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
             if ( $value ) $this->attributeValues[ $refAttrName ] = $value->getId(); // Seteo tambien "email_id", puede ser NULL !!!
             else $this->attributeValues[ $refAttrName ] = NULL; // Seteo tambien "email_id", puede ser NULL !!!
 
+            // Marca como modificada
+            $this->dirtyOne = true;
+
             return;
          }
          else
@@ -1545,9 +1622,8 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
       }
       else
       {
-         // Pruebo si el attribute no es el nombre de la columna
-         // que corresponde con algun atributo de esta clase en
-         // el ORM.
+         // Pruebo si el attribute no es el nombre de la columna que
+         // corresponde con algun atributo de esta clase en el ORM.
          foreach ( $this->hasOne as $classHOAttr ) // FIXME: ver estructura
          {
             if ( DatabaseNormalization::col($classHOAttr) == $full_attribute )
@@ -1560,6 +1636,9 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                   $refAttrName = DatabaseNormalization::simpleAssoc( $full_attribute ); // "email_id"
                   if ( $value ) $this->attributeValues[ $refAttrName ] = $value->getId(); // Seteo tambien "email_id", puede ser NULL !!!
                   else $this->attributeValues[ $refAttrName ] = NULL; // Seteo tambien "email_id", puede ser NULL !!!
+
+                  // Marca como modificada
+                  $this->dirtyOne = true;
 
                   return;
                }
@@ -1579,6 +1658,10 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
          if ( is_array($value) )
          {
              $this->attributeValues[ $full_attribute ] = $value;
+             
+             // Marca como modificada
+             $this->dirtyMany = true;
+             
              return;
          }
          else
@@ -1597,12 +1680,15 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
             {
                if ( is_array($value) )
                {
-                   $this->attributeValues[ $full_attribute ] = $value;
+                  $this->attributeValues[ $full_attribute ] = $value;
                   
                   // Si seteo NULL no puedo preguntarle el id!!!
                   $refAttrName = DatabaseNormalization::simpleAssoc( $full_attribute ); // "email_id"
                   if ( $value ) $this->attributeValues[ $refAttrName ] = $value->getId(); // Seteo tambien "email_id", puede ser NULL !!!
                   else $this->attributeValues[ $refAttrName ] = NULL; // Seteo tambien "email_id", puede ser NULL !!!
+                  
+                  // Marca como modificada
+                  $this->dirtyMany = true;
 
                   return;
                }
@@ -1613,8 +1699,6 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
             }
          }
       }
-      
-      //Logger::getInstance()->log( $attribute );
 
       throw new Exception("El atributo '". $attribute ."' no existe en la clase (" . get_class($this) . ") @PO.aSet() " . __LINE__);
 
@@ -1636,7 +1720,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
          
          $attr = $this->getFullAttributename( $attr ); // Podria tener codificador el nombre de la asociacion.
 
-         // Soporte para lazy loading par ahasOne y hasMany
+         // Soporte para lazy loading para hasOne y hasMany
          if ( isset($this->attributeValues[$attr]) && $this->attributeValues[$attr] === self::NOT_LOADED_ASSOC )
          {
              // Si no tiene ID todavia no se guardo, entonces no puede cargar lazy algo que no se ha guardado.
@@ -1647,11 +1731,18 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
             
             if ( array_key_exists($attr, $this->hasMany) )
             {
-               // VERIFY: en otros lados hago este chekeo: // Si el objeto esta guardado, trae las clases ya asociadas...
+               // VERIFY: en otros lados hago este chekeo:
+               // Si el objeto esta guardado, trae las clases ya asociadas...
                // if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
                // ver si es necesario...
 
                PersistentManager::getInstance()->get_many_assoc_lazy($this, $attr); // El atributo se carga, no tengo que setearlo...
+               
+               // Se marca el dirtyMany al pedir hasMany porque no se tiene control
+               // sobre como se van a modificar las instancias de la relacion solicitadas,
+               // si dirtyMany esta en false y las intancias son modificadas, al salvar esta
+               // intancia, las hasMany no se van a salvar en cascada.
+               $this->dirtyMany = true;
             }
             else if ( array_key_exists($attr, $this->hasOne) )
             {
@@ -1659,7 +1750,13 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                $assocAttr = DatabaseNormalization::simpleAssoc( $attr ); // email_id
                $assocId = $this->attributeValues[ $assocAttr ];
                if ( $assocId != NULL )
+               {
                   $this->attributeValues[ $attr ] = PersistentManager::getInstance()->get_object( $this->hasOne[$attr], $assocId );
+                  
+                  // Se marca el dirtyOne al pedir hasOne porque no se tiene control
+                  // sobre como se va a modificar la instancia solicitada.
+                  $this->dirtyOne = true;
+               }
                else
                   $this->attributeValues[ $attr ] = NULL;
             }
@@ -1690,7 +1787,8 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
          } // si no esta cargada
       } // si no es simple
 
-      // Devuelvo atributo simple
+      // Devuelve atributo hasOne o hasMany (la devolucion de atributos simples se hace arriba).
+      // Si el hasOne o hasMany no estaban cargados, fueron cargados bajo demanda y devueltos aqui.
       if (isset($this->attributeValues[ $attr ]))
       {
          return $this->attributeValues[ $attr ];
@@ -1813,11 +1911,14 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
          // si es list al salvar y cargar se respeta el orden en el que se agregaron los elementos.
          
          switch ( $this->hasManyType[$attribute] )
-         { 
+         {
             case self::HASMANY_COLECTION:
             
                $this->attributeValues[ $attr_with_assoc_name ][] = $value; // TODO: Verificar que args0 es un PersistentObject y es simple!
                                                                            // FIXME: bool is_subclass_of ( mixed $object, string $class_name )
+               // Marca como editado el hasMany
+               $this->dirtyMany = true;
+               
             break;
             case self::HASMANY_SET: // Buscar repetidos por id, si ya esta no agrego de nuevo.
             
@@ -1840,12 +1941,17 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                {
                   $this->attributeValues[ $attr_with_assoc_name ][] = $value; // TODO: Verificar que args0 es un PersistentObject y es simple!
                                                                               // FIXME: bool is_subclass_of ( mixed $object, string $class_name )
+                  // Marca como editado el hasMany
+                  $this->dirtyMany = true;
                }
             break;
             case self::HASMANY_LIST: // Por ahora hace lo mismo que COLECTION, en PM se verificaria el orden.
             
                $this->attributeValues[ $attr_with_assoc_name ][] = $value; // TODO: Verificar que args0 es un PersistentObject y es simple!
                                                                            // FIXME: bool is_subclass_of ( mixed $object, string $class_name )
+               // Marca como editado el hasMany
+               $this->dirtyMany = true;
+            
             break;
          }
       }
@@ -1936,6 +2042,9 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
 
                      // Por defecto la asociacion se borra fisicamente.
                      $pm->remove_assoc( $this, $obj, $attr, $attr2, $logical ); // TODOL: Ok ahora falta hacer que el get considere asociaciones solo con daleted false cuando carga.
+
+                     // Marca como editado el hasMany
+                     $this->dirtyMany = true;
 
                      return;
                   }

@@ -31,10 +31,8 @@ class LazyLoadStrategy implements POLoader {
     * @param PersistenObject $obj es el objeto que tiene la asociacion hasMany a cargar.
     * @param String $attr es el nombre de la asociacion hasMany de $obj a cargar.
     */
-   //public function getMany( &$obj, $attr )
    public function getMany( $obj, $attr )
    {
-   	//$this->manager->get_many_assoc_lazy( &$obj, $attr );
       $this->manager->get_many_assoc_lazy( $obj, $attr );
    }
 

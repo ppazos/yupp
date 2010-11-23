@@ -323,7 +323,6 @@ class PersistentManager {
       //  saco los atributos que van en la tabla que diga withTable.
       //  ... estaria bueno tener una funcion que ya me haga esto...
 
-      //$dal       = DAL::getInstance();
       $tableName = YuppConventions::tableName( $obj );
 
       if ( !$obj->getId() ) // || !$dal->exists( $tableName, $obj->getId() ) ) // Si no tiene id, hago insert, si no update.
@@ -333,57 +332,53 @@ class PersistentManager {
       }
       else
       {
-         // CODIGO QUE ANTES ESTABA EN DAL:
-         $pinss = MultipleTableInheritanceSupport::getPartialInstancesToSave( $obj ); 
-         foreach ( $pinss as $partialInstance )
+         // Nuevo: si se modificaron campos simples o asociaciones hasone hago udate, si no, no.
+         if ($obj->isDirty())
          {
-            $tableName = YuppConventions::tableName( $partialInstance );
-   
-            // Saco el id de la instancia parcial del $multipleTableIds
-            // El id se usa para hacer el update de cada instancia parcial.
-            $id = NULL;
-            if ( PersistentManager::isMappedOnSameTable( $partialInstance->getClass(), get_class($obj)) )
-            {
-               Logger::add( Logger::LEVEL_PM, "SACO ID DEL OBJ" );
-               $id = $obj->getId();
-            }
-            else // SACO ID DE LA PARTIAL INSTANCE
-            {
-               // pi->getClass da la clase real, luego se sobreescribe por la clase de obj para guardar ese valor.
-               // La necesidad de tener el nombre de la clase en todas las tablas donde se guarde la instancia,
-               // es de poder cargar la instancia total cuando se hace un get de una instancia parcial.
-               $id = $obj->getMultipleTableId( $partialInstance->getClass() );
-               
-               // Seteo la clase real en cada una de las instancias parciales, para poder cargar (get, list, find) desde una instancia parcial.
-               // Tiene la clase de la instancia seteada y quiero que el atributo class sea de la ultima instancia de la estructura de herencia.
-            }
-            
-            $partialInstance->setId( $id );
-            $partialInstance->setClass( $obj->getClass() ); // En ambos casos tengo que colocar la clase correcta porque getPartialInstancesToSave me devuelve solo las clases que generan tabla... y si tengo C1 me va a devolver C, y la clase se la tengo que setear en C1 aunque se mapee en la misma tabla.
-            
-            //Logger::struct( $partialInstance, "PARTIAL INSTANCE" );
-            //Logger::struct( $this->getDataFromObject($partialInstance), "PARTIAL INSTANCE" );
-      
-            // 2: Si existe, hace update
-            if ( $this->dal->exists( $tableName, $id ) ) // VERIFY: este chekeo se hace en save del PM...
-            {
-               $this->dal->update( $tableName, $this->getDataFromObject($partialInstance) );
-            }
-            else
-            {
-               Logger::getInstance()->dal_log("DAL::update NO EXISTE " . $tableName . " " . $id . " " . __LINE__);
-            }
-         } // foreach ( $pinss as $partialInstance )
-         
-         // / CODIGO QUE ANTES ESTABA EN DAL ...
+             $pinss = MultipleTableInheritanceSupport::getPartialInstancesToSave( $obj ); 
+             foreach ( $pinss as $partialInstance )
+             {
+                $tableName = YuppConventions::tableName( $partialInstance );
+       
+                // Saco el id de la instancia parcial del $multipleTableIds
+                // El id se usa para hacer el update de cada instancia parcial.
+                $id = NULL;
+                if ( PersistentManager::isMappedOnSameTable( $partialInstance->getClass(), get_class($obj)) )
+                {
+                   Logger::add( Logger::LEVEL_PM, "SACO ID DEL OBJ" );
+                   $id = $obj->getId();
+                }
+                else // SACO ID DE LA PARTIAL INSTANCE
+                {
+                   // pi->getClass da la clase real, luego se sobreescribe por la clase de obj para guardar ese valor.
+                   // La necesidad de tener el nombre de la clase en todas las tablas donde se guarde la instancia,
+                   // es de poder cargar la instancia total cuando se hace un get de una instancia parcial.
+                   $id = $obj->getMultipleTableId( $partialInstance->getClass() );
+                   
+                   // Seteo la clase real en cada una de las instancias parciales, para poder cargar (get, list, find) desde una instancia parcial.
+                   // Tiene la clase de la instancia seteada y quiero que el atributo class sea de la ultima instancia de la estructura de herencia.
+                }
+                
+                $partialInstance->setId( $id );
+                $partialInstance->setClass( $obj->getClass() ); // En ambos casos tengo que colocar la clase correcta porque getPartialInstancesToSave me devuelve solo las clases que generan tabla... y si tengo C1 me va a devolver C, y la clase se la tengo que setear en C1 aunque se mapee en la misma tabla.
+                
+                //Logger::struct( $partialInstance, "PARTIAL INSTANCE" );
+                //Logger::struct( $this->getDataFromObject($partialInstance), "PARTIAL INSTANCE" );
+          
+                // 2: Si existe, hace update
+                if ( $this->dal->exists( $tableName, $id ) ) // VERIFY: este chekeo se hace en save del PM...
+                {
+                   $this->dal->update( $tableName, $this->getDataFromObject($partialInstance) );
+                }
+                else
+                {
+                   Logger::getInstance()->dal_log("DAL::update NO EXISTE " . $tableName . " " . $id . " " . __LINE__);
+                }
+             } // foreach ( $pinss as $partialInstance )
+         } // si esta dirty
       }
 
       $obj->setSessId( $sessId );
-      
-      // ===================================================================
-      // Validacion
-      //return true;
-      // ===================================================================
       
    } // save_object
 
@@ -402,88 +397,86 @@ class PersistentManager {
    {
       Logger::getInstance()->pm_log("PersistentManager::save_cascade " . get_class($obj) . " SESSIONID: " . $sessId );
 
-      // Bandera que indica si hubo error al salvar alguna instancia relacionada a la principal.
-      //$objetoValido = true;
-      
-
-      //$dal = DAL::getInstance();
-
       // Para detectar loops en el salvado del modelo
       $obj->setLoopDetectorSessId( $sessId );
 
       // Si el objeto no fue salvado en la operacion actual...
       if (!$obj->isSaved( $sessId ))
       {
-         // hasOne no necesita tablas intermedias (salvar la referencia)
-         // Retorna los valores no nulos de hasOne
-         $sassoc = $obj->getSimpleAssocValues(); // TODO?: Podria chekear si debe o no salvarse en cascada...
-         foreach ( $sassoc as $attrName => $assocObj )
+         // Nuevo: solo salva si se ha cambiado un atributo o una relacion hasOne (dirty)
+         if ($obj->isDirtyOne())
          {
-            //echo "=== PO hasOne.attr: $attrName<br/>"; 
-            
-            // ojo el objeto debe estar cargado (se verifica eso)
-            if ( $assocObj !== PersistentObject::NOT_LOADED_ASSOC )
-            {
-               //echo "=== PO loaded: $attrName<br/>";
-               
-               // Si se detecta un loop en el salvado del modelo,
-               if ( $assocObj->isLoopMarked( $sessId ) )
-               {
-                  Logger::getInstance()->pm_log("LOOP DETECTADO " . get_class($obj) . " " . get_class($assocObj));
+             //asOne no necesita tablas intermedias (salvar la referencia)
+             // Retorna los valores no nulos de hasOne
+             $sassoc = $obj->getSimpleAssocValues(); // TODO?: Podria chekear si debe o no salvarse en cascada...
+             foreach ( $sassoc as $attrName => $assocObj )
+             {
+                //echo "=== PO hasOne.attr: $attrName<br/>"; 
+                
+                // ojo el objeto debe estar cargado (se verifica eso)
+                if ( $assocObj !== PersistentObject::NOT_LOADED_ASSOC )
+                {
+                   //echo "=== PO loaded: $attrName<br/>";
+                   
+                   // Si se detecta un loop en el salvado del modelo,
+                   if ( $assocObj->isLoopMarked( $sessId ) )
+                   {
+                      //Logger::getInstance()->pm_log("LOOP DETECTADO " . get_class($obj) . " " . get_class($assocObj));
+    
+                      // Agrega al objeto un callback cuando para que se llame cuando termine de llamarse, para salvar el objeto hasOne asociado.
+                      // Se salva el objeto actual sin el asociado (assocObj viene a ser instancia de A del modelo A -> B -> C -> A, donde obj viene a ser instancia de C).
+                      // Esto deja a obj inconsistente, pero se arregla con el callback cuando termina de salvar a A, se actualiza la referencia de C a A.
+    
+                      // =============================================================================
+                      // Se empezo a salvar desde A, se quiere salvar C que a su vez necesita A.
+                      // $assocObj es A.
+                      // $obj es C.
+    
+                      // 1. Actualizar ids de hasOne. // update_simple_assocs
+                      $callb_update = new Callback();
+                      $callb_update->set( $obj, 'update_simple_assocs', array() );
+    
+                      // FIXME (posible bug TICKET #4.1): OJO!, este save deberia ser un save simple (no salvar nada en cascada) y hacerce obligatoriamente, sin considerar el id de session...
+                      // 2. Salvar el objeto. Llama a save del PO que es el wrapper del PM...
+                      $callb_save = new Callback();
+                      $callb_save->set( $obj, 'single_save', array() ); // Intento solucion TICKET #4.1
+    
+                      // Registro los callbacks en A, para que cuando se salve, se actualice C con su id.
+                      $assocObj->registerAfterSaveCallback( $callb_update );
+                      $assocObj->registerAfterSaveCallback( $callb_save );
+    
+                      // No se sigue salvando en cascada el objeto asociado xq ya se quiso salvar y se llego
+                      // a un loop, se corta el loop y se salvan los objetos con los datos que tienen, y los
+                      // datos que no se tienen se salvan en callbacks.
+                      // =====================================================================================
+                   }
+                   else // Si no es un loop en el modelo, salva en cascada como siempre...
+                   {
+                      if (!$assocObj->isSaved( $sessId ) && $obj->isOwnerOf( $attrName )) // VERIFY:  si el objeto asociado esta salvado, la asociacion tambien ????
+                      {                                                              // VERIFY: Salva en cascada solo si soy el duenio de la relacion.. esto esta bien para 1..* ??
+                         Logger::getInstance()->pm_log("PM::save_assoc save_cascade de ". $assocObj->getClass() .__LINE__);
+                         
+                         // hasOne no necesita tablas intermedias (salvar la referencia)
+                         // salva objeto y sus asociaciones.
+                         $this->save_cascade( $assocObj, $sessId );
+                      }
+                   }
+                } // si esta cargado
+                else
+                {
+                   //echo "=== PO not loaded: $attrName<br/>";
+                }
+             } // Para cada objeto asociado
 
-                  // Agrega al objeto un callback cuando para que se llame cuando termine de llamarse, para salvar el objeto hasOne asociado.
-                  // Se salva el objeto actual sin el asociado (assocObj viene a ser instancia de A del modelo A -> B -> C -> A, donde obj viene a ser instancia de C).
-                  // Esto deja a obj inconsistente, pero se arregla con el callback cuando termina de salvar a A, se actualiza la referencia de C a A.
-
-                  // =============================================================================
-                  // Se empezo a salvar desde A, se quiere salvar C que a su vez necesita A.
-                  // $assocObj es A.
-                  // $obj es C.
-
-                  // 1. Actualizar ids de hasOne. // update_simple_assocs
-                  $callb_update = new Callback();
-                  $callb_update->set( $obj, 'update_simple_assocs', array() );
-
-                  // FIXME (posible bug TICKET #4.1): OJO!, este save deberia ser un save simple (no salvar nada en cascada) y hacerce obligatoriamente, sin considerar el id de session...
-                  // 2. Salvar el objeto. Llama a save del PO que es el wrapper del PM...
-                  $callb_save = new Callback();
-                  $callb_save->set( $obj, 'single_save', array() ); // Intento solucion TICKET #4.1
-                  //$callb_save->set( $obj, 'save', array() );
-
-                  // Registro los callbacks en A, para que cuando se salve, se actualice C con su id.
-                  $assocObj->registerAfterSaveCallback( $callb_update );
-                  $assocObj->registerAfterSaveCallback( $callb_save );
-
-                  // No se sigue salvando en cascada el objeto asociado xq ya se quiso salvar y se llego
-                  // a un loop, se corta el loop y se salvan los objetos con los datos que tienen, y los
-                  // datos que no se tienen se salvan en callbacks.
-                  // =====================================================================================
-               }
-               else // Si no es un loop en el modelo, salva en cascada como siempre...
-               {
-                  if (!$assocObj->isSaved( $sessId ) && $obj->isOwnerOf( $attrName )) // VERIFY:  si el objeto asociado esta salvado, la asociacion tambien ????
-                  {                                                              // VERIFY: Salva en cascada solo si soy el duenio de la relacion.. esto esta bien para 1..* ??
-                     Logger::getInstance()->pm_log("PM::save_assoc save_cascade de ". $assocObj->getClass() .__LINE__);
-                     
-                     // hasOne no necesita tablas intermedias (salvar la referencia)
-                     // salva objeto y sus asociaciones.
-                     $this->save_cascade( $assocObj, $sessId );
-                  }
-               }
-            } // si esta cargado
-            else
-            {
-               //echo "=== PO not loaded: $attrName<br/>";
-            }
-         } // Para cada objeto asociado
-
-         // ------------------------------------------------------------------------------------------------------------------
-         // VERIFY: Como y donde se setean los atributos de id de las referencias!!
-         // (tendria que hacerse en DAL verificando que el atributo corresponde a una asociacion hasOne)
-         //
-         // Aca tengo los ids de los hasOne y puedo salvar las referencias desde obj a ellos.
-         // FIXME!!!!!: TENGO QUE SALVAR ANTES LOS hasOne para tener sus ids y setear los atributos generados "email_id" ...!!!
-         $obj->update_simple_assocs(); // Actualiza los atributos de referencia a objetos de hasOne (como "email_id")
+             // ------------------------------------------------------------------------------------------------------------------
+             // VERIFY: Como y donde se setean los atributos de id de las referencias!!
+             // (tendria que hacerse en DAL verificando que el atributo corresponde a una asociacion hasOne)
+             //
+             // Aca tengo los ids de los hasOne y puedo salvar las referencias desde obj a ellos.
+             // FIXME!!!!!: TENGO QUE SALVAR ANTES LOS hasOne para tener sus ids y setear los atributos generados "email_id" ...!!!
+             $obj->update_simple_assocs(); // Actualiza los atributos de referencia a objetos de hasOne (como "email_id")
+         
+         } // si la instancia esta dirty
          
          //Logger::struct( $obj , "PRE PM.save_object en PM.save_cascade");
          
@@ -492,51 +485,55 @@ class PersistentManager {
          // salva el objeto simple, verificando restricciones en la instancia $obj
          $this->save_object( $obj, $sessId );
 
-
-         $massoc = $obj->getManyAssocValues(); // Es una lista de listas de objetos.
-         foreach ($massoc as $attrName => $objList)
+         // Si se han modificado los hasMany
+         if ($obj->isDirtyMany())
          {
-            $ord = 0;
-            
-            Logger::getInstance()->pm_log("save_cascade foreach hasManyAssoc: ". $attrName ." ". __FILE__ ." ". __LINE__ );
-            
-            //Logger::warn("HAS MANY ATTR: " . $attrName);
-            foreach ( $objList as $assocObj )
-            {
-               // Problema con cascada hasMany: a1 -> b1 -> c1 -> a1
-               // cuando c1 quiere salvar a a1 no entra aca, eso esta bien, pero deberia salvarse la relacion c1 -> a1...
-               // No se cual es la condicion para salvar la relacion solo, voy a intentar solo decir que c1 es owner de a1 a ver que pasa...
-               if ( $obj->isOwnerOf( $attrName ) )
-               {
-                  Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." isOwnerOf $attrName. " .__LINE__);
-                  
-                  // FIXME ?: por que aca no es igual que en las relaciones hasOne?
-                  
-                  // VERIFY: si el objeto asociado esta salvado, la asociacion tambien ????
-                  // VERIFY: Salva en cascada solo si soy el duenio de la relacion.. esto esta bien para 1..* ??
-                  if (!$assocObj->isSaved( $sessId )) 
-                  {
-                     // salva objeto y sus asociaciones.
-                     $this->save_cascade( $assocObj, $sessId );
-                  }
-
-                  Logger::getInstance()->pm_log("PM::save_assoc save_assoc de ". $obj->getClass(). " ". $assocObj->getClass(). " " .__LINE__);
-                  
-                  // Actualiza tabla intermedia.
-                  // Necesito tener, si la relacion es bidireccional, el nombre del atributo de assocObj que tiene Many obj, podria haber varios!
-                  $this->save_assoc( $obj, $assocObj, $attrName, $ord ); // Se debe salvar aunque a1 este salvado (problema loop hasmany)
-               }
-               else
-               {
-                  Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." !isOwnerOf $attrName. " .__LINE__);
-               }
-               
-               $ord++;
-            }
-         }
+             $massoc = $obj->getManyAssocValues(); // Es una lista de listas de objetos.
+             foreach ($massoc as $attrName => $objList)
+             {
+                $ord = 0;
+                
+                Logger::getInstance()->pm_log("save_cascade foreach hasManyAssoc: ". $attrName ." ". __FILE__ ." ". __LINE__ );
+                
+                //Logger::warn("HAS MANY ATTR: " . $attrName);
+                foreach ( $objList as $assocObj )
+                {
+                   // Problema con cascada hasMany: a1 -> b1 -> c1 -> a1
+                   // cuando c1 quiere salvar a a1 no entra aca, eso esta bien, pero deberia salvarse la relacion c1 -> a1...
+                   // No se cual es la condicion para salvar la relacion solo, voy a intentar solo decir que c1 es owner de a1 a ver que pasa...
+                   if ( $obj->isOwnerOf( $attrName ) )
+                   {
+                      Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." isOwnerOf $attrName. " .__LINE__);
+                      
+                      // FIXME ?: por que aca no es igual que en las relaciones hasOne?
+                      
+                      // VERIFY: si el objeto asociado esta salvado, la asociacion tambien ????
+                      // VERIFY: Salva en cascada solo si soy el duenio de la relacion.. esto esta bien para 1..* ??
+                      if (!$assocObj->isSaved( $sessId )) 
+                      {
+                         // salva objeto y sus asociaciones.
+                         $this->save_cascade( $assocObj, $sessId );
+                      }
+    
+                      Logger::getInstance()->pm_log("PM::save_assoc save_assoc de ". $obj->getClass(). " ". $assocObj->getClass(). " " .__LINE__);
+                      
+                      // Actualiza tabla intermedia.
+                      // Necesito tener, si la relacion es bidireccional, el nombre del atributo de assocObj que tiene Many obj, podria haber varios!
+                      $this->save_assoc( $obj, $assocObj, $attrName, $ord ); // Se debe salvar aunque a1 este salvado (problema loop hasmany)
+                   }
+                   else
+                   {
+                      Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." !isOwnerOf $attrName. " .__LINE__);
+                   }
+                   
+                   $ord++;
+                } // para cada objeto dentro de una relacion hasMany
+             } // para cada relacion hasMany
+         } // si tiene dirtyMany
       } // if is_saved obj
       
-      //return $objetoValido;
+      // Termina de guardar el objeto, limpia los bits de dirty.
+      $obj->resetDirty();
       
    } // save_cascade
 
@@ -715,8 +712,6 @@ class PersistentManager {
    {
       Logger::getInstance()->pm_log("PersistentManager.get_mti_object_byData: CLASS LOADED: " . $classLoaded);
       //Logger::struct( $attrValues, "ATTR VALUES" );
-      
-      //$dal = DAL::getInstance();
       
       // Nueva instancia de la clase real.
       $cins = new $attrValues["class"](array(), true); // Intancia para hallar nombre de tabla (solo para eso, no se usa luego).
@@ -913,7 +908,10 @@ class PersistentManager {
 //       if ($obj->hasAttribute($attr)) // Setea solo si es un atributo de el.
 //       {
          // Obtiene el nombre del atributo para setearlo, si es NULL la clase no tiene ese atributo.
-         if ( $attr = $obj->getAttributeByColumn( $colname ) )
+         
+         $attr = $obj->getAttributeByColumn( $colname );
+         //if ( $attr = $obj->getAttributeByColumn( $colname ) )
+         if ( !is_null($attr) )
          {
             // TODO: Ver como se cargan los NULLs, por ahora se setean... como debe ser?
             
@@ -926,6 +924,9 @@ class PersistentManager {
       }
       
       $obj->updateMultipleTableIds();
+      
+      // Apaga las banderas que se prendieron en la carga
+      $obj->resetDirty();
 
       return $obj;
    }
@@ -1247,7 +1248,7 @@ class PersistentManager {
       // FIXME: quiero todos los atributos...
       // Se agregan los atributos de la clase como proyeccion de la query.
       // Solo quiero los atributos de OBJ, agrego sus atributos como proyecciones de la consulta.
-      /*
+      /* esto seleccionaba solo los atributos declarados en la clase.
       foreach( $_obj->getAttributeTypes() as $attr => $type )
       {
          //$q->addProjection("obj", $attr);
@@ -1270,8 +1271,6 @@ class PersistentManager {
          
 //         echo "ownerSuperClass: $ownerSuperClass<br/>";
          
-         // Se debe pedir a YuppConventions!
-         //$obj_id = $obj->aGet('super_id_'.$ownerSuperClass);
          $obj_id = $obj->aGet( YuppConventions::superclassRefName( $ownerSuperClass ) );
       }
       
@@ -1293,7 +1292,7 @@ class PersistentManager {
          $q->setCondition(
             Condition::_AND()
               ->add( Condition::EQ('ref', 'ref_id', $obj_id) ) // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
-              ->add( Condition::EQ('ref', 'type',   ObjectReference::TYPE_BIDIR) ) // type = bidir
+              ->add( Condition::EQ('ref', 'type', ObjectReference::TYPE_BIDIR) ) // type = bidir
               ->add( Condition::EQA('obj', 'id', 'ref', 'owner_id') ) // JOIN
          );
       }
@@ -1319,6 +1318,9 @@ class PersistentManager {
       //echo "PM.get_many_assoc_lazy<br/>";
       //print_r( $data );
 
+      $wasDirty = $obj->isDirtyMany();
+
+      // Ojo, se prenden bits de dirty (es necesario detectar si no estaba dirty antes, para saber si puede limpiar).
       $obj->aSet( $hmattr, array() ); // Inicalizo lista xq seguramente estaba en NOT_LOADED.
 
       foreach ( $data as $many_attrValues ) // $many_attrValues es un array asociativo de atributo/valor (que son los atributos simples de una instancia de la clase)
@@ -1368,6 +1370,8 @@ class PersistentManager {
 
          $obj->aAddTo( $hmattr, $rel_obj );
       }
+      
+      if (!$wasDirty) $obj->resetDirtyMany();
 
    } // get_many_assocs_lazy
 
@@ -1427,9 +1431,14 @@ class PersistentManager {
       {
          // Define la estrategia con la que se cargan los objetos...
          $obj = $this->po_loader->get($persistentClass, $id); // Llama primero a get_objects.
+         
+         // Ya se hace reset en createObjectFromData, el metodo que se usa para crear el objeto en la carga.
+         // FIXME: solo si la clase estaba limpia antes de la operacion
+         //$obj->resetDirty(); // Apaga las banderas que se prendieron en la carga
 
          ArtifactHolder::getInstance()->addModel( $obj ); // Lo pongo aca para que no se guarde luego de la recursion de las assocs...
       }
+      
       return $obj;
    }
 

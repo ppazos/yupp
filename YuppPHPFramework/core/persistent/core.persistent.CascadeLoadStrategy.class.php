@@ -72,6 +72,10 @@ class CascadeLoadStrategy implements POLoader {
     */
    private function getCascadeAssocs( $obj )
    {
+      // Para saber si estaba limpia previamente, para poder limpiar lo que esta operacion ensucia (dirty bits)
+      $wasClean = $obj->isClean();
+      
+      
       // TODO: Verificar si para los objetos en hasOne, sus asociaciones son cargadas en cascada.
       
       // Para cada objeto hasOne, lo trae.
@@ -96,7 +100,8 @@ class CascadeLoadStrategy implements POLoader {
             ArtifactHolder::getInstance()->addModel( $assoc_obj );
          }
 
-         $obj->{"set".$attr}( $assoc_obj );
+         //$obj->{"set".$attr}( $assoc_obj );
+         $obj->aSet($attr, $assoc_obj);
       }
 
       // Para cada objeto hasMany, lo trae
@@ -106,6 +111,13 @@ class CascadeLoadStrategy implements POLoader {
       {
          $this->getMany( $obj, $attr ); // Carga los elementos del atributo en la clase.
       }
+      
+      // TODO: si carga en cascada, entonces la instancia de obj y sus clases asociadas
+      //       se cargan todas en el mismo momento, por lo que no habria nada sucio,
+      //       y seria innecesario verificar si estaba sucia antes de la carga.
+      // Solo limpia si la clase estaba limpia antes de la operacion
+      if ( $wasClean )
+         $obj->resetDirty(); // Apaga las banderas que se prendieron en la carga
    }
 }
 ?>
