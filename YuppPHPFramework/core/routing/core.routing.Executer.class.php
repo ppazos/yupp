@@ -60,11 +60,13 @@ class Executer {
            // Si hay except la agarra en el try del index.php
            if ( $controllerInstance->flowExists($action) ) // Si es un web flow
            {
-              //Logger::show("ES FLOW " . __FILE__ . " " . __LINE__);
-            
+              Logger::show("ES FLOW " . __FILE__ . " " . __LINE__);
+              
+              // TODO: hacer un metodo flowHandler para achicar el codigo
+              
               if (!$controllerInstance->flowLoaded($action))
               {
-                 //Logger::show("== FLOW NOT LOADED ==");
+                 Logger::show("== FLOW NOT LOADED == ".__FILE__.' '.__LINE__);
                  $controllerInstance->loadFlow($action);
               }
             
@@ -72,11 +74,19 @@ class Executer {
               // Get Flow from controller
               $flow = $controllerInstance->getFlow($action); // La accion es el nombre del flow.
               
-              if (!$flow->isInitialized()) $flow->init();
+              if (!$flow->isInitialized())
+              {
+                 Logger::show("== FLOW NO INICIALIZADO == ".__FILE__.' '.__LINE__);
+                 $flow->init();
+              }
+              
+              Logger::show("== FLOW currentState: ".print_r($flow->getCurrentState(),true).' '.__FILE__.' '.__LINE__);
               
               // ===============================================================================
               // Execute Controller Flow Action
               $flowActionName = $flow->getCurrentState()->getName() . "Action";
+              
+              Logger::show("== ACCION: $flowActionName == ".__FILE__.' '.__LINE__);
               
               // Esta es ya la accion de pasar al otro estado.??? deberia ser en el move...
               $flowExecutionResult = $controllerInstance->{$flowActionName}( $flow );
@@ -96,7 +106,7 @@ class Executer {
               }
               else if ( $flowExecutionResult === "move" )
               {
-                // TODO: pasar al siguiente estado, debe ejecutar la accion de pasar de estado o directamente ejecuta la siguiente accion?
+                 // TODO: pasar al siguiente estado, debe ejecutar la accion de pasar de estado o directamente ejecuta la siguiente accion?
                  Logger::show( "Flow Execution Result = MOVE, " . __FILE__ . " " . __LINE__ );
               
                  $eventName = $this->params["event"];
@@ -107,12 +117,13 @@ class Executer {
                  // FLOW MOVE!
                  $flow->move( $eventName ); // Cambia el estado si puede, si no, tira una except (no existe la transicion! => la maquina esta mal definida).
 
+
                  if ($flow->getCurrentState()->isEndState())
                  {
                     // Ejecutar accion del ultimo estado
                     $flowActionName = $flow->getCurrentState()->getName() . "Action";
                     
-                    //Logger::show("END STATE: " . $flow->getCurrentState()->getName() . ", " . __FILE__ . " " . __LINE__ );
+                    Logger::show("Executer (END STATE): " . $flow->getCurrentState()->getName() . ", " . __FILE__ . " " . __LINE__ );
                     
                     /// FIXME: podria retornar error y deberia volver al estado anterior y mostrar esa vista.
                     $controllerInstance->{$flowActionName}( $flow );
@@ -128,7 +139,7 @@ class Executer {
                  }
                  else
                  {
-                    //Logger::show( "NO ES END STATE: " . $flow->getCurrentState()->getName() . ", " . __FILE__ . " " . __LINE__ );
+                    Logger::show( "Executer (NO ES END STATE) currentState: " . $flow->getCurrentState()->getName() . ", " . __FILE__ . " " . __LINE__ );
                     
                     // Quiero mostrar la vista correspondiente al nuevo estado.
                     $controllerInstance->addToParams( $flow->getModel() ); // Los params son los del request y los del flow.
@@ -159,7 +170,19 @@ class Executer {
               // FIXME: la instancia del controller se crea con la accion como parametro,
               //        si ya se sabe que accion se va a ejecutar,
               //        para que hacer esta llamada con la accion como variable ???.
-              $model_or_command = $controllerInstance->{$action}();
+              try
+              {
+                 $model_or_command = $controllerInstance->{$action}();
+              }
+              catch (Exception $e)
+              {
+                 // No existe la accion o cualquier otra excepcion que pueda tirar
+                 // Tira 500: Internal Server Error
+                 $model_or_command = ViewCommand::display( '500',
+                                          new ArrayObject(array('message'=>$e->getMessage())),
+                                          new ArrayObject() );
+              }
+              
            }
 
            // ======================================================================================
@@ -201,10 +224,20 @@ class Executer {
            }
            else
            {
+              // FIXME: error 500
               // CASO IMPOSIBLE, ACCION DE CONTROLLER RETORNA OTRA COSA.
               //print_r( $model_or_command );
-              throw new Exception('Error: verifique lo que retorna de la accion: '. $controller.'::'.$action);
+              //throw new Exception('Error: verifique lo que retorna de la accion: '. $controller.'::'.$action);
+              $command = ViewCommand::display( '500',
+                                               new ArrayObject( array('message'=>'Error: verifique lo que retorna de la accion: '. $controller.'::'.$action)),
+                                               new ArrayObject() );
            }
+           
+                 // ==============
+      // TEST: ver si guarda el estado en la sesion
+      //$test = CurrentFlows::getInstance()->getFlow( 'createUser' );
+      //Logger::show( "Flow en sesion luego de execute: " . print_r($test->getCurrentState(), true) . ", " . __FILE__ . " " . __LINE__ );
+      // ================
            
            // ===================================================
            // after filters
@@ -217,6 +250,12 @@ class Executer {
               $command = $af_res; // Retorna el ViewCommand del after filter.
            }
            // ===================================================
+        
+                 // ==============
+      // TEST: ver si guarda el estado en la sesion
+      //$test = CurrentFlows::getInstance()->getFlow( 'createUser' );
+      //Logger::show( "Flow en sesion luego de afterFilters: " . print_r($test->getCurrentState(), true) . ", " . __FILE__ . " " . __LINE__ );
+      // ================
         
         } // Paso los before filters y ejecuto accion del controller de forma normal
         
