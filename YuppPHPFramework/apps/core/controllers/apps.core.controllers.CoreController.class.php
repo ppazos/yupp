@@ -373,7 +373,7 @@ class CoreController extends YuppController {
 
       $ctx = YuppContext :: getInstance();
       $ctx->setLocale($locale);
-      $ctx->update();
+      //$ctx->update(); // FIXME: al sacar que CTX fuera un Singleton Persistente se rompio recordar el idioma seleccionado. Eso deberia estar en sesion.
 
       // Vuelvo a donde estaba...
       return $this->redirect(array (
@@ -395,7 +395,7 @@ class CoreController extends YuppController {
 
       $ctx = YuppContext :: getInstance();
       $ctx->setMode($mode);
-      $ctx->update();
+      //$ctx->update();
 
       // Vuelvo a donde estaba...
       return $this->redirect(array (
@@ -413,19 +413,23 @@ class CoreController extends YuppController {
    {
       Logger::show('Execute Bootstrap Action');
       
-      $component = $this->params['componentName'];
+      $appName = $this->params['componentName'];
       
       //ob_start();
       
-      // importa derecho la pagina...
-      //include_once( $pagePath );
+      // Para que cargue la configuracion correcta de la base de datos.
+      // Si no trata de ejecutar usando la configuracion de la base por defecto.
       
+      $ctx = YuppContext::getInstance();
+      $ctx->setComponent( $appName );
+
       // FIXME: el BS a ejecutar debe depender del modo de ejecucion
-      YuppLoader::getInstance()->loadScript('apps.'.$component.'.bootstrap', 'Bootstrap');
+      YuppLoader::getInstance()->loadScript('apps.'.$appName.'.bootstrap', 'Bootstrap');
       
-      //$view = ob_get_clean();
+      //$output = ob_get_clean();
+      //FileSystem::appendLine('imp_log.html', $output);
       
-      return $this->redirect( array('action' => 'index'));
+      return $this->redirect( array('component'=>'core', 'controller'=>'core', 'action'=>'index'));
    }
    
    
@@ -470,8 +474,6 @@ class CoreController extends YuppController {
       YuppLoader::load('core.testing', 'TestCase');
       $appName = $this->params['name'];
       $app = new App($appName);
-      
-      //print_r($app->getPackages());
       
       // Si hay tests
       if (!$app->hasTests())
