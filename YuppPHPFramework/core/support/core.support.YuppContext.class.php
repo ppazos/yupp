@@ -43,12 +43,20 @@ class YuppContext {
       */
    }
     
-   private function __construct() {}
+   private function __construct()
+   {
+      // yupp_locale debe ser persistente para recordar la eleccion del usuario.
+      if ( YuppSession::contains("_yupp_locale") )
+      {
+         $this->locale = YuppSession::get("_yupp_locale");
+      }
+   }
     
    public function setLocale( $locale )
    {
       // TODO: verificar que tiene formato correcto y es un locale valido.
       $this->locale = $locale;
+      YuppSession::set("_yupp_locale", $locale);
    }
    public function getLocale()
    {
