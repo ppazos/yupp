@@ -208,6 +208,13 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
 
 
+==v0.2.6:==
+
+  * Crear la transformación entre XML e instancias del PO. El XML debe ser el generado por PO.toXML().
+  * http://code.google.com/p/yupp/issues/detail?id=23 (Corregir mensajes de error de la verificacion de restricciones)
+  * http://code.google.com/p/yupp/issues/detail?id=66 (Mensaje de error de validacion vacio)
+
+
 ==v0.2.7:==
 
   * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
