@@ -16,8 +16,15 @@
  */
 
 // FIXME: sacar esto y ponerle LoadClass.
-include_once "core/validation/core.validation.Constraints.class.php";
-include_once "core/utils/core.utils.Callback.class.php";
+include_once 'core/validation/core.validation.Constraints.class.php';
+include_once 'core/utils/core.utils.Callback.class.php';
+
+YuppLoader :: load('core.config', 'YuppConventions');
+YuppLoader :: load('core.basic', 'String');
+YuppLoader :: load('core.db', 'DAL'); // declara tambien DatabaseNormalization
+YuppLoader :: load('core.db', 'Datatypes');
+YuppLoader :: load('core.persistent', 'PersistentManager');
+
 
 /*
 TODOS:
@@ -407,7 +414,6 @@ class PersistentObject {
       foreach ( $this->afterSave as $cb )
       {
          $cb->execute();
-         //Logger::getInstance()->po_log($cb->__toString());
       }
 
       // Una vez que termino de ejecutar, reseteo los cb's registrados.
@@ -420,7 +426,6 @@ class PersistentObject {
       foreach ( $this->beforeSave as $cb )
       {
          $cb->execute();
-         //Logger::getInstance()->po_log($cb->__toString());
       }
 
       // Una vez que termino de ejecutar, reseteo los cb's registrados.
