@@ -28,17 +28,17 @@ class FileNames {
     public static function getClassFilename( $package, $clazz )
     {
        // Si no me viene package, igual tiro el nombre bien.
-         return (($package !== NULL && $package !=="")? $package . '.' : "") . $clazz . '.class.php';
+       return (($package !== NULL && $package !=="")? $package . '.' : "") . $clazz . '.class.php';
     }
 
     public static function getInterfaceFilename( $package, $interface )
     {
-        return $package . '.' . $interface . '.interface.php';
+       return $package . '.' . $interface . '.interface.php';
     }
     
     public static function getScriptFilename( $package, $interface )
     {
-        return $package . '.' . $interface . '.script.php';
+       return $package . '.' . $interface . '.script.php';
     }
 
     public static function getFilenameInfo( $filename )
