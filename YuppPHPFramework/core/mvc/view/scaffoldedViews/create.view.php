@@ -62,7 +62,7 @@ global $_base_dir;
       
       <?php echo DisplayHelper::errors( $m->get('object') ); ?>
       
-      <form action="create" method="get">
+      <form action="create" method="post">
       
         <input type="hidden" name="class" value="<?php echo $m->get('object')->aGet('class'); ?>" />
       

@@ -57,7 +57,7 @@ global $_base_dir;
       
     <?php echo DisplayHelper::errors( $m->get('object') ); ?>
       
-    <form action="save" method="get"><!-- PONERLE POST LUEGO, ahora esta get para debuguear nomas. -->
+    <form action="save" method="post">
         <input type="hidden" name="id"    value="<?php echo $m->get('object')->aGet('id'); ?>" />
         <input type="hidden" name="class" value="<?php echo $m->get('object')->aGet('class'); ?>" />
       
