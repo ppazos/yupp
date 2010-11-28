@@ -1,13 +1,8 @@
 <?php
 
-//chdir('core');
-//include_once ('./core/utils/core.utils.ModelUtils.class.php');
-//include_once ('./core/config/core.config.FileNames.class.php');
-//include_once ('./core/config/core.config.PackageNames.class.php');
-//chdir('..');
+//print_r( get_declared_classes() );
 
 include_once ('core/utils/core.utils.ModelUtils.class.php');
-include_once ('core/config/core.config.FileNames.class.php');
 include_once ('core/config/core.config.PackageNames.class.php');
 
 class YuppLoader {
@@ -163,9 +158,7 @@ class YuppLoader {
    private function _loadModelRecursive( $model_path )
    {
       //echo __FILE__ . ' ' . __LINE__ . " $model_path<br/>";
-      
-      $fn = new FileNames();
-      
+
       $dir = dir($model_path);
       while (false !== ($entry = $dir->read()))
       {
@@ -177,7 +170,7 @@ class YuppLoader {
          {
             //echo "<h1>$entry</h1>";
             
-            $finfo = $fn->getFilenameInfo($entry);
+            $finfo = FileNames::getFilenameInfo($entry);
             if ($finfo)
             {
                //echo "PACKAGE: " . $finfo['package'] . "</br>";
@@ -209,8 +202,7 @@ class YuppLoader {
       //echo "PACK $package<br />";
       //echo "<h2>" . __FILE__ . " (". __LINE__ .") LOAD: $package.$clazz </h2>";
 
-      $fn = new FileNames();
-      $filename = $fn->getClassFilename($package, $clazz);
+      $filename = FileNames::getClassFilename($package, $clazz);
 
 //      echo "FILE $filename<br />";
 
@@ -271,8 +263,7 @@ class YuppLoader {
    {
       // Tengo que armar el nombre del archvo desde el nombre del paquete y la clase, ademas tengo que ver la path en la config.
 
-      $fn = new FileNames();
-      $filename = $fn->getInterfaceFilename($package, $interface);
+      $filename = FileNames::getInterfaceFilename($package, $interface);
 
       //$path = ".";
       //$packs = new PackageNames();
@@ -313,8 +304,7 @@ class YuppLoader {
    private function _loadScript($package, $script)
    {
       // Tengo que armar el nombre del archvo desde el nombre del paquete y la clase, ademas tengo que ver la path en la config.
-      $fn = new FileNames();
-      $filename = $fn->getScriptFilename($package, $script);
+      $filename = FileNames::getScriptFilename($package, $script);
 
       // ARMA RUTA FISICA DIRECTAMENTE CON LA RUTA DE PAQUETE (en _load tiene tambien ruta logica a /Model).
       // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
@@ -337,12 +327,10 @@ class YuppLoader {
             "filename" => $filename
          );
       }
-      
 
       // necesaria para mantener actualizada la session con la instance del singleton. (xq no referencia a la session xa este es un valor desserealizado...)
       YuppSession :: set("_class_loader_singleton_instance", $this); // actualizo la variable en la session...
       */
-      
    }
    // /Script
 
@@ -355,8 +343,8 @@ class YuppLoader {
    public function _isLoadedClass($package, $clazz)
    {
       // IDEM A LOAD...
-      $fn = new FileNames();
-      $filename = $fn->getClassFilename($package, $clazz);
+      
+      $filename = FileNames::getClassFilename($package, $clazz);
 
       $path = ".";
       if (PackageNames::isModelPackage($package))
