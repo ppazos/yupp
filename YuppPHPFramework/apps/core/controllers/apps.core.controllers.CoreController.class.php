@@ -104,6 +104,9 @@ class CoreController extends YuppController {
       $appNames = $yupp->getAppNames();
       $appModelClasses = array(); // [appName][class][tablename,creada o no]
       
+      // Incluye todas las clases del modelo de todas las apps
+      YuppLoader :: loadModel();
+      
       // Para saber si se crearon las tablas para todas las
       // clases del modelo de todas las aplicaciones.
       $allTablesCreated = true;
@@ -113,7 +116,7 @@ class CoreController extends YuppController {
       foreach ($appNames as $appName)
       {
          $app = new App($appName);
-         $modelClassFileNames = $app->getModel();
+         $modelClassFileNames = $app->getModel(); // no incluye las clases, solo obtiene los nombres
          
          //print_r($modelClassFileNames);
          
@@ -127,7 +130,6 @@ class CoreController extends YuppController {
          // Toda la informacion de las clases y tablas creadas para esta app
          $appModelClasses[$appName] = array();
          
-         //$dal = DAL::getInstance($appName);
          $dal = new DAL($appName);
          
          foreach ($modelClassFileNames as $classFileName)
@@ -190,6 +192,9 @@ class CoreController extends YuppController {
     */
    public function createModelTablesAction()
    {
+      // Incluye todas las clases del modelo de todas las apps
+      YuppLoader :: loadModel();
+      
       // TODO: si genera errores se deberian mostrar lindos, 
       // ahora me muestra unas excepciones de las consultas 
       // a la DB para las tablas que ya existen que no se pueden crear.
