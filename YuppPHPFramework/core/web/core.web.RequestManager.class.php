@@ -2,6 +2,7 @@
 
 YuppLoader::load('core.layout', 'LayoutManager');
 YuppLoader::load('core.support', 'Timer');
+YuppLoader::load('core', 'Yupp');
 
 /*
  * Implementa el proceso y control de generacion de paginas a partir del request.
@@ -58,20 +59,26 @@ class RequestManager {
       // se muestran los controladores del componente.
       if ( empty($lr['controller']) )
       {
+         /*
          if (!Yupp::appExists($lr['component']))
          {
-             // Tira 404: Not Found
-             $command = ViewCommand::display( '404',
-                                         new ArrayObject(array('message'=>'La aplicaci&oacute;n <b>'.$lr['component'].'</b> no existe')),
-                                         new ArrayObject() );
+            // Tira 404: Not Found
+            $command = ViewCommand::display( '404',
+                                        new ArrayObject(array('message'=>'La aplicaci&oacute;n <b>'.$lr['component'].'</b> no existe')),
+                                        new ArrayObject() );
          }
          else
          {
-             $router->addCustomParams( array('component'=>$lr['component']) );
-             $lr['component'] = "core"; // Le dice a core/core que muestre los controllers del componente $lr['component']
-             $lr['controller'] = "core";
-             $lr['action'] = "componentControllers";
+         */
+            Logger::getInstance()->po_log("RM: ".__FILE__ .' '.__LINE__);
+            
+            $router->addCustomParams( array('component'=>$lr['component']) );
+            $lr['component'] = "core"; // Le dice a core/core que muestre los controllers del componente $lr['component']
+            $lr['controller'] = "core";
+            $lr['action'] = "componentControllers";
+         /*
          }
+         */
       }
       else // si viene la app y el controller en la url
       {
@@ -92,82 +99,85 @@ class RequestManager {
           {
              $lr['action'] = $actionParam;
           }
-          
-          //Logger::struct( $lr, "LOGICAR ROUTE 2 " .__FILE__.' '.__LINE__ );
-               
-          // *******************************************************************************
-          // FIXME: puedo tener componente, controlador y accion, pero pueden ser nombres
-          // errados, es decir, que no existen, por ejemplo si en la url le paso /x/y/z.
-          // Aqui hay que verificar si existe antes de seguir, y si el componente no existe,
-          // o si existe pero el controlador no existe, o si ambos existen, si la accion 
-          // en el controlador no existe, deberia devolver un error y mostrarlo lindo (largar una exept).
-          // Estaria bueno definir codigos estandar de errores de yupp, para poder tener una
-          // lista ed todos los errores que pueden ocurrir.
-          // *******************************************************************************
-    
-          // FIXME: no armar esto a mano, pedirselo a alguna clase de convensiones o la nueva clase App.
-          $componentPath       = "apps/".$lr['component'];
-          $controllerClassName = String::firstToUpper($lr['controller']) . "Controller";
-          $controllerFileName  = "apps.".$lr['component'].".controllers.".$controllerClassName.".class.php";
-          $controllerPath      = "apps/".$lr['component']."/controllers/".$controllerFileName;
-          
-          /// ACTUALIZAR CONTEXTO ///
-          $ctx->setComponent ( $lr['component'] );
-          $ctx->setController( $lr['controller'] );
-          $ctx->setAction    ( $lr['action'] );
-          /// ACTUALIZAR CONTEXTO ///
-          
-          //Logger::struct( $lr, "LOGICAR ROUTE 3 " .__FILE__.' '.__LINE__ );
-          //echo "<hr/>PATH: $controllerPath<br/>";
-          
-          // Verifico que lo que pide existe...
-          if ( !file_exists($componentPath) ) // FIXME: yupp::appExists
-          {
-             // Tira 404: Not Found
-             $command = ViewCommand::display( '404',
-                                              new ArrayObject(array('message'=>'La aplicaci&oacute;n <b>'.$lr['component'].'</b> no existe')),
-                                              new ArrayObject() );
-          }
-          else if (!file_exists($controllerPath))
-          {
-             // Tira 404: Not Found
-             $command = ViewCommand::display( '404',
-                                              new ArrayObject(array('message'=>'El controlador <b>'.$lr['controller'].'</b> no existe')),
-                                              new ArrayObject() );
-          }
-          else // Existe app y controller
-          {
-              // Aca deberia chekear si la clase $lr['controller'] . "Controller" tiene le metodo $lr['action'] . "Action".
-              // Esto igual salta en el executer cuando intenta llamar al metodo, y salta si no existe.
-               
-              // Logger::struct($lr, "LOGICAL ROUTE 2");
-              
-              // FIXME: esto es una regla re ruteo.
-              // TODO: Si accede al componente sin poner el controller, se intenta buscar un controller con el mismo nombre del componente.
-              //       Si no existe, se redirige al core controller como se hace aqui.
-              
-              // Verificacion de controller filters (v0.1.6.3)
-              $controllerFiltersPath = 'apps/'.$lr['component'].'/ComponentControllerFilters.php'; // Nombre y ubicacion por defecto.
-              $controllerFiltersInstance = NULL;
-              if ( file_exists($controllerFiltersPath) ) // TODO: no ir al filesystem en cada request, una vez que se pone en prod se debe saber que el archivo existe o no.
-              {
-                 // FIXME: con la carga bajo demanda de PHP esto se haria automaticamente!
-                 include_once( $controllerFiltersPath ); // FIXME: no usa YuppLoader (nombre de archivo no sigue estandares!).
-                 $controllerFiltersInstance = new ComponentControllerFilters(); // Esta clase esta definida en el archivo incluido (es una convension de Yupp).
-              }
-              
-              //Logger::struct( $router->getParams(), "ROUTER PARAMS " .__FILE__.' '.__LINE__ );
-              
-              $executer = new Executer( $router->getParams() );
-              $command = $executer->execute( $controllerFiltersInstance ); // $controllerFiltersInstance puede ser null!
-              
-              // ==============
-              // TEST: ver si guarda el estado en la sesion
-              //$test = CurrentFlows::getInstance()->getFlow( 'createUser' );
-              //Logger::show( "Flow en sesion luego de execute: " . print_r($test->getCurrentState(), true) . ", " . __FILE__ . " " . __LINE__ );
-              // ================
-          }
       }
+          
+      //Logger::struct( $lr, "LOGICAR ROUTE 2 " .__FILE__.' '.__LINE__ );
+           
+      // *******************************************************************************
+      // FIXME: puedo tener componente, controlador y accion, pero pueden ser nombres
+      // errados, es decir, que no existen, por ejemplo si en la url le paso /x/y/z.
+      // Aqui hay que verificar si existe antes de seguir, y si el componente no existe,
+      // o si existe pero el controlador no existe, o si ambos existen, si la accion 
+      // en el controlador no existe, deberia devolver un error y mostrarlo lindo (largar una exept).
+      // Estaria bueno definir codigos estandar de errores de yupp, para poder tener una
+      // lista ed todos los errores que pueden ocurrir.
+      // *******************************************************************************
+
+      // FIXME: no armar esto a mano, pedirselo a alguna clase de convensiones o la nueva clase App.
+      $componentPath       = "apps/".$lr['component'];
+      $controllerClassName = String::firstToUpper($lr['controller']) . "Controller";
+      $controllerFileName  = "apps.".$lr['component'].".controllers.".$controllerClassName.".class.php";
+      $controllerPath      = "apps/".$lr['component']."/controllers/".$controllerFileName;
+      
+      /// ACTUALIZAR CONTEXTO ///
+      $ctx->setComponent ( $lr['component'] );
+      $ctx->setController( $lr['controller'] );
+      $ctx->setAction    ( $lr['action'] );
+      /// ACTUALIZAR CONTEXTO ///
+      
+      //Logger::struct( $lr, "LOGICAR ROUTE 3 " .__FILE__.' '.__LINE__ );
+      //echo "<hr/>PATH: $controllerPath<br/>";
+      
+      // Verifico que lo que pide existe...
+      if ( !file_exists($componentPath) ) // FIXME: yupp::appExists
+      {
+         // Tira 404: Not Found
+         $command = ViewCommand::display( '404',
+                                          new ArrayObject(array('message'=>'La aplicaci&oacute;n <b>'.$lr['component'].'</b> no existe')),
+                                          new ArrayObject() );
+      }
+      else if (!file_exists($controllerPath))
+      {
+         // Tira 404: Not Found
+         $command = ViewCommand::display( '404',
+                                          new ArrayObject(array('message'=>'El controlador <b>'.$lr['controller'].'</b> no existe')),
+                                          new ArrayObject() );
+      }
+      else // Existe app y controller
+      {
+         // Aca deberia chekear si la clase $lr['controller'] . "Controller" tiene le metodo $lr['action'] . "Action".
+         // Esto igual salta en el executer cuando intenta llamar al metodo, y salta si no existe.
+           
+         // Logger::struct($lr, "LOGICAL ROUTE 2");
+          
+         // FIXME: esto es una regla re ruteo.
+         // TODO: Si accede al componente sin poner el controller, se intenta buscar un controller con el mismo nombre del componente.
+         //       Si no existe, se redirige al core controller como se hace aqui.
+          
+         // Verificacion de controller filters (v0.1.6.3)
+         $controllerFiltersPath = 'apps/'.$lr['component'].'/ComponentControllerFilters.php'; // Nombre y ubicacion por defecto.
+         $controllerFiltersInstance = NULL;
+         if ( file_exists($controllerFiltersPath) ) // TODO: no ir al filesystem en cada request, una vez que se pone en prod se debe saber que el archivo existe o no.
+         {
+            // FIXME: con la carga bajo demanda de PHP esto se haria automaticamente!
+            include_once( $controllerFiltersPath ); // FIXME: no usa YuppLoader (nombre de archivo no sigue estandares!).
+            $controllerFiltersInstance = new ComponentControllerFilters(); // Esta clase esta definida en el archivo incluido (es una convension de Yupp).
+         }
+          
+         //Logger::struct( $router->getParams(), "ROUTER PARAMS " .__FILE__.' '.__LINE__ );
+          
+         $executer = new Executer( $router->getParams() );
+         $command = $executer->execute( $controllerFiltersInstance ); // $controllerFiltersInstance puede ser null!
+          
+         // ==============
+         // TEST: ver si guarda el estado en la sesion
+         //$test = CurrentFlows::getInstance()->getFlow( 'createUser' );
+         //Logger::show( "Flow en sesion luego de execute: " . print_r($test->getCurrentState(), true) . ", " . __FILE__ . " " . __LINE__ );
+         // ================
+      }
+      
+      Logger::getInstance()->po_log("RM: ".__FILE__ .' '.__LINE__);
+      
       // /ROUTING
       // ====================================================
 
@@ -214,8 +224,8 @@ class RequestManager {
          $timer_render->stop();
          $tiempo_render = $timer_render->getElapsedTime();
   
-            echo "<br/><br/>Tiempo de proceso: " . $tiempo_proc . " s<br/>";
-            echo "Tiempo de render: " . $tiempo_render . " s<br/>";
+         echo "<br/><br/>Tiempo de proceso: " . $tiempo_proc . " s<br/>";
+         echo "Tiempo de render: " . $tiempo_render . " s<br/>";
   
          return;
       }
