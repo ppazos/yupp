@@ -9,6 +9,9 @@
 session_start();
 
 include_once ('core/core.YuppSession.class.php');
+
+// Necesaria para YuppLoader, si se declara este include adentro de YuppLoader.php, no lo toma.
+include_once ('core/config/core.config.FileNames.class.php');
 include_once ('core/core.YuppLoader.class.php');
 
 // Para handlear WARNINGS y tirar exceptions.
@@ -21,9 +24,6 @@ function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext) {
 }
 
 YuppLoader :: load("core.config", "YuppConfig");
-YuppLoader :: load("core.config", "YuppConventions");
-
-YuppLoader :: load("core.basic", "String");
 
 YuppLoader :: load("core.support", "I18nMessage");
 YuppLoader :: load("core.support", "YuppContext");
@@ -44,27 +44,18 @@ YuppLoader :: load("core.mvc", "DisplayHelper");
 YuppLoader :: load("core.mvc", "ViewCommand");
 YuppLoader :: load("core.mvc", "Model");
 
-// DBG
 YuppLoader :: load("core", "FileSystem");
-// /DBG
-
 YuppLoader :: load("core.utils", "Logger");
-
-// La DB a incluir ahora se resuelve en DAL.
-YuppLoader :: load("core.db", "Datatypes");
-YuppLoader :: load("core.db", "DAL");
 
 // Hay dependencia mutua entre AH, PO y PM...
 YuppLoader :: load("core.persistent", "ArtifactHolder");
-YuppLoader :: load("core.persistent", "PersistentManager");
+
 YuppLoader :: load("core.persistent", "PersistentObject");
 
 // TEST
 YuppLoader :: load("core.routing", "Router");
 YuppLoader :: load("core.routing", "YuppControllerFilter"); // FIXME: no deberia ser parte del paquete routing, esta aca solo porque es usada desde el Executer...
 YuppLoader :: load("core.routing", "Executer");
-
-//YuppLoader :: load("core.utils", "YuppStats");
 
 // ============================================================
 // Configuro logger para que no muestre mensajes:
@@ -77,7 +68,7 @@ Logger::getInstance()->off();
 // FIXME: deberia cargar solo las clases del modelo de la app actual.
 // Y el metodo deberia ser un proxy en App, tal que cargue las clases de esa app.
 // Solo sacando esta linea, los pedidos que se pueden hacer por minuto aumentan en un 70%.
-YuppLoader :: loadModel();
+//YuppLoader :: loadModel();
 
 //[SCRIPT_NAME] => /Persistent/index.php
 // Dejo algunas variables globales utiles:
