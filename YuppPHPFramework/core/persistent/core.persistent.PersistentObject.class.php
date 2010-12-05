@@ -886,7 +886,6 @@ class PersistentObject {
            {
               foreach ( $constraintArray as $constraint )
               {
-                 //if ( !$constraint->evaluate( $this->attributeValues[$attr] ) ) // NO PIDE HASONE...
                  if ( !$constraint->evaluate( $this->aGet($attr) ) )
                  {
                     $valid = false;
@@ -953,16 +952,51 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
 
       if ( is_array($this->constraints) )
       {
-         //Logger::getInstance()->po_log("PO:validate A");
+         Logger::getInstance()->po_log("PO:validate A");
          
          // Para cada campo
          foreach ( $this->constraints as $attr => $constraintArray )
          {
-            //Logger::getInstance()->po_log("PO:validate B ($attr)");
+            Logger::getInstance()->po_log("PO:validate B ($attr)");
+            
+            // =========================================
+            // FIXME: reutilizar validateOnly
+            // =========================================
+            
+            $value = ( (array_key_exists($attr, $this->attributeValues)) ? $this->attributeValues[$attr] : NULL );
+            
+            // ===============================================================
+            // TICKET: http://code.google.com/p/yupp/issues/detail?id=20
+            // Si el valor es null, pregunta por restriccion nullable,
+            // que si da ok, no verifica las demas restricciones.
+            // Esto es porque si es nullable(true) y el valor es null,
+            // las demas restricciones no tienen sentido de verificarse
+            // porque es posible que den false (min, inList, etc)
+            if (is_null($value))
+            {
+                Logger::getInstance()->po_log("PO:validate B.a ($attr)");
+                
+                $nullable = $this->getConstraintOfClass($attr, 'Nullable');
+                if (!is_null($nullable) && $nullable->evaluate($value))
+                {
+                    return true;
+                }
+            }
+            else if ($value === '') // Si el valor es vacio, hace lo mismo que nullable por con Blank
+            {
+                Logger::getInstance()->po_log("PO:validate B.b ($attr)");
+                
+                $blank = $this->getConstraintOfClass($attr, 'BlankConstraint');
+                if (!is_null($blank) && $blank->evaluate($value))
+                {
+                    return true;
+                }
+            }
+            // ===============================================================
             
             foreach ( $constraintArray as $constraint )
             {
-               //Logger::getInstance()->po_log("PO:validate C");
+               Logger::getInstance()->po_log("PO:validate C");
                
                // FIXME: para no tener que verificar si un atributo que es de la clase tenga un valor,
                //        al inicializar la clase pasandole un array con algunos valores, deberia poner
@@ -973,12 +1007,20 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                //        Mas abajo se usa el value para armar el string de error y falla si el
                //        objeto no tiene toString.
               
-               $value = ( (array_key_exists($attr, $this->attributeValues)) ? $this->attributeValues[$attr] : NULL );
+               /*
                if ( get_class($constraint) === 'Nullable' )
                {
-                  //Logger::getInstance()->po_log("PO:validate D (nullable)");
+                  Logger::getInstance()->po_log("PO:validate D (nullable)");
                   
-                  if ( $value === NULL && $constraint->evaluate($value) ) // Si valor nulo y valida => nullable(true)
+                  // Si valor nulo y valida => nullable(true)
+                  
+                  // FIXME
+                  // Esto muestra que Nullable le gana a las otras restricciones,
+                  // pero depende del orden en que se verifican. Si luego verifico
+                  // otra restriccion y falla, igual agrega el error.
+                  // Deberia pedir todas las restricciones, verificar primero nullable,
+                  // luego blank, luego todo el resto como un and.
+                  if ( $value === NULL && $constraint->evaluate($value) )
                   {
                      unset( $this->errors[$attr] );
                      break;
@@ -986,7 +1028,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                }
                else if ( get_class($constraint) === 'BlankConstraint' )
                {
-                  //Logger::getInstance()->po_log("PO:validate E (blank)");
+                  Logger::getInstance()->po_log("PO:validate E (blank)");
                   
                   if ( $value === "" && $constraint->evaluate($value) ) // Si valor vacio y valida => blank(true)
                   {
@@ -994,10 +1036,11 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                      break;
                   }
                }
+               */
               
                if ( !$constraint->evaluate($value) )
                {
-                  //Logger::getInstance()->po_log("PO:validate F (invalido!) constraint:". get_class($constraint));
+                  Logger::getInstance()->po_log("PO:validate F (invalido!) constraint:". get_class($constraint));
                   
                   $valid = false;
 
@@ -1006,22 +1049,19 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                   $err = ValidationMessage::getMessage( $constraint, $attr, $value );
                   // ====================================================================
 
+                  Logger::getInstance()->po_log("PO:validate E error:". $err);
+
                   // Agrego el error a "errors"
 
                   // Si no hay un vector de mensajes para este campo
                   if (!isset($this->errors[ $attr ])) $this->errors[$attr] = array();
-
-                  // Agrego mensaje
-                  // TODO: ver de donde sacar el mensaje segun el tipo de constraint.
-                  // FIX: se pueden tener keys i18n estandar para problemas con constraints, y para resolver
-                  //      el mensaje como parametros le paso la constraint, el atributo y el valor que fallo.
-                  //$err = "Error " . get_class($constraint) . " " . $constraint . " en " . $attr . " con valor ";
 
                   $this->errors[$attr][] = $err;
                }
             }
          }
       }
+      
       
       // http://code.google.com/p/yupp/issues/detail?id=50
       // Si hay que validar las instancias en hasOne y hasMany
@@ -1044,6 +1084,8 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
          
          // TODO: hasMany
       }
+      
+      
 
       return $valid;
    }
@@ -1167,6 +1209,8 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
       Logger::getInstance()->po_log("PO:save " . get_class($this));
 
       if (!$this->validate(true)) return false;
+      
+      Logger::getInstance()->po_log("PO:save post validate");
 
       $this->executeBeforeSave();
 
