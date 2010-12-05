@@ -7,13 +7,14 @@ YuppLoader::load('tests.model.002', 'Nariz');
 
 class TestCase002 extends TestCase {
 
-   private $bot;
+   //private $bot;
 
    public function run()
    {
       $this->test1();
       $this->test2();
       $this->test3();
+      $this->test5();
    }
    
    public function test1()
@@ -89,6 +90,44 @@ class TestCase002 extends TestCase {
       $c = Cara::count();
       
       $this->assert( $c == 1, 'Test hay una cara ['.$c.']');
+   }
+   
+   public function test5()
+   {
+      //Logger::getInstance()->on();
+      
+      $cara = new Cara(
+        array(
+          "color" => NULL,
+          "nariz" => new Nariz(
+            array(
+              "tamanio"=>"chica"
+            )
+          ) 
+        )
+      );
+      
+      /*
+      try {
+          if (!$cara->validate(true)) echo 'error<br/>';
+          else echo 'ok<br/>';
+          
+          echo 'try: <br/>';
+          print_r($cara->getErrors());
+          //print_r($cara->getNariz()->getErrors());
+          
+      } catch(Exception $e)
+      {
+          echo 'except: <br/>';
+          print_r($e->getMessage());
+      }
+      */
+      
+      
+      // Debe fallar el save porque hay datos erroneos
+      $this->assert( $cara->save(), 'Test guardar cara 5 '. print_r($cara->getErrors(), true));
+      
+      //Logger::getInstance()->off();
    }
 }
 
