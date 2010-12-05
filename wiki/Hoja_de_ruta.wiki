@@ -204,8 +204,10 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 ==v0.2.5: codename Genesis==
 
   * Agregar soporte para XSL en la generación de XML a partir de clases del modelo.
-  * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo)
+  * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
+  * Correcciones al flujo de procesamiento del request en RequestManager
+  * Simplificacion de las inclusiones para mejorar performance en index.php
 
 
 ==v0.2.6:==
