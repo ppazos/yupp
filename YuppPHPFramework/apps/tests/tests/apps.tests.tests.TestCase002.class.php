@@ -15,6 +15,8 @@ class TestCase002 extends TestCase {
       $this->test2();
       $this->test3();
       $this->test5();
+      
+      //$this->testXML();
    }
    
    public function test1()
@@ -128,6 +130,24 @@ class TestCase002 extends TestCase {
       $this->assert( $cara->save(), 'Test guardar cara 5 '. print_r($cara->getErrors(), true));
       
       //Logger::getInstance()->off();
+   }
+   
+   public function testXML()
+   {
+       $cara = new Cara(
+        array(
+          "color" => "blanco",
+          "nariz" => new Nariz(
+            array(
+              "tamanio"=>"mediana"
+            )
+          ) 
+        )
+      );
+      
+      
+      echo $cara->toXML(true);
+      echo $cara->toXML2(true, true);
    }
 }
 
