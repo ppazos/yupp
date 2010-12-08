@@ -205,26 +205,30 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 
   * Agregar soporte para XSL en la generación de XML a partir de clases del modelo. (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo) (HECHO)
-  * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
+  * http://code.google.com/p/yupp/issues/detail?id=23 (Corregir mensajes de error de la verificacion de restricciones)
+  * http://code.google.com/p/yupp/issues/detail?id=66 (Mensaje de error de validacion vacio)
   * Correcciones al flujo de procesamiento del request en RequestManager
   * Simplificacion de las inclusiones para mejorar performance en index.php
 
 
-==v0.2.6:==
+==v0.3:==
 
-  * Crear la transformación entre XML e instancias del PO. El XML debe ser el generado por PO.toXML().
-  * http://code.google.com/p/yupp/issues/detail?id=23 (Corregir mensajes de error de la verificacion de restricciones)
-  * http://code.google.com/p/yupp/issues/detail?id=66 (Mensaje de error de validacion vacio)
+  * Generar instancias de PO a parir del XML generado al serializar la instancia (transformación inversa a la serialización).
+  * Sacar la serializacion a XML de PO a una clase aparte.
+  * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan 
+depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
+  * Juntar paquetes support y utils en utils. Poner en ese utils las clases del paquete config que no sean de configuracion del framework.
 
 
-==v0.2.7:==
+==v0.4:==
 
-  * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
   * http://code.google.com/p/yupp/issues/detail?id=39 (Agregar soporte a Yupp Paths)
   * TICKET #38 (numeracion vieja): terminar las funcionalidades para inspeccionar la base de datos.
+  * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
+  * Extender la configuracion de DB de las aplicaciones para soportar los modos de ejecucion.
 
 
-==v0.2.8:==
+==v0.5:==
 
   * Poder hacer otros campos complejos de forms por fuera de YuppForms, p.e. fecha, HTML, etc.
   * Corregir información duplicada de ObjectReference en PersistentManager.generate, cuando se generan las tablas intermedias de relaciones hasMany.
@@ -232,36 +236,38 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
     * No dejar ejecutar tests en modo prod, tampoco correr bootstraps (es por seguridad).
 
 
-==v0.3.0: codename Deep Purple==
+==v0.6: codename Deep Purple==
 
   * http://code.google.com/p/yupp/issues/detail?id=36 (Operaciones de inspeccion)  
+  * http://code.google.com/p/yupp/issues/detail?id=16 (Verificar si la clase UrlProcessing es necesaria)
+  * Documentacion de los ciclos de vida de PO y todas las operaciones del YORM (necesario para mejorar performance y optimizar código).
+
+
+==v0.7:==
+
+  * Mejoras para performance (verificar inclusiones y dependencias, optimizacion de codigo).
+  * Integración con otras librerías JS/FX/AJAX
   * Capacidad de instalar y desinstalar aplicaciones a modo de sistema operativo instalando y desinstalando programas.
   * Soporte para internacionalización automática de fechas
-  * http://code.google.com/p/yupp/issues/detail?id=16 (Verificar si la clase UrlProcessing es necesaria)
 
 
-==v0.3.5:==
-
-  * Mejoras para performance (corregir inclusiones en index.php y hacer solo las necesarias).
-  * Integración con otras librerías JS/FX/AJAX
-  * Verificación de errores y comportamiento robusto (soporte de mal pasaje de urls y parámetros)
-
-
-==v0.4.0: codename U2==
+==v0.8: codename U2==
 
   * Arquitectura de plugins: componentes de bajo nivel capaces de ser instalados y usados por varios componentes (ajax, helpers, integracion con otras librerias p.e. javascript, WS, ORM externo, etc).
+  * Crear un par de plugins de ejemplo: p.e. obtener actualizaciones e instalar aplicaciones. O reporte de bugs desde el propio framework.
 
 
-==v0.4.5:==
+==v0.9:==
 
   * Integración del YORM con sistemas externos mediante WS:
     * Soporte para fuentes de datos JSON 
     * Soporte para fuentes de datos XML 
 
 
-==v0.5.0: codename The Beatles==
+==v1.0: codename The Beatles==
 
-  * ...
+  * Verificación de errores y comportamiento robusto (soporte de mal pasaje de urls y parámetros)
+
 
 
 Algunos temas importantes a organizar:
@@ -287,4 +293,4 @@ Algunos temas que se irán haciendo a medida que haya tiempo:
 
 Ideas y nuevas características:
 
-  * I18nImage e I18nResource:imágenes y otros recursos que dependan del locale seleccionado.
+  * I18nImage e I18nResource: imágenes y otros recursos que dependan del locale seleccionado.
