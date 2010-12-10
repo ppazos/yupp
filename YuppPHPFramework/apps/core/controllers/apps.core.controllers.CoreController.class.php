@@ -2,6 +2,7 @@
 
 YuppLoader::load('core','App');
 YuppLoader::load('core','Yupp');
+YuppLoader :: load('core.mvc', 'YuppController');
 
 class CoreController extends YuppController {
 
