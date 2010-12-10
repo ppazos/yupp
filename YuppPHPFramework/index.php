@@ -1,9 +1,6 @@
 <?php
 
 /**
- * Created on 22/03/2008
- * index.php
- * 
  * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
  */
 session_start();
@@ -23,39 +20,39 @@ function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext) {
    throw new Exception( $errstr );
 }
 
-YuppLoader :: load("core.config", "YuppConfig");
+//YuppLoader :: load('core.config', 'YuppConfig'); //
 
-YuppLoader :: load("core.support", "I18nMessage");
-YuppLoader :: load("core.support", "YuppContext");
+//YuppLoader :: load('core.support', 'I18nMessage');
+//YuppLoader :: load('core.support', 'YuppContext'); //
 
-YuppLoader :: load("core.web", "UrlProcessing");
-YuppLoader :: load("core.web", "PageHistory");
-YuppLoader :: load("core.web", "RequestManager");
+//YuppLoader :: load('core.web', 'UrlProcessing');
+//YuppLoader :: load('core.web', 'PageHistory');
+YuppLoader :: load('core.web', 'RequestManager');
 
 // WebFlow
-YuppLoader :: load("core.mvc.webflow", "CurrentFlows");
-YuppLoader :: load("core.mvc.webflow", "WebFlow");
-YuppLoader :: load("core.mvc.webflow", "State");
-YuppLoader :: load("core.mvc.webflow", "Transition");
+//YuppLoader :: load('core.mvc.webflow', 'CurrentFlows'); //
+//YuppLoader :: load('core.mvc.webflow', 'WebFlow');
+//YuppLoader :: load('core.mvc.webflow', 'State');
+//YuppLoader :: load('core.mvc.webflow', 'Transition');
 
-YuppLoader :: load("core.mvc", "YuppController"); // FIXME: No se si es necesario cargarlo xq no se usa directamente.
-YuppLoader :: load("core.mvc", "Helpers");
-YuppLoader :: load("core.mvc", "DisplayHelper");
-YuppLoader :: load("core.mvc", "ViewCommand");
-YuppLoader :: load("core.mvc", "Model");
+YuppLoader :: load('core.mvc', 'YuppController'); // Se usa en cada controlador que lo extiende.
+YuppLoader :: load('core.mvc', 'Helpers'); // Usado para acceder a la funcion h()
+//YuppLoader :: load('core.mvc', 'DisplayHelper');
+//YuppLoader :: load('core.mvc', 'ViewCommand');
+//YuppLoader :: load('core.mvc', 'Model');
 
-YuppLoader :: load("core", "FileSystem");
-YuppLoader :: load("core.utils", "Logger");
+//YuppLoader :: load('core', 'FileSystem');
+YuppLoader :: load('core.utils', 'Logger');
 
 // Hay dependencia mutua entre AH, PO y PM...
-YuppLoader :: load("core.persistent", "ArtifactHolder");
+//YuppLoader :: load('core.persistent', 'ArtifactHolder');
 
-YuppLoader :: load("core.persistent", "PersistentObject");
+//YuppLoader :: load('core.persistent', 'PersistentObject');
 
 // TEST
-YuppLoader :: load("core.routing", "Router");
-YuppLoader :: load("core.routing", "YuppControllerFilter"); // FIXME: no deberia ser parte del paquete routing, esta aca solo porque es usada desde el Executer...
-YuppLoader :: load("core.routing", "Executer");
+//YuppLoader :: load('core.routing', 'Router'); //
+//YuppLoader :: load('core.routing', 'YuppControllerFilter'); // FIXME: no deberia ser parte del paquete routing, esta aca solo porque es usada desde el Executer...
+//YuppLoader :: load('core.routing', 'Executer'); //
 
 // ============================================================
 // Configuro logger para que no muestre mensajes:
