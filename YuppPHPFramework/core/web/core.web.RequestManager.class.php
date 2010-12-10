@@ -1,8 +1,19 @@
 <?php
 
+/**
+ * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
+ */
+
 YuppLoader::load('core.layout', 'LayoutManager');
 YuppLoader::load('core.support', 'Timer');
 YuppLoader::load('core', 'Yupp');
+
+YuppLoader :: load('core.support', 'YuppContext');
+YuppLoader :: load('core.config', 'YuppConfig');
+YuppLoader :: load('core.routing', 'Router');
+YuppLoader :: load('core.routing', 'YuppControllerFilter');
+YuppLoader :: load('core.routing', 'Executer');
+YuppLoader :: load('core.mvc', 'Model');
 
 /*
  * Implementa el proceso y control de generacion de paginas a partir del request.
