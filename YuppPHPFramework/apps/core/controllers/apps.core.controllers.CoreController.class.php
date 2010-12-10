@@ -202,6 +202,8 @@ class CoreController extends YuppController {
       //echo "PM generateAll<br/>";
       PersistentManager::getInstance()->generateAll();
       
+      $this->flash['message'] = 'Generaci&oacute;n de tablas completada.';
+      
       return $this->redirect( array( 'action' => 'dbStatus' ));
    }
 
