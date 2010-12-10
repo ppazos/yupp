@@ -5,91 +5,92 @@
 
 class I18nMessage
 {
-    /**
-     * Mapping: key -> lang -> mensaje
-     */
-    protected $messages = array();
-    
-    // Singleton
-    protected function I18nMessage() {}
+   /**
+    * Mapping: key -> lang -> mensaje
+    */
+   protected $messages = array();
+   
+   // Singleton
+   protected function I18nMessage() {}
 
-    private static $instance = NULL;
-    public static function getInstance()
-    {
-    	  if (self::$instance === NULL) self::$instance = new I18nMessage();
-        return self::$instance;
-    }
-    // /Singleton
-    
-    public function a( $key, $lang, $message )
-    {
-        $a1 = &$this->messages[ $key ];
-        if ( $a1 === NULL ) // Es raro, sin poner esto y solo haciendo $a1[lang] = message ya me crea el array en $a1[lang].
-        {
-             $a1 = array();
-        }
-        $a1[ $lang ] = $message;
-    }
+   private static $instance = NULL;
+   public static function getInstance()
+   {
+      if (self::$instance === NULL) self::$instance = new I18nMessage();
+      return self::$instance;
+   }
+   // /Singleton
+   
+   public function a( $key, $lang, $message )
+   {
+      $a1 = &$this->messages[ $key ];
+      if ( $a1 === NULL ) // Es raro, sin poner esto y solo haciendo $a1[lang] = message ya me crea el array en $a1[lang].
+      {
+         $a1 = array();
+      }
+      $a1[ $lang ] = $message;
+   }
 
-    public function g( $key, $lang, $default = NULL )
-    {
-        $a1 = &$this->messages[$key];
-        if ( $a1 !== NULL ) // Es raro, sin poner esto y solo haciendo $a1[lang] = message ya me crea el array en $a1[lang].
-        {
-             $a2 = &$a1[$lang];
+   public function g( $key, $lang, $default = NULL )
+   {
+      $a1 = &$this->messages[$key];
+      if ( $a1 !== NULL ) // Es raro, sin poner esto y solo haciendo $a1[lang] = message ya me crea el array en $a1[lang].
+      {
+         $a2 = &$a1[$lang];
+         if ( $a2 !== NULL ) return $a2;
+          
+         // No encuentra el lang asi como me lo pasan, si me pasan uno con forma de locale tipo es_MX_AAA
+         // Tengo que desglozarlo y buscar por "es_MX" y si no encuentro, por "es".
+          
+         //print_r(explode("_", $lang ));
+          
+         //list($locale_lang, $locale_country, $locale_variant) = explode("_", $lang );
+         //list($locale_lang, $locale_country) = explode("_", $lang );
+          
+         $arr_locale = explode("_", $lang ); // [0]=>lang, [1]=>country, [2]=>variant
+          
+         //echo "LOCALE LANG: " . $locale_lang . "<br/>";
+         //echo "LOCALE COUNTRY: " . $locale_country . "<br/>";
+         //echo "LOCALE VARIANT: " . $locale_variant . "<br/>";
+          
+         //if ( $locale_variant === NULL ) echo "VARIANT NULL<br/>"; // Variant es null si no lo pasan.
+          
+         // Si vino solo el lenguaje, y no esta el lenguaje retorno segun criterio comun, default si esta y si no la misma key. 
+         if ( !isset($arr_locale[1]) && !isset($arr_locale[2]))
+         //if ( $locale_country === NULL && $locale_variant === NULL)
+         {
+            if ( !empty($default) ) return $default;
+            return $key;
+         }
+         else if ( isset($arr_locale[1]) && !isset($arr_locale[2])) // vino locale_lang+locale_country => pruebo solo con locale_lang.
+         {
+             // FIXME: no usa country
+             //echo "VIENE $lang, PRUEBA $locale_lang<br/>";
+             $a2 = &$a1[$arr_locale[0]];
              if ( $a2 !== NULL ) return $a2;
              
-             // No encuentra el lang asi como me lo pasan, si me pasan uno con forma de locale tipo es_MX_AAA
-             // Tengo que desglozarlo y buscar por "es_MX" y si no encuentro, por "es".
+             if ( !empty($default) ) return $default;
+             return $key;
+         }
+         else // vinieron lang, coutnry y variant, tengo que probar lang+country y lang solo.
+         {
+             // FIXME: no usa variant
+             //echo "VIENE $lang, PRUEBA $locale_lang _ $locale_country<br/>";
+             $a2 = &$a1[$arr_locale[0]."_".$arr_locale[1]];
+             if ( $a2 !== NULL ) return $a2;
              
-             //print_r(explode("_", $lang ));
+             //echo "VIENE $lang, PRUEBA $locale_lang<br/>";
+             $a2 = &$a1[$arr_locale[0]];
+             if ( $a2 !== NULL ) return $a2;
              
-             //list($locale_lang, $locale_country, $locale_variant) = explode("_", $lang );
-             //list($locale_lang, $locale_country) = explode("_", $lang );
-             
-             $arr_locale = explode("_", $lang ); // [0]=>lang, [1]=>country, [2]=>variant
-             
-             //echo "LOCALE LANG: " . $locale_lang . "<br/>";
-             //echo "LOCALE COUNTRY: " . $locale_country . "<br/>";
-             //echo "LOCALE VARIANT: " . $locale_variant . "<br/>";
-             
-             //if ( $locale_variant === NULL ) echo "VARIANT NULL<br/>"; // Variant es null si no lo pasan.
-             
-             // Si vino solo el lenguaje, y no esta el lenguaje retorno segun criterio comun, default si esta y si no la misma key. 
-             if ( !isset($arr_locale[1]) && !isset($arr_locale[2]))
-             //if ( $locale_country === NULL && $locale_variant === NULL)
-             { 
-                if ( $default !== NULL ) return $default;
-                return $key;
-             }
-             else if ( isset($arr_locale[1]) && !isset($arr_locale[2])) // vino locale_lang+locale_country => pruebo solo con locale_lang.
-             {
-                 // FIXME: no usa country
-                 //echo "VIENE $lang, PRUEBA $locale_lang<br/>";
-             	  $a2 = &$a1[$arr_locale[0]];
-                 if ( $a2 !== NULL ) return $a2;
-                 
-                 if ( $default !== NULL ) return $default;
-                 return $key;
-             }
-             else // vinieron lang, coutnry y variant, tengo que probar lang+country y lang solo.
-             {
-                 // FIXME: no usa variant
-                 //echo "VIENE $lang, PRUEBA $locale_lang _ $locale_country<br/>";
-             	  $a2 = &$a1[$arr_locale[0]."_".$arr_locale[1]];
-                 if ( $a2 !== NULL ) return $a2;
-                 
-                 //echo "VIENE $lang, PRUEBA $locale_lang<br/>";
-                 $a2 = &$a1[$arr_locale[0]];
-                 if ( $a2 !== NULL ) return $a2;
-                 
-                 if ( $default !== NULL ) return $default;
-                 return $key;
-             }             
-        }
-        if ( $default !== NULL && $default !== "" ) return $default;
-        return $key;
-    }
+             if ( !empty($default) ) return $default;
+             return $key;
+         }          
+      }
+      
+      if ( !empty($default) ) return $default;
+      return $key;
+   }
 }
 
 
