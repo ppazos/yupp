@@ -1,5 +1,7 @@
 <?php
 
+YuppLoader :: load("core", "FileSystem");
+
 class Logger {
 
    // TODO: En lugar de solo poder apagar y prender el log, quiero poder mostrar por niveles, o sea
