@@ -1,9 +1,11 @@
 <?php
 
 /**
- * 
  * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
  */
+
+YuppLoader :: load('core.mvc.webflow', 'CurrentFlows');
+
 class Executer {
 
     private $params;
@@ -233,12 +235,6 @@ class Executer {
                                                new ArrayObject() );
            }
            
-                 // ==============
-      // TEST: ver si guarda el estado en la sesion
-      //$test = CurrentFlows::getInstance()->getFlow( 'createUser' );
-      //Logger::show( "Flow en sesion luego de execute: " . print_r($test->getCurrentState(), true) . ", " . __FILE__ . " " . __LINE__ );
-      // ================
-           
            // ===================================================
            // after filters
            // Ejecucion de los after filters, true si pasan o un ViewCommand si no.
@@ -250,12 +246,6 @@ class Executer {
               $command = $af_res; // Retorna el ViewCommand del after filter.
            }
            // ===================================================
-        
-                 // ==============
-      // TEST: ver si guarda el estado en la sesion
-      //$test = CurrentFlows::getInstance()->getFlow( 'createUser' );
-      //Logger::show( "Flow en sesion luego de afterFilters: " . print_r($test->getCurrentState(), true) . ", " . __FILE__ . " " . __LINE__ );
-      // ================
         
         } // Paso los before filters y ejecuto accion del controller de forma normal
         
