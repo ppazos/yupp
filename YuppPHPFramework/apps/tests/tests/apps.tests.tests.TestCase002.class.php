@@ -17,6 +17,8 @@ class TestCase002 extends TestCase {
       $this->test5();
       
       //$this->testXML();
+      
+      //$this->getByTest();
    }
    
    public function test1()
@@ -148,6 +150,11 @@ class TestCase002 extends TestCase {
       
       echo $cara->toXML(true);
       echo $cara->toXML2(true, true);
+   }
+   
+   public function getByTest()
+   {
+      //Cara::getByColor('blanco');
    }
 }
 

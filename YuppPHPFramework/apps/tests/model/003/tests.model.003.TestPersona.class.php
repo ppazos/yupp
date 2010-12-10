@@ -14,6 +14,14 @@ class TestPersona extends Entidad
 
       $this->addAttribute("nombre",  Datatypes :: TEXT);
       $this->addAttribute("edad",  Datatypes :: INT_NUMBER);
+      $this->addAttribute("num",  Datatypes :: INT_NUMBER);
+
+      $this->addConstraints(
+         "edad", array ( Constraint :: min(10) )
+      );
+      $this->addConstraints(
+         "num", array ( Constraint :: max(20) )
+      );
 
       parent :: __construct($args, $isSimpleInstance);
    }

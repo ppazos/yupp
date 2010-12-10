@@ -13,6 +13,7 @@ class TestCase001 extends TestCase {
       $this->test1();
       $this->test2();
       $this->test3();
+      $this->reset();
    }
    
    public function test1()
@@ -50,6 +51,12 @@ class TestCase001 extends TestCase {
       $c = Botella::count();
       
       $this->assert( $c == 1, 'Test hay una botella ['.$c.']');
+   }
+   
+   public function reset()
+   {
+      $bot = Botella::get(1);
+      $bot->delete();
    }
 }
 
