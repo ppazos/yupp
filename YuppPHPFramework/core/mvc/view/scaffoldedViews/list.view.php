@@ -4,6 +4,8 @@ $m = Model::getInstance();
 
 global $_base_dir;
 
+YuppLoader :: load('core.mvc', 'DisplayHelper');
+
 ?>
 <html>
   <head>

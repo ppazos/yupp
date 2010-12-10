@@ -5,6 +5,7 @@ $ctx = YuppContext::getInstance();
 $m = Model::getInstance();
 
 YuppLoader::loadScript('apps.core', 'Messages');
+YuppLoader :: load('core.mvc', 'DisplayHelper');
 
 global $_base_dir;
 
