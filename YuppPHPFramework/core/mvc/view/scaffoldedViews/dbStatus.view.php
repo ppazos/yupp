@@ -168,6 +168,9 @@ global $_base_dir;
                    'body'=>'Nueva Aplicacion'));?>
     </div>
     <div id="apps">
+    
+      <div align="center"><?php echo $m->flash('message'); ?></div>
+    
       <!-- fixme: no deberia mostrarse si el modo es produccion, esto es solo para dev -->
       <h2>Informacion del modelo</h2>
       Muestra que tablas fueron generadas para el modelo y que tablas falta generar, 
