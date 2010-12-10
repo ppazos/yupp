@@ -16,7 +16,17 @@ include_once ('core/core.YuppLoader.class.php');
 
 set_error_handler("my_warning_handler", E_ALL);
 
-function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext) {
+function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext)
+{
+//   echo "<hr>Warning Failed:
+//     ErrNo '$errno'<br />
+//     Str '$errstr'<br />
+//     File '$errfile'<br />
+//     Line '$errline'<br />
+//     Context ";
+//   Logger::struct($errcontext);
+//   echo "<br /><hr />";
+    
    throw new Exception( $errstr );
 }
 
