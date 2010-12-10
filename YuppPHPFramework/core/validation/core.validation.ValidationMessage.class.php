@@ -2,6 +2,7 @@
 
 YuppLoader::load('core.validation','Constraints');
 YuppLoader::loadScript('core.validation','Messages');
+YuppLoader :: load('core.mvc', 'DisplayHelper');
 
 class ValidationMessage {
 

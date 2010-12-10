@@ -1,5 +1,7 @@
 <?php
 
+YuppLoader :: load('core.support', 'I18nMessage');
+
 $m = I18nMessage::getInstance();
 
 $m->a( "validation.error.nullable",            "es", "El valor del atributo '{0}' no puede ser nulo" );
