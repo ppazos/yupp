@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
+ */
+
+YuppLoader :: load('core.mvc', 'ViewCommand');
+
 class YuppController {
 
     protected $params; // ultimos params ya procesados.
@@ -25,13 +31,17 @@ class YuppController {
        return ( $this->getFlow( $actionName ) !== NULL );
     }
     
+    /**
+     * Carga una instancia del web flow en la sesion mediante CurrentFlows.
+     */
     public function loadFlow( $flowName )
     {
-    	 $flow = $this->{$flowName . "Flow"}();
+       $flow = $this->{$flowName . "Flow"}();
        CurrentFlows::getInstance()->addFlow( $flow );
     }
     
     public function &getFlow( $flowName )
+    //public function getFlow( $flowName )
     {
        return CurrentFlows::getInstance()->getFlow( $flowName );
     }
