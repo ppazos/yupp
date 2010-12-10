@@ -14,6 +14,8 @@ class DisplayHelper {
           $locale = $ctx->getLocale(); // se que siempre hay un locale valido.
        } 
 
+       YuppLoader::load('core.support', 'I18nMessage');
+
        $m = I18nMessage::getInstance();
        return $m->g( $key, $locale, $defaultMessage );
     }
