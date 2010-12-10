@@ -11,7 +11,7 @@ class DisplayHelper {
        if ( $locale === NULL )
        {
           $ctx = YuppContext::getInstance();
-           $locale = $ctx->getLocale(); // se que siempre hay un locale valido.
+          $locale = $ctx->getLocale(); // se que siempre hay un locale valido.
        } 
 
        $m = I18nMessage::getInstance();
