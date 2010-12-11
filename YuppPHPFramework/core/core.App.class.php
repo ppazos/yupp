@@ -50,7 +50,8 @@ class App {
    
    /**
     * Devuelve un array multidimensional con los nombres de los archivos
-    * que forman el modelo de datos de la aplicacion.
+    * que forman el modelo de datos de la aplicacion. Considera la estructura
+    * de directorios de /model.
     */
    public function getModel()
    {
