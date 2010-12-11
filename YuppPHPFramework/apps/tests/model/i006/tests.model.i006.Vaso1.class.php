@@ -58,7 +58,7 @@ class Vaso1 extends Recipiente1
       // Supongo que estos vasos no tienen tapa
       $this->setTieneTapa(false);
    }
-   public static function listAll($params)
+   public static function listAll( ArrayObject $params )
    {
       self :: $thisClass = __CLASS__;
       return PersistentObject :: listAll($params);
@@ -73,7 +73,7 @@ class Vaso1 extends Recipiente1
       self :: $thisClass = __CLASS__;
       return PersistentObject :: get($id);
    }
-   public static function findBy(Condition $condition, $params)
+   public static function findBy(Condition $condition, ArrayObject $params)
    {
       self :: $thisClass = __CLASS__;
       return PersistentObject :: findBy($condition, $params);
@@ -83,5 +83,5 @@ class Vaso1 extends Recipiente1
       self :: $thisClass = __CLASS__;
       return PersistentObject :: countBy($condition);
    }
-} // Model001
+} // Model006
 ?>

@@ -21,7 +21,7 @@ class M010_Persona extends PersistentObject
       parent :: __construct($args, $isSimpleInstance);
    }
    
-   public static function listAll($params)
+   public static function listAll( ArrayObject $params )
    {
       self :: $thisClass = __CLASS__;
       return PersistentObject :: listAll($params);
@@ -36,7 +36,7 @@ class M010_Persona extends PersistentObject
       self :: $thisClass = __CLASS__;
       return PersistentObject :: get($id);
    }
-   public static function findBy(Condition $condition, $params)
+   public static function findBy(Condition $condition, ArrayObject $params)
    {
       self :: $thisClass = __CLASS__;
       return PersistentObject :: findBy($condition, $params);

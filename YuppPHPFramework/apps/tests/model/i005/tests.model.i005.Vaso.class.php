@@ -49,7 +49,6 @@ class Vaso extends Recipiente
       );
       
       
-      
       /*
       $this->constraints = array (
          "material" => array (
@@ -71,7 +70,7 @@ class Vaso extends Recipiente
       $this->setTieneTapa(false);
    }
    
-   public static function listAll($params)
+   public static function listAll( ArrayObject $params )
    {
       self :: $thisClass = __CLASS__;
       return PersistentObject :: listAll($params);
@@ -86,7 +85,7 @@ class Vaso extends Recipiente
       self :: $thisClass = __CLASS__;
       return PersistentObject :: get($id);
    }
-   public static function findBy(Condition $condition, $params)
+   public static function findBy(Condition $condition, ArrayObject $params)
    {
       self :: $thisClass = __CLASS__;
       return PersistentObject :: findBy($condition, $params);
