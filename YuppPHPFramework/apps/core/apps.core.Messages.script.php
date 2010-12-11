@@ -1,5 +1,7 @@
 <?php
 
+YuppLoader::load('core.support', 'I18nMessage');
+
 $m = I18nMessage::getInstance();
 
 $m->a( 'error.500.InternalServerError', 'es', 'Error interno del servidor' );
