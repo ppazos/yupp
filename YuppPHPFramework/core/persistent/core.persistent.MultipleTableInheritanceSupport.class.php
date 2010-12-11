@@ -27,7 +27,7 @@ class MultipleTableInheritanceSupport {
    {
       $res = array();
       
-   	$superClasses = ModelUtils::getAllAncestorsOf( $class ); // Si class es de nivel 1, esto es vacio.
+      $superClasses = ModelUtils::getAllAncestorsOf( $class ); // Si class es de nivel 1, esto es vacio.
                                                                // La primer clase es la de nivel 1, y esta ordenado hasta la ultima subclase en el ultimo lugar.
       
       //Logger::struct( $superClasses );
@@ -86,7 +86,7 @@ class MultipleTableInheritanceSupport {
    public static function superclassThatGenerateMyTable( $class )
    {
       $parent = get_parent_class($class);
-   	if ( $parent === 'PersistentObject' ) return $class;
+      if ( $parent === 'PersistentObject' ) return $class;
       
       $classTable = YuppConventions::tableName( $class );
       
@@ -112,12 +112,12 @@ class MultipleTableInheritanceSupport {
          
          if ( $classTable != $superclassTable )
          {
-         	// Quiero la clase que genera la tabla anterior.
+            // Quiero la clase que genera la tabla anterior.
             $found = true;
          }
          else
          {
-         	$prevClassToIterate = $classToIterate;
+            $prevClassToIterate = $classToIterate;
             $classToIterate = get_parent_class($classToIterate);
          }
       }
@@ -306,7 +306,7 @@ Array
     */
    public static function mergePartialInstances( $sc_ins, $c_ins )
    {
-   	// TODO
+      // TODO
       // La clase resultante deberia ser instancia de la subclase $c_ins
    }
    
@@ -339,14 +339,14 @@ Array
       // ===========================================================================================
 
       
-   	$superclasses = ModelUtils::getAllAncestorsOf( $po_ins->getClass() ); // puede ser en cualquier orden!
+      $superclasses = ModelUtils::getAllAncestorsOf( $po_ins->getClass() ); // puede ser en cualquier orden!
       
       /*
       // Quiero la clase de nivel 1
       $level1Class = NULL;
       foreach ( $superclasses as $class )
       {
-      	if ( get_parent_class( $class ) == 'PersistentObject' )
+         if ( get_parent_class( $class ) == 'PersistentObject' )
          {
             $level1Class = $class;
             break; // salir del foreach
@@ -377,7 +377,7 @@ Array
       {
          if (!PersistenObject::isInyectedAttribute( $attr ))
          {
-         	// no se de que clase es atributo...
+            // no se de que clase es atributo...
          }
       }
       */
@@ -396,24 +396,24 @@ Array
             {
 //               echo "po_ins->aGet($attr) = " . $po_ins->aGet($attr) . "<br/>";
                //Logger::getInstance()->log( "SET ATTR OF SAME CLASS: " . $attr . " VALOR: " . $po_ins->aGet($attr) );
-            	$partialInstance->aSet($attr, $po_ins->aGet($attr));
+               $partialInstance->aSet($attr, $po_ins->aGet($attr));
             }
             else
             {
                if (!PersistentObject::isInyectedAttribute( $attr )) // TODO: luego veo como setear los atributos inyectados... El valor de "class" se inyecta solo! 
                {
                   //Logger::getInstance()->log( "SET NOT INYECTED ATTR: " . $attr . " VALOR: " . $po_ins->aGet($attr) );
-         	      $partialInstance->aSet($attr, $po_ins->aGet($attr));
+                  $partialInstance->aSet($attr, $po_ins->aGet($attr));
                }
                else
                {
                   // Si es inyectado pero es un super_id_X tengo que setearlo.
                   if ( YuppConventions::isRefName($attr) )
                   {
-                  	//Logger::getInstance()->log( "SETEA INYECTED ATTR: " . $attr . " VALOR: " . $po_ins->aGet($attr) );
+                     //Logger::getInstance()->log( "SETEA INYECTED ATTR: " . $attr . " VALOR: " . $po_ins->aGet($attr) );
                      $partialInstance->aSet($attr, $po_ins->aGet($attr));
                   }
-               	else
+                  else
                   {
                      //Logger::getInstance()->log( "NO SETEA INYECTED ATTR: " . $attr . " VALOR: " . $po_ins->aGet($attr) );
                   }
@@ -455,7 +455,7 @@ Array
       $objToIterate = $obj;
       while (!$found)
       {
-      	$parentClass = get_parent_class($objToIterate);
+         $parentClass = get_parent_class($objToIterate);
          $pcIns = new $parentClass(array(), true);
          
          if ($parentClass !== 'PersistentObject')
@@ -466,7 +466,7 @@ Array
          else
          {
             //Logger::getInstance()->pm_log("Caso2: padre es PO " . __FILE__ ." ". __LINE__);
-         	break; // Si llego a PO sin encontrar, tengo que parar el loop.
+            break; // Si llego a PO sin encontrar, tengo que parar el loop.
          }
          
          $objToIterate = $pcIns;
