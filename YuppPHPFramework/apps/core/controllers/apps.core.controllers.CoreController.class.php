@@ -128,6 +128,7 @@ class CoreController extends YuppController {
          
          //print_r($modelClassFileNames);
          
+
          // Toda la informacion de las clases y tablas creadas para esta app
          $appModelClasses[$appName] = array();
          
@@ -137,6 +138,11 @@ class CoreController extends YuppController {
          {
             $fileInfo = $fn->getFileNameInfo($classFileName);
             $className = $fileInfo['name'];
+            
+            // Para incluir las clases (por si no estan incluidas)
+            // Ticket: http://code.google.com/p/yupp/issues/detail?id=71
+            YuppLoader::load($fileInfo['package'], $className);
+            
             $tableName = YuppConventions::tableName( $className );
             if ( $dal->tableExists( $tableName ) )
             {
@@ -152,7 +158,6 @@ class CoreController extends YuppController {
       
       $this->params['allTablesCreated'] = $allTablesCreated;
 
-      
       // Nombres de los compoentes instalados
       //$components = PackageNames::getComponentNames();
       //$this->params['components'] = $components;
