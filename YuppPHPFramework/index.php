@@ -14,7 +14,7 @@ include_once ('core/core.YuppLoader.class.php');
 // Para handlear WARNINGS y tirar exceptions.
 // E_ALL, E_WARNING, E_ERROR, E_PARSE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING, E_STRICT
 
-set_error_handler("my_warning_handler", E_ALL);
+set_error_handler("my_warning_handler", E_ALL); // Si le saco el segundo parametro me muestra warnings.
 
 function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext)
 {
