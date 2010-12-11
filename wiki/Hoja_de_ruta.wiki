@@ -207,7 +207,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
   * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=23 (Corregir mensajes de error de la verificacion de restricciones)
   * http://code.google.com/p/yupp/issues/detail?id=66 (Mensaje de error de validacion vacio) (HECHO)
-  * Corregir el error que da cuando se copia una nueva app a /apps con el framework andando (al instalar helloWorld da: fatal error Class Persona not found in ...YuppController.class.php 150, eval()'ed code on line 1).
+  * http://code.google.com/p/yupp/issues/detail?id=71 (Error al copiar un a nueva app y entrar a dbStatus) (HECHO)
   * Correcciones al flujo de procesamiento del request en RequestManager
   * Simplificacion de las inclusiones para mejorar performance en index.php
 
