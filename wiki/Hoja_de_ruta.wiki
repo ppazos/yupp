@@ -205,7 +205,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
 
   * Agregar soporte para XSL en la generación de XML a partir de clases del modelo. (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo) (HECHO)
-  * http://code.google.com/p/yupp/issues/detail?id=23 (Corregir mensajes de error de la verificacion de restricciones)
+  * http://code.google.com/p/yupp/issues/detail?id=23 (Corregir mensajes de error de la verificacion de restricciones) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=66 (Mensaje de error de validacion vacio) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=71 (Error al copiar un a nueva app y entrar a dbStatus) (HECHO)
   * Correcciones al flujo de procesamiento del request en RequestManager
