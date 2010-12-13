@@ -442,6 +442,8 @@ class CoreController extends YuppController {
       //$output = ob_get_clean();
       //FileSystem::appendLine('imp_log.html', $output);
       
+      $this->flash['message'] = 'Ejecuci&oacute;n de bootstrap completada.';
+      
       return $this->redirect( array('component'=>'core', 'controller'=>'core', 'action'=>'index'));
    }
    
