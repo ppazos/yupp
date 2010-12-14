@@ -201,7 +201,9 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
     * Correción en CoreController para poder ejecutar bootstraps de aplicaciones con su propia configuración de la base de datos.
 
 
-==v0.2.5: codename Genesis==
+==v0.2.5: codename Genesis (liberada)==
+
+Descarga: http://code.google.com/p/yupp/downloads/list
 
   * Agregar soporte para XSL en la generación de XML a partir de clases del modelo. (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=20 (Nullable e inList falla cuando viene un valor nulo) (HECHO)
