@@ -201,7 +201,7 @@ Para los problemas y errores que vayamos encontrando empezaremos a utilizar: htt
     * Correción en CoreController para poder ejecutar bootstraps de aplicaciones con su propia configuración de la base de datos.
 
 
-==v0.2.5: codename Genesis (liberada)==
+==v0.2.5: codename Genesis (liberado)==
 
 Descarga: http://code.google.com/p/yupp/downloads/list
 
