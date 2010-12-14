@@ -135,8 +135,9 @@ Cualquier duda o sugerencia, publica tu comentario en nuestro grupo:
 http://groups.google.com/group/yuppframeworkphp o en nuestra wiki:
 http://code.google.com/p/yupp/w/list
 
-
+{{{
 Pablo Pazos Gutiérrez
 Yupp PHP Framework
 Líder del proyecto
 www.SimpleWebPortal.net
+}}}
