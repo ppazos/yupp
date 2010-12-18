@@ -118,7 +118,7 @@ class YuppLoader {
    /**
     * Carga todo el modelo.
     */
-   public function _loadModel()
+   private function _loadModel()
    {
       $apps = FileSystem::getSubdirNames("./apps");      
       $packs = new PackageNames();
@@ -293,7 +293,6 @@ class YuppLoader {
       YuppSession :: set("_class_loader_singleton_instance", $this); // actualizo la variable en la session...
    }
 
-   // Script
    public static function loadScript($package, $script)
    {
       $cl = YuppLoader :: getInstance();
@@ -332,7 +331,6 @@ class YuppLoader {
       YuppSession :: set("_class_loader_singleton_instance", $this); // actualizo la variable en la session...
       */
    }
-   // /Script
 
    public static function isLoadedClass($package, $clazz)
    {
@@ -340,7 +338,7 @@ class YuppLoader {
       return $cl->_isLoadedClass($package, $clazz);
    }
 
-   public function _isLoadedClass($package, $clazz)
+   private function _isLoadedClass($package, $clazz)
    {
       // IDEM A LOAD...
       
@@ -393,6 +391,9 @@ class YuppLoader {
          
          if (!is_file($incPath))
          {
+            // FIXME: si se tira excepcion, me pasa que al mover archivos me da errores y tengo que borrar la sesion.
+            //        igualmente en este caso deberia avisar de alguna forma de que no se encuentra una ruta de inclusion,
+            //        por ejemplo haciendo log a disco. Tambien se podria sacar la entrada incorrecta.
             //throw new Exception("YuppLoader::refresh() - ruta de inclusion errada ($incPath)");
          }
          else
