@@ -303,7 +303,7 @@ function $func {
      */
     public static function template( $params )
     {
-    	 global $_base_dir;
+       global $_base_dir;
        
        if ( !array_key_exists('name', $params) ) throw new Exception('Helpers::template: parametro "name" es obligatorio y no esta presente.');
        if ( !array_key_exists('args', $params) || !is_array($params['args']) )  throw new Exception('Helpers::template: parametro "args" no puede ser null y ser un array.');
@@ -312,9 +312,8 @@ function $func {
        
        if ( array_key_exists('url', $params) )
        {
-       	 $url = $params['url'];
-          
-          $params['url']     = NULL;
+          $url = $params['url'];
+          $params['url'] = NULL;
           $params = array_filter($params);
        }
        else
@@ -331,13 +330,18 @@ function $func {
           else
              $controller = $ctx->getController();
 
+          // Nuevo: path entre el directorio de vistas y donde se ubica el template
+          $path = '';
+          if ( array_key_exists('path', $params) )
+             $path = $params['path'] . '/';
+
           // Saco los que ya use...
           $params['component']  = NULL;
           $params['controller'] = NULL;
           $params = array_filter($params); // Saca nulls // ['params']; // opcional, es un mapa.
 
-          //$url = $_base_dir ."/apps/". $component ."/views/". $controller;
-          $url = "./apps/". $component ."/views/". $controller;
+          //$url = $_base_dir .'/apps/'. $component .'/views/'. $controller;
+          $url = './apps/'. $component .'/views/'. $controller;
           
        } // template
 
@@ -347,7 +351,7 @@ function $func {
           $$argname = $argvalue; // Declaro variables con los nombres pasados en los args.
        }
        
-       include($url . '/' . $params['name'] . '.template.php');
+       include($url .'/'. $path . $params['name'] .'.template.php');
     }
  
     
