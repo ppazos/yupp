@@ -1,17 +1,13 @@
 <?php
 
+// TODO: mover a yupp/config (sacar de core)
+
 /**
- * Created on 18/06/2008
- * Modified on 13/06/2010
- * 
  * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
  * @name core.config.YuppConfig.class.php
  * 
  * @link http://www.simplewebportal.net/yupp_framework_php_doc/2_3_configuracion_db.html
  */
- 
-// TODO: mover a yupp/config (sacar de core)
-
 class YuppConfig {
    
    private static $instance = NULL;
@@ -21,12 +17,10 @@ class YuppConfig {
       return self::$instance;
    }
    
-   
    /**
     * Locales disponibles para la aplicacion.
     */
    private $available_locales = array("es", "en", "it");
-   
    
    // ==================================================
    // Configuracion de la base de datos
