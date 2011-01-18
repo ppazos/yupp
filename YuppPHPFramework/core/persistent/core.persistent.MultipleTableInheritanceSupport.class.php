@@ -143,23 +143,41 @@ class MultipleTableInheritanceSupport {
    
    /**
     * Se utiliza para obtener una estructura de mapeo de clases de herencia sobre diferentes tablas.
-    * Como se utiliza como auxiliar de generateAll la pongo aca, talvez pueda ir en ModelUtils, pero en realidad solo se usa para generar el esquema.
-    * @param $inheritanceClasses lista de clases de una estructura de herencia (no se asume ningun orden).
+    * Como se utiliza como auxiliar de generateAll la pongo aca, talvez pueda ir en ModelUtils, pero
+    * en realidad solo se usa para generar el esquema y para salvar.
+    * 
+    * @param $inheritanceClasses lista de clases de una estructura de herencia (clase de la instancia
+    *        del objeto que se esta manejando y todas sus superclases) (no se asume ningun orden).
     */
    public static function getMultipleTableInheritance( $inheritanceClasses )
    {
-      // 1.
+      // Ahora depende de una aplicacion.
+      // La estructura de MTI no pueden establecerse entre clases del modelo de distintas aplicaciones.
+      $ctx = YuppContext::getInstance();
+      $appName = $ctx->getComponent();
+    
+      // 1. clases y sus subclases
       $e = array(); // array por clave la clase y valor lista de subclases directas de dicha clase
       foreach ($inheritanceClasses as $class)
       {
          // Quiero poner solo las clases que esten en $inheritanceClasses, que pueden 
          // no ser todas las de la estructura de herencia, esto sirve para 
          // implementar getPartialInstancesToSave.
-         $sclss = ModelUtils::getSubclassesOf( $class );
+         // TODO: en que caso una clase no es de la estructura de herencia si lo 
+         //       que le paso como parametro es solo la estructura de herencia???
+         //       Ver lo que le pasan todas las operaciones que invoque a esta getMultipleTableInheritance.
+         $sclss = ModelUtils::getSubclassesOf( $class, $appName );
+         
+         //Logger::getInstance()->dal_log("getSubclassesOf $class " . __FILE__ . " " . __LINE__ );
+         //Logger::struct( $sclss );
+         
          $e[$class] = array_intersect( $inheritanceClasses, $sclss );
       }
       
-      // 2.
+      //Logger::getInstance()->dal_log("clases y subclases " . __FILE__ . " " . __LINE__ );
+      //Logger::struct( $e );
+      
+      // 2. Arma array de clases y lista de subclases que se mapean en la misma tabla.
       $e1 = array();
       foreach ( $e as $class => $subclasses )
       {
@@ -167,13 +185,25 @@ class MultipleTableInheritanceSupport {
          if ( !array_key_exists($class, $e1) || $e1[$class] === NULL ) $e1[$class] = array(); // armo otro array con las subclases que no tienen withTable.
          foreach ($subclasses as $subclass)
          {
-            $sc_ins = new $subclass();
-            
+            //$sc_ins = new $subclass();
             //echo $subclass . " " . $sc_ins->getWithTable() . "<br />";
+            //if ( $sc_ins->getWithTable() === $c_ins->getWithTable() ) $e1[$class][] = $subclass; // solo si los withTable son iguales (o sea, que no lo redefine en la subclase)
             
-            if ( $sc_ins->getWithTable() === $c_ins->getWithTable() ) $e1[$class][] = $subclass; // solo si los withTable son iguales (o sea, que no lo redefine en la subclase)
+            if ( PersistentManager::isMappedOnSameTable( $class, $subclass ) )
+            {
+               $e1[$class][] = $subclass;
+               
+               //Logger::getInstance()->dal_log("isMapperOnSameTable: $class , $subclass " . __FILE__ . " " . __LINE__ );
+            }
+            else
+            {
+               //Logger::getInstance()->dal_log("no isMapperOnSameTable: $class , $subclass " . __FILE__ . " " . __LINE__ );
+            }
          }
       }
+      
+      //Logger::getInstance()->dal_log("clases y subclases en la misma tabla " . __FILE__ . " " . __LINE__ );
+      //Logger::struct( $e1 );
       
       // 3. Todas las keys estan en $inheritanceClasses
       foreach ( $e1 as $class => $sameTableFirstLevelSubclasses )
@@ -338,7 +368,6 @@ Array
       // ===========================================================================================
       // ===========================================================================================
 
-      
       $superclasses = ModelUtils::getAllAncestorsOf( $po_ins->getClass() ); // puede ser en cualquier orden!
       
       /*
@@ -363,8 +392,14 @@ Array
       // Mapa de clases y subclases que se mapean en la misma tabla.
       $struct = self::getMultipleTableInheritance( $superclasses );
       
+      //Logger::getInstance()->dal_log("getMultipleTableInheritance (son las subclases en la misma tabla) " . __FILE__ . " " . __LINE__ );
+      //Logger::struct( $struct );
+      
       // TODO: Partial Instances no considera valores, tengo que setear los valores a mano a partir de los valores de po_ins.
       $partialInstances = self::getPartialInstantes( $struct ); // Instancias de las clases en $superclasses que solo tienen los atributos que van en cada tabla. Cada clase de estas se mapea directamente con una tabla.
+      
+      //Logger::getInstance()->dal_log("getPartialInstancesToSave " . __FILE__ . " " . __LINE__ );
+      //Logger::struct( $partialInstances );
       
       // Seteo valores de campos de cada clase parcial
       // Nota: el identidicador de la instancia es el id en la tabla de mayor nivel, 
