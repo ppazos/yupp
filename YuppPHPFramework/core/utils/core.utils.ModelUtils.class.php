@@ -109,6 +109,7 @@ class ModelUtils {
     * @param string $clazz nombre de una clase de modelo (tambien puede ser PersistentObject).
     * @param string $appName nombre de la aplicacion para la que se quieren las subclases. Si es NULL, se dan las subclases en cualquier app.
     */
+   // FIXME> podria obtener el appName de YuppContext en lugar de recibirlo por parametro.
    public static function getSubclassesOf( $clazz, $appName = NULL )
    {
       //Logger::struct( $appName, "getSubclassesOf(appName) ".__FILE__." ".__LINE__ );
@@ -117,14 +118,34 @@ class ModelUtils {
 
       // Esto en realidad se deberia hacer con getLoadedModelClasses
       // porque ModelUtils es para resolver temas de las clases del modelo.
-      $classes = YuppLoader::getLoadedModelClasses();
-      
-      // Solo quiero las clases de esta aplicacion
-      if ($appName !== NULL)
+
+      // DEBUG
+      //$log = Logger::getInstance();
+      //$log->on();
+      //$log->setFile('log_get_subclasses_of.txt');
+
+
+      // Si no se pasa appName o si el appName es core, quiero cargar todas las
+      // clases de todas las aplicaciones, porque se esta invocando para una tarea
+      // del framework, no de una aplicacion. En estos casos, si no se cargaran todas
+      // las clases del modelo de todas las aplicaciones, el resultado de las subclases
+      // de una clase dada, seria incorrecto, porque se hace en funcion de las clases cargadas.
+      //
+      // En caso contrario, simplemente carga las todas clases de la aplicacion appName. 
+      //  
+      if ($appName == NULL || $appName == 'core')
+      {
+         // Si no se cargaron todas las clases y no se pasa el nombre de la app, no devuelve realmente todas las subclases, solo las que estan cargadas.
+         YuppLoader::loadModel(); // Carga el modelo de todas las aplicaciones
+         
+         $classes = YuppLoader::getLoadedModelClasses();
+      }
+      else
       {
          $classes = array();
          
          // FIXME: Mismo codigo que CoreController.dbStatus
+         YuppLoader::load('core', 'App'); // Puede no estar cargada
          $app = new App($appName);
          $modelClassFileNames = $app->getModel();
          
@@ -139,7 +160,8 @@ class ModelUtils {
             $classes[] = $className;
          }
       }
-
+      
+      // FIXME: estas operaciones deberian ser consistentes en el resultado.
       //print_r ( YuppLoader::getLoadedClasses() ); // tiene claves class, filename y package
       //echo "<br/>";
       //print_r ( YuppLoader::getLoadedModelClasses() ); // solo tiene class sin clave
@@ -150,6 +172,12 @@ class ModelUtils {
       {
          if ( get_parent_class( $loadedClass ) == $clazz ) $res[] = $loadedClass;
       }
+      
+      
+      // DEBUG
+      //$log->struct( $res, "Subclasses of $clazz para la app $appName" );
+      //$log->off();
+
 
       return $res;
    }
@@ -166,6 +194,40 @@ class ModelUtils {
       // Esto en realidad se deberia hacer con getLoadedModelClasses
       // porque ModelUtils es para resolver temas de las clases del modelo.
       //$loadedClasses = YuppLoader::getLoadedClasses();
+      
+      // Como las clases cargadas dependen de la aplicacion,
+      // me ancargo de cargar todas las clases de la aplicacion
+      // actual para obtener correctamente las subclases.
+      // Mismo codigo que getSubclassesOf.
+      $ctx = YuppContext::getInstance();
+      $appName = $ctx->getComponent();
+      if ($appName == 'core')
+      {
+         // Si no se cargaron todas las clases y no se pasa el nombre de la app, no devuelve realmente todas las subclases, solo las que estan cargadas.
+         YuppLoader::loadModel(); // Carga el modelo de todas las aplicaciones
+      }
+      else
+      {
+         // TODO: metodo para cargar todas las clases del modelo de una aplicacion.
+         $classes = array();
+         
+         // FIXME: Mismo codigo que CoreController.dbStatus
+         YuppLoader::load('core', 'App'); // Puede no estar cargada
+         $app = new App($appName);
+         $modelClassFileNames = $app->getModel();
+         
+         // Logger::struct( $modelClassFileNames, "modelClassFileNames ".__FILE__." ".__LINE__ );
+         $modelClassFileNames = self::array_flatten($modelClassFileNames);
+         
+         $fn = new FileNames();
+         foreach ($modelClassFileNames as $classFileName)
+         {
+            $fileInfo  = $fn->getFileNameInfo($classFileName);
+
+            YuppLoader::load($fileInfo['package'], $fileInfo['name']);
+         }
+      }
+      
       $loadedClasses = YuppLoader::getLoadedModelClasses();
       $res = array();
 
