@@ -25,13 +25,11 @@ YuppLoader :: load('core.db', 'DAL'); // declara tambien DatabaseNormalization
 YuppLoader :: load('core.db', 'Datatypes');
 YuppLoader :: load('core.persistent', 'PersistentManager');
 
-
 /*
 TODOS:
   - Si la relacion es 1..* y el * no tiene belongsTo, IGUAL SE DEBERIA CONSIDERAR
     COMO QUE EL * tiene belongsTo el 1 !!!!!!!!!!!!!!!!!!!!! (afecta el PM.get_many_assocs)
 */
-
 
 /**
  * Esta clase implementa toda la logica necesaria para modelar objetos persistentes.
@@ -530,6 +528,9 @@ class PersistentObject {
       // FIXME: no deberia poder modificar valor de atributos inyectados, el comportamiento posterior es impredecible.
       foreach ( $args as $attr => $value )
       {
+         // Si es inyectado, no se deberia setear con los params, por ejemplo si viene un 'id'.
+         if ($this->isInyectedAttribute($attr)) continue;
+         
          // FIXME: hace lo mismo que setProperties pero distinto
          if ( array_key_exists($attr, $this->attributeTypes) )
          {
@@ -965,6 +966,9 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
             // FIXME: reutilizar validateOnly
             // =========================================
             
+            // Si la restriccion es para un hasOne, aunque sea validacion sin cascada,
+            // igual con esto pide el valor del hasOne y trata de validarlo contra la restriccion.
+            //
             $value = ( (array_key_exists($attr, $this->attributeValues)) ? $this->attributeValues[$attr] : NULL );
             
             // ===============================================================
@@ -973,29 +977,36 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
             // que si da ok, no verifica las demas restricciones.
             // Esto es porque si es nullable(true) y el valor es null,
             // las demas restricciones no tienen sentido de verificarse
-            // porque es posible que den false (min, inList, etc)
+            // porque es posible que den false (min, inList, etc).
+            
+            // FIXME: esta bien que no verifique las demas restricciones 
+            //        para ese atributo, pero esta mal que retorne true!
+            
             if (is_null($value))
             {
-                Logger::getInstance()->po_log("PO:validate B.a ($attr)");
+                Logger::getInstance()->po_log("PO:validate Nullable de '$attr' (el valor es null)");
                 
                 $nullable = $this->getConstraintOfClass($attr, 'Nullable');
                 if (!is_null($nullable) && $nullable->evaluate($value))
                 {
-                    return true;
+                    //return true;
+                    continue; // Deja de ver restricciones para el atributo actual y sigue con el siguiente
                 }
             }
             else if ($value === '') // Si el valor es vacio, hace lo mismo que nullable por con Blank
             {
-                Logger::getInstance()->po_log("PO:validate B.b ($attr)");
+                Logger::getInstance()->po_log("PO:validate Blank de '$attr' (el valor es vacio)");
                 
                 $blank = $this->getConstraintOfClass($attr, 'BlankConstraint');
                 if (!is_null($blank) && $blank->evaluate($value))
                 {
-                    return true;
+                    //return true;
+                    continue; // Deja de ver restricciones para el atributo actual y sigue con el siguiente
                 }
             }
             // ===============================================================
             
+            // Ve el resto de las restricciones
             foreach ( $constraintArray as $constraint )
             {
                Logger::getInstance()->po_log("PO:validate C");
@@ -1009,40 +1020,9 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                //        Mas abajo se usa el value para armar el string de error y falla si el
                //        objeto no tiene toString.
               
-               /*
-               if ( get_class($constraint) === 'Nullable' )
-               {
-                  Logger::getInstance()->po_log("PO:validate D (nullable)");
-                  
-                  // Si valor nulo y valida => nullable(true)
-                  
-                  // FIXME
-                  // Esto muestra que Nullable le gana a las otras restricciones,
-                  // pero depende del orden en que se verifican. Si luego verifico
-                  // otra restriccion y falla, igual agrega el error.
-                  // Deberia pedir todas las restricciones, verificar primero nullable,
-                  // luego blank, luego todo el resto como un and.
-                  if ( $value === NULL && $constraint->evaluate($value) )
-                  {
-                     unset( $this->errors[$attr] );
-                     break;
-                  }
-               }
-               else if ( get_class($constraint) === 'BlankConstraint' )
-               {
-                  Logger::getInstance()->po_log("PO:validate E (blank)");
-                  
-                  if ( $value === "" && $constraint->evaluate($value) ) // Si valor vacio y valida => blank(true)
-                  {
-                     unset( $this->errors[$attr] );
-                     break;
-                  }
-               }
-               */
-              
                if ( !$constraint->evaluate($value) )
                {
-                  Logger::getInstance()->po_log("PO:validate F (invalido!) constraint:". get_class($constraint));
+                  Logger::getInstance()->po_log("PO:validate evaluate constraint falla: ". get_class($constraint));
                   
                   $valid = false;
 
@@ -1051,7 +1031,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                   $err = ValidationMessage::getMessage( $constraint, $attr, $value );
                   // ====================================================================
 
-                  Logger::getInstance()->po_log("PO:validate E error:". $err);
+                  Logger::getInstance()->po_log("PO:validate error msg: ". $err);
 
                   // Agrego el error a "errors"
 
@@ -1091,6 +1071,56 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
 
       return $valid;
    }
+
+   /**
+    * Cuidado: funciona solo desde PHP 5.3.0 en adelante.
+    * http://code.google.com/p/yupp/issues/detail?id=41
+    * 
+    * Esta caracteristica queda para la version 0.4
+    */
+   /*
+   public static function __callStatic($method, $arguments)
+   {
+      //echo "method $method<br/>";
+      if ( substr($method, 0, 5) == 'getBy' )
+      {
+         $expression = substr($method, strlen($method)-5);
+         echo "expression: $expression<br/>";
+         
+         // Voy a necesitar una instancia de la clase para preguntar si el atributo se declaro en ella.
+         //
+         // si la expresion es un atributo, busco por equals
+         // si la expresion termina en Equals, Between, etc etc, y lo que queda es una tributo,
+         // busco por esa condicion sobre el atributo.
+         // si no, es una expresion compleja.
+         //
+         //$class = self::$thisClass; // no sirve: al ser un metodo static dinamico, no pasa por el metodo declarado en cada hija de PO donde se redefine $thisClass, entonces la clase que tengo aca es otra (la ultima que lo seteo).
+         //$class = __CLASS__; // Valido a partir de PHP 5.3.0: variable estatica. Me da PO...
+         
+         // FIXME: para poder obtener la clase correcta, tengo que implementar un metodo estatico
+         //        getRealClass() que retorne __CLASS__, en cada uno de los hijos de PO.
+         
+         // http://blog.felho.hu/what-is-new-in-php-53-part-2-late-static-binding.html
+         $class = get_called_class(); // FUNCA!
+         
+         echo "class: $class<br/>";
+         
+         $ins = new $class();
+         
+         echo strtolower($expression);
+         print_r($ins);
+         
+         if ($ins->hasAttribute( strtolower($expression) ))
+         {
+            echo 'buso por atributo: '.$expression;
+         }
+         else
+         {
+            
+         }
+      }
+   }
+   */
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    // Cuando hago getXXX o setXXX pasa por aca y se implementa aca, aunque los metodos no existan.
