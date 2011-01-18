@@ -15,6 +15,7 @@ class ValidationMessage {
    const MSG_MINLENGTH = "validation.error.minLengthConstraint";
    const MSG_MAXLENGTH = "validation.error.maxLengthConstraint";
    const MSG_EMAIL     = "validation.error.email";
+   const MSG_DATE      = "validation.error.date";
 
    public static function getMessage( $constraint, $attr, $value )
    {
@@ -99,6 +100,15 @@ class ValidationMessage {
       // 0=value
       // 1=attr
       $msg = DisplayHelper::message( self::MSG_EMAIL );
+      $msg = str_replace('{0}', $value, $msg);
+      return str_replace('{1}', $attr, $msg);
+   }
+   
+   private static function dateconstraint( $constraint, $attr, $value)
+   {
+      // 0=value
+      // 1=attr
+      $msg = DisplayHelper::message( self::MSG_DATE );
       $msg = str_replace('{0}', $value, $msg);
       return str_replace('{1}', $attr, $msg);
    }

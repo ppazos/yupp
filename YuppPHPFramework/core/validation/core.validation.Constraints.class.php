@@ -13,6 +13,9 @@ abstract class Constraint {
    public static function email() { return new EmailConstraint(); }
    public static function matches($regexp) { return new Matches($regexp); }
 
+   // Nuevo!, verifica que el valor tenga formato aaaa-mm-dd y sea una fecha valida.
+   public static function date() { return new DateConstraint(); }
+
    public static function maxLength( $max ) { return new MaxLengthConstraint($max); }
    public static function minLength( $min ) { return new MinLengthConstraint($min); }
    public static function nullable( $nullable ) { return new Nullable($nullable); }
@@ -183,6 +186,20 @@ class EmailConstraint extends Matches {
    public function __construct()
    {
       parent::__construct( self::email_pattern );
+   }
+}
+
+class DateConstraint extends Constraint {
+ 
+   public function evaluate( $value )
+   {
+      YuppLoader::load('core.basic', 'YuppDateTime');
+      return YuppDateTime::checkMySQLDate($value);
+   }
+   
+   public function __toString()
+   {
+      return 'aaaa-mm-dd';
    }
 }
 
