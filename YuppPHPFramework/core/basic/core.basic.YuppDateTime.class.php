@@ -15,6 +15,19 @@ class YuppDateTime
       
       return $arr;
    }
+   
+   // Verifica que $mysql_date tenga formato aaaa-mm-dd y que sea valida.
+   public static function checkMySQLDate($mysql_date)
+   {
+      //match the format of the date
+      if (preg_match ("/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/", $mysql_date, $parts))
+      {
+         //check weather the date is valid of not
+         if(checkdate($parts[2],$parts[3],$parts[1])) return true;
+      }
+     
+      return false;
+   }
 
 	public static function timeToMySQLDate($timestamp)
 	{
@@ -31,7 +44,7 @@ class YuppDateTime
       return date(self::MySQL_TIME_FORMAT, $timestamp);
    }
    
-   public static function mySQLDateToTime( $mysql_date )
+   public static function mySQLDateToTime( $mysql_date ) 
    {
       list($year, $month, $day) = split('-', $mysql_date);
       
