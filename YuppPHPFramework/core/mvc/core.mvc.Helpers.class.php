@@ -84,7 +84,7 @@ class Helpers {
     }
 
     /**
-     * Este no se usa, esta solo como prueba.
+     * Devuelve una tag anchor.
      */
     public static function link($paramsMap)
     {
@@ -92,7 +92,16 @@ class Helpers {
        $body = $paramsMap['body'];
        $paramsMap['body'] = NULL;
        
-    	 return '<a href="'. self::url(array_filter($paramsMap, "notNull")) .'">'. $body .'</a>';
+       $attrs = ((isset($paramsMap['attrs']))?$paramsMap['attrs']:array());
+       $paramsMap['attrs'] = NULL;
+       
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       return '<a href="'. self::url(array_filter($paramsMap, "notNull")) .'"'. $strattrs .'">'. $body .'</a>';
     }
     
     /**
@@ -518,17 +527,19 @@ function $func {
        
        // TODO> si hay max y offset, conservarlos.
        
+       if (!isset($params['attrs'])) $params['attrs'] = array();
+       
        $dir = 'asc';
        if ( $sort === $params['attr'] )
        {
           if ( $current_dir === 'asc' )
           {
              $dir = 'desc';
-             //$params['class'] = 'order_desc'; // para CSS FIXME: me lo pone como params de la url, no en la tag.
+             $params['attrs']['class'] = 'order_desc'; // FIXED> para CSS FIXME: me lo pone como params de la url, no en la tag.
           }
           else
           {
-             //$params['class'] = 'order_asc'; // para CSS FIXME: me lo pone como params de la url, no en la tag.
+             $params['attrs']['class'] = 'order_asc'; // FIXED> para CSS FIXME: me lo pone como params de la url, no en la tag.
           }
        }
 
