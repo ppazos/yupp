@@ -19,15 +19,48 @@ class YuppDateTime
    // Verifica que $mysql_date tenga formato aaaa-mm-dd y que sea valida.
    public static function checkMySQLDate($mysql_date)
    {
-      //match the format of the date
+      // Verifica formato
       if (preg_match ("/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/", $mysql_date, $parts))
       {
-         //check weather the date is valid of not
+         // Verifica validez de la fecha
          if(checkdate($parts[2],$parts[3],$parts[1])) return true;
       }
      
       return false;
    }
+   
+   public static function checkMySQLDateTime($mysql_date_time)
+   {
+      $arr = explode( " ", $mysql_date_time );
+      
+      if (count($arr)!=2) return false;
+      
+      $date = $arr[0];
+      $time = $arr[1];
+      
+      if (self::checkMySQLDate($date))
+      {
+         $arr = explode( ":", $time );
+         
+         // Segundos opcional
+         if (count($arr)<2) return false;
+         
+         $hour = (int)$arr[0];
+         $mins = (int)$arr[1];
+         
+         $segs = 0;
+         if (isset($arr[2])) $segs = (int)$arr[2];
+
+         return ($hour<24 && $hour>0 && $mins<60 && $mins>0 && $segs<60 && $segs>0);
+      }
+   }
+
+   function checktime($hour, $minute)
+   {
+    if ($hour > -1 && $hour < 24 && $minute > -1 && $minute < 60) {
+        return true;
+    }
+} 
 
 	public static function timeToMySQLDate($timestamp)
 	{
