@@ -221,7 +221,7 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
   * Juntar paquetes support y utils en utils. Poner en ese utils las clases del paquete config que no sean de configuracion del framework.
   * Se agrega el parámetro 'path' al helper template.
-
+  * http://code.google.com/p/yupp/issues/detail?id=78 (Error por uso de is_a())
 
 ==v0.4:==
 
