@@ -92,6 +92,7 @@ class Helpers {
        $body = $paramsMap['body'];
        $paramsMap['body'] = NULL;
        
+       // TODO: extender el soporte de attrs a los demas helpers
        $attrs = ((isset($paramsMap['attrs']))?$paramsMap['attrs']:array());
        $paramsMap['attrs'] = NULL;
        
@@ -390,6 +391,7 @@ function $func {
        else // Ubicacion por defecto de todos los javascripts de todos los modulos
           $src = '/images/'. $params['src'];
        
+       unset($params['component']);
        unset($params['src']);
        
        // FIXME: retornar una imagen por defecto
@@ -555,6 +557,18 @@ function $func {
           {
              $params[$k] = $v;
           }
+       }
+       
+       // Soporte para addParams, la vista puede decirle que otros 
+       // params quiere poner en la url (p.e. 'query' si se hizo
+       // una busqueda y se quiere tener ordenamiento por los resultados).
+       if (isset($params['addParams'])) // es un array
+       {
+          foreach ($params['addParams'] as $paramName)
+          {
+             $params[$paramName] = $model->get($paramName); // los params se sacan del modelo actual, la vista sabe cuales params quiere
+          }
+          $params['addParams'] = NULL;
        }
        
        // Para mantener el paginado.
