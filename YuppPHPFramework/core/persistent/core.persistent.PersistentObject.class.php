@@ -2158,13 +2158,19 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
    /**
     * Si $resursive es true, se cargan las asociaciones de la clase y tambien se pasan a json.
     */
-   public function toJSON( $recursive = false )
+   public function toJSON( $recursive = false, $loopDetection = NULL )
    {
       // TODO: falta el objeto en si y el JSON de las relaciones 1 y many, para many debe ser 
       // un array por nombre de atributo y un array de objetos de la lista many, para lso 
       // objetos es un array por nombre del atributo.
       
-      $json = "{'attributes' : {";
+      if (is_null($loopDetection)) $loopDetection = new ArrayObject();
+      
+      $loopDetection[] = $this->getClass().'_'.$this->getId(); // Marca como recorrido
+      
+      
+      $json = "{";
+      //$json = "{'attributes' : {";
       
       $i = 0;
       $n = count($this->attributeTypes)-1;
@@ -2176,13 +2182,130 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
          $i++;
       }
       
-      $json .= "}}";
+      if ($recursive)
+      {
+         foreach ($this->getHasOne() as $attr => $clazz)
+         {
+            $relObj = $this->aGet($attr);
+            if (!is_null($relObj))
+            {
+               // TODO: loop detection con referencia path al nodo loopeado
+               if(!in_array($relObj->getClass().'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
+               {
+                 // FIXME: las tags de los atributos hijos de la instancia raiz deberian
+                 //        tener su nombre igual al nombre del atributo, no el nombre de
+                 //        la clase. Con este codigo es el nombre de la clase.
+                 $json .= ", '". $attr ."': ". $relObj->toJSON( $recursive, $loopDetection );
+               }
+            }
+         }
+         
+         foreach ($this->getHasMany() as $attr => $clazz)
+         {
+            // TODO: type de la coleccion
+            //$hm_node->setAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
+           
+            $relObjs = $this->aGet($attr);
+            
+            if ( count($relObjs) > 0 )
+            {
+               $json .= ", '". $attr ."': [ ";
+                
+               foreach ($relObjs as $relObj)
+               {
+                  // TODO: loop detection con referencia path al nodo loopeado
+                  if(!in_array($relObj->getClass().'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
+                  {
+                     $json .= $relObj->toJSON( $recursive, $loopDetection ) .', ';
+                  }
+               }
+                
+               $json = substr($json, 0, -2); // Saco ', ' del final
+                
+               $json .= "]";
+            }
+         }
+      }
+      
+      //$json .= "}}";
+      $json .= "}";
       
       // TODO: if $recursive ....
       // Tengo que hacer lo mismo para los objetos relacionados
 
       return $json;
    }
+   
+   private function toJSONSingle( $obj, $xml_dom_doc, $xml_parent_node, $recursive, $loopDetection, $attrName = null )
+   {
+      if(!in_array(get_class($obj).'_'.$obj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
+      {
+         $loopDetection[] = get_class($obj).'_'.$obj->getId(); // Marca como recorrido
+         
+         // Nodo actual
+         $node = NULL;
+         
+         // El nombre de la tag es el nombre del atributo, a no ser que sea el nodo raiz.
+         if ( is_null($attrName) )
+         {
+            $node = $xml_dom_doc->createElement( get_class($obj) );
+         }
+         else
+         {
+            $node = $xml_dom_doc->createElement( $attrName );
+            $node->setAttribute( 'type', get_class($obj) ); // setAttribute ( string $name , string $value )
+         }
+         
+         // Para la primer llamada, este nodo es el dom_document
+         $xml_parent_node->appendChild( $node );
+         
+         foreach ( $obj->attributeTypes as $attr => $type )
+         {
+            $attr_node = $xml_dom_doc->createElement( $attr, $obj->aGet($attr) );
+            $node->appendChild( $attr_node );
+         }
+         
+         if ($recursive)
+         {
+            foreach ($obj->getHasOne() as $attr => $clazz)
+            {
+               $relObj = $obj->aGet($attr);
+               if (!is_null($relObj))
+               {
+                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
+                  {
+                     // FIXME: las tags de los atributos hijos de la instancia raiz deberian
+                     //        tener su nombre igual al nombre del atributo, no el nombre de
+                     //        la clase. Con este codigo es el nombre de la clase.
+                     $this->toJSONSingle( $relObj, $xml_dom_doc, $node, $recursive, $loopDetection, $attr );
+                  }
+               }
+            }
+            
+            foreach ($obj->getHasMany() as $attr => $clazz)
+            {
+               $hm_node = $xml_dom_doc->createElement( $attr );
+               $hm_node->setAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
+               
+               $relObjs = $obj->aGet($attr);
+               
+               foreach ($relObjs as $relObj)
+               {
+                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
+                  {
+                     $this->toJSONSingle($relObj, $xml_dom_doc, $hm_node, $recursive, $loopDetection);
+                  }
+               }
+               
+               $node->appendChild( $hm_node );
+            }
+         } // si es recursiva
+      } // si no hay loop
+   }
+   
+   // ===============================================
+   // ===============================================
+   
    
    public function toXML( $recursive = false )
    {
