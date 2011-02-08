@@ -1594,7 +1594,6 @@ class PersistentManager {
     */
    private function findByAttributeMatrix( PersistentObject $instance, Condition $condition, ArrayObject $params )
    {
-      //$dal = DAL::getInstance();
       $tableName = YuppConventions::tableName( $instance );
 
       // Quiero solo los registros de las subclases y ella misma.
@@ -1622,10 +1621,14 @@ class PersistentManager {
          $cond_total->add( $cond_or );
       }
 
+      // =====================================================================================
       // NO_ELIMINADO
-      // FIXME: Si le pongo false a la RV no aparece nada y me tira consulta erronea.
-      // Tendria que ponerle un convertidor de true/false a 1/0...
-      $cond_total->add( Condition::EQ($tableName, "deleted", 0) );
+      // FIXED: Si viene una condicion deleted, no agregarla. p.e. puedo pedir deleted = true
+      //if ($condition->hasCondForAttr('deleted')) echo 'tiene para deleted';
+      //else echo 'no tiene para deleted';
+      //
+      if (!$condition->hasCondForAttr('deleted'))
+         $cond_total->add( Condition::EQ($tableName, "deleted", 0) );
 
       // CRITERIO DE BUSQUEDA
       $cond_total->add( $condition );
@@ -1738,7 +1741,6 @@ class PersistentManager {
     */
    public function countBy( $ins, $condition )
    {
-      //$dal = DAL::getInstance();
       $objTableName = YuppConventions::tableName( $ins );
 
       $params = array();
@@ -1764,6 +1766,11 @@ class PersistentManager {
          }
          $cond_total->add( $cond );
       }
+      
+      // FIXED: igual que en findByAttributeMatrix usada por findBy
+      // Si no tiene condicion deleted, le pone deleted false.
+      if (!$condition->hasCondForAttr('deleted'))
+         $cond_total->add( Condition::EQ($objTableName, "deleted", 0) );
 
       // CRITERIO DE BUSQUEDA
       $cond_total->add( $condition );

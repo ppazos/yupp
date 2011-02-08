@@ -52,6 +52,42 @@ class Condition {
    //
    // /Tipos de condiciones ===================================================================================
    
+   
+   /**
+    * Retorna true si la condicion o alguna de sus subcondiciones, tiene una condicion para el atributo $attr.
+    * La principal funcionalidad es para PM, para que en las consultas por condicion sepa si hay ya una condicion
+    * para deleted (atributo inyectado), porque por defecto se hace deleted=false (condicion inyectada).
+    */
+   public function hasCondForAttr($attr)
+   {
+      //echo "hasCondForAttr ".$this->type."<br/>";
+      //echo $this->attribute->attr .'<br/>';
+      // Si no tiene attribute, es condicion compleja (AND, OR o NOT)
+      if (isset($this->attribute) && $this->attribute->attr == $attr)
+      {
+         //echo "Tiene attribute<br/>";
+         return true;
+      }
+      else
+      {
+         //echo "No tiene el attribute<br/>";
+      }
+      
+      //print_r($this->subconditions);
+      //throw new Exception("");
+      
+      
+      if (is_array($this->subconditions))
+      {
+         foreach ($this->subconditions as $cond)
+         {
+            if ($cond->hasCondForAttr($attr)) return true; // Recursiva
+         }
+      }
+      
+      return false;
+   }
+   
    /**
     * Retorna todos los tipos de condiciones existentes.
     * Por ahora se utiliza solamente para verificar que el tipo que se pasa en 'setType()' es correcto.
