@@ -223,6 +223,7 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * Se agrega el parámetro 'path' al helper template.
   * http://code.google.com/p/yupp/issues/detail?id=78 (Error por uso de is_a()) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=30 (Se completa la generación recursiva de JSON) (HECHO)
+  * Se mejora la vista de ajaxLinkTest para seleccionar librería javascript entre prototype y jquery.
 
 ==v0.4:==
 
