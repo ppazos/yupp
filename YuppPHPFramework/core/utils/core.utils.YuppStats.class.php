@@ -119,6 +119,7 @@ class YuppStats
                 "./core/mvc/view/scaffoldedViews",
                 "./core/mvc/webflow",
                 "./core/persistent",
+                "./core/persistent/serialize",
                 "./core/routing",
                 "./core/support",
                 "./core/testing",
