@@ -43,6 +43,18 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
         padding-right: 5px;
         padding-left: 5px;
       }
+      
+      .order_desc, .order_asc {
+         background-position: 0px;
+         background-repeat: no-repeat;
+         padding-left: 12px;
+      }
+      .order_asc {
+         background-image: url(<?php echo $_base_dir; ?>/images/order_asc.gif);
+      }
+      .order_desc {
+         background-image: url(<?php echo $_base_dir; ?>/images/order_desc.gif);
+      }
     </style>
   </head>
   <body>

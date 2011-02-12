@@ -97,15 +97,22 @@ class DisplayHelper {
            // TODO: el order deberia ser toggleado, si ahora muestro ordenado por una columna, al hacer click en ella debo mostrar el orden inverso.
            //       pero como no tengo acceso a los params no se realmente por cual columna se ordena ni la direccion actual.
 
+/*
            $model = Model::getInstance();
            $sort = $model->get('sort');
            $dir = 'asc';
 
            if ( $sort == $attr && $model->get('dir') == 'asc' ) $dir = 'desc'; // Cambia la direccion del atributo por el que esta ordenado ahora.
+*/
 
-           $res .= '<a href="'. Helpers::params2url( array('class'=>$clazz, 'sort'=>$attr, 'dir'=>$dir) ) .'">'; // TODO: no tengo acceso a los params desde helpers.
-           $res .= $attr; // TODO: Habria que ver si esto es i18n, deberia haber algun "display name" asociado al nombre del campo.
-           $res .= '</a>';
+           //$res .= '<a href="'. Helpers::params2url( array('class'=>$clazz, 'sort'=>$attr, 'dir'=>$dir) ) .'">'; // TODO: no tengo acceso a los params desde helpers.
+           //$res .= $attr; // TODO: Habria que ver si esto es i18n, deberia haber algun "display name" asociado al nombre del campo.
+           //$res .= '</a>';
+           
+           $ctx = YuppContext::getInstance();
+           
+           $res .= h('orderBy', array('attr'=>$attr, 'action'=>$ctx->getAction(), 'body'=>$attr));
+           
            $res .= '</th>';
        }
        $res .= '</tr>';
