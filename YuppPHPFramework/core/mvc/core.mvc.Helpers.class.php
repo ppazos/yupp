@@ -1,11 +1,15 @@
 <?php
 
-/*
+/**
  * Helpers para el view.
  */
 
+/**
+ * Funcion global para llamadas cortas.
+ */
 function h( $name, $paramsMap = array() )
 {
+   // TODO: agregar un tercer parametro para indicar si se hace o no echo del resultado.
    return Helpers::$name($paramsMap);
 }
 
@@ -25,7 +29,7 @@ class Helpers {
     
     private static function getCounter()
     {
-    	 $res = self::$counter;
+        $res = self::$counter;
        self::$counter++;
        return $res;
     }
@@ -92,7 +96,7 @@ class Helpers {
        $body = $paramsMap['body'];
        $paramsMap['body'] = NULL;
        
-       // TODO: extender el soporte de attrs a los demas helpers
+       // Soporte para attrs en el link
        $attrs = ((isset($paramsMap['attrs']))?$paramsMap['attrs']:array());
        $paramsMap['attrs'] = NULL;
        
@@ -101,6 +105,7 @@ class Helpers {
        {
           $strattrs .= ' '. $name .'="'. $val .'"';
        }
+       // /Soporte para attrs en el link
        
        return '<a href="'. self::url(array_filter($paramsMap, "notNull")) .'"'. $strattrs .'">'. $body .'</a>';
     }
@@ -110,13 +115,10 @@ class Helpers {
      */
     public static function pager($paramsMap)
     {
-       //print_r($paramsMap);
-       
        // Agrega params de ordenamiento al paginador.
        $model = Model::getInstance();
        $paramsMap['dir']  = $model->get('dir'); // puede no estar
        $paramsMap['sort'] = $model->get('sort'); // puede no estar
-      
       
        $bodyPrev = (isset($paramsMap['bodyPrev'])) ? $paramsMap['bodyPrev'] : "Previo";
        $paramsMap['bodyPrev'] = NULL;
@@ -173,6 +175,17 @@ class Helpers {
      */
     private static function ajax_link_prototype($paramsMap, $body, $before, $callback)
     {
+       // Soporte para attrs en el link
+       $attrs = ((isset($paramsMap['attrs']))?$paramsMap['attrs']:array());
+       $paramsMap['attrs'] = NULL;
+       
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       // /Soporte para attrs en el link
+       
        /**
         * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
         */
@@ -189,11 +202,22 @@ function $func {
 }
 </script>";
        
-       return $script . '<a href="javascript:'. $func .'" target="_self">'. $body .'</a>'; // Tengo que pegar el script para que quede disponible.
+       return $script .'<a href="javascript:'. $func .'" target="_self" '. $strattrs .'">'. $body .'</a>'; // Tengo que pegar el script para que quede disponible.
     }
     
     private static function ajax_link_jquery($paramsMap, $body, $before, $callback)
     {
+       // Soporte para attrs en el link
+       $attrs = ((isset($paramsMap['attrs']))?$paramsMap['attrs']:array());
+       $paramsMap['attrs'] = NULL;
+       
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       // /Soporte para attrs en el link
+        
        /**
         * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
         */
@@ -209,9 +233,9 @@ function $func {
       success: $callback
    });
 }
-</script>";
+</script>\n\n";
        
-       return $script . '<a href="javascript:'. $func .'" target="_self">'. $body .'</a>'; // Tengo que pegar el script para que quede disponible.
+       return $script .'<a href="javascript:'. $func .'" target="_self" '. $strattrs .'">'. $body .'</a>'; // Tengo que pegar el script para que quede disponible.
     }
     
     public static function ajax_link($paramsMap)
@@ -230,13 +254,9 @@ function $func {
        $body = (array_key_exists('body',$paramsMap)) ? $paramsMap['body'] : NULL;
        unset($paramsMap['body']);
        
-       
-       
        $lm = LayoutManager::getInstance();
        $jslib = $lm->getJSLib();
        if (is_null($jslib)) $jslib = 'prototype'; // Libreria por defecto.
-       
-       //echo "x: $jslib<br/>";
        
        eval('$ret = self::ajax_link_'.$jslib.'($paramsMap, $body, $before, $callback);');
        
@@ -296,12 +316,12 @@ function $func {
 
     public static function params2url( $params )
     {
-    	 if (!is_array( $params )) throw new Exception("Helpers.params2url: params debe ser un array y es un " . gettype($params));
+       if (!is_array( $params )) throw new Exception("Helpers.params2url: params debe ser un array y es un " . gettype($params));
 
        $pars = "?";
        foreach ($params as $key => $value)
        {
-       	 $pars .= $key . "=". $value . "&";
+           $pars .= $key . "=". $value . "&";
        }
 
        return $pars;
@@ -430,9 +450,7 @@ function $func {
      */
     public static function js( $params )
     {
-       //global $_base_dir;
-       
-       // TODO: registrar la libreria en LayoutManager en lugar de retornar un string...
+       // Registra la libreria en LayoutManager en lugar de retornar un string...
        LayoutManager::getInstance()->addJSLibReference( $params );
        
        /*
@@ -471,7 +489,7 @@ function $func {
        
        foreach ( $config->getAvailableLocales() as $locale )
        {
-       	 $res .= '<option value="' . $locale . '" '. (($locale === $ctx->getLocale())?'selected="true"':'') .'>'. $locale . '</option>';
+          $res .= '<option value="' . $locale . '" '. (($locale === $ctx->getLocale())?'selected="true"':'') .'>'. $locale . '</option>';
        }
        
        $res .= '</select>';
