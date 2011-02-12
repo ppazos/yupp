@@ -73,7 +73,6 @@ class PersistentObject {
    
    
    // Optimizaciones para save y update
-   // TODO: usar esta bandera para optimizar la salvada.
    protected $dirty = false;             // Bandera que indica si una instancia cargada desde la base fue modificada.
                                          // Se considera que ls instnacias que fueron creadas y no guardadas (no tienen
                                          // id asignado) son tambien dirty aunque el campo "dirty" sea false.
@@ -328,7 +327,7 @@ class PersistentObject {
    
    /**
     * Devuelve el tipo de la relacion hasMany de nombre attr. El tipo puede ser LIST, COLECTION o SET.
-    * 
+    * Para obtener la clase de la coleccion hasMany se hace con getType(attr)
     * @param String attr nombre del atributo hasMany
     */
    public function getHasManyType( $attr )
@@ -409,10 +408,7 @@ class PersistentObject {
    {
       Logger::getInstance()->po_log("Excecute after save ". get_class($this));
 
-      foreach ( $this->afterSave as $cb )
-      {
-         $cb->execute();
-      }
+      foreach ( $this->afterSave as $cb ) $cb->execute();
 
       // Una vez que termino de ejecutar, reseteo los cb's registrados.
       $this->afterSave = array();
@@ -421,16 +417,12 @@ class PersistentObject {
    {
       Logger::getInstance()->po_log("Excecute before save ". get_class($this));
 
-      foreach ( $this->beforeSave as $cb )
-      {
-         $cb->execute();
-      }
+      foreach ( $this->beforeSave as $cb ) $cb->execute();
 
       // Una vez que termino de ejecutar, reseteo los cb's registrados.
       $this->beforeSave = array();
    }
    // ====================================================
-
 
    // Llamada por las subclases, sirve para hacer proceso de los atributos. (estos ya deben estar seteados!)
    /**
@@ -455,7 +447,7 @@ class PersistentObject {
       // Si es simple, no hago nada.
       if ( $isSimpleInstance ) return;
       
-
+      
       // Inyecta atributos de referencia hasOne.
       // VERIFY: Ojo, yo puedo tener un hasOne, pero el otro puede tener un hasMany con migo adentro! o sea *..1 bidireccional!!!!! no 1..1
       // 1: Se fija todas las relaciones 1??..1 a otras clases persistentes y agrega lso atributos de FK como "email_id".
@@ -903,22 +895,12 @@ class PersistentObject {
                     // Si no hay un vector de mensajes para este campo
                     if (!isset($this->errors[ $attr ])) $this->errors[$attr] = array();
    
-// ====================================================================
-YuppLoader::load('core.validation','ValidationMessage');
-$err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
-// ====================================================================
+                    // ====================================================================
+                    YuppLoader::load('core.validation','ValidationMessage');
+                    $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
+                    // ====================================================================
 
-/*
                     // Agrego mensaje
-                    // TODO: ver de donde sacar el mensaje segun el tipo de constraint.
-                    // FIX: se pueden tener keys i18n estandar para problemas con constraints, y para resolver
-                    //      el mensaje como parametros le paso la constraint, el atributo y el valor que fallo.
-                    $err = "Error " . get_class($constraint) . " " . $constraint . " en " . $attr . " con valor ";
-   
-                    if ( is_null( $this->attributeValues[$attr] ) ) $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "NULL"); // OJO, esto puede ser null o cero!
-                    else if ( is_string($this->attributeValues[$attr]) && strcmp($this->attributeValues[$attr], "")==0 ) $err .= "EMPTY STRING";
-                    else $err .= (($this->attributeValues[$attr]) ? $this->attributeValues[$attr] : "0");
-*/
                     $this->errors[$attr][] = $err;
                  }
               }
@@ -1044,7 +1026,6 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
          }
       }
       
-      
       // http://code.google.com/p/yupp/issues/detail?id=50
       // Si hay que validar las instancias en hasOne y hasMany
       if ($validateCascade)
@@ -1066,8 +1047,6 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
          
          // TODO: hasMany
       }
-      
-      
 
       return $valid;
    }
@@ -1116,7 +1095,6 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
          }
          else
          {
-            
          }
       }
    }
@@ -1218,7 +1196,7 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
                // del objeto y el de su superclase es el mismo).
                if ( $type !== $obj->getClass() &&
                     !PersistentManager::isMappedOnSameTable( $type, $obj->getClass() )
-                   )
+                  )
                {
                   $refId = $obj->getMultipleTableId( $type ); // $obj->super_id_SuperClass
                }
@@ -1888,23 +1866,23 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
 
          $attr_w_assoc_name = $this->getFullAttributename( $attribute ); // Podria tener codificador el nombre de la asociacion.
 
-          // FIXME: Este codigo se repite en otras operaciones que trabajan sobre atributos hasMany... deberia reusar el codigo y hacer una funcion.
-          // Soporte lazy load...
-          if ( $this->attributeValues[ $attr_w_assoc_name ] == self::NOT_LOADED_ASSOC )
-          {
-             $pm = PersistentManager::getInstance();
+         // FIXME: Este codigo se repite en otras operaciones que trabajan sobre atributos hasMany... deberia reusar el codigo y hacer una funcion.
+         // Soporte lazy load...
+         if ( $this->attributeValues[ $attr_w_assoc_name ] == self::NOT_LOADED_ASSOC )
+         {
+            $pm = PersistentManager::getInstance();
 
-             // Si el objeto esta guardado, trae las clases ya asociadas, si no, inicializa el vector.
+            // Si el objeto esta guardado, trae las clases ya asociadas, si no, inicializa el vector.
 
-             if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
-             {
-                $pm->get_many_assoc_lazy( $this, $attr_w_assoc_name ); // Carga elementos de la coleccion... si es que los hay... y si no inicializa con un array.
-             }
-             else // Si no esta salvado...
-             {
-                $this->attributeValues[ $attr_w_assoc_name ] = array(); // Inicializa el array...
-             }
-          }
+            if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
+            {
+               $pm->get_many_assoc_lazy( $this, $attr_w_assoc_name ); // Carga elementos de la coleccion... si es que los hay... y si no inicializa con un array.
+            }
+            else // Si no esta salvado...
+            {
+               $this->attributeValues[ $attr_w_assoc_name ] = array(); // Inicializa el array...
+            }
+         }
       }
       else
       {
@@ -2154,353 +2132,6 @@ $err = ValidationMessage::getMessage( $constraint, $attr, $this->aGet($attr) );
       $pm->delete( $this, $this->getId(), $logical ); // FIXME: no necesita pasarle el id, el objeto ya lo tiene...
    }
    
-   
-   /**
-    * Si $resursive es true, se cargan las asociaciones de la clase y tambien se pasan a json.
-    */
-   public function toJSON( $recursive = false, $loopDetection = NULL )
-   {
-      // TODO: falta el objeto en si y el JSON de las relaciones 1 y many, para many debe ser 
-      // un array por nombre de atributo y un array de objetos de la lista many, para lso 
-      // objetos es un array por nombre del atributo.
-      
-      if (is_null($loopDetection)) $loopDetection = new ArrayObject();
-      
-      $loopDetection[] = $this->getClass().'_'.$this->getId(); // Marca como recorrido
-      
-      
-      $json = "{";
-      //$json = "{'attributes' : {";
-      
-      $i = 0;
-      $n = count($this->attributeTypes)-1;
-      foreach ( $this->attributeTypes as $attr => $type )
-      {
-         $json .= "'" . $attr ."' : '" . $this->aGet($attr) . "'";
-         
-         if ($i<$n) $json .= ", ";  
-         $i++;
-      }
-      
-      if ($recursive)
-      {
-         foreach ($this->getHasOne() as $attr => $clazz)
-         {
-            $relObj = $this->aGet($attr);
-            if (!is_null($relObj))
-            {
-               // TODO: loop detection con referencia path al nodo loopeado
-               if(!in_array($relObj->getClass().'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-               {
-                 // FIXME: las tags de los atributos hijos de la instancia raiz deberian
-                 //        tener su nombre igual al nombre del atributo, no el nombre de
-                 //        la clase. Con este codigo es el nombre de la clase.
-                 $json .= ", '". $attr ."': ". $relObj->toJSON( $recursive, $loopDetection );
-               }
-            }
-         }
-         
-         foreach ($this->getHasMany() as $attr => $clazz)
-         {
-            // TODO: type de la coleccion
-            //$hm_node->setAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
-           
-            $relObjs = $this->aGet($attr);
-            
-            if ( count($relObjs) > 0 )
-            {
-               $json .= ", '". $attr ."': [ ";
-                
-               foreach ($relObjs as $relObj)
-               {
-                  // TODO: loop detection con referencia path al nodo loopeado
-                  if(!in_array($relObj->getClass().'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-                  {
-                     $json .= $relObj->toJSON( $recursive, $loopDetection ) .', ';
-                  }
-               }
-                
-               $json = substr($json, 0, -2); // Saco ', ' del final
-                
-               $json .= "]";
-            }
-         }
-      }
-      
-      //$json .= "}}";
-      $json .= "}";
-      
-      // TODO: if $recursive ....
-      // Tengo que hacer lo mismo para los objetos relacionados
-
-      return $json;
-   }
-   
-   private function toJSONSingle( $obj, $xml_dom_doc, $xml_parent_node, $recursive, $loopDetection, $attrName = null )
-   {
-      if(!in_array(get_class($obj).'_'.$obj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-      {
-         $loopDetection[] = get_class($obj).'_'.$obj->getId(); // Marca como recorrido
-         
-         // Nodo actual
-         $node = NULL;
-         
-         // El nombre de la tag es el nombre del atributo, a no ser que sea el nodo raiz.
-         if ( is_null($attrName) )
-         {
-            $node = $xml_dom_doc->createElement( get_class($obj) );
-         }
-         else
-         {
-            $node = $xml_dom_doc->createElement( $attrName );
-            $node->setAttribute( 'type', get_class($obj) ); // setAttribute ( string $name , string $value )
-         }
-         
-         // Para la primer llamada, este nodo es el dom_document
-         $xml_parent_node->appendChild( $node );
-         
-         foreach ( $obj->attributeTypes as $attr => $type )
-         {
-            $attr_node = $xml_dom_doc->createElement( $attr, $obj->aGet($attr) );
-            $node->appendChild( $attr_node );
-         }
-         
-         if ($recursive)
-         {
-            foreach ($obj->getHasOne() as $attr => $clazz)
-            {
-               $relObj = $obj->aGet($attr);
-               if (!is_null($relObj))
-               {
-                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-                  {
-                     // FIXME: las tags de los atributos hijos de la instancia raiz deberian
-                     //        tener su nombre igual al nombre del atributo, no el nombre de
-                     //        la clase. Con este codigo es el nombre de la clase.
-                     $this->toJSONSingle( $relObj, $xml_dom_doc, $node, $recursive, $loopDetection, $attr );
-                  }
-               }
-            }
-            
-            foreach ($obj->getHasMany() as $attr => $clazz)
-            {
-               $hm_node = $xml_dom_doc->createElement( $attr );
-               $hm_node->setAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
-               
-               $relObjs = $obj->aGet($attr);
-               
-               foreach ($relObjs as $relObj)
-               {
-                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-                  {
-                     $this->toJSONSingle($relObj, $xml_dom_doc, $hm_node, $recursive, $loopDetection);
-                  }
-               }
-               
-               $node->appendChild( $hm_node );
-            }
-         } // si es recursiva
-      } // si no hay loop
-   }
-   
-   // ===============================================
-   // ===============================================
-   
-   
-   public function toXML( $recursive = false )
-   {
-      $this->xml = new XMLWriter();
-      $this->xml->openMemory();
-      $this->xml->setIndent(true);
-      $this->xml->setIndentString('  ');
-      
-      // array de clase_id para saber que objetos ya se recorrieron
-      // Cuando detecta loops deberia poner una referencia al nodo que ya se puso en el HTML, como hace xtream,
-      // asi no se pierde informacion de relaciones. La referencia deberia ser una xpath. Asi que deberia
-      // guardarse la xpath a cada nodo y pedirla por la clase y el id.
-      $loopDetection = new ArrayObject();
-
-      $this->toXMLSingle( $this, $recursive, $loopDetection );
-      
-      return $this->xml->outputMemory();
-   }
-   
-   
-   // =================================================================================================
-   /*
-    * para obtener el xslt, hacer:
-    * 
-    * $xsl_dom = new DOMDocument();
-    * $xsl_dom->load( 'yuppxml2impxml.xsl', LIBXML_NOCDATA);
-    * 
-    * $xslt = new XSLTProcessor();
-    * $xslt->importStylesheet( $xsl_dom );
-    */ 
-   public function toXML2( $recursive = false, $pretty = false, XSLTProcessor $xslt = NULL )
-   {
-      //$xml_dom = new DOMDocument();
-      //$xml_dom = new DOMDocument('1.0', 'utf-8');
-      $xml_dom = new DOMDocument('1.0', 'iso-8859-1');
-      
-      if ($pretty)
-      {
-         $xml_dom->preserveWhiteSpace = false;
-         $xml_dom->formatOutput   = true;
-      }
-      
-      $loopDetection = new ArrayObject();
-
-      $this->toXMLSingle2( $this, $xml_dom, $xml_dom, $recursive, $loopDetection );
-      
-      if ($xslt === NULL)
-         return $xml_dom->saveXML();
-      else
-         return $xslt->transformToXML( $xml_dom ); 
-   }
-   
-   // PersistentObject, DomDocument, DomNode, Boolean, ArrayObject, String
-   private function toXMLSingle2( $obj, $xml_dom_doc, $xml_parent_node, $recursive, $loopDetection, $attrName = null )
-   {
-      if(!in_array(get_class($obj).'_'.$obj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-      {
-         $loopDetection[] = get_class($obj).'_'.$obj->getId(); // Marca como recorrido
-         
-         // Nodo actual
-         $node = NULL;
-         
-         // El nombre de la tag es el nombre del atributo, a no ser que sea el nodo raiz.
-         if ( is_null($attrName) )
-         {
-            $node = $xml_dom_doc->createElement( get_class($obj) );
-            // $this->xml->startElement( get_class($obj) );
-         }
-         else
-         {
-            //$this->xml->startElement( $attrName );
-            //$this->xml->writeAttribute( 'type', get_class($obj) );
-            
-            //$node = $xml_dom_doc->createElement( get_class($obj) );
-            $node = $xml_dom_doc->createElement( $attrName );
-            $node->setAttribute( 'type', get_class($obj) ); // setAttribute ( string $name , string $value )
-         }
-         
-         // Para la primer llamada, este nodo es el dom_document
-         $xml_parent_node->appendChild( $node );
-         
-         foreach ( $obj->attributeTypes as $attr => $type )
-         {
-            //$this->xml->writeElement($attr, $obj->aGet($attr));
-            $attr_node = $xml_dom_doc->createElement( $attr, $obj->aGet($attr) );
-            $node->appendChild( $attr_node );
-         }
-         
-         if ($recursive)
-         {
-            foreach ($obj->getHasOne() as $attr => $clazz)
-            {
-               $relObj = $obj->aGet($attr);
-               if (!is_null($relObj))
-               {
-                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-                  {
-                     // FIXME: las tags de los atributos hijos de la instancia raiz deberian
-                     //        tener su nombre igual al nombre del atributo, no el nombre de
-                     //        la clase. Con este codigo es el nombre de la clase.
-                     $this->toXMLSingle2( $relObj, $xml_dom_doc, $node, $recursive, $loopDetection, $attr );
-                  }
-               }
-            }
-            
-            foreach ($obj->getHasMany() as $attr => $clazz)
-            {
-               //$xml_dom_doc->startElement( $attr );
-               //$xml_dom_doc->writeAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
-              
-               $hm_node = $xml_dom_doc->createElement( $attr );
-               $hm_node->setAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
-               
-               $relObjs = $obj->aGet($attr);
-               
-               foreach ($relObjs as $relObj)
-               {
-                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-                  {
-                     $this->toXMLSingle2($relObj, $xml_dom_doc, $hm_node, $recursive, $loopDetection);
-                  }
-               }
-               
-               $node->appendChild( $hm_node );
-            }
-         } // si es recursiva
-      } // si no hay loop
-   }
-   // =================================================================================================
-   
-   
-   private function toXMLSingle( $obj, $recursive, $loopDetection, $attrName = null )
-   {
-      if(!in_array(get_class($obj).'_'.$obj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-      {
-         $loopDetection[] = get_class($obj).'_'.$obj->getId(); // Marca como recorrido
-         
-         // El nombre de la tag es el nombre del atributo, a no ser que sea el nodo raiz.
-         if ( is_null($attrName) )
-            $this->xml->startElement( get_class($obj) );
-         else
-         {
-            $this->xml->startElement( $attrName );
-            $this->xml->writeAttribute( 'type', get_class($obj) );
-         }
-         
-         //echo get_class($obj) . " " . $obj->getId() . "<br/>";
-         
-         foreach ( $obj->attributeTypes as $attr => $type )
-         {
-            $this->xml->writeElement($attr, $obj->aGet($attr));
-         }
-         
-         // TODO: if $recursive ....
-         // Tengo que hacer lo mismo para los objetos relacionados
-         
-         if ($recursive)
-         {
-            foreach ($obj->getHasOne() as $attr => $clazz)
-            {
-               $relObj = $obj->aGet($attr);
-               if (!is_null($relObj))
-               {
-                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-                  {
-                     // FIXME: las tags de los atributos hijos de la instancia raiz deberian
-                     //        tener su nombre igual al nombre del atributo, no el nombre de
-                     //        la clase. Con este codigo es el nombre de la clase.
-                     $this->toXMLSingle( $relObj, $recursive, $loopDetection, $attr );
-                  }
-               }
-            }
-            
-            foreach ($obj->getHasMany() as $attr => $clazz)
-            {
-               $this->xml->startElement( $attr );
-               $this->xml->writeAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
-               
-               $relObjs = $obj->aGet($attr);
-               
-               foreach ($relObjs as $relObj)
-               {
-                  if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
-                  {
-                     $this->toXMLSingle($relObj, $recursive, $loopDetection);
-                  }
-               }
-               $this->xml->endElement();
-            }
-         }
-      }
-      
-      $this->xml->endElement();
-   }
-
 
    // Operadores sobre POs como conjuntos de atributos
    
