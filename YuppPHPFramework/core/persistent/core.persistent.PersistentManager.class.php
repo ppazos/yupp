@@ -279,10 +279,8 @@ class PersistentManager {
       //Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE__);
 
       $params['where'] = Condition::_AND()
-                           //->add( Condition::EQ($tableName, "owner_id", $owner->getId()) )
                            ->add( Condition::EQ($tableName, "owner_id", $owner_id ) )
                            ->add( Condition::EQ($tableName, "ref_id",   $ref_id) );
-                           //->add( Condition::EQ($tableName, "ref_id",   $child->getId()) );
 
       //Logger::struct($params, "PARAMS");
 
@@ -345,7 +343,7 @@ class PersistentManager {
                 $id = NULL;
                 if ( PersistentManager::isMappedOnSameTable( $partialInstance->getClass(), get_class($obj)) )
                 {
-                   Logger::add( Logger::LEVEL_PM, "SACO ID DEL OBJ" );
+                   //Logger::add( Logger::LEVEL_PM, "SACO ID DEL OBJ" );
                    $id = $obj->getId();
                 }
                 else // SACO ID DE LA PARTIAL INSTANCE
@@ -710,7 +708,7 @@ class PersistentManager {
     */
    private function get_mti_object_byData( $classLoaded, $attrValues )
    {
-      Logger::getInstance()->pm_log("PersistentManager.get_mti_object_byData: CLASS LOADED: " . $classLoaded);
+      //Logger::getInstance()->pm_log("PersistentManager.get_mti_object_byData: CLASS LOADED: " . $classLoaded);
       //Logger::struct( $attrValues, "ATTR VALUES" );
       
       // Nueva instancia de la clase real.
@@ -722,7 +720,7 @@ class PersistentManager {
       // O sea, si $persistentClass es A o A1 me dice que MTI es false aunque sea una instancia real de C, C1, G o G1.
       if ( MultipleTableInheritanceSupport::isMTISubclassInstance( $cins ) )
       {
-         Logger::getInstance()->pm_log("ES MTI: " . __FILE__ . " " . __LINE__);
+         //Logger::getInstance()->pm_log("ES MTI: " . __FILE__ . " " . __LINE__);
          
          // 2.1: Cargar la ultima instancia parcial en la estructura de herencia.
          //$superclases = ModelUtils::getAllAncestorsOf( $attrValues["class"] ); // $attrValues["class"] es la ultima en la estructura del carga de multiple tabla, puede tener subclases pero se guardan en la misma tabla que ella. Por eso necesito solo los padres xq son los que se pueden guardar en otras tablas.
@@ -910,7 +908,6 @@ class PersistentManager {
          // Obtiene el nombre del atributo para setearlo, si es NULL la clase no tiene ese atributo.
          
          $attr = $obj->getAttributeByColumn( $colname );
-         //if ( $attr = $obj->getAttributeByColumn( $colname ) )
          if ( !is_null($attr) )
          {
             // TODO: Ver como se cargan los NULLs, por ahora se setean... como debe ser?
@@ -1190,8 +1187,6 @@ class PersistentManager {
 
       // TODO: tengo que cargar solo si tiene deleted en false en la tabla de join.
 
-      //$dal = DAL::getInstance(); // TODO: guardarme la instancia de DAL en el constructor.
-
       // FIXME: esta clase podria ser superclase de la subclase que quiero cargar.
       //        tengo que ver en la tabla de que tipo es realmente y cargar una instancia de eso. 
       $hmattrClazz = $obj->getType( $hmattr );
@@ -1461,8 +1456,6 @@ class PersistentManager {
        * dir
        */
 
-      //$dal = DAL::getInstance();
-
       $objTableName = YuppConventions::tableName( $ins ); // ins se usa solo para sacar el nombre de la tabla y para sacar los nombres de las subclases.
 
       // No puede tener offset sin limit... (esto se considera en dal->listAll)
@@ -1628,14 +1621,12 @@ class PersistentManager {
       //else echo 'no tiene para deleted';
       //
       if (!$condition->hasCondForAttr('deleted'))
-         $cond_total->add( Condition::EQ($tableName, "deleted", 0) );
+         $cond_total->add( Condition::EQ($tableName, 'deleted', 0) );
 
       // CRITERIO DE BUSQUEDA
       $cond_total->add( $condition );
 
       $params['where'] = $cond_total;
-      
-      //print_r( $params['where'] );
 
       $allAttrValues = $this->dal->listAll( $tableName, $params ); // FIXME: AHORA TIRA TODOS LOS ATRIBUTOS Y NECESITO SOLO CLASS e ID.
       
@@ -1657,7 +1648,6 @@ class PersistentManager {
          $persistentClass = $row['class']; // soporte de herencia!!!!
 
          // Carga considerando estrategia... y se fija en el holder si ese objeto no esta ya cargado.
-
          $obj = NULL;
          if ( ArtifactHolder::getInstance()->existsModel( $persistentClass, $row['id'] ) ) // Si ya esta cargado...
          {
@@ -1682,7 +1672,6 @@ class PersistentManager {
     */
    public function findByQuery( Query $q )
    {
-      //$dal = DAL::getInstance();
       return $this->dal->query( $q );
    }
 
@@ -1692,7 +1681,6 @@ class PersistentManager {
    // para eso le paso la instancia que ya tengo y listo...
    public function exists( $persistentClass, $id )
    {
-      //$dal = DAL::getInstance();
       return $this->dal->exists( YuppConventions::tableName( new $persistentClass() ), $id );
    }
 
@@ -1701,7 +1689,7 @@ class PersistentManager {
     */
    public function count( $ins )
    {
-      //$dal = DAL::getInstance();
+      /*
       $objTableName = YuppConventions::tableName( $ins );
       $params = array();
 
@@ -1711,11 +1699,10 @@ class PersistentManager {
       $scs[] = $class;
 
       // Definicion de la condicion.
-      //$cond = NULL;
       $cond = Condition::_AND();
       if ( count($scs) == 1 )
       {
-         $cond->add( Condition::EQ($objTableName, "class",$scs[0]) );
+         $cond->add( Condition::EQ($objTableName, "class", $scs[0]) );
       }
       else
       {
@@ -1730,9 +1717,9 @@ class PersistentManager {
       $cond->add( Condition::EQ($objTableName, "deleted", 0) );
       $params['where'] = $cond;
 
-      //echo "<h1>". $cond->evaluate() ."</h1>"; // OK
-
       return $this->dal->count( $objTableName, $params );
+      */
+      return $this->countBy($ins, NULL);
    }
 
 
@@ -1742,7 +1729,6 @@ class PersistentManager {
    public function countBy( $ins, $condition )
    {
       $objTableName = YuppConventions::tableName( $ins );
-
       $params = array();
 
       // Quiero solo los registros de las subclases y ella misma.
@@ -1752,7 +1738,6 @@ class PersistentManager {
 
       // Definicion de la condicion.
       $cond_total = Condition::_AND();
-
       if ( count($scs) == 1 )
       {
          $cond_total->add( Condition::EQ($objTableName, "class", $scs[0]) );
@@ -1769,11 +1754,11 @@ class PersistentManager {
       
       // FIXED: igual que en findByAttributeMatrix usada por findBy
       // Si no tiene condicion deleted, le pone deleted false.
-      if (!$condition->hasCondForAttr('deleted'))
+      if ( $condition == NULL || !$condition->hasCondForAttr('deleted'))
          $cond_total->add( Condition::EQ($objTableName, "deleted", 0) );
 
       // CRITERIO DE BUSQUEDA
-      $cond_total->add( $condition );
+      if ($condition != NULL) $cond_total->add( $condition );
 
       $params['where'] = $cond_total;
 
@@ -1998,8 +1983,6 @@ class PersistentManager {
    {
       Logger::getInstance()->pm_log("PersistentManager::generate");
       
-      //Logger::struct( $ins, "GENERATE INS" );
-      
       // La DAL que se va a usar
       $dal = $this->dal;
       if ($dalForApp !== NULL) $dal = $dalForApp;
@@ -2171,7 +2154,6 @@ class PersistentManager {
    
    private function generateHasManyJoinTable($ins, $attr, $assocClassName, $dal)
    {
-      //$dal = DAL::getInstance();
       $tableName = YuppConventions::relTableName( $ins, $attr, new $assocClassName() );
 
       //Logger::struct($this->getDataFromObject( new ObjectReference() ), "ObjRef ===");
@@ -2261,10 +2243,6 @@ class PersistentManager {
         
           // Todas las clases del primer nivel del modelo.
           $A = ModelUtils::getSubclassesOf( 'PersistentObject', $appName ); // FIXME> no es recursiva!
-    
-//    echo $appName.'<br/>';
-//    print_r($A);
-//    echo '<br/>';
     
           // Se utiliza luego para generar FKs.
           $generatedPOs = array();
@@ -2400,7 +2378,6 @@ class PersistentManager {
           foreach ($generatedPOs as $ins)
           {
              $tableName = YuppConventions::tableName( $ins );
-             
              $fks = array();
              
              // FKS super_id_XXX
@@ -2462,12 +2439,10 @@ class PersistentManager {
                 }
              }
              
-             
              // FKs tablas intermedias HasMany
              $hasMany = $ins->getHasMany();
              
-             //Logger::struct( $hasMany, "HAS MANY!" );
-             
+
     //         Logger::getInstance()->pm_log("OwnerClass: " . $ins->getClass() . " " . __FILE__ . " " . __LINE__);
     //         Logger::getInstance()->pm_log("OwnerTable: " . YuppConventions::tableName( $ins->getClass() ) . " " . __FILE__ . " " . __LINE__);
     
@@ -2518,13 +2493,11 @@ class PersistentManager {
                             );
                             
                    // Genera FKs
-                   //DAL::getInstance()->addForeignKeys($hasManyTableName, $hm_fks);
                    $dalForApp->addForeignKeys($hasManyTableName, $hm_fks);
                 }
              } // foreach hasMany
              
              // Genera FKs
-             //DAL::getInstance()->addForeignKeys($tableName, $fks);
              $dalForApp->addForeignKeys($tableName, $fks);
              
           } // foreach PO
@@ -2549,8 +2522,6 @@ class PersistentManager {
    public function remove_assoc( $obj1, $obj2, $attr1, $attr2, $logical = false )
    {
       // TODO: Si la relacion es A(1)<->(*)B (bidireccional) deberia setear en NULL el atributo A y A_id de B.
-
-      //$dal = DAL::getInstance();
 
       // Veo cual es el owner:
       $owner     = &$obj1;
