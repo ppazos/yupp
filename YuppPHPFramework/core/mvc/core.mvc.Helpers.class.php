@@ -434,6 +434,7 @@ function $func {
           unset($params['text']);
        }
        
+       // No usa attrs explicito, todo lo extra en los params lo pone como attrs.
        foreach ($params as $name=>$value)
        {
           $res .= ' '. $name .'="'. $value .'"';
