@@ -6,13 +6,11 @@ class DatabaseNormalization {
 
    public static function table( $tableName )
    {
-      //return String::firstToLower( $tableName );
       return String::toUnderscore( $tableName );
    }
 
    public static function col( $colName )
    {
-      //return $colName;
       return strtolower($colName);
    }
 
@@ -613,6 +611,10 @@ class DAL {
       // Soporte para multiple table inheritance mapping.
       // Si el objeto no tiene mti simplemente se devuelve un array con el mismo objeto de entrada.
       $pinss = MultipleTableInheritanceSupport::getPartialInstancesToSave( $obj );
+      
+      //Logger::getInstance()->dal_log("insert_query count MTI ". count($pinss) . " " . __FILE__ . " " . __LINE__ );
+      //Logger::struct( $pinss );
+      
       
       if ( count($pinss) == 1 ) // si no es mti, salva el caso de ObjectReference.
       {
