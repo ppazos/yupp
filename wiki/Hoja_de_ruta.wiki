@@ -225,6 +225,8 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * http://code.google.com/p/yupp/issues/detail?id=78 (Error por uso de is_a()) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=30 (Se completa la generación recursiva de JSON) (HECHO)
   * Se mejora la vista de ajaxLinkTest para seleccionar librería javascript entre prototype y jquery.
+  * Se corrige un warning que daba PHP 5.2.10 por llamar al date() sin haber seteado el default time zone.
+
 
 ==v0.4:==
 
