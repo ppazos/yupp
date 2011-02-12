@@ -192,7 +192,6 @@ class CoreController extends YuppController {
       return;
    }
    
-   
    /**
     * Accion para generar las tablas para guardar el modelo.
     */
@@ -211,7 +210,6 @@ class CoreController extends YuppController {
       
       return $this->redirect( array( 'action' => 'dbStatus' ));
    }
-
 
    /**
     * FIXME: Esta no se necesita mas, esto fue resuelto en el htaccess para poder acceder a los archivos fisicos. 
@@ -255,7 +253,6 @@ class CoreController extends YuppController {
       $this->flash['message'] = "Arriba loco, este es el mensaje del flash!";
       return $this->render( $id );
    }
-
    
    /**
     * Mostrar lista de elementos de alguna clase.
@@ -280,7 +277,6 @@ class CoreController extends YuppController {
       //return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
       return $this->render("list");
    }
-   
 
    public function showAction()
    {
@@ -372,7 +368,6 @@ class CoreController extends YuppController {
       $this->params['object'] = $obj;
       return $this->render("create");
    }
-   
 
    /**
     * Accion para cambiar el locale.
@@ -418,7 +413,6 @@ class CoreController extends YuppController {
       ));
    }
 
-
    /**
     * Ejecuta el boostrap de un componente dado.
     */
@@ -446,7 +440,6 @@ class CoreController extends YuppController {
       
       return $this->redirect( array('component'=>'core', 'controller'=>'core', 'action'=>'index'));
    }
-   
    
    public function showStatsAction()
    {
