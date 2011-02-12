@@ -1,9 +1,15 @@
 <?php
 
-class DisplayHelper {
+// shortcut a DisplayHelper::message
+// http://code.google.com/p/yupp/issues/detail?id=6
+// TODO: mover a un archivo de script 'shortcuts.script.php' y que el usuario deba incuirlo si quiere usar los shortcuts.
+function msg( $key, $locale = NULL, $defaultMessage = "" )
+{
+   // TODO: agregar un tercer parametro para indicar si se hace o no echo del resultado.
+   return DisplayHelper::message( $key, $locale = NULL, $defaultMessage = "" );
+}
 
-    // TODO: permitir el acceso a los params desde los helpers!
-    //Model::getInstance();
+class DisplayHelper {
     
     public static function message( $key, $locale = NULL, $defaultMessage = "" )
     {

@@ -6,6 +6,7 @@
 
 /**
  * Funcion global para llamadas cortas.
+ * TODO: mover a un archivo de script 'shortcuts.script.php' y que el usuario deba incuirlo si quiere usar los shortcuts.
  */
 function h( $name, $paramsMap = array() )
 {
