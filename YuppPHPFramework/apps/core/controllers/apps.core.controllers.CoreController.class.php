@@ -274,7 +274,6 @@ class CoreController extends YuppController {
       eval ('$count = ' . $clazz . '::count();');
       $this->params['count'] = $count; // Maximo valor para el paginador.
 
-      //return $this->render("list", & $this->params); // Id NULL para paginas de scaffolding
       return $this->render("list");
    }
 
