@@ -19,6 +19,7 @@ class HTTPResponse {
       
       if (empty($this->headers[0])) throw new Exception('La respuesta es vacia '. __FILE__ .' '.__LINE__);
       
+      // Para obtener version de HTTP, codigo y mensaje: HTTP/1.1 200 OK
       $headerSplit = preg_split('/ /', $this->headers[0]);
       $this->version = $headerSplit[0];
       
