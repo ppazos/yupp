@@ -147,9 +147,8 @@ class TestCase002 extends TestCase {
         )
       );
       
-      
-      echo $cara->toXML(true);
-      echo $cara->toXML2(true, true);
+      YuppLoader::load('core.persistent.serialize', 'XMLPO');
+      echo XMLPO::toXML($cara, true, true);
    }
    
    public function getByTest()
