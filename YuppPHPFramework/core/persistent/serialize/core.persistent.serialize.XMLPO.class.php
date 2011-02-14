@@ -112,6 +112,87 @@ class XMLPO {
          } // si es recursiva
       } // si no hay loop
    }
+   
+   /**
+    * En la primera vuelta se le pasa el xmlstr
+    * Si debe parsear hasMany y hasOne, usa el segundo parametro 
+    * para seguir la recursion, y el primero queda en NULL.
+    */
+   public static function fromXML($xmlstr, $xmlnode = NULL)
+   {
+      // TODO: falta resolver loops.
+    
+      // Debo tener todas las clases cargadas porque no se de donde cargar la clase solo por el nombre (ni siquiera se de que aplicacion es).
+      // TODO: Podria: agregar informacion al XML para saber en que paquete esta la clase, o indicarle por parametro el nombre de la aplicacion donde buscar la clase.  
+      YuppLoader::loadModel();
+      
+      $xml = NULL;
+      $clazz = NULL;
+      
+      // Si es la primer llamada, parsea, si no, usa el xml parseado en el paso previo de la recursion.
+      if ($xmlnode == NULL)
+      {
+         $xml = simplexml_load_string($xmlstr);
+         $clazz = $xml->getName(); // Nombre de la etiqueta
+      }
+      else
+      {
+         // En la recursion, el nombre de la clase viene en:
+         // - atributo type: si es hasOne
+         // - nombre de la etiqueta: si es hasMany
+         $type = (string)$xmlnode['type'];
+         if (!empty($type)) // Es hasOne
+         {
+            $clazz = $type;
+         }
+         else
+         {
+            $clazz = $xmlnode->getName(); // Nombre de la etiqueta
+         }
+         
+         $xml = $xmlnode;
+      }
+      
+      
+      $po_ins = new $clazz();
+      
+      
+      // Obtengo los atributos: son las tags que no tienen el atributo type.
+      $attributes = array();
+      foreach( $xml->children() as $name => $xml_node )
+      {
+         $type = (string) $xml_node['type'];
+         if (!empty($type)) // Es hasOne o hasMany
+         {
+            // Hacer el parse recursivo, ver si es HO o HM
+            $of = (string)$xml_node['of'];
+            if (!empty($of)) // Es hasMany
+            {
+               //echo "$name hasMany\n";
+               $value = array(); // El valor de hasMany es una coleccion
+               foreach($xml_node->children() as $hm_xml_node)
+               {
+                  $value[] = self::fromXML(NULL, $hm_xml_node);
+               }
+            }
+            else // Es hasOne
+            {
+               //echo "$name hasOne\n";
+               $value = self::fromXML(NULL, $xml_node);
+            }
+         }
+         else // Setea atributos simples
+         {
+            //echo "$name simple\n";
+            $value = (string)$xml_node;
+         }
+         
+         // Setea el valor del atributo
+         $po_ins->aSet($name, $value);
+      }
+            
+      return $po_ins;
+   }
 }
 
 ?>
