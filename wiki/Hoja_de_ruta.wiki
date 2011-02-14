@@ -216,9 +216,8 @@ Descarga: http://code.google.com/p/yupp/downloads/list
 
 ==v0.3:==
 
-  * Generar instancias de PO a parir del XML generado al serializar la instancia (transformación inversa a la serialización).
+  * Generar instancias de PO a parir del XML generado al serializar la instancia (transformación inversa a la serialización). (HECHO)
   * Sacar la serializacion a XML de PO a una clase aparte. (HECHO)
-  * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
   * Juntar paquetes support y utils en utils. Poner en ese utils las clases del paquete config que no sean de configuracion del framework.
   * Se agrega el parámetro 'path' al helper template. (HECHO)
   * Se agrega el parámetro 'attrs' a los helpers link y ajax_link. (HECHO)
@@ -236,6 +235,9 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * TICKET #38 (numeracion vieja): terminar las funcionalidades para inspeccionar la base de datos.
   * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
   * Extender la configuracion de DB de las aplicaciones para soportar los modos de ejecucion.
+  * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
+  * Agregar las referencias por loops en serialización a XML y JSON.
+  * Agregar el procesamiento de referencias de loops en la deserialización de XML a PO.
 
 
 ==v0.5:==
