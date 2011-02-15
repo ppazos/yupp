@@ -43,12 +43,10 @@ class HelpersTestController extends YuppController {
     
     function imgTestAction()
     {
-       
     }
     
     function urlTestAction()
     {
-       
     }
     
     function formTestAction()
@@ -67,6 +65,10 @@ class HelpersTestController extends YuppController {
                                      $this->params['titulo'] . "' y '" .
                                      $this->params['texto'] . "'");
        }
+    }
+    
+    function fieldsTestAction()
+    {
     }
 }
 ?>
