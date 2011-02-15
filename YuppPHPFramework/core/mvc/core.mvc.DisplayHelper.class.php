@@ -310,6 +310,10 @@ class DisplayHelper {
        return $res;
     }
 
+
+    // Controles para formularios
+
+    // TODO: id y demas atributos deberian venir en un array
     /**
      * Genera un control html SELECT con el nombre y las opciones dadas.
      * Si se le pasa un valor, este queda seleccionado por defecto.
@@ -341,6 +345,156 @@ class DisplayHelper {
       
       echo $fieldHTML;
     }
+    
+    
+    public static function text($name, $value = NULL, $attrs = array())
+    {
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       return '<input type="text" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
+    }
+    
+    public static function bigtext($name, $value = NULL, $attrs = array())
+    {
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       return '<textarea name="'. $name .'"'. $strattrs .' >'. $value .'</textarea>';
+    }
+    
+    /**
+     * Para que aparezca chequeado debe venir $value en true
+     */
+    public static function check($name, $value = NULL, $attrs = array())
+    {
+       if ($value === true) $attrs['checked'] = 'true';
+       
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       
+       return '<input type="checkbox" name="'. $name .'" '. $strattrs .' />';
+    }
+    
+    public static function radio($name, $value = NULL, $attrs = array())
+    {
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       return '<input type="checkbox" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
+    }
+    
+    public static function hidden($name, $value = NULL, $attrs = array())
+    {
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       return '<input type="hidden" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
+    }
+    
+    public static function password($name, $value = NULL, $attrs = array())
+    {
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       return '<input type="password" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
+    }
+    
+    public static function file($name, $value = NULL, $attrs = array())
+    {
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       return '<input type="file" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
+    }
+    
+    
+    /**
+     * Value puede tener 3 valores con las siguientes claves: d (para el dia), m (para el mes), y (para el anio)
+     */
+    public static function date($name, $value = array(), $attrs = array())
+    {
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       $fieldHTML = '<label for="day">D&iacute;a: </label>'; // TODO: i18n soportado por el framework.
+       $fieldHTML .= '<select name="'.$name.'_day">';
+       
+       $day = NULL;
+       if (isset($value['d'])) $day = $value['d'];
+       for ( $d=1; $d<32; $d++ )
+       {
+          if ( $d === $day ) $fieldHTML .= '<option value="'. $d .'" selected="true">'. $d .'</option>';
+          else $fieldHTML .= '<option value="'. $d .'">'. $d .'</option>';
+       }
+       $fieldHTML .= '</select>';
+        
+        
+       $fieldHTML .= '<label for="month">Mes: </label>'; // TODO: i18n soportado por el framework.
+       $fieldHTML .= '<select name="'.$name.'_month">';
+        
+       $month = NULL;
+       if (isset($value['m'])) $month = $value['m'];
+       for ( $m=1; $m<13; $m++ )
+       {
+          if ( $m === $month ) $fieldHTML .= '<option value="'. $m .'" selected="true">'. $m .'</option>';
+          else $fieldHTML .= '<option value="'. $m .'">'. $m .'</option>';
+       }
+       $fieldHTML .= '</select>';
+        
+        
+       $fieldHTML .= '<label for="year"> A&ntilde;o: </label>'; // TODO: i18n soportado por el framework.
+       $fieldHTML .= '<select name="'.$name.'_year">';
+       
+       $year = NULL;
+       if (isset($value['y'])) $year = $value['y'];
+       for ( $y=1930; $y<2010; $y++ )
+       {
+          if ( $y === $year ) $fieldHTML .= '<option value="'. $y .'" selected="true">'. $y .'</option>';
+          else $fieldHTML .= '<option value="'. $y .'">'. $y .'</option>';
+       }
+       $fieldHTML .= '</select>';
+       
+       
+       return $fieldHTML;
+    }
+    
+    public static function submit($name, $value = NULL, $attrs = array())
+    {
+       $strattrs = '';
+       foreach ($attrs as $name=>$val)
+       {
+          $strattrs .= ' '. $name .'="'. $val .'"';
+       }
+       
+       return '<input type="submit" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
+    }
+    
 
     /**
      * Crear un campo html TEXTAREA con el editor TinyMCE.
