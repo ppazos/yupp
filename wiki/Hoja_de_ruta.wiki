@@ -229,6 +229,7 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * http://code.google.com/p/yupp/issues/detail?id=6 (Se agrega shortcut al helper message) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=29 (Se agrega seguridad para ejecutar acciones de CoreController en modo PROD) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=13 (Crear helpers para generación de campos para formularios) (HECHO)
+  * http://code.google.com/p/yupp/issues/detail?id=37 (Se cierra luego de verificar que funciona) (HECHO)
 
 
 ==v0.4:==
