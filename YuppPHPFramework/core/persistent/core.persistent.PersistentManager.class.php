@@ -137,6 +137,7 @@ class PersistentManager {
       
       $ctx = YuppContext::getInstance();
       $appName = $ctx->getComponent();
+      if ($ctx->isAnotherApp()) $appName = $ctx->getRealApp();
       
       Logger::getInstance()->pm_log("PM::__construct appName: " . $appName);
       
