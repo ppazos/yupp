@@ -9,7 +9,12 @@ class YuppContext {
    private $component;     // componente actual
    private $controller;    // controller actual
    private $action;        // action actual
-    
+   
+   private $realApp = NULL; // Nombre de la aplicacion real. Se usa cuando se esta en core (component=core) 
+                            // pero se quiere realizar alguna operacion en la base para una clase de una 
+                            // aplicacion particular, y se necesite el nombre de la app para crear la DAL 
+                            // con la config de esa app. Esto ultimo lo hace PM.
+   
    private $params = array(); // parametros del request
    private $model  = array();  // Modelo devuelto por la ultima accion ejecutada
     
@@ -21,26 +26,13 @@ class YuppContext {
    
    private static $instance = NULL;
 
-   //private static $instance = NULL;
    public static function getInstance()
    {
-      // Deberia ser persistente asi concervo el locale entre requests... pero puede haber problemas con los params, aunque los params se resetean en cada request.
+      // Deberia ser persistente asi concervo el locale entre requests...
+      // pero puede haber problemas con los params, aunque los params se resetean en cada request.
+      // FIXED: el locale es lo unico que se persiste entre requests.
       if (self::$instance === NULL) self::$instance = new YuppContext();
       return self::$instance;
-      
-      /*
-      $instance = NULL;
-      if ( !YuppSession::contains("_yupp_context_singleton_instance") )
-      {
-         $instance = new YuppContext();
-         YuppSession::set("_yupp_context_singleton_instance", $instance);
-      }
-      else
-      {
-         $instance = YuppSession::get("_yupp_context_singleton_instance");
-      }
-      return $instance;
-      */
    }
     
    private function __construct()
@@ -60,7 +52,7 @@ class YuppContext {
    }
    public function getLocale()
    {
-    	return $this->locale;
+      return $this->locale;
    }
     
    public function setMode( $mode )
@@ -68,23 +60,26 @@ class YuppContext {
       // TODO: ver que el modo es valido.
       $this->mode = $mode;
    }
-   public function getMode()          { return $this->mode; }
+   public function getMode() { return $this->mode; }
     
    public function setComponent( $component ) { $this->component = $component; }
-   public function getComponent()             { return $this->component; }
+   public function getComponent() { return $this->component; }
     
    public function setController( $controller ) { $this->controller = $controller; }
-   public function getController()              { return $this->controller; }
+   public function getController() { return $this->controller; }
     
    public function setAction( $action ) { $this->action = $action; }
-   public function getAction()          { return $this->action; }
-    
-    
+   public function getAction() { return $this->action; }
+   
    public function setParams( $params ) { $this->params = $params; }
-   public function getParams()           { return $this->params; }
+   public function getParams() { return $this->params; }
     
    public function setModel( $model ) { $this->model = $model; }
-   public function getModel()          { return $this->model; }
+   public function getModel() { return $this->model; }
+   
+   public function setRealApp( $appName ) { $this->realApp = $appName; }
+   public function getRealApp() { return $this->realApp; }
+   public function isAnotherApp() { return ($this->realApp != NULL && $this->realApp != $this->component); }
    
    /*
    public function update()
