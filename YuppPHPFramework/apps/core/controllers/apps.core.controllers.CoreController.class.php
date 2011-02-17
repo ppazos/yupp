@@ -259,14 +259,26 @@ class CoreController extends YuppController {
     */
    public function listAction()
    {
+      $app = $this->params['app'];
       $clazz = $this->params['class'];
 
       // paginacion
-      if (!$this->params['max'])
+      if (!isset($this->params['max']))
       {
          $this->params['max'] = 10;
          $this->params['offset'] = 0;
       }
+      
+      // Tengo que asegurarme de que cargue la config de DB para esa aplicacion
+      // Asi en lugar de obtener 'core' en el component, obtiene el nombre de la apliciacion real cuando crea la DAL en PM.
+      $ctx = YuppContext::getInstance();
+      $ctx->setRealApp( $app );
+      
+      // Verifica que la clase esta cargada, si no, carga todo (porque no se de que aplicacion es)
+      $loadedClasses = get_declared_classes(); //YuppLoader::getLoadedModelClasses(); // FIXME: Tengo clases cargadas en YuppLoader pero no estan incluidas (debe ser por persistencia del singleton en session)
+      if (!in_array($clazz, $loadedClasses))
+         YuppLoader::loadModel();
+      
 
       eval ('$list = ' . $clazz . '::listAll( $this->params );'); // Se pasan los params por si vienen atributos de paginacion.
       $this->params['list'] = $list;
@@ -277,11 +289,27 @@ class CoreController extends YuppController {
       return $this->render("list");
    }
 
+   // FIXME: misma accion implementada en YuppController, lo unico distinto es como saca el nombre de la clase a mostrar.
    public function showAction()
    {
-      $id = $this->params['id'];
+      $app = $this->params['app'];
       $clazz = $this->params['class'];
-
+      $id = $this->params['id'];
+      
+      // Tengo que asegurarme de que cargue la config de DB para esa aplicacion
+      // Asi en lugar de obtener 'core' en el component, obtiene el nombre de la apliciacion real cuando crea la DAL en PM.
+      $ctx = YuppContext::getInstance();
+      $ctx->setRealApp( $app );
+      
+      
+      // Verifica que la clase esta cargada, si no, carga todo (porque no se de que aplicacion es)
+      $loadedClasses = get_declared_classes(); //YuppLoader::getLoadedModelClasses(); // FIXME: Tengo clases cargadas en YuppLoader pero no estan incluidas (debe ser por persistencia del singleton en session)
+      if (!in_array($clazz, $loadedClasses))
+         YuppLoader::loadModel();
+      
+      //print_r($loadedClasses);
+      //print_r(get_declared_classes());
+      
       // La clase debe estar cargada...
       eval ('$obj' . " = $clazz::get( $id );");
 
