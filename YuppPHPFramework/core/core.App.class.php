@@ -1,5 +1,7 @@
 <?php
 
+YuppLoader::load('core.support', 'YuppContext');
+
 /**
  * Clase que modela una applicacion web instalada.
  */
@@ -8,6 +10,12 @@ class App {
    private $name;
    private $path;
    private $descriptor; // App Descriptor
+   
+   static function getCurrent()
+   {
+      $ctx = YuppContext::getInstance();
+      return new App($ctx->getComponent());
+   }
 
    /**
     * Crea una instancia de la aplicacion de nombre $name.
@@ -105,17 +113,52 @@ class App {
        return $res;
    }
    
+   /**
+    * $controllerName viene en minusculas, p.e. si se refiere a "EntradaBlogController" debera venir "entradaBlog".
+    * $pathToControllers se usa para la recursion.
+    */
+   public function hasController( $controllerName, $pathToControllers = NULL )
+   {
+      if ($pathToControllers == NULL)
+      {
+         $pathToControllers = $this->path .'/controllers/';
+      }
+      
+      $dir = dir($pathToControllers);
+      
+      // Sufijo del nombre del archivo, no incluye parte del paquete, p.e. si el nombre completo es
+      // blog.EntradaBlogController.class.php, $controllerFileNameSufix == 'EntradaBlogController.class.php'
+      $controllerFileNameSufix = String::firstToUpper($controllerName) .'Controller.class.php';
+      
+      // Si encuentro subdirectorios que pueden tener controllers, los voy guardando para hacer recursion.
+      $recursiveSubdirs = array();
+      
+      // Recorre directorio de la aplicacion
+      while (false !== ($fileOrDir = $dir->read()))
+      {
+         //echo $test.'<br/>';
+         // Se queda solo con los nombres de los directorios
+         if (is_file($pathToControllers.$fileOrDir) && String::endsWith($fileOrDir, $controllerFileNameSufix))
+         {
+            return true;
+         }
+         else if (is_dir($pathToControllers.$fileOrDir))
+         {
+            $recursiveSubdirs[] = $fileOrDir;
+         }
+      }
+      
+      // TODO: recursion
+      
+      return false;
+   }
+   
    public function execAction( $controller, $action, $params )
    {
       // El nombre de la clase es el que viene en la url + 'Controller''
       $controllerClassName = strtoupper($controller[0]) . substr($controller, 1) . "Controller";
 
       YuppLoader::load( 'apps.'. $this->name .'.controllers', $controllerClassName );
-      
-      // TODO:
-      // c = new controllerClassName(params)
-      // comm = c->action
-      // return comm
       
       $cins = new $controllerClassName( $params );
       $comm = $cins->{$action}();
@@ -229,6 +272,7 @@ class App {
    
    public function hasTests()
    {
+      // FIXME: que exista el directorio no quiere decir que tenga tests.
       return in_array('tests', $this->getPackages());
    }
    
@@ -246,7 +290,7 @@ class App {
       {
          //echo $test.'<br/>';
          // Se queda solo con los nombres de los directorios
-         if (String::endsWith($test, 'class.php') && is_file($this->path.'/tests/'.$test))
+         if (is_file($this->path.'/tests/'.$test) && String::endsWith($test, 'class.php'))
          {
             $testCases[] = $test;
          }
