@@ -207,6 +207,11 @@ class DisplayHelper {
            $res .= '</td></tr>';
         }
         
+        // Necesito el nombre de la aplicacion y no deberia ser 'core', lo obtengo de ctx o de los params.
+        $ctx = YuppContext::getInstance();
+        $m = Model::getInstance();
+
+        
         // Muestro hasOne: http://code.google.com/p/yupp/issues/detail?id=12
         $hone = $po->getHasOne();
         foreach ( $hone as $attr => $clazz )
@@ -217,11 +222,14 @@ class DisplayHelper {
            
            $relObj = $po->aGet($attr);
            
+           if ($relObj == NULL) continue;
+           
            // Link a vista de scaffolding del objeto relacionado con hasOne
            $res .= h('link', array(
                      'component'  => 'core',
                      'controller' => 'core',
                      'action'     => 'show',
+                     'app'        => ( ($ctx->getComponent()=='core')?$m->get('app'):$ctx->getComponent()),
                      'class'      => $relObj->getClass(),
                      'id'         => $relObj->getId(),
                      'body'       => $relObj->getClass() . ' ['. $relObj->getId() .']'
@@ -511,7 +519,7 @@ class DisplayHelper {
      *       aca como un string simple que se pega en la pagina. Ahorraria codigo y la 
      *       inclusion de JS es mas ordenada. Idem para YUI Calendar, NiftyCorners, Prototype, etc.
      */
-    public static function html( $name, $content )
+    public static function html( $name, $content = '' )
     {
        ob_start(); // agarro el output y devuelvo el string
        
@@ -555,8 +563,10 @@ class DisplayHelper {
     
     /**
      * Control de calendario basado en Yui Calendar.
+     * FIXME: no esta tomando el value.
+     * FIXME: los campos input deberian ser hidden.
      */
-    public static function calendar( $name, $value )
+    public static function calendar( $name, $value = '' )
     {
        echo '<input type="text" name="day" id="day" />
              <input type="text" name="month" id="month" />
