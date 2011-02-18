@@ -245,7 +245,8 @@ Descarga: http://code.google.com/p/yupp/downloads/list
 
 ==v0.5:==
 
-  * Poder hacer otros campos complejos de forms por fuera de YuppForms, p.e. fecha, HTML, etc.
+  * http://code.google.com/p/yupp/issues/detail?id=83 (línea de comandos)
+  * Mejorar Yupp Desktop con características como cantidad de información que se muestra de cada aplicación, ordenamiento y ubicación de iconos, búsqueda y filtrado de aplicaciones por nombre, descripción y tags, mostrar tags, permitir mostrar Yupp Desktop aún en modo PROD, etc.
   * Corregir información duplicada de ObjectReference en PersistentManager.generate, cuando se generan las tablas intermedias de relaciones hasMany.
   * Integracion de modos de desarrollo, produccion y testing, y definición del comportamiento del sistema en cada modo.
     * No dejar ejecutar tests en modo prod, tampoco correr bootstraps (es por seguridad).
