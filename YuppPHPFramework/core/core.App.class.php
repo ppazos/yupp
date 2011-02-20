@@ -126,6 +126,8 @@ class App {
       
       $dir = dir($pathToControllers);
       
+      //echo $pathToControllers.'<br/>';
+      
       // Sufijo del nombre del archivo, no incluye parte del paquete, p.e. si el nombre completo es
       // blog.EntradaBlogController.class.php, $controllerFileNameSufix == 'EntradaBlogController.class.php'
       $controllerFileNameSufix = String::firstToUpper($controllerName) .'Controller.class.php';
@@ -142,13 +144,18 @@ class App {
          {
             return true;
          }
-         else if (is_dir($pathToControllers.$fileOrDir))
+         else if (is_dir($pathToControllers.$fileOrDir) && $fileOrDir != '.' && $fileOrDir != '..')
          {
             $recursiveSubdirs[] = $fileOrDir;
          }
       }
       
-      // TODO: recursion
+      // Recursion
+      foreach ($recursiveSubdirs as $subdir)
+      {
+         //echo "$subdir<br/>";
+         if ($this->hasController($controllerName, $subdir)) return true;
+      }
       
       return false;
    }
