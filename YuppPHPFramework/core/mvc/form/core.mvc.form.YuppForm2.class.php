@@ -14,13 +14,13 @@ class YuppForm2
 {
    // FIXME: el method del form deberia ser un parametro. (post, get, etc)
    
-	//private static $counter = 0;
-	private $fields = array (); // Lista de campos o grupos del form.
+   //private static $counter = 0;
+   private $fields = array (); // Lista de campos o grupos del form.
 
-	// Destino del form en partes.
-	private $component;
-	private $controller;
-	private $action;
+   // Destino del form en partes.
+   private $component;
+   private $controller;
+   private $action;
    
    // Destino del form url armada
    private $action_url = NULL; // Se inicializa en NULL para verificar si se usa este o el destino en partes.
@@ -49,9 +49,9 @@ class YuppForm2
     *                           sentido darle un valor si $isAjax es true.
     *
     */
-	//public function __construct($component, $controller, $action, $isAjax = false, $ajaxCallback = '')
+   //public function __construct($component, $controller, $action, $isAjax = false, $ajaxCallback = '')
    public function __construct( $params )
-	{
+   {
       if (!is_array($params)) throw new Exception("Error: 'params' debe ser un array. " . __FILE__ ." ". __LINE__);
       
       if ( isset($params['actionUrl']) )
@@ -60,13 +60,29 @@ class YuppForm2
       }
       else
       {
-         // FIXME: hacer que si no viene component ni controller agarre los del contexto.
-		   $this->component  = $params['component'];
-		   $this->controller = $params['controller'];
-		   $this->action     = $params['action'];
+         // Si no vienen los params de la url, los tomo del contexto
+         // http://code.google.com/p/yupp/issues/detail?id=28
+         
+         $ctx = YuppContext::getInstance();
+         if (isset($params['component']))
+            $this->component = $params['component'];
+         else
+            $this->component = $ctx->getComponent();
+         
+         if (isset($params['controller']))
+            $this->controller = $params['controller'];
+         else
+            $this->controller = $ctx->getController();
+         
+         
+         if (isset($params['action']))
+            $this->action = $params['action'];
+         else
+            $this->action = $ctx->getAction();
       }
       
       if ( isset($params['method']) ) $this->method = $params['method'];
+      else $this->method = 'get';
       
       if ( isset($params['isAjax']) )
       {
@@ -87,11 +103,11 @@ class YuppForm2
    public function get() { return $this->fields; }
    public function getMethod() { return $this->method; }
 
-	/**
-	 * Depende de los helpers. Si se utiliza YuppForm por fuera de Yupp 
-	 * se deberia especificar alguna forma de crear la url correcta 
-	 * segun el sistema.
-	 */
+   /**
+    * Depende de los helpers. Si se utiliza YuppForm por fuera de Yupp 
+    * se deberia especificar alguna forma de crear la url correcta 
+    * segun el sistema.
+    */
    public function getUrl()
    {
       if ( is_null($this->action_url) )
@@ -233,16 +249,16 @@ class YuppFormField2
       $this->args[$name] = $value;
    }
    
-	public function get($name)
-	{
-		if (isset($this->args[$name]))
+   public function get($name)
+   {
+      if (isset($this->args[$name]))
       {
          $val = $this->args[$name];
          unset($this->args[$name]); // Para que al final queden solo los que no se pidieron.
          return $val;
       }
       return NULL;
-	}
+   }
    
    // Devuelve todos los params que haya en args, si se hizo get de algunos params, esos no van a estar!
    public function getAll()
@@ -561,7 +577,7 @@ class YuppFormDisplay2
             
             // si no tiene name, se le pone action.
             // "value="'. $field->getLabel()
-				$fieldHTML .= '<input type="submit" name="'. $name .'" value="'. $field->getLabel() .'" '. $field->getTagParams() .' /></div>';
+            $fieldHTML .= '<input type="submit" name="'. $name .'" value="'. $field->getLabel() .'" '. $field->getTagParams() .' /></div>';
 
          break;
          case YuppFormField2 :: FILE :
