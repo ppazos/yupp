@@ -70,5 +70,18 @@ class HelpersTestController extends YuppController {
     function fieldsTestAction()
     {
     }
+    
+    function httpTestAction()
+    {
+       YuppLoader::load('core.http', 'HTTPRequest');
+       
+       $url = 'http://www.imdb.com/find?s=all';
+    
+       $req = new HTTPRequest();
+       $req->setTimeOut( 5 );
+       $res = $req->HTTPRequestPost( $url, array('q'=>'The+Matrix') );
+       
+       return $this->renderString($res->getBody());
+    }
 }
 ?>
