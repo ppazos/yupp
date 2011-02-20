@@ -326,7 +326,7 @@ class DisplayHelper {
      * Genera un control html SELECT con el nombre y las opciones dadas.
      * Si se le pasa un valor, este queda seleccionado por defecto.
      */
-    public static function select( $name, $options, $value = NULL, $id = NULL )
+    public static function select( $name, $options, $value = NULL, $attrs = array())
     {    
       if ($name === NULL)
          throw new Exception("El argumento 'name' no puede ser nulo. " . __FILE__ . " " . __LINE__);
@@ -337,8 +337,13 @@ class DisplayHelper {
       if ( !is_array($options))
          throw new Exception("El argumento 'options' debe ser un Array. " . __FILE__ . " " . __LINE__);
       
-      $fieldHTML = '';
-      $fieldHTML .= '<select name="'.$name.'"'. (($id!==NULL)?' id="'.$id.'"':'') .'>';
+      $strattrs = '';
+      foreach ($attrs as $name=>$val)
+      {
+         $strattrs .= ' '. $name .'="'. $val .'"';
+      }
+      
+      $fieldHTML = '<select name="'.$name.'" '. $strattrs .'>';
       
       foreach ( $options as $opt_value => $text )
       {
