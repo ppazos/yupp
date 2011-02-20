@@ -18,12 +18,13 @@ $m = Model::getInstance();
     <div style="width: 700px; overflow: auto; padding:10px; padding-right:10px; background-color: #ffff80; border: 1px dashed #000" id="content_div">
     
       <form method="post" enctype="multipart/form-data">
-        Nombre:  <?php echo DisplayHelper::text('nombre', 'Pablo'); ?><br/>
-        Clave:   <?php echo DisplayHelper::password('clave'); ?><br/>
-        Si o NO: <?php echo DisplayHelper::check('siono', true); ?><br/>
-        Fecha:   <?php echo DisplayHelper::date('fecha', array('y'=>1981)); ?><br/>
-        Archivo: <?php echo DisplayHelper::file('archivo'); ?><br/>
-        HTML:     <?php DisplayHelper::html('html'); ?><br/>
+        Nombre:   <?php echo DisplayHelper::text('nombre', 'Pablo'); ?><br/><br/>
+        Clave:    <?php echo DisplayHelper::password('clave'); ?><br/><br/>
+        Select:   <?php echo DisplayHelper::select('select', array('pri'=>'primera','seg'=>'segunda','ter'=>'tercera'), $m->get('select')); ?><br/><br/>
+        Si o No:  <?php echo DisplayHelper::check('siono', true); ?><br/><br/>
+        Fecha:    <?php echo DisplayHelper::date('fecha', array('y'=>1981, 'm'=>6)); ?><br/><br/>
+        Archivo:  <?php echo DisplayHelper::file('archivo'); ?><br/><br/>
+        HTML:     <?php DisplayHelper::html('html'); ?><br/><br/>
         Calendar: <?php DisplayHelper::calendar('calendar'); ?><br/><br/>
                   <?php echo DisplayHelper::submit('doit', 'Enviar'); ?>
       </form>
@@ -37,7 +38,7 @@ $m = Model::getInstance();
          width: 185px;
       }
     </style>
-    <?php echo 'sdsd'; ?>
+    
     <div style="width: 700px; height: auto; padding:10px; padding-right:10px; background-color: #8080ff; border: 1px dashed #000" id="content_div">
       <?php $model = $m->getAll(); ?>
       <?php foreach ($model as $k=>$v) : ?>
