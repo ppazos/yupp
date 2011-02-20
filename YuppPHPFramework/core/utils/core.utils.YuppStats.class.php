@@ -4,77 +4,90 @@
 
 class YuppStats
 {
-	function YuppStats() {}
+   function YuppStats() {}
 
-	/**
-	* lineStatisticsByFile
-	* Creates a list with all lines of the given file and their occurrences.
-	*
-	* @param     string
-	* @param     bool
-	* @return    string
-	*/
-	function lineStatisticsByFile($Filepath, $IgnoreCase = false, $NewLine = "\n")
-	{
-		if (!file_exists($Filepath))
-		{
-			$ErrorMsg = 'LineStatisticsByFile error: ';
-			$ErrorMsg .= 'The given file ' . $Filepath . ' does not exist!';
-			die($ErrorMsg);
-		}
+   /**
+   * lineStatisticsByFile
+   * Creates a list with all lines of the given file and their occurrences.
+   *
+   * @param     string
+   * @param     bool
+   * @return    string
+   */
+   function lineStatisticsByFile($Filepath, $IgnoreCase = false, $NewLine = "\n")
+   {
+      if (!file_exists($Filepath))
+      {
+         $ErrorMsg = 'LineStatisticsByFile error: ';
+         $ErrorMsg .= 'The given file ' . $Filepath . ' does not exist!';
+         die($ErrorMsg);
+      }
 
-		return $this->lineStatisticsByString(file_get_contents($Filepath), $IgnoreCase, $NewLine);
-	}
+      return $this->lineStatisticsByString(file_get_contents($Filepath), $IgnoreCase, $NewLine);
+   }
 
-	/**
-	 * lineStatisticsByString
-	 * Creates a list with all lines of the given string and their occurrences.
-	 *
-	 * @param     string
-	 * @param     bool
-	 * @return    string
-	 */
-	function lineStatisticsByString($Lines, $IgnoreCase = false, $NewLine = "\n")
-	{
-		if (is_array($Lines))
-			$Lines = implode($NewLine, $Lines);
+   /**
+    * lineStatisticsByString
+    * Creates a list with all lines of the given string and their occurrences.
+    *
+    * @param     string
+    * @param     bool
+    * @return    string
+    */
+   function lineStatisticsByString($Lines, $IgnoreCase = false, $NewLine = "\n")
+   {
+      $patterns = array();
+      $patterns[0] = "/\/\*[\s\S]*?.*?[\s\S]*?\*\//"; // Comentario multiple
+      //$patterns[0] = "/\/\*([.\s\t\n]*?)\*\//";
+      //$patterns[0] = "/\/\*(.*?)\*\//"; 
+      //$patterns[0] = "/\/\*[^\*\/]+\*\//";
+      $patterns[1] = "/\/\/(.*?)\n/"; // Comentario de linea
 
-		$Lines = explode($NewLine, $Lines);
+      $replacements = array('', '');
+      
+      $Lines =  preg_replace($patterns, $replacements, $Lines);
+      
+      //echo $Lines;
+      
+    
+      if (is_array($Lines))
+         $Lines = implode($NewLine, $Lines);
 
-		$LineArray = array ();
+      $Lines = explode($NewLine, $Lines);
 
-		// Go trough all lines of the given file
-		for ($Line = 0; $Line < count($Lines); $Line++)
-		{
-			// Trim whitespace for the current line
-			$CurrentLine = trim($Lines[$Line]);
+      $LineArray = array ();
 
-			// Skip empty lines
-			if ($CurrentLine == '')
-				continue;
+      // Go trough all lines of the given file
+      for ($Line = 0; $Line < count($Lines); $Line++)
+      {
+         // Trim whitespace for the current line
+         $CurrentLine = trim($Lines[$Line]);
 
-			// Use the line contents as array key
-			$LineKey = $CurrentLine;
+         // Skip empty lines
+         if ($CurrentLine == '')
+            continue;
 
-			if ($IgnoreCase)
-				$LineKey = strtolower($LineKey);
+         // Use the line contents as array key
+         $LineKey = $CurrentLine;
 
-			// Check if the array key already exists,
-			// and increase the counters
-			if (isset ($LineArray[$LineKey]))
-				$LineArray[$LineKey] += 1;
-			else
-				$LineArray[$LineKey] = 1;
-		}
+         if ($IgnoreCase)
+            $LineKey = strtolower($LineKey);
+
+         // Check if the array key already exists,
+         // and increase the counters
+         if (isset ($LineArray[$LineKey]))
+            $LineArray[$LineKey] += 1;
+         else
+            $LineArray[$LineKey] = 1;
+      }
 
       /*
-		// Sort the array
-		arsort($LineArray);
+      // Sort the array
+      arsort($LineArray);
       */
       
       return $LineArray;
-	}
-   
+   }
    
    /**
     * lineCount
@@ -85,9 +98,9 @@ class YuppStats
    function lineCount( $stats )
    {
       $counter = 0;
-   	foreach( $stats as $line => $ocurs )
+      foreach( $stats as $line => $ocurs )
       {
-      	$counter += $ocurs;
+         $counter += $ocurs;
       }
       return $counter;
    }
@@ -161,9 +174,9 @@ class YuppStats
       }
       
       echo "<hr/>";
-      echo "TOTAL FILES: $fileCounter<br/>";
-      echo "TOTAL LINES: $totalLines<br/>";
-      echo "AVG LINES: ". ($totalLines/$fileCounter) ."<br/>";
+      echo "Archivos totales: $fileCounter<br/>";
+      echo "Lineas totales (sin comentarios): $totalLines<br/>";
+      echo "Lineas promedio por archivo (sin comentarios): ". ($totalLines/$fileCounter) ."<br/>";
       echo "<hr/>";
       
       return ob_get_clean(); // devuelve el output 
