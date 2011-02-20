@@ -28,7 +28,7 @@ class XMLPO {
       if ($pretty)
       {
          $xml_dom->preserveWhiteSpace = false;
-         $xml_dom->formatOutput   = true;
+         $xml_dom->formatOutput = true;
       }
       
       $loopDetection = new ArrayObject();
@@ -44,10 +44,9 @@ class XMLPO {
    // PersistentObject, DomDocument, DomNode, Boolean, ArrayObject, String
    private static function toXMLSingle( PersistentObject $obj, $xml_dom_doc, $xml_parent_node, $recursive, $loopDetection, $attrName = null )
    {
+      // FIXME: Creo que esta verificacion no es necesaria porque se verifica antes de llamar a la generacion de xml de los objetos relacionados
       if(!in_array(get_class($obj).'_'.$obj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
       {
-         $loopDetection[] = get_class($obj).'_'.$obj->getId(); // Marca como recorrido
-         
          // Nodo actual
          $node = NULL;
          
@@ -65,6 +64,10 @@ class XMLPO {
          
          // Para la primer llamada, este nodo es el dom_document
          $xml_parent_node->appendChild( $node );
+         
+         
+         $loopDetection[$node->getNodePath()] = get_class($obj).'_'.$obj->getId(); // Marca como recorrido
+         
          
          foreach ( $obj->getAttributeTypes() as $attr => $type )
          {
@@ -88,6 +91,19 @@ class XMLPO {
                      //        la clase. Con este codigo es el nombre de la clase.
                      self::toXMLSingle( $relObj, $xml_dom_doc, $node, $recursive, $loopDetection, $attr );
                   }
+                  else
+                  {
+                     $node = $xml_dom_doc->createElement( $attr );
+                     
+                     // La path es la key del valor get_class($relObj).'_'.$relObj->getId() en loopdetection!
+                     $keys = array_keys((array)$loopDetection, get_class($relObj).'_'.$relObj->getId());
+                     $path = $keys[0];
+                     
+                     $node->setAttribute( 'ref', $path ); 
+                     
+                     // Para la primer llamada, este nodo es el dom_document
+                     $xml_parent_node->appendChild( $node );
+                  }
                }
             }
             
@@ -104,6 +120,19 @@ class XMLPO {
                   if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                   {
                      self::toXMLSingle($relObj, $xml_dom_doc, $hm_node, $recursive, $loopDetection);
+                  }
+                  else
+                  {
+                     $node = $xml_dom_doc->createElement( $attr );
+                     
+                     // La path es la key del valor get_class($relObj).'_'.$relObj->getId() en loopdetection!
+                     $keys = array_keys((array)$loopDetection, get_class($relObj).'_'.$relObj->getId());
+                     $path = $keys[0];
+                     
+                     $node->setAttribute( 'ref', $path ); 
+                     
+                     // Para la primer llamada, este nodo es el dom_document
+                     $xml_parent_node->appendChild( $node );
                   }
                }
                
