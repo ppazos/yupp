@@ -41,58 +41,25 @@ date_timezone_set( date_create('now'), timezone_open('America/Montevideo') );
 // ===========================================================================
 // FIX: para llamadas a date() para PHP 5.2.10
 //bool date_default_timezone_set ( string $timezone_identifier )
-
+// TODO: que la timezone se especifique en la configuracion
 date_default_timezone_set( 'America/Montevideo' );
 
 // ===========================================================================
 
-
-//YuppLoader :: load('core.config', 'YuppConfig'); //
-
-//YuppLoader :: load('core.support', 'I18nMessage');
-//YuppLoader :: load('core.support', 'YuppContext'); //
-
-//YuppLoader :: load('core.web', 'UrlProcessing');
-//YuppLoader :: load('core.web', 'PageHistory');
 YuppLoader :: load('core.web', 'RequestManager');
-
-// WebFlow
-//YuppLoader :: load('core.mvc.webflow', 'CurrentFlows'); //
-//YuppLoader :: load('core.mvc.webflow', 'WebFlow');
-//YuppLoader :: load('core.mvc.webflow', 'State');
-//YuppLoader :: load('core.mvc.webflow', 'Transition');
-
 YuppLoader :: load('core.mvc', 'YuppController'); // Se usa en cada controlador que lo extiende.
 YuppLoader :: load('core.mvc', 'Helpers'); // Usado para acceder a la funcion h()
-//YuppLoader :: load('core.mvc', 'DisplayHelper');
-//YuppLoader :: load('core.mvc', 'ViewCommand');
-//YuppLoader :: load('core.mvc', 'Model');
-
-//YuppLoader :: load('core', 'FileSystem');
 YuppLoader :: load('core.utils', 'Logger');
 
-// Hay dependencia mutua entre AH, PO y PM...
-//YuppLoader :: load('core.persistent', 'ArtifactHolder');
-
-//YuppLoader :: load('core.persistent', 'PersistentObject');
-
-// TEST
-//YuppLoader :: load('core.routing', 'Router'); //
-//YuppLoader :: load('core.routing', 'YuppControllerFilter'); // FIXME: no deberia ser parte del paquete routing, esta aca solo porque es usada desde el Executer...
-//YuppLoader :: load('core.routing', 'Executer'); //
 
 // ============================================================
+// TODO: mover a la configuracion
 // Configuro logger para que no muestre mensajes:
 // Comentar esta linea para ver los logs.
 Logger::getInstance()->off(); 
 //Logger::getInstance()->setFile("logger.txt");
 // ============================================================
 
-// Carga clases del modelo.
-// FIXME: deberia cargar solo las clases del modelo de la app actual.
-// Y el metodo deberia ser un proxy en App, tal que cargue las clases de esa app.
-// Solo sacando esta linea, los pedidos que se pueden hacer por minuto aumentan en un 70%.
-//YuppLoader :: loadModel();
 
 //[SCRIPT_NAME] => /Persistent/index.php
 // Dejo algunas variables globales utiles:
@@ -136,8 +103,5 @@ catch (Exception $e)
    echo '</body></html>';
    exit();
 }
-
-
-
 
 ?>
