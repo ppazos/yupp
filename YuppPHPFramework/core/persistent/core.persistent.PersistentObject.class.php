@@ -547,7 +547,7 @@ class PersistentObject {
          }
          
          /*
-          // OJO, PUEDO INICIALIZAR ATRIBUTOS EN HASONE Y HASMANY TAMBIEN, EL PREGUNTAR PUEDE SERVIR PARA HACER CHECKEOS SOBRE EL VALOR QUE SE PASA, si en un PO para hasOne, si es un array para hasMany.
+         // OJO, PUEDO INICIALIZAR ATRIBUTOS EN HASONE Y HASMANY TAMBIEN, EL PREGUNTAR PUEDE SERVIR PARA HACER CHECKEOS SOBRE EL VALOR QUE SE PASA, si en un PO para hasOne, si es un array para hasMany.
           if ( array_key_exists($attr, $this->attributeTypes) ||
                array_key_exists($attr, $this->hasOne) ||
                array_key_exists($attr, $this->hasMany) )
@@ -910,6 +910,12 @@ class PersistentObject {
 
       return $valid;
    }
+   
+   /**
+    * Este metodo podra ser implementado por las subclases y se invocara antes de validar.
+    * http://code.google.com/p/yupp/issues/detail?id=72 
+    */
+   protected function preValidate() {}
 
    /**
     * Valida los valores de los campos del objeto contra las restricciones definidas en el.
@@ -921,9 +927,11 @@ class PersistentObject {
    {
       Logger::getInstance()->po_log("PO:validate " . get_class($this));
       
-      // TODO: Verificar restricciones en objetos asociados.
-      // FIX: Idea de pasarle un parametro 'cascade' booleano que si es true se fija
-      //      si los objetos asociados son validos, si no solo chekea con el objeto actual.
+      
+      // Preprocesamiento para validar
+      // http://code.google.com/p/yupp/issues/detail?id=72
+      $this->preValidate();
+      
 
       // TODO: Verificar restricciones sobre asociaciones (p.ej. NotNull)  (*****)
 
