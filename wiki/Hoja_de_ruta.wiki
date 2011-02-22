@@ -232,6 +232,7 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * http://code.google.com/p/yupp/issues/detail?id=37 (Se cierra luego de verificar que funciona) (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=28 (Si YuppForm no recibe los parametros para armar la url de la acción, los toma del contexto) (HECHO)
   * Se incluyeron las nuevas versiones de las librerías javascript jQuery y Prototype.
+  * http://code.google.com/p/yupp/issues/detail?id=72 (Se implementa método PO.preValidate()) (HECHO)
 
 
 ==v0.4:==
