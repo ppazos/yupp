@@ -8,7 +8,7 @@ $m = Model::getInstance();
     <title>Helpers Test: Ajax Link Test</title>
     
     <?php if ($m->get('jslib')=='prototype') : ?>
-      <?php echo h("js", array("name" => "prototype_161") ); ?>
+      <?php echo h("js", array("name" => "prototype_170") ); ?>
       
       <script type="text/javascript">
       
@@ -27,8 +27,9 @@ $m = Model::getInstance();
       </script>
       
     <?php else : ?>
-      <?php echo h("js", array("name" => "jquery/jquery-1.3.1.min") ); ?>
-    
+      <?php /*echo h("js", array("name" => "jquery/jquery-1.3.1.min") );*/ ?>
+      <?php echo h('js', array('name'=>'jquery/jquery-1.5.min')); ?>
+      
       <script type="text/javascript">
       
         // Handlers para JQuery

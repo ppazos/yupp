@@ -190,7 +190,7 @@ class Helpers {
        /**
         * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
         */
-       self::js( array("name" => "prototype_161") );
+       self::js( array("name" => "prototype_170") );
        
        $func = "ajax_link_". self::getCounter()."()";
         
