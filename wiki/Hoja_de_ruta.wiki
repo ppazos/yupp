@@ -233,6 +233,7 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * http://code.google.com/p/yupp/issues/detail?id=28 (Si YuppForm no recibe los parametros para armar la url de la acción, los toma del contexto) (HECHO)
   * Se incluyeron las nuevas versiones de las librerías javascript jQuery y Prototype.
   * http://code.google.com/p/yupp/issues/detail?id=72 (Se implementa método PO.preValidate()) (HECHO)
+  * Mejoras a Yupp Desktop: filtro de aplicaciones
 
 
 ==v0.4:==
