@@ -190,7 +190,7 @@ class Helpers {
        /**
         * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
         */
-       self::js( array("name" => "prototype_161") ); // FIXME: en 1.7 no parsea bien el JSON string, lo dejo en 1.6.1.
+       self::js( array("name" => "prototype_170") ); // FIXME: en 1.7 no parsea bien el JSON string, lo dejo en 1.6.1.
        
        $func = "ajax_link_". self::getCounter()."()";
         
@@ -262,57 +262,6 @@ function $func {
        eval('$ret = self::ajax_link_'.$jslib.'($paramsMap, $body, $before, $callback);');
        
        return $ret;
-       
-/*
-       //Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
-       self::js( array("name" => "prototype_161") );
-       
-
-//        new Ajax.Updater({ success: 'items', failure: 'notice' }, '/items', {
-//           parameters: { text: $F('text') },
-//           insertion: Insertion.Bottom
-//         });
-
-
-       // Prototype
-//       $script = "new Ajax.Updater({ success: '".$update."' }, " .
-//                     "'". self::url(array_filter($paramsMap)) ."', { " .
-//                     "onLoading: $before ," .
-//                     //"insertion: Insertion.Bottom" .
-//                     //" onComplete: $callback " .
-//                  "});";
-        
-//       new Ajax.Request(url, {
-//              method: 'get',
-//              onSuccess: function(transport) {
-//                var notice = $('notice');
-//                if (transport.responseText.match(/href="http:\/\/prototypejs.org/))
-//                  notice.update('Yeah! You are in the Top 10!').setStyle({ background: '#dfd' });
-//                else
-//                  notice.update('Damn! You are beyond #10...').setStyle({ background: '#fdd' });
-//              }
-//            });
-      
-        
-      // OK!!!
-      $func = "ajax_link_". self::getCounter()."()";
-        
-      $script = "<script type=\"text/javascript\">
-function $func {
-   new Ajax.Request('". self::url(array_filter($paramsMap)) ."', {
-                     onLoading: $before,   
-                     onSuccess: $callback
-   });
-}
-</script>";
-       
-       //$paramsMap['onClick'] = $script;
-       
-       //return '<a href="#" onClick="'. $script .'">'. $body .'</a>';
-       return $script . '<a href="javascript:'. $func .'" target="_self">'. $body .'</a>'; // Tengo que pegar el script para que quede disponible.
-
-       //return self::link(array_filter($paramsMap));
-*/
     }
 
     public static function params2url( $params )
