@@ -25,7 +25,7 @@ class JSONPO {
       $n = count($po->getAttributeTypes())-1;
       foreach ( $po->getAttributeTypes() as $attr => $type )
       {
-         $json .= "'" . $attr ."' : '" . $po->aGet($attr) . "'";
+         $json .= '"' . $attr .'" : "' . $po->aGet($attr) . '"'; // TODO: si es numero, no poner comillas
          
          if ($i<$n) $json .= ", ";  
          $i++;
@@ -44,7 +44,7 @@ class JSONPO {
                  // FIXME: las tags de los atributos hijos de la instancia raiz deberian
                  //        tener su nombre igual al nombre del atributo, no el nombre de
                  //        la clase. Con este codigo es el nombre de la clase.
-                 $json .= ", '". $attr ."': ". $relObj->toJSON( $recursive, $loopDetection );
+                 $json .= ', "'. $attr .'": '. $relObj->toJSON( $recursive, $loopDetection );
                }
             }
          }
@@ -59,7 +59,7 @@ class JSONPO {
             
             if ( count($relObjs) > 0 )
             {
-               $json .= ", '". $attr ."': [ ";
+               $json .= ', "'. $attr .'": [ ';
                 
                foreach ($relObjs as $relObj)
                {
@@ -72,12 +72,12 @@ class JSONPO {
                 
                $json = substr($json, 0, -2); // Saco ', ' del final
                 
-               $json .= "]";
+               $json .= ']';
             }
          }
       }
       
-      $json .= "}";
+      $json .= '}';
       
       return $json;
    }
