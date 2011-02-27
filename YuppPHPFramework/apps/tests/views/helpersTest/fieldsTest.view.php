@@ -19,13 +19,18 @@ $m = Model::getInstance();
     
       <form method="post" enctype="multipart/form-data">
         Nombre:   <?php echo DisplayHelper::text('nombre', 'Pablo'); ?><br/><br/>
+        Texto:   <?php echo DisplayHelper::bigtext('texto', 'Un texto largo...', array('class'=>'miclase')); ?><br/><br/>
         Clave:    <?php echo DisplayHelper::password('clave'); ?><br/><br/>
-        Select:   <?php echo DisplayHelper::select('select', array('pri'=>'primera','seg'=>'segunda','ter'=>'tercera'), $m->get('select')); ?><br/><br/>
+        Una de dos:<br/>
+          a. <?php echo DisplayHelper::radio('opcion', 'uno'); ?><br/>
+          b. <?php echo DisplayHelper::radio('opcion', 'dos'); ?><br/><br/>
+        Select:   <?php echo DisplayHelper::select('nombreselect', array('pri'=>'primera','seg'=>'segunda','ter'=>'tercera'), $m->get('nombreselect')); ?><br/><br/>
         Si o No:  <?php echo DisplayHelper::check('siono', true); ?><br/><br/>
         Fecha:    <?php echo DisplayHelper::date('fecha', array('y'=>1981, 'm'=>6)); ?><br/><br/>
         Archivo:  <?php echo DisplayHelper::file('archivo'); ?><br/><br/>
         HTML:     <?php DisplayHelper::html('html'); ?><br/><br/>
         Calendar: <?php DisplayHelper::calendar('calendar'); ?><br/><br/>
+        Escondido: <?php echo DisplayHelper::hidden('sshhh', 'unvalor'); ?><br/><br/>
                   <?php echo DisplayHelper::submit('doit', 'Enviar'); ?>
       </form>
       
