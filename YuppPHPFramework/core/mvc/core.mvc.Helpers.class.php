@@ -190,7 +190,7 @@ class Helpers {
        /**
         * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
         */
-       self::js( array("name" => "prototype_170") );
+       self::js( array("name" => "prototype_161") ); // FIXME: en 1.7 no parsea bien el JSON string, lo dejo en 1.6.1.
        
        $func = "ajax_link_". self::getCounter()."()";
         
@@ -222,7 +222,7 @@ function $func {
        /**
         * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
         */
-       self::js( array("name" => "jquery/jquery-1.3.1.min") );
+       self::js( array("name" => "jquery/jquery-1.5.min") );
        
        $func = "ajax_link_". self::getCounter()."()";
         

@@ -364,9 +364,9 @@ class DisplayHelper {
     public static function text($name, $value = NULL, $attrs = array())
     {
        $strattrs = '';
-       foreach ($attrs as $name=>$val)
+       foreach ($attrs as $attr=>$val)
        {
-          $strattrs .= ' '. $name .'="'. $val .'"';
+          $strattrs .= ' '. $attr .'="'. $val .'"';
        }
        
        return '<input type="text" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
@@ -375,9 +375,9 @@ class DisplayHelper {
     public static function bigtext($name, $value = NULL, $attrs = array())
     {
        $strattrs = '';
-       foreach ($attrs as $name=>$val)
+       foreach ($attrs as $attr=>$val)
        {
-          $strattrs .= ' '. $name .'="'. $val .'"';
+          $strattrs .= ' '. $attr .'="'. $val .'"';
        }
        
        return '<textarea name="'. $name .'"'. $strattrs .' >'. $value .'</textarea>';
@@ -391,9 +391,9 @@ class DisplayHelper {
        if ($value === true) $attrs['checked'] = 'true';
        
        $strattrs = '';
-       foreach ($attrs as $name=>$val)
+       foreach ($attrs as $attr=>$val)
        {
-          $strattrs .= ' '. $name .'="'. $val .'"';
+          $strattrs .= ' '. $attr .'="'. $val .'"';
        }
        
        
@@ -403,20 +403,20 @@ class DisplayHelper {
     public static function radio($name, $value = NULL, $attrs = array())
     {
        $strattrs = '';
-       foreach ($attrs as $name=>$val)
+       foreach ($attrs as $attr=>$val)
        {
-          $strattrs .= ' '. $name .'="'. $val .'"';
+          $strattrs .= ' '. $attr .'="'. $val .'"';
        }
        
-       return '<input type="checkbox" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
+       return '<input type="radio" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
     }
     
     public static function hidden($name, $value = NULL, $attrs = array())
     {
        $strattrs = '';
-       foreach ($attrs as $name=>$val)
+       foreach ($attrs as $attr=>$val)
        {
-          $strattrs .= ' '. $name .'="'. $val .'"';
+          $strattrs .= ' '. $attr .'="'. $val .'"';
        }
        
        return '<input type="hidden" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
@@ -425,9 +425,9 @@ class DisplayHelper {
     public static function password($name, $value = NULL, $attrs = array())
     {
        $strattrs = '';
-       foreach ($attrs as $name=>$val)
+       foreach ($attrs as $attr=>$val)
        {
-          $strattrs .= ' '. $name .'="'. $val .'"';
+          $strattrs .= ' '. $attr .'="'. $val .'"';
        }
        
        return '<input type="password" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
@@ -436,9 +436,9 @@ class DisplayHelper {
     public static function file($name, $value = NULL, $attrs = array())
     {
        $strattrs = '';
-       foreach ($attrs as $name=>$val)
+       foreach ($attrs as $attr=>$val)
        {
-          $strattrs .= ' '. $name .'="'. $val .'"';
+          $strattrs .= ' '. $attr .'="'. $val .'"';
        }
        
        return '<input type="file" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
@@ -451,9 +451,9 @@ class DisplayHelper {
     public static function date($name, $value = array(), $attrs = array())
     {
        $strattrs = '';
-       foreach ($attrs as $name=>$val)
+       foreach ($attrs as $attr=>$val)
        {
-          $strattrs .= ' '. $name .'="'. $val .'"';
+          $strattrs .= ' '. $attr .'="'. $val .'"';
        }
        
        $fieldHTML = '<label for="day">D&iacute;a: </label>'; // TODO: i18n soportado por el framework.
@@ -501,9 +501,9 @@ class DisplayHelper {
     public static function submit($name, $value = NULL, $attrs = array())
     {
        $strattrs = '';
-       foreach ($attrs as $name=>$val)
+       foreach ($attrs as $attr=>$val)
        {
-          $strattrs .= ' '. $name .'="'. $val .'"';
+          $strattrs .= ' '. $attr .'="'. $val .'"';
        }
        
        return '<input type="submit" name="'. $name .'" value="'. $value .'"'. $strattrs .' />';
