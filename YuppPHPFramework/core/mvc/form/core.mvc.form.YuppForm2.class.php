@@ -624,7 +624,6 @@ class YuppFormDisplay2
    private static function display_ajax_form_prototype($form)
    {
       $html = '';
-      //$html .= h("js", array("name"=>"prototype_161") );
       $html .= h("js", array("name"=>"prototype_170") );
       
       $html .= '<script type="text/javascript">' .
