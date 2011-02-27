@@ -525,6 +525,27 @@ class CoreController extends YuppController {
       
       $this->params['results'] = $suite->getReports();
       $this->params['app'] = $app;
-   } 
+   }
+   
+   public function getNewsFromTwitterAction()
+   {
+      YuppLoader::load('core.http', 'HTTPRequest');
+      
+      $req = new HTTPRequest();
+      $req->setTimeOut(10);
+      $res = $req->HTTPRequestGet('http://api.twitter.com/1/statuses/user_timeline.json?screen_name=ppazos&trim_user=1');
+      
+      if ($res->getStatus() == '200')
+      {
+          $json = $res->getBody();
+      }
+      else
+      {
+          $json = '[]';
+      }
+      
+      header('Content-Type: application/json');
+      return $this->renderString($json);
+   }
 }
 ?>
