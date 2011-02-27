@@ -33,16 +33,19 @@ class YuppDateTime
    {
       $arr = explode( " ", $mysql_date_time );
       
+      // Para ser datetime debe tener date y time
       if (count($arr)!=2) return false;
       
       $date = $arr[0];
       $time = $arr[1];
       
+      // Verifica la parte date
       if (self::checkMySQLDate($date))
       {
+         // Verifica la parte time
          $arr = explode( ":", $time );
          
-         // Segundos opcional
+         // Horas y minutos obligatorios, segundos opcionales
          if (count($arr)<2) return false;
          
          $hour = (int)$arr[0];
@@ -51,7 +54,7 @@ class YuppDateTime
          $segs = 0;
          if (isset($arr[2])) $segs = (int)$arr[2];
 
-         return ($hour<24 && $hour>0 && $mins<60 && $mins>0 && $segs<60 && $segs>0);
+         return ($hour<24 && $hour>=0 && $mins<60 && $mins>=0 && $segs<60 && $segs>=0);
       }
    }
 

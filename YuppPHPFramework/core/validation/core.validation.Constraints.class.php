@@ -15,6 +15,7 @@ abstract class Constraint {
 
    // Nuevo!, verifica que el valor tenga formato aaaa-mm-dd y sea una fecha valida.
    public static function date() { return new DateConstraint(); }
+   public static function datetime() { return new DateTimeConstraint(); }
 
    public static function maxLength( $max ) { return new MaxLengthConstraint($max); }
    public static function minLength( $min ) { return new MinLengthConstraint($min); }
@@ -200,6 +201,20 @@ class DateConstraint extends Constraint {
    public function __toString()
    {
       return 'aaaa-mm-dd';
+   }
+}
+
+class DateTimeConstraint extends Constraint {
+ 
+   public function evaluate( $value )
+   {
+      YuppLoader::load('core.basic', 'YuppDateTime');
+      return YuppDateTime::checkMySQLDateTime($value);
+   }
+   
+   public function __toString()
+   {
+      return 'aaaa-mm-dd hh:mm:ss';
    }
 }
 
