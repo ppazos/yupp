@@ -235,8 +235,9 @@ class RequestManager {
          $timer_render->stop();
          $tiempo_render = $timer_render->getElapsedTime();
   
-         echo "<br/><br/>Tiempo de proceso: " . $tiempo_proc . " s<br/>";
-         echo "Tiempo de render: " . $tiempo_render . " s<br/>";
+         // TODO: configurar si se quiere o no ver el tiempo de proceso.
+         //echo "<br/><br/>Tiempo de proceso: " . $tiempo_proc . " s<br/>";
+         //echo "Tiempo de render: " . $tiempo_render . " s<br/>";
   
          return;
       }
