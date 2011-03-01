@@ -623,9 +623,7 @@ class YuppFormDisplay2
 
    private static function display_ajax_form_prototype($form)
    {
-      $html = '';
-      $html .= h("js", array("name"=>"prototype_170") );
-      
+      $html = h("js", array("name"=>"prototype_170") );
       $html .= '<script type="text/javascript">' .
                'Event.observe(window, "load", function() {'.
                '  Event.observe("'.$form->getId().'", "submit", function(event) {'.
@@ -645,7 +643,7 @@ class YuppFormDisplay2
       $html = '';
       //$html .= h('js', array('name'=>'jquery/jquery-1.3.1.min'));
       $html .= h('js', array('name'=>'jquery/jquery-1.5.min'));
-      $html .= h('js', array('name'=>'jquery/jquery.form.2_18'));
+      $html .= h('js', array('name'=>'jquery/jquery.form.2_43'));
    
       // TODO: llamar a una funcion JS antes de hacer el request AJAX.
       // Dependencia con jQuery.
