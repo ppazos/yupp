@@ -28,7 +28,7 @@ class HelpersTestController extends YuppController {
           sleep(2); // agregamos demora para ver como carga los comentarios por ajax
           
           header('Content-type: application/json');
-          return $this->renderString( "{'mensaje': 'Hola mundo!' }" );
+          return $this->renderString( '{"mensaje" : "Hola mundo!"}' );
        }
     }
     

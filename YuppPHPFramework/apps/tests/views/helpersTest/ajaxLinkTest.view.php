@@ -41,9 +41,11 @@ $m = Model::getInstance();
           
           //alert(json);
           //alert(json.mensaje); // undefined
-           
-          var obj = eval('('+json+')');
-           
+          
+
+          //var obj = eval('('+json+')');
+          var obj = json;
+
           //alert(obj.mensaje); // Hola mundo!
            
           $('#content_div').html( obj.mensaje );
