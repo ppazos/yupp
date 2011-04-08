@@ -249,12 +249,13 @@ class App {
          }
       }
       
+      // FIXME: pueden venir tildes y cualquier tipo de caracter, deberia filtrar todo lo que venga mal, o pedirle que lo corrija.
       // TODO: crear descriptor con el nombre de la app
       $appDescriptor = FileSystem::read('./core/app/templates/app.xml');
       $appDescriptor = str_replace('{appName}', $name, $appDescriptor);
       
       if (isset($params['description']))
-        $appDescriptor = str_replace('{appDescription}', $params['description'], $appDescriptor);
+        $appDescriptor = str_replace('{appDescription}', utf8_encode($params['description']), $appDescriptor);
         
       if (isset($params['langs']))
         $appDescriptor = str_replace('{appLangs}', $params['langs'], $appDescriptor);
@@ -265,7 +266,7 @@ class App {
           $appDescriptor = str_replace('{epAction}', 'index', $appDescriptor);
           
           $templateController = FileSystem::read('./core/app/templates/TemplateController.class.php');
-          $templateController = str_replace('Template', $params['controller'], $templateController);
+          $templateController = str_replace('Template', String::firstToUpper($params['controller']), $templateController);
           
           echo './apps/'.$normalizedName.'/controllers/apps.'.$normalizedName.'.controllers.'.String::firstToUpper($params['controller']).'Controller.class.php';
           
