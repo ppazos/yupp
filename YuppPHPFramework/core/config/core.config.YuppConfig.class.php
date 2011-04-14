@@ -105,7 +105,6 @@ class YuppConfig {
     * Devuelve la informacion de conexion a la base de datos.
     * @param mode dev, prod, test.
     */
-   //public function getDatasource( $mode = self::MODE_DEV )
    public function getDatasource( $appName = NULL )
    {
       // Si viene appName y no tengo la configuracion cargada
@@ -114,7 +113,7 @@ class YuppConfig {
          if (!array_key_exists($appName, $this->app_datasources))
          {
             //echo 'Inclusion config'.$appName.'<br/>';
-            $appConfigFile = './apps/'.$appName.'/db_config.php';
+            $appConfigFile = './apps/'.$appName.'/config/db_config.php';
              
             // Trato de cargarla, puede ser que no tenga archivo de configuracion.
             if (file_exists($appConfigFile))
@@ -127,7 +126,7 @@ class YuppConfig {
                return $this->app_datasources[$appName];
             }
              
-             // No hay config para la app, devuelve la configuracion por defecto.
+            // No hay config para la app, devuelve la configuracion por defecto.
          }
          else // Si existe la config cargada para esa app
          {
@@ -148,7 +147,6 @@ class YuppConfig {
     */
    public function getDatabaseType()
    {
-      //return $this->database_type;
       return $this->default_datasource[$this->currentMode]['type'];
    }
    
