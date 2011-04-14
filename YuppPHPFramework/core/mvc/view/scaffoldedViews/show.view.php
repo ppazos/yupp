@@ -40,18 +40,19 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
   </head>
   <body>
     <h1>Show</h1>
-        
+    
     <div align="center"><?php echo $m->flash('message'); ?></div>
     
+    <?php $app   = $m->get('app'); ?>
     <?php $clazz = $m->get('object')->aGet('class'); ?>
     <?php $id    = $m->get('object')->aGet('id'); ?>
     
     <div id="actions">
-      <a href="edit?class=<?php echo $clazz ?>&id=<?php echo $id ?>">Edit</a>
+      <a href="edit?app=<?php echo $app; ?>&class=<?php echo $clazz; ?>&id=<?php echo $id ?>">Edit</a>
       |
-      <a href="delete?class=<?php echo $clazz ?>&id=<?php echo $id ?>">Delete</a>
+      <a href="delete?app=<?php echo $app; ?>&class=<?php echo $clazz; ?>&id=<?php echo $id ?>">Delete</a>
       |
-      <a href="list?class=<?php echo $clazz ?>">List</a>
+      <a href="list?app=<?php echo $app; ?>&class=<?php echo $clazz; ?>">List</a>
     </div>
     <br/>
     

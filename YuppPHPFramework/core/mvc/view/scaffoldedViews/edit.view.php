@@ -62,6 +62,7 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
     <form action="save" method="post">
         <input type="hidden" name="id"    value="<?php echo $m->get('object')->aGet('id'); ?>" />
         <input type="hidden" name="class" value="<?php echo $m->get('object')->aGet('class'); ?>" />
+        <input type="hidden" name="app" value="<?php echo $m->get('app'); ?>" />
       
         <?php echo DisplayHelper::model( $m->get('object'), "edit" ); ?><br/>
       
