@@ -581,7 +581,7 @@ class PersistentObject {
       // TODO (T#6): Esto es una verificacion de correctitud del modelo creado... no se si va aca... deberia ser algo previo, por ejemplo hacerse cuando se instala un componente.
       if ( is_subclass_of($type, 'PersistentObject') )
       {
-         // Chek 1: Fijarsse si es una lsita persistente (todavia no hecho), return false.
+         // Check 1: Fijarsse si es una lista persistente (todavia no hecho), return false.
          // else
          return true;
       }
@@ -1487,12 +1487,12 @@ class PersistentObject {
    {
       // SOL TICKET #2
       // Dependiendo del tipo de relacion se si un objeto es duenio de otro:
-      // - 1)  Si la relacion es A (1)->(1) B entonces B belongsTo A.
+      // - 1)  Si la relacion es A (1)->(1) B entonces se necesita belongsTo explicito para no salvar en cascada relaciones que en realidad son blandas (p.e. modelado de *->1 donde el lado * en realidad es blando). (desde el modelo, esto es igual a (*)->(1))
       // - 2)  Si la relacion es A (1)<->(1) B entonces se necesita belongsTo para saber cual es el lado fuerte.
       // - 3)  Si la relacion es A (1)->(*) B entonces B belongsTo A.
       // - 4)  Si la relacion es A (1)<->(*) B entonces B belongsTo A.
-      // - 5)  Si la relacion es A (*)->(*) B entonces B belongsTo A.
-      // - 6)  Si la relacion es A (*)<->(*) B entonces se necesita belongsTo en alg�n lado.
+      // - 5)  Si la relacion es A (*)->(*) B entonces B belongsTo A. (desde el modelo, es lo mismo que (1)->(*))
+      // - 6)  Si la relacion es A (*)<->(*) B entonces se necesita belongsTo en algun lado.
       //
       // La clase actual es A, el obj es de clase B.
 
@@ -1525,7 +1525,7 @@ class PersistentObject {
          }
          else
          {
-            //if ($obj->hasManyOfThis( get_class($this) )) // 6) bidireccional *..*
+            // 6) bidireccional *..*
             if ($obj->hasManyOfThis( $_thisClass  ))
             {
                return $obj->belonsToClass( $_thisClass ); // problema: get_class(this) tira PO...
@@ -1680,6 +1680,8 @@ class PersistentObject {
             // Marca como modificada
             $this->dirtyOne = true;
 
+Logger::getInstance()->po_log("aSet $full_attribute luego de dirtyOne=true " .__LINE__);
+
             return;
          }
          else
@@ -1706,6 +1708,8 @@ class PersistentObject {
 
                   // Marca como modificada
                   $this->dirtyOne = true;
+
+Logger::getInstance()->po_log("aSet $full_attribute luego de dirtyOne=true " .__LINE__);
 
                   return;
                }
