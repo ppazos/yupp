@@ -322,6 +322,16 @@ class CoreController extends YuppController {
    {
       $id = $this->params['id'];
       $clazz = $this->params['class'];
+      $appName = $this->params['app'];
+      
+      $loadedClasses = get_declared_classes(); //YuppLoader::getLoadedModelClasses(); // FIXME: Tengo clases cargadas en YuppLoader pero no estan incluidas (debe ser por persistencia del singleton en session)
+      if (!in_array($clazz, $loadedClasses))
+         YuppLoader::loadModel();
+
+      // Para que cargue la configuracion correcta de la base de datos.
+      // Si no trata de ejecutar usando la configuracion de la base por defecto.      
+      $ctx = YuppContext::getInstance();
+      $ctx->setRealApp( $appName );
 
       // La clase debe estar cargada...
       eval ('$obj' . " = $clazz::get( $id );");
@@ -338,6 +348,17 @@ class CoreController extends YuppController {
    {
       $id = $this->params['id'];
       $clazz = $this->params['class']; // Lo necesito porque no puedo saber por el nombre del controller!
+      $appName = $this->params['app'];
+      
+      $loadedClasses = get_declared_classes(); //YuppLoader::getLoadedModelClasses(); // FIXME: Tengo clases cargadas en YuppLoader pero no estan incluidas (debe ser por persistencia del singleton en session)
+      if (!in_array($clazz, $loadedClasses))
+         YuppLoader::loadModel();
+      
+      // Para que cargue la configuracion correcta de la base de datos.
+      // Si no trata de ejecutar usando la configuracion de la base por defecto.      
+      $ctx = YuppContext::getInstance();
+      $ctx->setRealApp( $appName );
+      
       eval ('$obj' . " = $clazz::get( $id );");
       $obj->setProperties($this->params);
 
@@ -357,12 +378,23 @@ class CoreController extends YuppController {
    {
       $id = $this->params['id'];
       $clazz = $this->params['class']; // Lo necesito porque no puedo saber por el nombre del controller!
+      $appName = $this->params['app'];
+      
+      // Para que cargue la configuracion correcta de la base de datos.
+      // Si no trata de ejecutar usando la configuracion de la base por defecto.      
+      $ctx = YuppContext::getInstance();
+      $ctx->setRealApp( $appName );
+      
+      $loadedClasses = get_declared_classes(); //YuppLoader::getLoadedModelClasses(); // FIXME: Tengo clases cargadas en YuppLoader pero no estan incluidas (debe ser por persistencia del singleton en session)
+      if (!in_array($clazz, $loadedClasses))
+         YuppLoader::loadModel();
+      
       eval ('$ins' . " = $clazz::get( $id );");
       $ins->delete();
 
       $this->flash['message'] = "Elemento [$clazz:$id] eliminado.";
 
-      return $this->redirect( array("action" => "list") );
+      return $this->redirect( array("action" => "list", "params"=>array("app"=>$appName, "class"=>$clazz) ) );
    }
 
    /**
@@ -372,11 +404,23 @@ class CoreController extends YuppController {
    public function createAction()
    {
       $clazz = $this->params['class'];
+      
+      $loadedClasses = get_declared_classes(); //YuppLoader::getLoadedModelClasses(); // FIXME: Tengo clases cargadas en YuppLoader pero no estan incluidas (debe ser por persistencia del singleton en session)
+      if (!in_array($clazz, $loadedClasses))
+         YuppLoader::loadModel();
+      
+      
       $obj = new $clazz (); // Crea instancia para mostrar en la web los valores por defecto para los atributos que los tengan.
-
+      $appName = $this->params['app'];
+      
+      // Para que cargue la configuracion correcta de la base de datos.
+      // Si no trata de ejecutar usando la configuracion de la base por defecto.      
+      $ctx = YuppContext::getInstance();
+      $ctx->setRealApp( $appName );
+      
       // View create, que es como edit pero la accion de salvar vuelve aqui.
 
-      if ($this->params['doit']) // create
+      if (isset($this->params['doit'])) // create
       {
          $obj->setProperties($this->params);
          if (!$obj->save()) // Con validacion de datos!
@@ -461,7 +505,7 @@ class CoreController extends YuppController {
       YuppLoader::getInstance()->loadScript('apps.'.$appName.'.bootstrap', 'Bootstrap');
       
       //$output = ob_get_clean();
-      //FileSystem::appendLine('imp_log.html', $output);
+      //FileSystem::appendLine('bootstrap_log.html', $output);
       
       $this->flash['message'] = 'Ejecuci&oacute;n de bootstrap completada.';
       
@@ -516,6 +560,11 @@ class CoreController extends YuppController {
          return $this->redirect( array('action' => 'index',
                                        'params'=>array('flash.message'=>'No hay tests para ejecutar')));
       }
+
+      // Para que cargue la configuracion correcta de la base de datos.
+      // Si no trata de ejecutar usando la configuracion de la base por defecto.      
+      $ctx = YuppContext::getInstance();
+      $ctx->setComponent( $appName );
       
       // Cargar los casos de test en una suite y ejecutarlos
       $suite = $app->loadTests();
