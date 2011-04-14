@@ -123,7 +123,9 @@ class DisplayHelper {
        }
        $res .= '</tr>';
 
-
+       $m = Model::getInstance();
+       $app = $m->get('app');
+                
        // Filas
        foreach ($pos as $po) // pos puede ser vacio...
        {
@@ -136,11 +138,10 @@ class DisplayHelper {
              if ( $attr === 'deleted') continue;
            
              $res .= '<td>';
-
              if ($attr == "id")
              {
                 //$res .= '<a href="show?class='. $po->aGet('class') .'&id='. $po->aGet($attr) .'">';
-                $res .= '<a href="'. h('url', array('action'=>'show', 'class'=>$po->aGet('class'), 'id'=>$po->aGet($attr))) .'">';
+                $res .= '<a href="'. h('url', array('app'=>$app, 'action'=>'show', 'class'=>$po->aGet('class'), 'id'=>$po->aGet($attr))) .'">';
                 $res .= $po->aGet($attr);
                 $res .= '</a>';
              }
