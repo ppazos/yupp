@@ -332,7 +332,7 @@ class PersistentManager {
       else
       {
          // Nuevo: si se modificaron campos simples o asociaciones hasone hago udate, si no, no.
-         if ($obj->isDirty())
+         if ($obj->isDirty() || $obj->isDirtyOne())
          {
              $pinss = MultipleTableInheritanceSupport::getPartialInstancesToSave( $obj ); 
              foreach ( $pinss as $partialInstance )
