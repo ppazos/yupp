@@ -44,7 +44,7 @@ class JSONPO {
                  // FIXME: las tags de los atributos hijos de la instancia raiz deberian
                  //        tener su nombre igual al nombre del atributo, no el nombre de
                  //        la clase. Con este codigo es el nombre de la clase.
-                 $json .= ', "'. $attr .'": '. $relObj->toJSON( $recursive, $loopDetection );
+                 $json .= ', "'. $attr .'": '. self::toJSON( $relObj, $recursive, $loopDetection );
                }
             }
          }
@@ -66,7 +66,7 @@ class JSONPO {
                   // TODO: loop detection con referencia path al nodo loopeado
                   if(!in_array($relObj->getClass().'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                   {
-                     $json .= $relObj->toJSON( $recursive, $loopDetection ) .', ';
+                     $json .= self::toJSON( $relObj, $recursive, $loopDetection ) .', ';
                   }
                }
                 
