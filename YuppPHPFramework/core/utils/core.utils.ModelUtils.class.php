@@ -145,7 +145,7 @@ class ModelUtils {
          $classes = array();
          
          // FIXME: Mismo codigo que CoreController.dbStatus
-         YuppLoader::load('core', 'App'); // Puede no estar cargada
+         YuppLoader::load('core.app', 'App'); // Puede no estar cargada
          $app = new App($appName);
          $modelClassFileNames = $app->getModel();
          
@@ -212,7 +212,7 @@ class ModelUtils {
          $classes = array();
          
          // FIXME: Mismo codigo que CoreController.dbStatus
-         YuppLoader::load('core', 'App'); // Puede no estar cargada
+         YuppLoader::load('core.app', 'App'); // Puede no estar cargada
          $app = new App($appName);
          $modelClassFileNames = $app->getModel();
          
