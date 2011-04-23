@@ -28,7 +28,6 @@ class CurrentFlows {
    
    public function update( WebFlow $flow )
    {
-      //$this->addFlow( &$flow ); // Para hacer update es necesario agregarlo de nuevo :S de otra forma no funciona.
       $this->addFlow( $flow );
    }
 
@@ -36,7 +35,6 @@ class CurrentFlows {
    {
    }
 
-   //public function addFlow( WebFlow &$flow )
    public function addFlow( WebFlow $flow )
    {
       $this->flows[ $flow->getId() ] = $flow;
@@ -71,7 +69,13 @@ class CurrentFlows {
    {
       if ( $this->hasAnyFlow() )
       {
-         foreach ( $this->flows as $flow ) $flow->init(); // OJO capaz que no cambia los objetos dentro del array! (funciona OK)
+         $this->flows = array();
+         
+         // Si el flow se vuelve a definir cada vez que es comienza su ejecucion,
+         // no es necesario reiniciarlo, se borra y cuando se vuelve a ejecutar,
+         // se vuelve a crear.
+         
+         //foreach ( $this->flows as $flow ) $flow->init(); // OJO capaz que no cambia los objetos dentro del array! (funciona OK)
          YuppSession::set("_current_flows_singleton_instance", $this);
       } 
    }
