@@ -5,6 +5,7 @@
  */
 
 YuppLoader :: load('core.mvc', 'ViewCommand');
+YuppLoader::load('core.mvc.webflow', 'CurrentFlows');
 
 class YuppController {
 

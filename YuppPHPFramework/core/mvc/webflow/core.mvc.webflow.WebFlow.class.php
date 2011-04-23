@@ -1,5 +1,8 @@
 <?php
 
+YuppLoader :: load('core.mvc.webflow', 'State');
+YuppLoader :: load('core.mvc.webflow', 'Transition');
+
 /**
  *
    $flow = WebFlow::create("ASDFG1234456564")
@@ -38,7 +41,7 @@ class WebFlow {
    
    public function isInitialized()
    {
-   	return $this->initialized;
+      return $this->initialized;
    }
                         
    // =======================================================================================
@@ -65,7 +68,7 @@ class WebFlow {
     */
    public function getCurrentState()
    {
-   	return $this->currentState;
+      return $this->currentState;
    }
    
    /**
@@ -98,7 +101,7 @@ class WebFlow {
     */
    public function getId()
    {
-   	return $this->flowId;
+      return $this->flowId;
    }
    
    /**
@@ -125,7 +128,7 @@ class WebFlow {
     */
    public function getFromModel( $key )
    {
-   	return $this->model[$key];
+      return $this->model[$key];
    }
    
    /**
@@ -136,7 +139,7 @@ class WebFlow {
     */
    public function getModel()
    {
-   	return $this->model;
+      return $this->model;
    }
 
    /**
@@ -184,7 +187,7 @@ class WebFlow {
     */
    public function resetf()
    {
-   	$this->initialState = current($this->states); // si le pongo states[0] no sirve xq no tiene esa key, como no uso iteradores, current me da siempre el primero del array.
+      $this->initialState = current($this->states); // si le pongo states[0] no sirve xq no tiene esa key, como no uso iteradores, current me da siempre el primero del array.
       $this->currentState = current($this->states);
       $this->model = array();
    }
@@ -200,14 +203,19 @@ class WebFlow {
     */
    function move( $eventName )
    {
+      Logger::show( "WebFlow.move: currState: " . print_r($this->currentState->getName(), true) . ", " . __FILE__ . " " . __LINE__ );
+      
+      // Transition
       $newState = $this->currentState->get( $eventName );
+      
+      //Logger::show( "WebFlow.move: newState: " . print_r($newState->getTargetStateName(), true) . ", " . __FILE__ . " " . __LINE__ );
       
       if ($newState === NULL) throw new Exception("No existe la transicion del estado [". $this->currentState->getName() ."] por el evento [$eventName]");
       
       $newStateName = $newState->getTargetStateName(); // Puede ser null si no corresponde! p.e. falta registrar la transicion en el estado actual.
       if ($newStateName === NULL)
       {
-      	throw new Exception("La transicion [$eventName] no esta definida para el estado " . $this->currentState->getName());
+         throw new Exception("La transicion [$eventName] no esta definida para el estado " . $this->currentState->getName());
       }
       
       // Si llega aqui, todo salio bien:
@@ -217,6 +225,11 @@ class WebFlow {
     
       // Se supone que el flow esta en CurrentFlows, hay que actualizarlo para que persista el estado entre requests
       CurrentFlows::getInstance()->update($this);
+      
+      
+      // TEST: ver si guarda el estado en la sesion
+      //$test = CurrentFlows::getInstance()->getFlow( $this->flowId );
+      //Logger::show( "Flow en sesion luego de hacer update: " . print_r($test->getCurrentState(), true) . ", " . __FILE__ . " " . __LINE__ );
       
       // TODO: que hago con data1 y data2 ????? Puede ser el modelo para la vista que hay que mostrar.
       // Aqui deberia mostrar alguna vista, igual que el controller al terminar su ejecucion.

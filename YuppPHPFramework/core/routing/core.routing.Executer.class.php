@@ -4,8 +4,6 @@
  * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
  */
 
-YuppLoader :: load('core.mvc.webflow', 'CurrentFlows');
-
 class Executer {
 
     private $params;
@@ -165,6 +163,7 @@ class Executer {
            {
               // Si hay algun flow activo y ejecuto una accion comun, tengo que resetearlos 
               // (porque sali del flow y si vuelvo a ejecutar el flow puede estar en un estado inconsistente).
+              YuppLoader :: load('core.mvc.webflow', 'CurrentFlows');
               CurrentFlows::getInstance()->resetFlows(); // Se encarga de verificar si hay algun flow para resetear
 
               //Logger::show("ES ACCION COMUN, " . __FILE__ . " " . __LINE__ );

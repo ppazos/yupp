@@ -26,7 +26,6 @@ class CurrentFlows {
       return $instance;
    }
    
-  // public function update( WebFlow &$flow )
    public function update( WebFlow $flow )
    {
       //$this->addFlow( &$flow ); // Para hacer update es necesario agregarlo de nuevo :S de otra forma no funciona.
@@ -77,6 +76,13 @@ class CurrentFlows {
       } 
    }
 
+   // Para testing
+   public static function dump()
+   {
+      echo '<pre>';
+      print_r( self::getInstance() );
+      echo '</pre>';
+   }
 }
 
 ?>
