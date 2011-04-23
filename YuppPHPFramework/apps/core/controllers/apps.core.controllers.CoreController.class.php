@@ -1,6 +1,6 @@
 <?php
 
-YuppLoader::load('core','App');
+YuppLoader::load('core.app','App');
 YuppLoader::load('core','Yupp');
 YuppLoader :: load('core.mvc', 'YuppController');
 
