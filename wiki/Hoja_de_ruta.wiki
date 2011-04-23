@@ -235,6 +235,10 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * http://code.google.com/p/yupp/issues/detail?id=72 (Se implementa método PO.preValidate()) (HECHO)
   * Mejoras a Yupp Desktop: filtro de aplicaciones, acceso a noticias desde twitter (HECHO)
 
+==v0.3.1 versión de estabilización==
+
+Luego de liberar v0.3 se detectaron algunos bugs menores. Esta liberación corresponde a la v0.3 del framework con estos bugs corregidos.
+
 
 ==v0.4:==
 
@@ -245,6 +249,8 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
   * Agregar las referencias por loops en serialización a XML y JSON.
   * Agregar el procesamiento de referencias de loops en la deserialización de XML a PO.
+  * http://code.google.com/p/yupp/issues/detail?id=16
+  * http://code.google.com/p/yupp/issues/detail?id=87
 
 
 ==v0.5:==
