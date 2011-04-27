@@ -61,24 +61,15 @@ class YuppLoader {
    public static function getLoadedClasses()
    {
       $cl = YuppLoader :: getInstance();
-      return $cl->_getLoadedClasses();
-   }
-
-   private function _getLoadedClasses()
-   {
-      return $this->loadedClasses;
+      return $cl->loadedClasses;
    }
    
    public static function getLoadedModelClasses()
    {
       $cl = YuppLoader :: getInstance();
-      return $cl->_getLoadedModelClasses();
-   }
-   private function _getLoadedModelClasses()
-   {
-      $res = array();
       
-      foreach( $this->loadedClasses as $fileInfo )
+      $res = array();
+      foreach( $cl->loadedClasses as $fileInfo )
       {
          if ( PackageNames::isModelPackage( $fileInfo['package'] ) )
          {
@@ -88,44 +79,36 @@ class YuppLoader {
       return $res;
    }
    
+   /**
+    * Carga todo el modelo de todas las aplicaciones.
+    */
    public static function loadModel()
    {
       $cl = YuppLoader :: getInstance();
-      $cl->_loadModel();
-   }
-
-   /**
-    * Carga todo el modelo.
-    */
-   private function _loadModel()
-   {
+      
       $apps = FileSystem::getSubdirNames("./apps");      
       $packs = new PackageNames();
 
       // FIXME: que pasa si quiero cargar con refresh otras clases? p.e. MySQLDatabase se carga solo una vez porque el que la usa (DAL) es singleton.
-      if (!$this->modelLoaded)
+      if (!$cl->modelLoaded)
       {
          // Carga: component/elComponent/model, para todos los componentes
          foreach ($apps as $app)
          {
             $package = "$app.model";
             $path = YuppConventions::getModelPath($package);
-            if (file_exists($path))
-            {
-               $this->_loadModelRecursive( $path );
-            }
+            if (file_exists($path)) $cl->_loadModelRecursive( $path );
          }
 
-         $this->modelLoaded = true;
+         $cl->modelLoaded = true;
          // necesaria para mantener actualizada la session con la instance del singleton. (xq no referencia a la session xa este es un valor desserealizado...)
-         YuppSession :: set("_class_loader_singleton_instance", $this); // actualizo la variable en la session...
+         YuppSession :: set("_class_loader_singleton_instance", $cl); // actualizo la variable en la session...
       }
       else
       {
          self :: refresh();
       }
-      
-   } // _loadModel
+   }
    
    private function _loadModelRecursive( $model_path )
    {
@@ -166,7 +149,6 @@ class YuppLoader {
 
       include_once ($incPath); // esto lo tengo que hacer aunque ya tenga la clase registrada xq si no php no se da cuenta que tiene que incluirla...
 
-      
       // No se quiere guardar el script, solo ejecutarlo
       if ($type !== 'script' && !isset ($this->loadedClasses[$incPath])) // registro solo si no se incluyo ya.
       {
@@ -240,7 +222,7 @@ class YuppLoader {
 
       $incPath = $path . "/" . $filename;
 
-      return (array_key_exists($incPath, $this->loadedClasses));
+      return (array_key_exists($incPath, self::getLoadedClasses()));
    }
 
    /**
