@@ -13,19 +13,27 @@ class JSONPO {
    /**
     * Si $resursive es true, se cargan las asociaciones de la clase y tambien se pasan a json.
     */
-   public static function toJSON( PersistentObject $po, $recursive = false, $loopDetection = NULL )
+   public static function toJSON( PersistentObject $po, $recursive = false, $loopDetection = NULL, $currentPath = '' )
    {
       if (is_null($loopDetection)) $loopDetection = new ArrayObject();
       
-      $loopDetection[] = $po->getClass().'_'.$po->getId(); // Marca como recorrido: TODO falta la marca de loop cuando se detecta.
+      // Necesito hacer que cada nodo tenga una path para poder expresar las referencias por loops detectados.
+      // La idea es simple: (ver http://goessner.net/articles/JsonPath/)
+      // - vacio es la path que referencia al nodo raiz
+      // - el nombre del atributo referencia a un objeto hasOne relacionado
+      // - el nombre del atributo con notacion de array referencia a un objeto hasMany relacionado
+      // p.e. x.store.book[0].title donde x es el objeto raiz, entonces una path valida es: .store.book[0].title
+      $loopDetection[$currentPath] = $po->getClass().'_'.$po->getId(); // Marca como recorrido: TODO falta la marca de loop cuando se detecta.
       
       $json = "{";
-      
       $i = 0;
       $n = count($po->getAttributeTypes())-1;
       foreach ( $po->getAttributeTypes() as $attr => $type )
       {
-         $json .= '"' . $attr .'" : "' . $po->aGet($attr) . '"'; // TODO: si es numero, no poner comillas
+         $value = $po->aGet($attr);
+         if (is_bool($value)) (($value)?$value='true':$value='false'); // Si no esta esto, aparece 1 para true y nada para false.
+         
+         $json .= '"'. $attr .'" : "'. $value .'"'; // TODO: si es numero, no poner comillas
          
          if ($i<$n) $json .= ", ";  
          $i++;
@@ -38,13 +46,19 @@ class JSONPO {
             $relObj = $po->aGet($attr);
             if (!is_null($relObj))
             {
-               // TODO: loop detection con referencia path al nodo loopeado
                if(!in_array($relObj->getClass().'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                {
                  // FIXME: las tags de los atributos hijos de la instancia raiz deberian
                  //        tener su nombre igual al nombre del atributo, no el nombre de
                  //        la clase. Con este codigo es el nombre de la clase.
-                 $json .= ', "'. $attr .'": '. self::toJSON( $relObj, $recursive, $loopDetection );
+                 $json .= ', "'. $attr .'": '. self::toJSON( $relObj, $recursive, $loopDetection, $currentPath.'.'.$attr );
+               }
+               else // referencia por loop
+               {
+                  // Agrego un objeto referencia
+                  $keys = array_keys((array)$loopDetection, $relObj->getClass().'_'.$relObj->getId());
+                  $path = $keys[0];
+                  $json .= ', "'.$attr.'": "'. $path .'"';
                }
             }
          }
@@ -60,14 +74,23 @@ class JSONPO {
             if ( count($relObjs) > 0 )
             {
                $json .= ', "'. $attr .'": [ ';
-                
+               
+               $idx = 0; // Se usa para la referencia por loop en la JSON path
                foreach ($relObjs as $relObj)
                {
-                  // TODO: loop detection con referencia path al nodo loopeado
                   if(!in_array($relObj->getClass().'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                   {
-                     $json .= self::toJSON( $relObj, $recursive, $loopDetection ) .', ';
+                     $json .= self::toJSON( $relObj, $recursive, $loopDetection, $currentPath.'.'.$attr.'['.$idx.']' ) .', ';
                   }
+                  else // referencia por loop
+                  {
+                     // Agrego un objeto referencia
+                     $keys = array_keys((array)$loopDetection, $relObj->getClass().'_'.$relObj->getId());
+                     $path = $keys[0];
+                     $json .= '"'.$attr.'": "'. $path .'", ';
+                  }
+                  
+                  $idx++;
                }
                 
                $json = substr($json, 0, -2); // Saco ', ' del final

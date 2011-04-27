@@ -121,7 +121,7 @@ class XMLPO {
                   {
                      self::toXMLSingle($relObj, $xml_dom_doc, $hm_node, $recursive, $loopDetection);
                   }
-                  else
+                  else // referencia por loop
                   {
                      $node = $xml_dom_doc->createElement( $attr );
                      
