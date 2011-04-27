@@ -180,7 +180,7 @@ class Executer {
                  // No existe la accion o cualquier otra excepcion que pueda tirar
                  // Tira 500: Internal Server Error
                  $model_or_command = ViewCommand::display( '500',
-                                          new ArrayObject(array('message'=>$e->getMessage().'<br/><pre>'.$e->getTraceAsString().'</pre>')),
+                                          new ArrayObject(array('message'=>$e->getMessage(), 'traceString'=>$e->getTraceAsString(), 'trace'=>$e->getTrace(), 'exception'=>$e)),
                                           new ArrayObject() );
               }
               
