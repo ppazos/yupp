@@ -48,33 +48,34 @@ class XMLPO {
       if(!in_array(get_class($obj).'_'.$obj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
       {
          // Nodo actual
-         $node = NULL;
+         $currentNode = NULL;
          
          // El nombre de la tag es el nombre del atributo, a no ser que sea el nodo raiz.
          if ( is_null($attrName) )
          {
-            $node = $xml_dom_doc->createElement( get_class($obj) );
+            $currentNode = $xml_dom_doc->createElement( get_class($obj) );
          }
          else
          {
             //$node = $xml_dom_doc->createElement( get_class($obj) );
-            $node = $xml_dom_doc->createElement( $attrName );
-            $node->setAttribute( 'type', get_class($obj) ); // setAttribute ( string $name , string $value )
+            $currentNode = $xml_dom_doc->createElement( $attrName );
+            $currentNode->setAttribute( 'type', get_class($obj) ); // setAttribute ( string $name , string $value )
          }
          
          // Para la primer llamada, este nodo es el dom_document
-         $xml_parent_node->appendChild( $node );
+         $xml_parent_node->appendChild( $currentNode );
          
-         
-         $loopDetection[$node->getNodePath()] = get_class($obj).'_'.$obj->getId(); // Marca como recorrido
-         
+         $loopDetection[$currentNode->getNodePath()] = get_class($obj).'_'.$obj->getId(); // Marca como recorrido
          
          foreach ( $obj->getAttributeTypes() as $attr => $type )
          {
             // Sin iconv da un error en el XML si encuentra un tilde o una html entity
             // Funciona ok, y utf8_decode( utf8_encode() ) NO FUNCIONA
-            $attr_node = $xml_dom_doc->createElement( $attr, iconv( "ISO-8859-1", "UTF-8//TRANSLIT", $obj->aGet($attr) ) ); // string iconv ( string $in_charset , string $out_charset , string $str )
-            $node->appendChild( $attr_node );
+            $value = $obj->aGet($attr);
+            if (is_bool($value)) (($value)?$value='true':$value='false'); // Si no esta esto, aparece 1 para true y nada para false.
+            
+            $attr_node = $xml_dom_doc->createElement( $attr, iconv( "ISO-8859-1", "UTF-8//TRANSLIT", $value ) ); // string iconv ( string $in_charset , string $out_charset , string $str )
+            $currentNode->appendChild( $attr_node );
          }
          
          if ($recursive)
@@ -86,10 +87,9 @@ class XMLPO {
                {
                   if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                   {
-                     // FIXME: las tags de los atributos hijos de la instancia raiz deberian
-                     //        tener su nombre igual al nombre del atributo, no el nombre de
-                     //        la clase. Con este codigo es el nombre de la clase.
-                     self::toXMLSingle( $relObj, $xml_dom_doc, $node, $recursive, $loopDetection, $attr );
+                     // FIXME: las tags de los atributos hijos de la instancia raiz deberian tener su nombre igual al
+                     // nombre del atributo, no el nombre de la clase. Con este codigo es el nombre de la clase.
+                     self::toXMLSingle( $relObj, $xml_dom_doc, $currentNode, $recursive, $loopDetection, $attr );
                   }
                   else
                   {
@@ -102,7 +102,7 @@ class XMLPO {
                      $node->setAttribute( 'ref', $path ); 
                      
                      // Para la primer llamada, este nodo es el dom_document
-                     $xml_parent_node->appendChild( $node );
+                     $currentNode->appendChild( $node );
                   }
                }
             }
@@ -132,11 +132,11 @@ class XMLPO {
                      $node->setAttribute( 'ref', $path ); 
                      
                      // Para la primer llamada, este nodo es el dom_document
-                     $xml_parent_node->appendChild( $node );
+                     $currentNode->appendChild( $node );
                   }
                }
                
-               $node->appendChild( $hm_node );
+               $currentNode->appendChild( $hm_node );
             }
          } // si es recursiva
       } // si no hay loop
