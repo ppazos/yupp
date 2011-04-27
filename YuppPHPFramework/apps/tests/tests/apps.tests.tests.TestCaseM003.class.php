@@ -6,6 +6,7 @@ YuppLoader::load('tests.model.m003', 'Mano');
 YuppLoader::load('tests.model.m003', 'Dedo');
 
 YuppLoader::load('core.persistent.serialize', 'XMLPO');
+YuppLoader::load('core.persistent.serialize', 'JSONPO');
 
 class TestCaseM003 extends TestCase {
 
@@ -42,6 +43,8 @@ class TestCaseM003 extends TestCase {
       
       // Debe fallar el save porque hay datos erroneos
       $this->assert( true, 'TestCaseM003: Test generar XML '. print_r(XMLPO::toXML($mano, true, true), true));
+      
+      $this->assert( true, 'TestCaseM003: Test generar JSON '. print_r(JSONPO::toJSON($mano, true), true));
    }
    
    public function reset()
