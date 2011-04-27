@@ -44,25 +44,6 @@ class YuppLoader {
    }
 
    /*
-      function __sleep()
-      {
-         echo "sleep<br/>";
-   
-         $vars = (array)$this;
-         foreach ($vars as $key => $val)
-         {
-             if (is_null($val))
-             {
-                 unset($vars[$key]);
-             }
-         }
-         return array_keys($vars);
-      }
-   */
-
-   // /SINGLETONX
-
-   /*
        // Configuracion
        public function configure( $config )
        {
@@ -88,7 +69,6 @@ class YuppLoader {
       return $this->loadedClasses;
    }
    
-   
    public static function getLoadedModelClasses()
    {
       $cl = YuppLoader :: getInstance();
@@ -108,7 +88,6 @@ class YuppLoader {
       return $res;
    }
    
-
    public static function loadModel()
    {
       $cl = YuppLoader :: getInstance();
@@ -129,7 +108,6 @@ class YuppLoader {
          // Carga: component/elComponent/model, para todos los componentes
          foreach ($apps as $app)
          {
-            //$path = YuppConventions::getModelPath($component);
             $package = "$app.model";
             $path = YuppConventions::getModelPath($package);
             if (file_exists($path))
@@ -141,24 +119,16 @@ class YuppLoader {
          $this->modelLoaded = true;
          // necesaria para mantener actualizada la session con la instance del singleton. (xq no referencia a la session xa este es un valor desserealizado...)
          YuppSession :: set("_class_loader_singleton_instance", $this); // actualizo la variable en la session...
-         
-         //echo "<h2>" . __FILE__ . " (". __LINE__ .") ACTUALIZA CLASS LOADER EN SESSION</h2>";
       }
       else
       {
-         //echo "CARGADO";
-         //echo "<h2>" . __FILE__ . " (". __LINE__ .") REFRESH</h2>";
          self :: refresh();
       }
-      
-      //echo "<h1>" . __FILE__ . " (". __LINE__ .") _loadModel TERMINA</h1>";
       
    } // _loadModel
    
    private function _loadModelRecursive( $model_path )
    {
-      //echo __FILE__ . ' ' . __LINE__ . " $model_path<br/>";
-
       $dir = dir($model_path);
       while (false !== ($entry = $dir->read()))
       {
@@ -168,47 +138,56 @@ class YuppLoader {
          }
          else if ( !String::startsWith($entry, ".") )
          {
-            //echo "<h1>$entry</h1>";
-            
             $finfo = FileNames::getFilenameInfo($entry);
             if ($finfo)
             {
-               //echo "PACKAGE: " . $finfo['package'] . "</br>";
-               //echo "NAME: "    . $finfo['name'] . "</br>";
-
-               // TODO: cargar una clase podria cargar otras, si se declaran loads en esa clase,
-               //       por lo que estaria bueno poder verificar aqui si la clase ya esta cargada 
-               //       antes de intentar cargarla de nuevo.
-               $this->_load($finfo['package'], $finfo['name']);
+               // Al cargar una clase, esta podria cargar otras, si se declaran loads en esa clase,
+               // por lo que verificando si la clase ya esta cargada antes de intentar cargarla de
+               // nuevo, ahorraria esos loads en cascada.
+               if (!$this->isLoadedClass($finfo['package'], $finfo['name']))
+                  $this->load($finfo['package'], $finfo['name']);
             }
          }
       }
       $dir->close();
    }
 
+   /**
+    * @param string $incPath ruta completa de inclusion
+    * @param string $package paquete logico del archivo a incluir
+    * @param string $type tipo de archivo: class, interface, script
+    * @param string $name nombre logica, p.e. para fileName core.basic.String.class.php, $name seria String
+    * @param string $fileName nombre del archivo a incluir
+    */
+   private function loadFile($incPath, $package, $type, $name, $fileName)
+   {
+      if (!is_file($incPath))
+         throw new Exception("YuppLoader::loadFile() - ruta de inclusion errada ($incPath)");
+
+      include_once ($incPath); // esto lo tengo que hacer aunque ya tenga la clase registrada xq si no php no se da cuenta que tiene que incluirla...
+
+      
+      // No se quiere guardar el script, solo ejecutarlo
+      if ($type !== 'script' && !isset ($this->loadedClasses[$incPath])) // registro solo si no se incluyo ya.
+      {
+         // Guardo la info de la clase cargada.
+         $this->loadedClasses[$incPath] = array (
+            "package" => $package,
+            $type => $name,
+            "filename" => $fileName
+         );
+      }
+
+      // necesaria para mantener actualizada la session con la instance del singleton. (xq no referencia a la session xa este es un valor desserealizado...)
+      YuppSession :: set("_class_loader_singleton_instance", $this); // actualizo la variable en la session...
+   }
 
    // Funcion para ahorrarse tener que llamar al getInstance dedse afuera...
    public static function load($package, $clazz)
    {
       $cl = YuppLoader :: getInstance();
-      $cl->_load($package, $clazz);
-   }
-
-   private function _load($package, $clazz)
-   {
-      // Tengo que armar el nombre del archvo desde el nombre del paquete y la clase, 
-      // ademas tengo que ver la path en la config.
-
-      //echo "PACK $package<br />";
-      //echo "<h2>" . __FILE__ . " (". __LINE__ .") LOAD: $package.$clazz </h2>";
-
-      $filename = FileNames::getClassFilename($package, $clazz);
-
-//      echo "FILE $filename<br />";
-
-      // tengo que ver de que tipo es para pedir la ruta correcta...
-      // el que sabe la ruta es PackageNames ...
-      //
+      
+      $fileName = FileNames::getClassFilename($package, $clazz);
       $path = ".";
       if (PackageNames::isModelPackage($package))
       {
@@ -218,138 +197,40 @@ class YuppLoader {
       {
          $path = strtr($package, ".", "/");
       }
-      // ... else demas...
 
-      $incPath = $path . "/" . $filename;
-
-      //echo $incPath . "<br />";
-//      echo "<h3>" . __FILE__ . " (". __LINE__ .") INC PATH: $incPath</h3>";
-
-      if (!is_file($incPath))
-         throw new Exception("YuppLoader::load() - ruta de inclusion errada ($incPath)");
-
-      //    echo "INC: $incPath <br/>";
-      include_once $incPath; // esto lo tengo que hacer aunque ya tenga la clase registrada xq si no php no se da cuenta que tiene que incluirla...
-      //include ($incPath);
+      $incPath = $path . "/" . $fileName;
       
-      if (!isset ($this->loadedClasses[$incPath])) // registro solo si no se incluyo ya.
-      {
-         // Guardo la info de la clase cargada.
-         $this->loadedClasses[$incPath] = array (
-            "package" => $package,
-            "class" => $clazz,
-            "filename" => $filename
-         );
-      }
-      
-      //echo "<h3>" . __FILE__ . " (". __LINE__ .") Termina de incluir</h3>";
-      //$vars = (array)$this;
-      //print_r($vars);
-
-      // necesaria para mantener actualizada la session con la instance del singleton. (xq no referencia a la session xa este es un valor desserealizado...)
-      YuppSession :: set("_class_loader_singleton_instance", $this); // actualizo la variable en la session...
-      
-      //echo "<h3>" . __FILE__ . " (". __LINE__ .") Actualizar CLASS LOADER en Session</h3><br/>";
+      $cl->loadFile($incPath, $package, 'class', $clazz, $fileName);
    }
 
    public static function loadInterface($package, $interface)
    {
       $cl = YuppLoader :: getInstance();
-      $cl->_loadInterface($package, $interface);
-   }
-
-   // MISMA LOGICA QUE _load... habra que reusar codigo...
-   private function _loadInterface($package, $interface)
-   {
-      // Tengo que armar el nombre del archvo desde el nombre del paquete y la clase, ademas tengo que ver la path en la config.
-
-      $filename = FileNames::getInterfaceFilename($package, $interface);
-
-      //$path = ".";
-      //$packs = new PackageNames();
-
-      // ARMA RUTA FISICA DIRECTAMENTE CON LA RUTA DE PAQUETE (en _load tiene tambien ruta logica a /Model).
-      // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
-      //
-      $path = strtr($package, ".", "/");
-      $incPath = $path . "/" . $filename;
-
-      if (!is_file($incPath))
-         throw new Exception("YuppLoader::loadInterface() - ruta de inclusion errada ($incPath)");
-
-      include_once ($incPath); // esto lo tengo que hacer aunque ya tenga la clase registrada xq si no php no se da cuenta que tiene que incluirla...
-
-      if (!isset ($this->loadedClasses[$incPath])) // registro solo si no se incluyo ya.
-      {
-         // Guardo la info de la clase cargada.
-         $this->loadedClasses[$incPath] = array (
-            "package" => $package,
-            "interface" => $interface,
-            "filename" => $filename
-         );
-      }
-
-      // necesaria para mantener actualizada la session con la instance del singleton. (xq no referencia a la session xa este es un valor desserealizado...)
-      YuppSession :: set("_class_loader_singleton_instance", $this); // actualizo la variable en la session...
+      
+      $fileName = FileNames::getInterfaceFilename($package, $interface);
+      $incPath = strtr($package, ".", "/") . "/" . $fileName;
+      
+      $cl->loadFile($incPath, $package, 'interface', $interface, $fileName);
    }
 
    public static function loadScript($package, $script)
    {
       $cl = YuppLoader :: getInstance();
-      $cl->_loadScript($package, $script);
-   }
-
-   // MISMA LOGICA QUE _load... habra que reusar codigo...
-   private function _loadScript($package, $script)
-   {
-      // Tengo que armar el nombre del archvo desde el nombre del paquete y la clase, ademas tengo que ver la path en la config.
-      $filename = FileNames::getScriptFilename($package, $script);
-
-      // ARMA RUTA FISICA DIRECTAMENTE CON LA RUTA DE PAQUETE (en _load tiene tambien ruta logica a /Model).
-      // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
-      //
-      $path = strtr($package, ".", "/");
-      $incPath = $path . "/" . $filename;
-
-      if (!is_file($incPath))
-         throw new Exception("YuppLoader::loadScript() - ruta de inclusion errada ($incPath)");
-
-      include_once ($incPath); // esto lo tengo que hacer aunque ya tenga la clase registrada xq si no php no se da cuenta que tiene que incluirla...
-
-      /* No quiero guardar los scripts, solo ejecutarlos cuando sean incluidos. Si no cada vez que se haga refresh() los scripts son ejecutados.
-      if (!isset ($this->loadedClasses[$incPath])) // registro solo si no se incluyo ya.
-      {
-         // Guardo la info de la clase cargada.
-         $this->loadedClasses[$incPath] = array (
-            "package" => $package,
-            "script" => $script,
-            "filename" => $filename
-         );
-      }
-
-      // necesaria para mantener actualizada la session con la instance del singleton. (xq no referencia a la session xa este es un valor desserealizado...)
-      YuppSession :: set("_class_loader_singleton_instance", $this); // actualizo la variable en la session...
-      */
+      
+      $fileName = FileNames::getScriptFilename($package, $script);
+      $incPath = strtr($package, ".", "/") . "/" . $fileName;
+      
+      $cl->loadFile($incPath, $package, 'script', $script, $fileName);
    }
 
    public static function isLoadedClass($package, $clazz)
    {
       $cl = YuppLoader :: getInstance();
-      return $cl->_isLoadedClass($package, $clazz);
-   }
-
-   private function _isLoadedClass($package, $clazz)
-   {
-      // IDEM A LOAD...
-      
       $filename = FileNames::getClassFilename($package, $clazz);
 
       $path = ".";
       if (PackageNames::isModelPackage($package))
       {
-         //echo "ES MODEL PACKAGE!!!<br/>";
-         //$path = $packs->getModelPackagePath();
-         //$path = YuppConventions::getModelPath( PackageNames::getModelPackageComponent( $package ) );
          $path = YuppConventions::getModelPath( $package );
       }
       else // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
