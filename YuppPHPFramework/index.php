@@ -98,7 +98,6 @@ catch (Exception $e)
        echo '<div style="border:1px solid #333; background-color:#ff8080; overflow:auto; padding:10px;"><pre>';
          echo $e->getTraceAsString();
        echo '</pre></div>';
-       
      echo '</div>';
    echo '</body></html>';
    exit();
