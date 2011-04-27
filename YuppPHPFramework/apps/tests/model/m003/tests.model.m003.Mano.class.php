@@ -4,6 +4,8 @@
  * Clase modelo para el test M003.
  */
 
+YuppLoader::load('tests.model.m003', 'Dedo');
+
 class Mano extends PersistentObject
 {
    function __construct($args = array (), $isSimpleInstance = false)
@@ -15,10 +17,7 @@ class Mano extends PersistentObject
       $this->addAttribute("tamanio",  Datatypes :: TEXT);
 
       $this->addConstraints(
-         "tamanio",
-         array (
-            Constraint :: inList( array("grande", "mediana", "chica") )
-         )
+         "tamanio", array ( Constraint::inList( array("grande", "mediana", "chica") ) )
       );
       
       parent :: __construct($args, $isSimpleInstance);

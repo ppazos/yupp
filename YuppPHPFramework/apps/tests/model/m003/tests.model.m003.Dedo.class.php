@@ -4,6 +4,8 @@
  * Clase modelo para el test M003.
  */
 
+YuppLoader::load('tests.model.m003', 'Dedo');
+
 class Dedo extends PersistentObject
 {
    function __construct($args = array (), $isSimpleInstance = false)
@@ -11,6 +13,8 @@ class Dedo extends PersistentObject
       $this->setWithTable("test_m003_dedo");
 
       $this->belongsTo = array('Mano');
+      
+      $this->addHasOne('mano', 'Mano');
 
       $this->addAttribute("uniaLarga", Datatypes :: BOOLEAN);
       
