@@ -22,7 +22,8 @@ abstract class TestCase {
          
          ob_start(); 
          debug_print_backtrace(); // Stack de llamadas que resultaron en un test que falla
-         $trace = ob_get_contents(); 
+         $trace = ob_get_contents();
+         $moreInfo = ob_get_contents(); // Todos los echos y prints que se pudieron hacer
          ob_end_clean(); 
 
          // Se quita la llamada a este metodo de el stack (assert)
@@ -42,7 +43,7 @@ abstract class TestCase {
 
           */
          
-         $this->suite->report('ERROR', $msg, $trace);
+         $this->suite->report('ERROR', $msg, $trace, $moreInfo);
       }
       else
       {
