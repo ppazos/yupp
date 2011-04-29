@@ -39,6 +39,28 @@ class JSONPO {
          $i++;
       }
       
+      // Agrega errores de validacion si los hay
+      // http://code.google.com/p/yupp/issues/detail?id=86
+      if ($po->hasErrors())
+      {
+         $errors = $po->getErrors();
+         $json .= ', "errors": {';
+         
+         foreach ($errors as $attr => $theErrors)
+         {
+            $json .= '"'. $attr .'": [';
+            foreach ($theErrors as $theError)
+            {
+               $json .= '"'. $theError .'", ';
+            }
+            $json = substr($json, 0, -2); // Saco ', ' del final
+            $json .= '], ';
+         }
+            
+         $json = substr($json, 0, -2); // Saco ', ' del final
+         $json .= '}';
+      }
+      
       if ($recursive)
       {
          foreach ($po->getHasOne() as $attr => $clazz)
@@ -73,7 +95,7 @@ class JSONPO {
             
             if ( count($relObjs) > 0 )
             {
-               $json .= ', "'. $attr .'": [ ';
+               $json .= ', "'. $attr .'": [';
                
                $idx = 0; // Se usa para la referencia por loop en la JSON path
                foreach ($relObjs as $relObj)

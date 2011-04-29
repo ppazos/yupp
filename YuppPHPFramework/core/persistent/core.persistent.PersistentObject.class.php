@@ -25,12 +25,6 @@ YuppLoader :: load('core.db', 'DAL'); // declara tambien DatabaseNormalization
 YuppLoader :: load('core.db', 'Datatypes');
 YuppLoader :: load('core.persistent', 'PersistentManager');
 
-/*
-TODOS:
-  - Si la relacion es 1..* y el * no tiene belongsTo, IGUAL SE DEBERIA CONSIDERAR
-    COMO QUE EL * tiene belongsTo el 1 !!!!!!!!!!!!!!!!!!!!! (afecta el PM.get_many_assocs)
-*/
-
 /**
  * Esta clase implementa toda la logica necesaria para modelar objetos persistentes.
  * @package core.persistent
