@@ -250,7 +250,7 @@ Luego de liberar v0.3 se detectaron algunos bugs menores. Esta liberación corre
   * Agregar las referencias por loops en serialización a XML y JSON (HECHO).
   * http://code.google.com/p/yupp/issues/detail?id=16
   * http://code.google.com/p/yupp/issues/detail?id=87
-  * http://code.google.com/p/yupp/issues/detail?id=84
+  * http://code.google.com/p/yupp/issues/detail?id=84 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=93
   * http://code.google.com/p/yupp/issues/detail?id=91
   * http://code.google.com/p/yupp/issues/detail?id=86 (HECHO)
