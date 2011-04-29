@@ -253,7 +253,7 @@ Luego de liberar v0.3 se detectaron algunos bugs menores. Esta liberación corre
   * http://code.google.com/p/yupp/issues/detail?id=84
   * http://code.google.com/p/yupp/issues/detail?id=93
   * http://code.google.com/p/yupp/issues/detail?id=91
-  * http://code.google.com/p/yupp/issues/detail?id=86
+  * http://code.google.com/p/yupp/issues/detail?id=86 (HECHO)
 
 ==v0.5:==
 
