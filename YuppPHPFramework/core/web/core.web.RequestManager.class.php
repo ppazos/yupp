@@ -370,7 +370,6 @@ class RequestManager {
       //$context->update();
       /// ACTUALIZAR CONTEXTO ///
 
-      //LayoutManager::renderWithLayout( $pagePath );
       $layoutManager = LayoutManager::getInstance();
       $layoutManager->renderWithLayout( $pagePath );
       

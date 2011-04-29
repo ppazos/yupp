@@ -31,14 +31,24 @@ class LayoutManager {
       $path = $_base_dir;
       
       // Busca la ubicacion en un componente particular
-       if ( array_key_exists('component', $params) ) 
-          $path .= '/apps/'. $params['component'] .'/javascript/'. $params['name'] .'.js';
-       else // Ubicacion por defecto de todos los javascripts de todos los modulos
-          $path .= '/js/' . $params['name'] . '.js';
-       
+      if ( array_key_exists('component', $params) ) 
+         $path .= '/apps/'. $params['component'] .'/javascript/'. $params['name'] .'.js';
+      else // Ubicacion por defecto de todos los javascripts de todos los modulos
+         $path .= '/js/' . $params['name'] . '.js';
       
+      /*
       if (!in_array($path, $this->referencedJSLibs))
          $this->referencedJSLibs[] = $path;
+      
+      if (isset($params['directInclude'])) echo '<script type="text/javascript" src="'. $path .'"></script>';
+      */
+      
+      // Cambio que permite incluir JS desde layout (imprime directamente la referencia).
+      if (!in_array($path, $this->referencedJSLibs))
+      {
+         $this->referencedJSLibs[] = $path;
+         echo '<script type="text/javascript" src="'. $path .'"></script>';
+      }
    }
    
    /**
@@ -145,13 +155,6 @@ class LayoutManager {
          //echo '</textarea>';
          
          
-         // Inclusion de JS bajo demanda
-         // http://code.google.com/p/yupp/issues/detail?id=32
-         foreach ( $this->referencedJSLibs as $path )
-         {
-            $head = '<script type="text/javascript" src="'. $path .'"></script>' . $head;
-         }
-         
          /*
           * coincidencias[0] => 
             <head>
@@ -165,8 +168,17 @@ class LayoutManager {
 //         print_r( $coincidencias );
 //         echo '</textarea>';
          
-         //$pos2 = strpos($layout, '"');
-         //$layout = substr($layout, 0, $pos2); // Quiero lo que esta entre  '<layout name="' y '"', ese es el nombre del layout.
+
+
+         // Inclusion de JS bajo demanda
+         // http://code.google.com/p/yupp/issues/detail?id=32
+         /* La inclusion se hace directamente en addJSLibReference
+         foreach ( $this->referencedJSLibs as $path )
+         {
+            $head = '<script type="text/javascript" src="'. $path .'"></script>' . $head;
+         }
+         */
+         
          
          // OJO! SI EL LAYOUT SE PONE EN EL HEAD, ESA TAG INVALIDA SE VA A MOSTRAR... TALVEZ SEA MEJOR PONERLA ARRIBA DEL TODO, ANTES DEL HTML, AUNQUE NO SEA UN XML valido...
          
@@ -183,7 +195,6 @@ class LayoutManager {
          $ctx = YuppContext::getInstance();
          
          $path = 'apps/'. $ctx->getComponent() .'/views/' . $layout . '.layout.php';
-         
          if (!file_exists($path)) throw new Exception("El layout $layout no existe en la ruta: $path " . __FILE__ . " " . __LINE__);
          
          include_once( $path );
@@ -191,8 +202,7 @@ class LayoutManager {
       else
       {
          //echo "NO LAYOUT";
-      	//echo $view;
-         
+         //echo $view;
          
          // Inclusion de JS bajo demanda
          // http://code.google.com/p/yupp/issues/detail?id=32
@@ -205,10 +215,12 @@ class LayoutManager {
          
          // Inclusion de JS bajo demanda
          // http://code.google.com/p/yupp/issues/detail?id=32
+         /* La inclusion se hace directamente en addJSLibReference
          foreach ( $this->referencedJSLibs as $path )
          {
             $partes[0] .= '<script type="text/javascript" src="'. $path .'"></script>';
          }
+         */
          
          // FIXME: Si la pagina no esta bien formada aqui dara un error
          // p.e. si no se tiene html/head/body
@@ -223,7 +235,6 @@ class LayoutManager {
          //echo '</textarea>';
       }
    }
-   
 }
 
 ?>
