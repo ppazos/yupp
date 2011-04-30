@@ -236,11 +236,6 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * Mejoras a Yupp Desktop: filtro de aplicaciones, acceso a noticias desde twitter (HECHO)
 
 
-==v0.3.1 versión de estabilización==
-
-Luego de liberar v0.3 se detectaron algunos bugs menores. Esta liberación corresponde a la v0.3 del framework con estos bugs corregidos.
-
-
 ==v0.4:==
 
   * TICKET #38 (numeracion vieja): terminar las funcionalidades para inspeccionar la base de datos.
@@ -252,8 +247,9 @@ Luego de liberar v0.3 se detectaron algunos bugs menores. Esta liberación corre
   * http://code.google.com/p/yupp/issues/detail?id=87 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=84 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=93
-  * http://code.google.com/p/yupp/issues/detail?id=91
+  * http://code.google.com/p/yupp/issues/detail?id=91 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=86 (HECHO)
+
 
 ==v0.5:==
 
