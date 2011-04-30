@@ -238,7 +238,6 @@ Descarga: http://code.google.com/p/yupp/downloads/list
 
 ==v0.4:==
 
-  * TICKET #38 (numeracion vieja): terminar las funcionalidades para inspeccionar la base de datos.
   * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
   * Extender la configuracion de DB de las aplicaciones para soportar los modos de ejecucion.
   * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
