@@ -30,66 +30,6 @@ class CoreController extends YuppController {
       
    } // index
    
-   
-   /**
-    * Para ver el modelo de todos los componentes y si estan creadas las tablas.
-    * Copio parte del codigo del viejo indexAction.
-    */
-   /* Ahora la valida es la otra accion dbStatus
-   public function dbStatusAction()
-   {
-      // FIXME: si DAL se instancia por appName, esta implementacion no sirve,
-      //        porque esta orientada por cada clase del modelo cargada.
-      
-      $dal = DAL::getInstance();
-      if (YuppContext :: getInstance()->getMode() === YuppConfig :: MODE_DEV)
-      {
-         $createdTables = array(); // array de clase / array tabla / creada o no creada.
-         $allTablesCreated = true;
-         
-         $loadedClasses = YuppLoader :: getLoadedModelClasses();
-         $this->params['loadedClasses'] = $loadedClasses;
-
-         foreach ($loadedClasses as $class)
-         {
-            $tableName = YuppConventions::tableName( $class );
-            if ( $dal->tableExists( $tableName ) )
-            {
-               $createdTables[$class] = array('tableName'=>$tableName, 'created'=>"CREADA");
-            }
-            else
-            {
-               $createdTables[$class] = array('tableName'=>$tableName, 'created'=>"NO CREADA");
-               $allTablesCreated = false;
-            }
-         }
-         
-         $this->params['allTablesCreated'] = $allTablesCreated;
-      }
-      
-      // Nombres de los compoentes instalados
-      $components = PackageNames::getComponentNames();
-      $this->params['components'] = $components;
-      
-      $componentModelClasses = array();
-      foreach ($components as $component)
-      {
-         $classes = ModelUtils::getModelClasses($component);
-
-         foreach ($classes as $class)
-         {
-            // FIXME: fileInfo[name] y $class, no son lo mismo?
-            $fileInfo = FileNames::getFilenameInfo( $class );
-            $componentModelClasses[$component][$fileInfo['name']] = $createdTables[$fileInfo['name']];
-         }
-      }
-      
-      $this->params['componentModelClasses'] = $componentModelClasses;
-      
-      return $this->render("dbStatus");
-   }
-   */
-   
    // FIXME: auxiliar para daState2, deberia estar en basic/array
    function array_flatten($a)
    {
@@ -157,25 +97,6 @@ class CoreController extends YuppController {
       }
       
       $this->params['allTablesCreated'] = $allTablesCreated;
-
-      // Nombres de los compoentes instalados
-      //$components = PackageNames::getComponentNames();
-      //$this->params['components'] = $components;
-      
-      /*
-      $componentModelClasses = array();
-      foreach ($components as $component)
-      {
-         $classes = ModelUtils::getModelClasses($component);
-         foreach ($classes as $class)
-         {
-            // FIXME: fileInfo[name] y $class, no son lo mismo?
-            $fileInfo = FileNames::getFilenameInfo( $class );
-            $componentModelClasses[$component][$fileInfo['name']] = $createdTables[$fileInfo['name']];
-         }
-      }
-      */
-      
       $this->params['appModelClasses'] = $appModelClasses;
       
       return $this->render("dbStatus");
@@ -184,10 +105,10 @@ class CoreController extends YuppController {
    
    
    /**
-    * Sirve para listar los controladores de un componente cuando se ingresa la URL hasta el componente.
+    * Sirve para listar los controladores de una app cuando se ingresa la URL hasta la app.
     * TODO: en produccion no se deberia mostrar esta lista, tampoco si hay algun mapeo predefinido que matchee con la url dada.
     */
-   public function componentControllersAction()
+   public function appControllersAction()
    {
       return;
    }
@@ -270,7 +191,7 @@ class CoreController extends YuppController {
       }
       
       // Tengo que asegurarme de que cargue la config de DB para esa aplicacion
-      // Asi en lugar de obtener 'core' en el component, obtiene el nombre de la apliciacion real cuando crea la DAL en PM.
+      // Asi en lugar de obtener 'core' en la app, obtiene el nombre de la apliciacion real cuando crea la DAL en PM.
       $ctx = YuppContext::getInstance();
       $ctx->setRealApp( $app );
       
@@ -297,7 +218,7 @@ class CoreController extends YuppController {
       $id = $this->params['id'];
       
       // Tengo que asegurarme de que cargue la config de DB para esa aplicacion
-      // Asi en lugar de obtener 'core' en el component, obtiene el nombre de la apliciacion real cuando crea la DAL en PM.
+      // Asi en lugar de obtener 'core' en la app, obtiene el nombre de la apliciacion real cuando crea la DAL en PM.
       $ctx = YuppContext::getInstance();
       $ctx->setRealApp( $app );
       
@@ -446,7 +367,7 @@ class CoreController extends YuppController {
    public function changeLocaleAction()
    {
       $locale = $this->params['locale'];
-      $component = $this->params['back_component'];
+      $app = $this->params['back_app'];
       $controller = $this->params['back_controller'];
       $action = $this->params['back_action'];
 
@@ -456,7 +377,7 @@ class CoreController extends YuppController {
 
       // Vuelvo a donde estaba...
       return $this->redirect(array (
-         'component' => $component,
+         'app' => $app,
          'controller' => $controller,
          'action' => $action
       ));
@@ -468,7 +389,7 @@ class CoreController extends YuppController {
    public function changeModeAction()
    {
       $mode = $this->params['mode'];
-      $component = $this->params['back_component'];
+      $app = $this->params['back_app'];
       $controller = $this->params['back_controller'];
       $action = $this->params['back_action'];
 
@@ -478,20 +399,20 @@ class CoreController extends YuppController {
 
       // Vuelvo a donde estaba...
       return $this->redirect(array (
-         'component' => $component,
+         'app' => $app,
          'controller' => $controller,
          'action' => $action
       ));
    }
 
    /**
-    * Ejecuta el boostrap de un componente dado.
+    * Ejecuta el boostrap de una app dado.
     */
    public function executeBootstrapAction()
    {
       Logger::show('Execute Bootstrap Action');
       
-      $appName = $this->params['componentName'];
+      $appName = $this->params['appName'];
       
       //ob_start();
       
@@ -499,7 +420,7 @@ class CoreController extends YuppController {
       // Si no trata de ejecutar usando la configuracion de la base por defecto.
       
       $ctx = YuppContext::getInstance();
-      $ctx->setComponent( $appName );
+      $ctx->setApp( $appName );
 
       // FIXME: el BS a ejecutar debe depender del modo de ejecucion
       YuppLoader::getInstance()->loadScript('apps.'.$appName.'.bootstrap', 'Bootstrap');
@@ -509,7 +430,7 @@ class CoreController extends YuppController {
       
       $this->flash['message'] = 'Ejecuci&oacute;n de bootstrap completada.';
       
-      return $this->redirect( array('component'=>'core', 'controller'=>'core', 'action'=>'index'));
+      return $this->redirect( array('app'=>'core', 'controller'=>'core', 'action'=>'index'));
    }
    
    public function showStatsAction()
@@ -564,7 +485,7 @@ class CoreController extends YuppController {
       // Para que cargue la configuracion correcta de la base de datos.
       // Si no trata de ejecutar usando la configuracion de la base por defecto.      
       $ctx = YuppContext::getInstance();
-      $ctx->setComponent( $appName );
+      $ctx->setApp( $appName );
       
       // Cargar los casos de test en una suite y ejecutarlos
       $suite = $app->loadTests();

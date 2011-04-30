@@ -4,7 +4,7 @@
  * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
  */
 
-class ComponentControllerFilters implements IComponentControllerFilters {
+class AppControllerFilters implements IAppControllerFilters {
    
    public static function getBeforeFilters()
    {
@@ -19,7 +19,7 @@ class ComponentControllerFilters implements IComponentControllerFilters {
 
 class CoreSecurityFilter extends YuppController implements IControllerBeforeFilter {
    
-   // Pueden ser: un array (controller), un nombre de un 'component.controller' o una action, "component.*" que es "para todos".
+   // Pueden ser: un array (controller), un nombre de un 'app.controller' o una action, "app.*" que es "para todos".
    private $controllerActions = "*"; // Lista de controllers a los que se aplica este filter.
    private $exceptControllerActions = array(
                                         //"core"=>array("login", "registerUser", "logout", "sendPassword")
@@ -37,9 +37,9 @@ class CoreSecurityFilter extends YuppController implements IControllerBeforeFilt
    
    /**
     * Debe retornar true si pasa o un ViewCommand si no pasa, o sea redireccionar o ejecutar una accion de un cotroller o hacer render de un string...
-    * FIXME: $component ya no es necesario xq el filtro es por componente.
+    * FIXME: $app ya no es necesario xq el filtro es por app.
     */
-   public function apply($component, $controller, $action)
+   public function apply($app, $controller, $action)
    {
       $mode = YuppConfig::getInstance()->getCurrentMode();
       

@@ -31,6 +31,9 @@ $app = $m->get('app');
          width: 100%;
          height: 100px;
       }
+      .modeInfo {
+         background-color: #ccccff;
+      }
       </style>
    </head>
    <body>
@@ -43,6 +46,9 @@ $app = $m->get('app');
           <b><?php echo $result['msg']; ?></b><br/>
           <?php if (!empty($result['trace'])) : ?>
             <textarea><?php echo $result['trace']; ?></textarea>
+          <?php endif; ?>
+           <?php if (!empty($result['moreInfo'])) : ?>
+            <div class="moreInfo"><?php echo $result['moreInfo']; ?></div>
           <?php endif; ?>
         </div>
       <?php endforeach; ?>
