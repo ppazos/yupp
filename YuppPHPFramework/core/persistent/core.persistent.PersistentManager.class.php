@@ -1444,48 +1444,11 @@ class PersistentManager {
     *         segun los criterios de paginacion y ordenamiento dados.
     */
    // Si max == -1 traigo todos los items.
-   //public function listAll( $persistentClass, $offset = 0, $max = 0 ) // FIXME: (TICKET #13) con max 0 no pide ninguno (deberia pedir todos... cuando max es 0 es xq no se lo paso).
-   //public function listAll( $ins, $offset = 0, $max = 0, $sort = 'id', $dir = 'asc' )
-   public function listAll( $ins, $params )
+   public function listAll( $ins, ArrayObject $params )
    {
-      Logger::getInstance()->pm_log("PM::listAll " . $ins->getClass() . " : " . __FILE__."@". __LINE__);
-      /*
-       * params:
-       * max
-       * offset // si max no se pasa, no puede haber offset, si lo hay, no se considera.
-       * sort
-       * dir
-       */
+      Logger::getInstance()->pm_log("PM::listAll ". $ins->getClass() ." : " . __FILE__."@". __LINE__);
 
       $objTableName = YuppConventions::tableName( $ins ); // ins se usa solo para sacar el nombre de la tabla y para sacar los nombres de las subclases.
-
-      // No puede tener offset sin limit... (esto se considera en dal->listAll)
-      // TODO: igual no esta de mas hacer el chekeo aca....
-      //$params = array();
-      //if ($offset > 0) $params["offset"] = $offset;
-      //if ($max > 0)    $params["max"]    = $max;
-      
-      if (array_key_exists('offset',$params) && !array_key_exists('max',$params))
-      {
-         $params['offset'] = NULL;
-         $params = array_filter($params);
-      }
-      
-      if (array_key_exists('max',$params) && !array_key_exists('offset',$params))
-      {
-         $params['offset'] = 0;
-      }
-
-      if (!array_key_exists('sort',$params))
-      {
-         $params['sort'] = 'id';
-         $params['dir'] = 'asc';
-      }
-      else if  (!array_key_exists('dir',$params))
-      {
-         $params['dir'] = 'asc';
-      }
-
 
       // Quiero solo los registros de las subclases y ella misma.
       $class = get_class( $ins );
@@ -1505,7 +1468,7 @@ class PersistentManager {
           $cond_or = Condition::_OR();
           foreach ($scs as $subclass)
           {
-               $cond_or->add( Condition::EQ($objTableName, "class", $subclass) );
+              $cond_or->add( Condition::EQ($objTableName, "class", $subclass) );
           }
           $cond->add( $cond_or );
       }

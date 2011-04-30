@@ -1266,19 +1266,9 @@ class PersistentObject {
    //
    public static function listAll( ArrayObject $params )
    {
-      Logger::getInstance()->po_log("ListAll ". self::$thisClass);
-
-//      $offset = 0;
-//      if (isset( $params['offset'] )) $offset = $params['offset'];
-//
-//      $max = 0; // Con max en 0
-//      if (isset( $params['max'] )) $max = $params['max'];
-
       // FIXME: PM no necesita una instancia, le puedo pasar la clase derecho.
       $ins = new self::$thisClass();
-
-      // FIXME: Pasarle params con where.
-      return PersistentManager::getInstance()->listAll($ins, $params);
+      return PersistentManager::getInstance()->listAll($ins, self::filtrarParams($params));
    }
 
 
@@ -1289,23 +1279,35 @@ class PersistentObject {
     */
    public static function findBy( Condition $condition, ArrayObject $params )
    {
-      // Para que al agregarle atributos no modifique a $params
-      $_params = new ArrayObject( $params->getArrayCopy() );
-      
-      // Verifica argumentos por defecto.
-      if (!isset($params['offset'])) $_params['offset'] = 0;
-      if (!isset($params['max']))    $_params['max']    = 10; // Numero por defecto, hardcoded.
-      if (!isset($params['sort']))   $_params['sort']   = 'id';
-      if (!isset($params['dir']))    $_params['dir']    = 'asc';
-
-      // TODO:
-      // Tengo que modificar la API de listAll para que acepte Conditions,
-      // sobre todo hay que ver como le paso sort, dir, offset y max, ver como armo la Condition adentro de PM.listall()
-      $pm = PersistentManager::getInstance();
-
       $ins = new self::$thisClass();
-
-      return $pm->findBy( $ins, $condition, $_params );
+      return PersistentManager::getInstance()->findBy( $ins, $condition, self::filtrarParams($params) );
+   }
+   
+   /**
+    * Verifica los parametros max, offset, sort y dir, que pueden venir en un
+    * request incluyendo errores, y devuelve un array de parametros correctos.
+    */
+   public static function filtrarParams( ArrayObject $params )
+   {
+      $ret = new ArrayObject( $params->getArrayCopy() );
+      
+      // 1. Si no hay algun parametro, agregarlo con valor por defecto.
+      // 2. Si los parametros enteros vienen con un valor invalido, poner el valor por defecto.
+      // 3. Si el parametro dir viene con un valor distinto de asc o desc, poner el valor por defecto (incluye que no venga o que venga con valor vacio).
+      
+      // Si es vacio, o si no es numerico, o si no es entero
+      if (!isset($ret['offset']) || !is_numeric($ret['offset']) || (int)$ret['offset'] != $ret['offset']) $ret['offset'] = 0;
+      
+      // Si es vacio, o si no es numerico, o si no es entero, o si max es mas que 500 (ver http://code.google.com/p/yupp/issues/detail?id=91)
+      if (!isset($ret['max']) || !is_numeric($ret['max']) || (int)$ret['max'] != $ret['max'] || $ret['max'] > 500) $ret['max'] = 50; // Numero por defecto, hardcoded.
+      
+      // Si no viene sort, se hace por el atributo id
+      if (!isset($ret['sort'])) $ret['sort'] = 'id';
+      
+      // Si no viene dir o si tiene un valor invalido
+      if (!isset($ret['dir']) || ($ret['dir'] != 'asc' && $ret['dir'] != 'desc')) $ret['dir'] = 'asc';
+      
+      return $ret;
    }
 
    public static function countBy( Condition $condition )
@@ -1314,13 +1316,6 @@ class PersistentObject {
       $ins = new self::$thisClass();
       return $pm->countBy( $ins, $condition );
    }
-
-   // TODO
-   /* Fijarse que listAll recibe una Condition, esto es mas por si armo toda una consulta complicada, no se si el lugar sea PO o deba ir derecho a PM.
-   public static function findAllWithQuery( Query $q )
-   {
-   }
-   */
 
    public static function count()
    {

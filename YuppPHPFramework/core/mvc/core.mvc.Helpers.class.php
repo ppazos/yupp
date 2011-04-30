@@ -124,8 +124,12 @@ class Helpers {
        $bodyNext = (isset($paramsMap['bodyNext'])) ? $paramsMap['bodyNext'] : "Siguiente";
        $paramsMap['bodyNext'] = NULL;
        
-       $offset = (isset($paramsMap['offset'])) ? $paramsMap['offset'] : '0';
-       $max    = (isset($paramsMap['max']))    ? $paramsMap['max'] : '10';
+       // Las reglas para filtrar offset y max estan en PersistentObject::filtrarParams
+       //$offset = (isset($paramsMap['offset'])) ? $paramsMap['offset'] : '0';
+       //$max    = (isset($paramsMap['max']))    ? $paramsMap['max'] : '50';
+       $filteredParams = PersistentObject::filtrarParams(new ArrayObject($paramsMap));
+       $offset = $filteredParams['offset'];
+       $max = $filteredParams['max'];
        
        if (!isset($paramsMap['count'])) throw new Exception("El parametro 'count' es obligatorio y no aparece en la lista de parametros");
        $count  = $paramsMap['count'];
