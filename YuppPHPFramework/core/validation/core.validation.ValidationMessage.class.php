@@ -19,7 +19,6 @@ class ValidationMessage {
 
    public static function getMessage( $constraint, $attr, $value )
    {
-      //eval ('$list = ' . $clazz . '::listAll( $this->params );');
       eval ('$msg = self::'.get_class($constraint).'( $constraint, $attr, $value );');
       return $msg;
    }
