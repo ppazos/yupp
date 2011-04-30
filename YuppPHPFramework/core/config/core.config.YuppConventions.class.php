@@ -5,9 +5,6 @@
  */
 
 class YuppConventions {
-
-   function YuppConventions() {
-   }
     
    // FIXME: Esta deberia ir en DatabaseNormalization
    /**
@@ -18,7 +15,6 @@ class YuppConventions {
     */
    public static function superclassRefName( $superclassName )
    {
-      //return "super_id_" . $superclassName; //strtolower($superclassName);
       // TODO: si lo paso a lower, luego puedo no obtener el nombre exacto.
       return "super_id_" . strtolower($superclassName);
    }
@@ -76,8 +72,8 @@ class YuppConventions {
    {
       $ins = $instance_or_class;
       if ( !is_object($ins) ) $ins = new $instance_or_class(array(), true); // Si no es instancia, es clase, creo una instancia de esa clase.
-      //if ( !is_a($ins, 'PersistentObject') ) throw new Exception("La instancia debe ser de PO y es " . gettype($ins));
       if ( !($ins instanceof PersistentObject) ) throw new Exception("La instancia debe ser de PO y es " . gettype($ins));
+      
       // FIXME: en pila de lados tengo que crear una instancia para poder llamar a este metodo, 
       // porque no mejor hacer que pueda recibir tambien el nombre de la clase, y en ese caso, 
       // resuelve la tabla como nombre de clase, sin considerar withTable, o directamente crea 
@@ -101,15 +97,11 @@ class YuppConventions {
          {
             $superclaseNivel1 = $parent;
          }
-         
          $tableName = $superclaseNivel1;
-         
-         //echo "Clase nivel 1: $superclaseNivel1 <br />";
       }
 
       // Filtro...
       $tableName = DatabaseNormalization::table( $tableName ); // TODO: La funcion de normalizacion esta deberia estar en un core.basic.String.
-
       return $tableName;
       
    } // tableName
@@ -183,6 +175,5 @@ class YuppConventions {
 
       return $tableName1 . "_" . $inst1Attr . "_" . $tableName2; // owner_child
    }
-   
 }
 ?>
