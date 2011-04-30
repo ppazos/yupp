@@ -76,8 +76,8 @@ class DAL {
       $cfg = YuppConfig::getInstance();
       
       // TODO: pasarle el nombre de la app actual.
-      // FIXME: esto no funciona si el componente es "core",
-      //        y trabajo con distintos componentes, por ejemplo
+      // FIXME: esto no funciona si la app es "core",
+      //        y trabajo con distintas apps, por ejemplo
       //        al generar todas las tablas en las dbs.
       //        Necesito pasarle como parametro al constructor
       //        de DAL el nombre de la app para la cual quiero
@@ -85,7 +85,7 @@ class DAL {
       //        appName correcto, sea del contexto o porque genere
       //        las tablas para una app particular.
       //$ctx = YuppContext::getInstance();
-      //$appName = $ctx->getComponent();
+      //$appName = $ctx->getApp();
       
       $this->appName = $appName;
       

@@ -46,7 +46,7 @@ global $_base_dir;
       <?php echo DisplayHelper::message('error.403.Forbidden'); ?>
     </div>
     <div class="body">
-      Aplicaci&oacute;n: <?php echo $ctx->getComponent(); ?><br/>
+      Aplicaci&oacute;n: <?php echo $ctx->getApp(); ?><br/>
       Controlador: <?php echo $ctx->getController(); ?><br/>
       Acci&oacute;n: <?php echo $ctx->getAction(); ?><br/>
       <div class="text">

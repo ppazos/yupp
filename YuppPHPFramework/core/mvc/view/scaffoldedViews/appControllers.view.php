@@ -1,27 +1,27 @@
 <?php
   $m = Model::getInstance();
-  $component = $m->get('component');
+  $app = $m->get('app');
 ?>
 
 <html>
   <head>
   </head>
   <body>
-    <h1>Componente: <?php echo $component; ?></h1>
+    <h1>Aplicacion: <?php echo $app; ?></h1>
     <h2>Controladores:</h2>
     <?php
-      $component_dir = dir("./apps/".$component."/controllers");
+      $app_dir = dir("./apps/".$app."/controllers");
       $suffix = "Controller.class.php";
-      $prefix = "apps.".$component.".controllers.";
+      $prefix = "apps.".$app.".controllers.";
       echo "<ul>";
-      while (false !== ($controller = $component_dir->read()))
+      while (false !== ($controller = $app_dir->read()))
       {
          if ( !String::startsWith( $controller, ".") )
          {
             $controller = substr($controller, strlen($prefix), -strlen($suffix));
             $logic_controller = String::firstToLower( $controller );
 
-            echo '<li>[ <a href="'.Helpers::url( array("component"=>$component, "controller"=>$logic_controller, "action"=>"index") ).'">'. $controller .'</a> ]</li>';
+            echo '<li>[ <a href="'.Helpers::url( array("app"=>$app, "controller"=>$logic_controller, "action"=>"index") ).'">'. $controller .'</a> ]</li>';
          }
       }
       echo "</ul>";

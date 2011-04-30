@@ -154,7 +154,7 @@ class MultipleTableInheritanceSupport {
       // Ahora depende de una aplicacion.
       // La estructura de MTI no pueden establecerse entre clases del modelo de distintas aplicaciones.
       $ctx = YuppContext::getInstance();
-      $appName = $ctx->getComponent();
+      $appName = $ctx->getApp();
     
       // 1. clases y sus subclases
       $e = array(); // array por clave la clase y valor lista de subclases directas de dicha clase

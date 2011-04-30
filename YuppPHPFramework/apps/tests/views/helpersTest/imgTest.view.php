@@ -12,7 +12,7 @@ $m = Model::getInstance();
     <h1>Helpers Test: Img Test</h1>
    
     <div style="width: 500px; height: 200px; padding:10px; padding-right:10px; background-color: #ffff80; border: 1px dashed #000" id="content_div">
-      <?php echo h('img', array('component'=>'tests',
+      <?php echo h('img', array('app'=>'tests',
                                 'src'=>'yupp_powered.png',
                                 'w'=>'185',
                                 'h'=>'38',
@@ -23,8 +23,8 @@ $m = Model::getInstance();
     
     Este test muestra el uso del helper img, el cual sirve para generar una etiqueta IMG de HTML con la ruta correcta a la imagen requerida.
     <ul>
-      <li>Como en la llamada al helper se especifica el componente 'tests', la imagen es cargada desde '/apps/tests/images'.</li>
-      <li>Esto permite ordenar y separar las imagenes que son de uno u otro componente.</li>
+      <li>Como en la llamada al helper se especifica la aplicacion 'tests', la imagen es cargada desde '/apps/tests/images'.</li>
+      <li>Esto permite ordenar y separar las imagenes que son de uno u otra aplicacion.</li>
     </ul>
     
     <br/>

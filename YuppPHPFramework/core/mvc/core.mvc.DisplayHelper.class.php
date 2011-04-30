@@ -27,15 +27,15 @@ class DisplayHelper {
     }
 
 /*
-    public static function template( $component, $viewDir, $template, $params )
+    public static function template( $app, $viewDir, $template, $params )
     {
-        // Necesito buscar el template en /apps/$component/view/$viewDir/$template.template.php
+        // Necesito buscar el template en /apps/$app/view/$viewDir/$template.template.php
        // Con los params que se me pasan, tengo que dejarlos accesibles para el script en ese template.
        
        // El primero lo cargaria con el class loader.
        // El pasaje de parametros creo que con solo declarar las variables funciona, pero hay q ver. tal vez con variables variables.
        
-       // Talvez quisiera no pasarle component ni viewDir, component lo saco del request y viewDir seria el nombre del controller (por defecto).
+       // Talvez quisiera no pasarle app ni viewDir, app lo saco del request y viewDir seria el nombre del controller (por defecto).
     }
 */
 
@@ -81,13 +81,13 @@ class DisplayHelper {
        }
     }
 
-
     private static function display_list( $pos, $clazz )
     {
        $ins = new $clazz(); // Instancia para saber nombres de columnas...
        $attrs = $ins->getAttributeTypes();
-
        $res = '<table>';
+
+       $ctx = YuppContext::getInstance();
 
        // Cabezal
        $res .= '<tr>';
@@ -115,23 +115,22 @@ class DisplayHelper {
            //$res .= $attr; // TODO: Habria que ver si esto es i18n, deberia haber algun "display name" asociado al nombre del campo.
            //$res .= '</a>';
            
-           $ctx = YuppContext::getInstance();
-           
            $res .= h('orderBy', array('attr'=>$attr, 'action'=>$ctx->getAction(), 'body'=>$attr));
-           
            $res .= '</th>';
        }
        $res .= '</tr>';
 
        $m = Model::getInstance();
-       $app = $m->get('app');
+       $app = $m->get('app'); // Cuando se genera por la ap "core", viene "app" como parametro.
+       if (is_null($app))
+       {
+          $app = $ctx->getApp(); // Cuando se genera por una app que no es "core"
+       }
                 
        // Filas
        foreach ($pos as $po) // pos puede ser vacio...
        {
           $res .= '<tr>';
-
-          //$attrs = $po->getAttributeTypes();
           foreach ( $attrs as $attr => $type )
           {
              // No quiero mostrar la columna 'deleted'
@@ -228,10 +227,10 @@ class DisplayHelper {
            
            // Link a vista de scaffolding del objeto relacionado con hasOne
            $res .= h('link', array(
-                     'component'  => 'core',
+                     'app'  => 'core',
                      'controller' => 'core',
                      'action'     => 'show',
-                     'app'        => ( ($ctx->getComponent()=='core')?$m->get('app'):$ctx->getComponent()),
+                     'app'        => ( ($ctx->getApp()=='core') ? $m->get('app') : $ctx->getApp() ),
                      'class'      => $relObj->getClass(),
                      'id'         => $relObj->getId(),
                      'body'       => $relObj->getClass() . ' ['. $relObj->getId() .']'

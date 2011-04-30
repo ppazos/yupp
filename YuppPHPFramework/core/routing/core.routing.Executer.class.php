@@ -14,13 +14,13 @@ class Executer {
     }
     
     /**
-     * @param componentControllerFiltersInstance instancia de ComponentControllerFilters, puede ser NULL.
+     * @param appControllerFiltersInstance instancia de AppControllerFilters, puede ser NULL.
      */
-    public function execute( $componentControllerFiltersInstance )
+    public function execute( $appControllerFiltersInstance )
     {
         // TODO: se le podria pasar el context como parametro porque en el llamador ya lo tengo, ahorro tener que pedirlo aca.
         $ctx = YuppContext::getInstance();
-        $component  = $ctx->getComponent();
+        $app        = $ctx->getApp();
         $controller = $ctx->getController();
         $action     = $ctx->getAction();
         
@@ -30,13 +30,12 @@ class Executer {
         
         // ===================================================
         // Before y After filters para acciones de controllers
-        $beforeFilters = ($componentControllerFiltersInstance !== NULL)? $componentControllerFiltersInstance->getBeforeFilters() : array();
-        $afterFilters  = ($componentControllerFiltersInstance !== NULL)? $componentControllerFiltersInstance->getAfterFilters()  : array();
+        $beforeFilters = ($appControllerFiltersInstance !== NULL)? $appControllerFiltersInstance->getBeforeFilters() : array();
+        $afterFilters  = ($appControllerFiltersInstance !== NULL)? $appControllerFiltersInstance->getAfterFilters()  : array();
         $filters = new YuppControllerFilter( $beforeFilters, $afterFilters ); // TODO: cambiar nombre a YuppControllerFilter.
         
         // Ejecucion de los before filters, true si pasan o un ViewCommand si no.
-        $bf_res = $filters->before_filter($component, $controller, $action, $this->params);
-        
+        $bf_res = $filters->before_filter($app, $controller, $action, $this->params);
         // ===================================================
       
         if ( $bf_res !== true )
@@ -51,7 +50,7 @@ class Executer {
            // echo "Controller Class Name 1: $controllerClassName<br/>";
    
            // Ya se verifico en RequestManager que el controller existe.
-           YuppLoader::load( "apps.". $ctx->getComponent() .".controllers", $controllerClassName );
+           YuppLoader::load( "apps.". $ctx->getApp() .".controllers", $controllerClassName );
 
            // Debe verificar si tiene la accion y si la puede ejecutar, si no va a index.
            // FIXME: para que pasarle el nombre del controller al mismo controller???
@@ -237,7 +236,7 @@ class Executer {
            // ===================================================
            // after filters
            // Ejecucion de los after filters, true si pasan o un ViewCommand si no.
-           $af_res = $filters->after_filter($component, $controller, $action, $this->params, $command);
+           $af_res = $filters->after_filter($app, $controller, $action, $this->params, $command);
            
            if ( $af_res !== true )
            {

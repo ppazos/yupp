@@ -14,7 +14,7 @@ class App {
    static function getCurrent()
    {
       $ctx = YuppContext::getInstance();
-      return new App($ctx->getComponent());
+      return new App($ctx->getApp());
    }
 
    /**

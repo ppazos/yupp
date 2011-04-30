@@ -173,21 +173,21 @@ class YuppConfig {
    private $modeDefaultMapping = array(
                                    self::MODE_DEV => // Si se desea acceder al administrador de Yupp no se deben modificar los valores.
                                      array(
-                                      'component'  => 'core',
+                                      'app'        => 'core',
                                       'controller' => 'core',
                                       'action'     => 'index',
                                       'params'     => array()
                                      ),
                                    self::MODE_PROD => // Modificar los valores al poner la aplucacion en produccion.
                                      array(
-                                      'component'  => 'portal',
+                                      'app'        => 'portal',
                                       'controller' => 'page',
                                       'action'     => 'display',
                                       'params'     => array('_param_1'=>'index')
                                      ),
                                    self::MODE_TEST => // Todavia no utilizado.
                                      array(
-                                      'component'  => 'core',
+                                      'app'        => 'core',
                                       'controller' => 'core',
                                       'action'     => 'index',
                                       'params'     => array()
@@ -214,7 +214,7 @@ class YuppConfig {
    }
    
    /**
-    * Retorna el mapping (array de component, controller y accion) para el modo actual.
+    * Retorna el mapping (array de app, controller y accion) para el modo actual.
     */
    public function getModeDefaultMapping()
    {

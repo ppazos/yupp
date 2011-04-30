@@ -54,11 +54,11 @@ class RequestManager {
       
       // Esto dice a donde ir cuando se accede a la aplicacion YUPP,
       // esta bien que se haga aca, no es cosa del router.
-      if ( empty($lr['component']) )
+      if ( empty($lr['app']) )
       {
          $config = YuppConfig::getInstance();
          $modeDefaultMapping = $config->getModeDefaultMapping();
-         $lr['component']  = $modeDefaultMapping['component'];
+         $lr['app']        = $modeDefaultMapping['app'];
          $lr['controller'] = $modeDefaultMapping['controller'];
          $lr['action']     = $modeDefaultMapping['action'];
          
@@ -66,16 +66,16 @@ class RequestManager {
       }
       
       // FIXME: esto lo deberia hacer el router
-      // Si la ruta en la URL llega hasta el componente,
-      // se muestran los controladores del componente.
+      // Si la ruta en la URL llega hasta la app,
+      // se muestran los controladores de la app.
       if ( empty($lr['controller']) )
       {
          /*
-         if (!Yupp::appExists($lr['component']))
+         if (!Yupp::appExists($lr['app']))
          {
             // Tira 404: Not Found
             $command = ViewCommand::display( '404',
-                                        new ArrayObject(array('message'=>'La aplicaci&oacute;n <b>'.$lr['component'].'</b> no existe')),
+                                        new ArrayObject(array('message'=>'La aplicaci&oacute;n <b>'.$lr['app'].'</b> no existe')),
                                         new ArrayObject() );
          }
          else
@@ -83,17 +83,17 @@ class RequestManager {
          */
             Logger::getInstance()->po_log("RM: ".__FILE__ .' '.__LINE__);
             
-            $router->addCustomParams( array('component'=>$lr['component']) );
-            $lr['component'] = "core"; // Le dice a core/core que muestre los controllers del componente $lr['component']
+            $router->addCustomParams( array('app'=>$lr['app']) );
+            $lr['app'] = "core"; // Le dice a core/core que muestre los controllers de la app $lr['app']
             $lr['controller'] = "core";
-            $lr['action'] = "componentControllers";
+            $lr['action'] = "appControllers";
          /*
          }
          */
       }
       else // si viene la app y el controller en la url
       {
-          // Prefiero el parametro por url "_action_nombreAccion", a la accion que viene en la URL (componente/controlador/accion).
+          // Prefiero el parametro por url "_action_nombreAccion", a la accion que viene en la URL (app/controlador/accion).
           // Esto es porque los formularios creados con YuppForm generan acciones distintas para botones de 
           // submit distintos y la accion es pasada codificada en un parametros _action_nombreAcction.
           
@@ -115,9 +115,9 @@ class RequestManager {
       //Logger::struct( $lr, "LOGICAR ROUTE 2 " .__FILE__.' '.__LINE__ );
            
       // *******************************************************************************
-      // FIXME: puedo tener componente, controlador y accion, pero pueden ser nombres
+      // FIXME: puedo tener app, controlador y accion, pero pueden ser nombres
       // errados, es decir, que no existen, por ejemplo si en la url le paso /x/y/z.
-      // Aqui hay que verificar si existe antes de seguir, y si el componente no existe,
+      // Aqui hay que verificar si existe antes de seguir, y si la app no existe,
       // o si existe pero el controlador no existe, o si ambos existen, si la accion 
       // en el controlador no existe, deberia devolver un error y mostrarlo lindo (largar una exept).
       // Estaria bueno definir codigos estandar de errores de yupp, para poder tener una
@@ -125,26 +125,26 @@ class RequestManager {
       // *******************************************************************************
 
       // FIXME: no armar esto a mano, pedirselo a alguna clase de convensiones o la nueva clase App.
-      $componentPath       = "apps/".$lr['component'];
+      $appPath       = "apps/".$lr['app'];
       $controllerClassName = String::firstToUpper($lr['controller']) . "Controller";
-      $controllerFileName  = "apps.".$lr['component'].".controllers.".$controllerClassName.".class.php";
-      $controllerPath      = "apps/".$lr['component']."/controllers/".$controllerFileName;
+      $controllerFileName  = "apps.".$lr['app'].".controllers.".$controllerClassName.".class.php";
+      $controllerPath      = "apps/".$lr['app']."/controllers/".$controllerFileName;
       
       /// ACTUALIZAR CONTEXTO ///
-      $ctx->setComponent ( $lr['component'] );
+      $ctx->setApp( $lr['app'] );
       $ctx->setController( $lr['controller'] );
-      $ctx->setAction    ( $lr['action'] );
+      $ctx->setAction( $lr['action'] );
       /// ACTUALIZAR CONTEXTO ///
       
       //Logger::struct( $lr, "LOGICAR ROUTE 3 " .__FILE__.' '.__LINE__ );
       //echo "<hr/>PATH: $controllerPath<br/>";
       
       // Verifico que lo que pide existe...
-      if ( !file_exists($componentPath) ) // FIXME: yupp::appExists
+      if ( !file_exists($appPath) ) // FIXME: yupp::appExists
       {
          // Tira 404: Not Found
          $command = ViewCommand::display( '404',
-                                          new ArrayObject(array('message'=>'La aplicaci&oacute;n <b>'.$lr['component'].'</b> no existe')),
+                                          new ArrayObject(array('message'=>'La aplicaci&oacute;n <b>'.$lr['app'].'</b> no existe')),
                                           new ArrayObject() );
       }
       else if (!file_exists($controllerPath))
@@ -162,17 +162,17 @@ class RequestManager {
          // Logger::struct($lr, "LOGICAL ROUTE 2");
           
          // FIXME: esto es una regla re ruteo.
-         // TODO: Si accede al componente sin poner el controller, se intenta buscar un controller con el mismo nombre del componente.
+         // TODO: Si accede a la app sin poner el controller, se intenta buscar un controller con el mismo nombre de la app.
          //       Si no existe, se redirige al core controller como se hace aqui.
           
          // Verificacion de controller filters (v0.1.6.3)
-         $controllerFiltersPath = 'apps/'.$lr['component'].'/ComponentControllerFilters.php'; // Nombre y ubicacion por defecto.
+         $controllerFiltersPath = 'apps/'.$lr['app'].'/AppControllerFilters.php'; // Nombre y ubicacion por defecto.
          $controllerFiltersInstance = NULL;
          if ( file_exists($controllerFiltersPath) ) // TODO: no ir al filesystem en cada request, una vez que se pone en prod se debe saber que el archivo existe o no.
          {
             // FIXME: con la carga bajo demanda de PHP esto se haria automaticamente!
             include_once( $controllerFiltersPath ); // FIXME: no usa YuppLoader (nombre de archivo no sigue estandares!).
-            $controllerFiltersInstance = new ComponentControllerFilters(); // Esta clase esta definida en el archivo incluido (es una convension de Yupp).
+            $controllerFiltersInstance = new AppControllerFilters(); // Esta clase esta definida en el archivo incluido (es una convension de Yupp).
          }
           
          //Logger::struct( $router->getParams(), "ROUTER PARAMS " .__FILE__.' '.__LINE__ );
@@ -259,7 +259,7 @@ class RequestManager {
         // -> excecuteControllerAction
 
         // Que hago con el command que tira este? tengo que revisar las llamadas recursivas...
-        //$command = self::excecuteControllerAction( $component->component(), $component->controller(), $component->action(), $urlproc->params() )
+        //$command = self::excecuteControllerAction( $app->app(), $app->controller(), $app->action(), $urlproc->params() )
 
         // FIXME: no hace nada con el model, deberia pasar lo que puede como params de GET.
         // TODO: habria que ver como hacer un request por POST asi puedo mandar info sin que se vea en el request.
@@ -271,7 +271,7 @@ class RequestManager {
         // - http://www.php.net/manual/es/function.http-build-str.php //
         //
         $url_params = $command->params(); //$urlproc->params(); // T#63 solo pasar los params del modelo no los del request.
-        $url_params['component']  = $command->component();
+        $url_params['app']        = $command->app();
         $url_params['controller'] = $command->controller();
         $url_params['action']     = $command->action();
         
@@ -324,7 +324,7 @@ class RequestManager {
       // Configuro el command para la view...
 
       // Si la pagina es fisica
-      $pagePath = 'apps/'.$logic_route['component'].'/views/'.$logic_route['controller'].'/'.$command->viewName().'.view.php';
+      $pagePath = 'apps/'.$logic_route['app'].'/views/'.$logic_route['controller'].'/'.$command->viewName().'.view.php';
       
       // Si la ruta referenciada no existe, intento mostrar la vista de scafolding correspondiente
       // a la accion, pero las acciones con vistas dinamicas son solo para acciones: 'show','list','edit','create'.
@@ -332,7 +332,7 @@ class RequestManager {
       {
          // Si puedo mostrar la vista dinamica:
          if ( in_array($command->viewName(),
-                       array('show','list','edit','create','index','componentControllers','dbStatus')) )
+                       array('show','list','edit','create','index','appControllers','dbStatus')) )
          {
             $pagePath = 'core/mvc/view/scaffoldedViews/'.$command->viewName().'.view.php'; // No puede no existir, es parte del framework!
          }

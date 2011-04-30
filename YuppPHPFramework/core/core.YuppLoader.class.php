@@ -13,7 +13,7 @@ class YuppLoader {
     * OJO, ES ONO QUITA QUE UN SCRIPT DESDE AFUERA CONFIGURE EL CLASS LOADER y ESTE USE LA INFO DE SU CONFIGURACION!!!.s
     *
        private $config; // es un map paquete->ubicacion absoluta, sirve para resolver clases de paquetes y saber su ruta desde donde incluirlas.
-                        // Ojo, estos son paquetes fisicos definidos por el sistema, no son los paquetes definidos de forma "logica" en los componentes.
+                        // Ojo, estos son paquetes fisicos definidos por el sistema, no son los paquetes definidos de forma "logica" en las aplicaciones.
                         // Basicamente son paquetes que tienen rutas fijas como: model, views, actions, core, utils, etc.
                         // Visto esto, talvez sea mas util poner los valores aca hardcoded que esperar que me configuren de afuera, pero queda menos flexible a cambios.
                         // Por ahora dejo asi con config desde afuera, luego veo.
@@ -92,7 +92,7 @@ class YuppLoader {
       // FIXME: que pasa si quiero cargar con refresh otras clases? p.e. MySQLDatabase se carga solo una vez porque el que la usa (DAL) es singleton.
       if (!$cl->modelLoaded)
       {
-         // Carga: component/elComponent/model, para todos los componentes
+         // Carga: apps/theApp/model, para todos las aplicaciones
          foreach ($apps as $app)
          {
             $package = "$app.model";
@@ -173,7 +173,7 @@ class YuppLoader {
       $path = ".";
       if (PackageNames::isModelPackage($package))
       {
-         $path = YuppConventions::getModelPath($package); // "./apps/component/model/package"
+         $path = YuppConventions::getModelPath($package); // "./apps/theapp/model/package"
       }
       else // trata de armar la ruta con el paquete, este es el caso en q el paquete fisico sea igual que el logico.
       {

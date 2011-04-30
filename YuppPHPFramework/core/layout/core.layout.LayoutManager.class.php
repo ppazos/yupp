@@ -19,7 +19,7 @@ class LayoutManager {
    
    /**
     * @param params array asociativo con los valores
-    *  - component (opcional) nombre del componente donde esta la libreria
+    *  - app (opcional) nombre de la app donde esta la libreria
     *  - name (obligatorio) nombre de la libreria JS 
     */
    public function addJSLibReference( $params )
@@ -30,9 +30,9 @@ class LayoutManager {
       
       $path = $_base_dir;
       
-      // Busca la ubicacion en un componente particular
-      if ( array_key_exists('component', $params) ) 
-         $path .= '/apps/'. $params['component'] .'/javascript/'. $params['name'] .'.js';
+      // Busca la ubicacion en una app particular
+      if ( array_key_exists('app', $params) ) 
+         $path .= '/apps/'. $params['app'] .'/javascript/'. $params['name'] .'.js';
       else // Ubicacion por defecto de todos los javascripts de todos los modulos
          $path .= '/js/' . $params['name'] . '.js';
       
@@ -194,7 +194,7 @@ class LayoutManager {
          
          $ctx = YuppContext::getInstance();
          
-         $path = 'apps/'. $ctx->getComponent() .'/views/' . $layout . '.layout.php';
+         $path = 'apps/'. $ctx->getApp() .'/views/' . $layout . '.layout.php';
          if (!file_exists($path)) throw new Exception("El layout $layout no existe en la ruta: $path " . __FILE__ . " " . __LINE__);
          
          include_once( $path );

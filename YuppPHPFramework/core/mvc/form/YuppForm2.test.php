@@ -61,7 +61,7 @@ print_r( $_GET );
 print_r( $_FILES );
 echo '</pre>';
 
-//$f = new YuppForm2( array('component'=>'blog', 'controller'=>'user', 'action'=>'login', 'isAjax'=>true) );
+//$f = new YuppForm2( array('app'=>'blog', 'controller'=>'user', 'action'=>'login', 'isAjax'=>true) );
 $f = new YuppForm2( array('actionUrl'=>'#') );
 
 $group = new YuppFormField2Group("Rangos de edades");

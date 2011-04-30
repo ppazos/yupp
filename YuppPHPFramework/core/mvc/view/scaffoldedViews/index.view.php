@@ -349,7 +349,7 @@ global $_base_dir;
           <h1>Yupp PHP Framework</h1>
           <div class="right menu_btn">
             <a href="<?php echo h('url', array(
-                       'component'=>'core',
+                       'app'=>'core',
                        'controller'=>'core',
                        'action'=>'dbStatus'));?>">
               
@@ -359,7 +359,7 @@ global $_base_dir;
           </div>
           <div class="right menu_btn active">
             <a href="<?php echo h('url', array(
-                       'component'=>'core',
+                       'app'=>'core',
                        'controller'=>'core',
                        'action'=>'index'));?>">
               <?php echo h('img', array('src'=>'app_64.png')); ?><br/>
@@ -372,7 +372,7 @@ global $_base_dir;
     
     <div id="actions">
       <?php echo h('link', array(
-                   'component'=>'core',
+                   'app'=>'core',
                    'controller'=>'core',
                    'action'=>'createApp',
                    'body'=>'Nueva Aplicacion'));?>
@@ -397,14 +397,14 @@ global $_base_dir;
           <li class="app <?php echo $app->getName(); ?>">
               <div class="app_icon">
                 <a href="<?php echo h('url', array(
-                            'component'=>$app->getName(),
+                            'app'=>$app->getName(),
                             'controller'=>$app->getDescriptor()->entry_point->controller,
                             'action'=>$app->getDescriptor()->entry_point->action));
                          ?>" title="Ejecutar aplicacion">
                   <?php
                     // Si no existe la imagen del icono de la aplicacion, muestra la imagen por defecto.
                     try {
-                       echo h('img', array('component'=>$app->getName(), 'src'=>'app_64.png', 'w'=>64, 'h'=>64));
+                       echo h('img', array('app'=>$app->getName(), 'src'=>'app_64.png', 'w'=>64, 'h'=>64));
                     } catch (Exception $e) {
                        //echo $e->getMessage();
                        echo h('img', array('src'=>'app_64.png', 'w'=>64, 'h'=>64));
@@ -420,7 +420,7 @@ global $_base_dir;
                 {
                    echo h('link', array("action"        => "executeBootstrap",
                                         "body"          => "Ejecutar arranque",
-                                        "componentName" => $app->getName()) );
+                                        "appName" => $app->getName()) );
                 }
                 //else  echo 'No tiene BS<br/>';
                 ?>
@@ -458,7 +458,7 @@ global $_base_dir;
     Algunas medidas del sistema.<br/>
     <ul>
       <li>
-        <?php echo h('link', array("component"     => "core",
+        <?php echo h('link', array("app"     => "core",
                                    "controller"    => "core",
                                    "action"        => "showStats",
                                    "body"          => "Ver estad&iacute;sticas") ); ?>

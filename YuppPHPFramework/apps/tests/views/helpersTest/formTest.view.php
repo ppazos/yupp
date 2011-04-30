@@ -55,7 +55,7 @@ YuppLoader::load("core.mvc.form", "YuppForm2");
     <div style="width: 500px; padding:10px; padding-right:10px; background-color: #ffff80; border: 1px dashed #000">
       
       <?php
-          $f = new YuppForm2(array("component"=>"tests", "controller"=>"helpersTest", "action"=>"formTest", "method"=>"get"));
+          $f = new YuppForm2(array("app"=>"tests", "controller"=>"helpersTest", "action"=>"formTest", "method"=>"get"));
           $f->add( YuppForm2::text(array('name'=>"titulo", 'value'=>$m->get('titulo'), 'label'=>"Titulo")) )
             ->add( YuppForm2::bigtext(array('name'=>"texto", 'value'=>$m->get('texto'), 'label'=>"Texto")) )
             ->add( YuppForm2::submit(array('name'=>'doit', 'label'=>"Enviar")) )
@@ -71,7 +71,7 @@ YuppLoader::load("core.mvc.form", "YuppForm2");
     <div style="width: 500px; padding:10px; padding-right:10px; background-color: #ffff80; border: 1px dashed #000">
     
       <?php
-          $f = new YuppForm2(array("component"=>"tests", "controller"=>"helpersTest", "action"=>"formTest", "isAjax"=>true, "ajaxCallback"=>"after_function"));
+          $f = new YuppForm2(array("app"=>"tests", "controller"=>"helpersTest", "action"=>"formTest", "isAjax"=>true, "ajaxCallback"=>"after_function"));
           $f->add( YuppForm2::text(array('name'=>"titulo", 'value'=>$m->get('titulo'), 'label'=>"Titulo")) )
             ->add( YuppForm2::bigtext(array('name'=>"texto", 'value'=>$m->get('texto'), 'label'=>"Texto")) )
             ->add( YuppForm2::submit(array('name'=>'doit_ajax', 'label'=>"Enviar")) )

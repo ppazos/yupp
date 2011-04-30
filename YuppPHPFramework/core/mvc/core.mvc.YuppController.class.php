@@ -42,7 +42,6 @@ class YuppController {
     }
     
     public function &getFlow( $flowName )
-    //public function getFlow( $flowName )
     {
        return CurrentFlows::getInstance()->getFlow( $flowName );
     }
@@ -55,7 +54,7 @@ class YuppController {
     {
        $ctx = YuppContext::getInstance();
 
-       $this->appName        = $ctx->getComponent();
+       $this->appName        = $ctx->getApp();
        $this->controllerName = $ctx->getController();
        $this->actionName     = $ctx->getAction();
        $this->params         = $params;
@@ -71,7 +70,7 @@ class YuppController {
        // Es una vista que no tiene acciones? http://code.google.com/p/yupp/issues/detail?id=61
        else if (file_exists('apps/'.$this->appName.'/views/'.$this->controllerName.'/'.$this->actionName.'.view.php'))
        {
-           return $this->render($this->actionName);
+          return $this->render($this->actionName);
        }
 
        throw new Exception('La accion <b>' . $method . '</b> no existe.');
@@ -79,7 +78,7 @@ class YuppController {
 
     public function addToFlash( $key, $value )
     {
-    	 $this->flash[$key] = $value;
+        $this->flash[$key] = $value;
     }
 
     public function getFlash($key = NULL)
@@ -87,7 +86,7 @@ class YuppController {
        if ($key)
           return ( (isset($this->flash[$key])) ?  $this->flash[$key]: NULL);
        else
-       	 return $this->flash;
+          return $this->flash;
     }
     
     public function getParams()
@@ -106,7 +105,7 @@ class YuppController {
     }
 
    /**
-    * @param String view nombre de la vista a mostrar. Se busca entre las vistas del componente y el controller actuales.
+    * @param String view nombre de la vista a mostrar. Se busca entre las vistas de la app y el controller actuales.
     */
     public function render( $view )
     {
@@ -123,10 +122,10 @@ class YuppController {
     {
        $ctx = YuppContext::getInstance();
 
-       if ( array_key_exists('component', $params) ) // Si no me lo pasan, tengo que poner el actual.
-           $component  = $params['component'];
+       if ( array_key_exists('app', $params) ) // Si no me lo pasan, tengo que poner el actual.
+           $app  = $params['app'];
        else
-           $component  = $ctx->getComponent();
+           $app  = $ctx->getApp();
            
        if ( array_key_exists('controller', $params) ) // Si no me lo pasan, tengo que poner el actual.
            $controller = $params['controller'];
@@ -138,7 +137,7 @@ class YuppController {
        
        if ( !isset($params['params']) ) $params['params'] = array();
        
-       return ViewCommand::execute( $component, $controller, $action, $params['params'], $this->flash );
+       return ViewCommand::execute( $app, $controller, $action, $params['params'], $this->flash );
     }
     
     

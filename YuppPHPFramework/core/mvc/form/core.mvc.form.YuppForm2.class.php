@@ -18,7 +18,7 @@ class YuppForm2
    private $fields = array (); // Lista de campos o grupos del form.
 
    // Destino del form en partes.
-   private $component;
+   private $app;
    private $controller;
    private $action;
    
@@ -40,7 +40,7 @@ class YuppForm2
     * @param array $params lista de parametros con nombre, los parametros posibles son:
     * 
     *   - string  actionUrl: direccion de destino del formulario.
-    *   - string  component: 
+    *   - string  app: 
     *   - string  controller: 
     *   - string  action: 
     *   - boolean isAjax: indica si al enviar el formulario se utiliza ajax o no.
@@ -49,7 +49,7 @@ class YuppForm2
     *                           sentido darle un valor si $isAjax es true.
     *
     */
-   //public function __construct($component, $controller, $action, $isAjax = false, $ajaxCallback = '')
+   //public function __construct($app, $controller, $action, $isAjax = false, $ajaxCallback = '')
    public function __construct( $params )
    {
       if (!is_array($params)) throw new Exception("Error: 'params' debe ser un array. " . __FILE__ ." ". __LINE__);
@@ -64,10 +64,10 @@ class YuppForm2
          // http://code.google.com/p/yupp/issues/detail?id=28
          
          $ctx = YuppContext::getInstance();
-         if (isset($params['component']))
-            $this->component = $params['component'];
+         if (isset($params['app']))
+            $this->app = $params['app'];
          else
-            $this->component = $ctx->getComponent();
+            $this->app = $ctx->getApp();
          
          if (isset($params['controller']))
             $this->controller = $params['controller'];
@@ -113,7 +113,7 @@ class YuppForm2
       if ( is_null($this->action_url) )
       {
          return Helpers :: url(array (
-            "component" => $this->component,
+            "app" => $this->app,
             "controller" => $this->controller,
             "action" => $this->action
          ));

@@ -136,7 +136,7 @@ class PersistentManager {
       $this->po_loader = $po_loader; // Siempre viene una estrategia, getInstance se encarga de eso.
       
       $ctx = YuppContext::getInstance();
-      $appName = $ctx->getComponent();
+      $appName = $ctx->getApp();
       if ($ctx->isAnotherApp()) $appName = $ctx->getRealApp();
       
       Logger::getInstance()->pm_log("PM::__construct appName: " . $appName);

@@ -141,7 +141,7 @@ global $_base_dir;
           <h1>Yupp PHP Framework</h1>
           <div class="right menu_btn active">
             <a href="<?php echo h('url', array(
-                       'component'=>'core',
+                       'app'=>'core',
                        'controller'=>'core',
                        'action'=>'dbStatus'));?>">
               <?php echo h('img', array('src'=>'db_64.png')); ?><br/>
@@ -150,7 +150,7 @@ global $_base_dir;
           </div>
           <div class="right menu_btn">
             <a href="<?php echo h('url', array(
-                       'component'=>'core',
+                       'app'=>'core',
                        'controller'=>'core',
                        'action'=>'index'));?>">
               <?php echo h('img', array('src'=>'app_64.png')); ?><br/>
@@ -162,7 +162,7 @@ global $_base_dir;
     </table>
     <div id="actions">
       <?php echo h('link', array(
-                   'component'=>'core',
+                   'app'=>'core',
                    'controller'=>'core',
                    'action'=>'createApp',
                    'body'=>'Nueva Aplicacion'));?>
@@ -196,8 +196,8 @@ global $_base_dir;
       ?>
       <ul>
         <?php
-          $componentModelClasses = $m->get('appModelClasses');
-          foreach ($componentModelClasses as $appName => $classInfo) :
+          $appModelClasses = $m->get('appModelClasses');
+          foreach ($appModelClasses as $appName => $classInfo) :
         ?>
         <li>
           <div class="app_details">
@@ -206,7 +206,7 @@ global $_base_dir;
                 // Icono de la aplicacion
                 // Si no existe la imagen del icono de la aplicacion, muestra la imagen por defecto.
                 try {
-                  echo h('img', array('component'=>$appName, 'src'=>'app_64.png', 'w'=>64, 'h'=>64));
+                  echo h('img', array('app'=>$appName, 'src'=>'app_64.png', 'w'=>64, 'h'=>64));
                 } catch (Exception $e) {
                   echo h('img', array('src'=>'app_64.png', 'w'=>64, 'h'=>64));
                 }

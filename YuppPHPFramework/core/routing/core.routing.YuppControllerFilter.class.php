@@ -3,7 +3,6 @@
 // FIXME: cambiar "*" por una constante ALL_CONTROLLERS, y si es para acciones ALL_ACTIONS (p.e. con un '+')
 
 /**
- * 
  * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
  */
 class YuppControllerFilter {
@@ -24,19 +23,18 @@ class YuppControllerFilter {
     /**
      * Retorna true si pasa los filters y un ViewCommand si no.
      */
-    public function before_filter($component, $controller, $action, ArrayObject $params)
+    public function before_filter($app, $controller, $action, ArrayObject $params)
     {
        //print_r($this->before_filters);
     	 foreach ( $this->before_filters as $filterClass )
        {
-          // FIXME: no se porque tenia component si el contructor del controller no tiene...
-       	 //$filterInstance = new $filterClass($component, $controller, $action, $params); // Extiende controller por eso necesita los parametros en el constructor
-          //$filterInstance = new $filterClass($controller, $action, $params); // Extiende controller por eso necesita los parametros en el constructor
+          // FIXME: no se porque tenia app si el contructor del controller no tiene...
+       	  // Extiende controller por eso necesita los parametros en el constructor
           $filterInstance = new $filterClass($params); 
-          if ( $this->applies($filterInstance, $component, $controller, $action) )
+          if ( $this->applies($filterInstance, $app, $controller, $action) )
           {
-//             echo "FILTRO APLICA $filterClass, $component, $controller, $action<br/>";
-          	 $res = $filterInstance->apply( $component, $controller, $action );
+//             echo "FILTRO APLICA $filterClass, $app, $controller, $action<br/>";
+          	 $res = $filterInstance->apply( $app, $controller, $action );
              if ( $res !== true )
              {
 //                print_r( $res );
@@ -51,7 +49,7 @@ class YuppControllerFilter {
              }
              // Si es true, sigo ejecutando viendo si otro filter falla o tira ViewCommand
           }
-//          else echo "FILTRO NO APLICA $filterClass, $component, $controller, $action<br/>";
+//          else echo "FILTRO NO APLICA $filterClass, $app, $controller, $action<br/>";
        }
        
        
@@ -60,18 +58,16 @@ class YuppControllerFilter {
     }
     
     // TODO: a after le podria pasar el ViewCommand que genero la accion ejecutada, el modelo, los params, etc.
-    public function after_filter($component, $controller, $action, ArrayObject $params, ViewCommand $command)
+    public function after_filter($app, $controller, $action, ArrayObject $params, ViewCommand $command)
     {
        foreach ( $this->after_filters as $filterClass )
        {
-          // FIXME: no se porque tenia component si el contructor del controller no tiene...
+          // FIXME: no se porque tenia app si el contructor del controller no tiene...
           // Extiende controller por eso necesita los parametros en el constructor.
-          //$filterInstance = new $filterClass($component, $controller, $action, $params);
-          //$filterInstance = new $filterClass($controller, $action, $params);
           $filterInstance = new $filterClass($params);
-          if ( $this->applies($filterInstance, $component, $controller, $action) )
+          if ( $this->applies($filterInstance, $app, $controller, $action) )
           {
-             $res = $filterInstance->apply( $component, $controller, $action, $command );
+             $res = $filterInstance->apply( $app, $controller, $action, $command );
              
              if ( $res !== true )
              {
@@ -94,7 +90,7 @@ class YuppControllerFilter {
     /**
      * Verifica si corresponde o no aplicar el filtro para el controlador y acciones dados.
      */
-    private function applies( $filterInstance, $component, $controller, $action )
+    private function applies( $filterInstance, $app, $controller, $action )
     {
        if (!($filterInstance instanceof IControllerBeforeFilter) && !($filterInstance instanceof IControllerAfterFilter))
        {
@@ -104,7 +100,7 @@ class YuppControllerFilter {
        $filters    = $filterInstance->getAllFilters();
        $exceptions = $filterInstance->getAllExceptions();
        
-       //echo "applies: " . get_class($filterInstance) . " $component $controller $action <br/>";
+       //echo "applies: " . get_class($filterInstance) . " $app $controller $action <br/>";
        //echo "CONTROLLERS: $controllers<br/>";
        //echo "ACTIONS : $actions<br/>";
        
@@ -148,10 +144,10 @@ class YuppControllerFilter {
     }
 } // YuppControllerFilter
 
-interface IComponentControllerFilters {
+interface IAppControllerFilters {
    
    /**
-    * Devuelve un array con todos los filtros configurados en el ComponentControllerFilters del modulo.
+    * Devuelve un array con todos los filtros configurados en el AppControllerFilters del modulo.
     */
    public static function getBeforeFilters();
    public static function getAfterFilters();
@@ -167,7 +163,7 @@ interface IControllerBeforeFilter {
    /**
     * Debe retornar true si pasa o un ViewCommand si no pasa, o sea redireccionar o ejecutar una accion de un cotroller o hacer render de un string...
     */
-   public function apply($component, $controller, $action);
+   public function apply($app, $controller, $action);
 }
 
 interface IControllerAfterFilter {
@@ -181,36 +177,7 @@ interface IControllerAfterFilter {
     * una accion de un cotroller o hacer render de un string...
     * Recibe el ViewCommand que retorna la accion del controller luego de ser ejecutada.
     */
-   public function apply($component, $controller, $action, ViewCommand $command);
+   public function apply($app, $controller, $action, ViewCommand $command);
 }
-
-/*
-// FIXME: las acciones deben ser de los controllers, no son sueltas.
-// FIXME: deberia estar declarada en otro archivo
-// Extiende controller para tener render y redirect!
-class BlogSecurityFilter extends YuppController implements IControllerBeforeFilter {
-	
-   // Pueden ser: un array (component=>controller), un nombre de un 'component.controller' o una action, "*" que es "para todos".
-   private $controllers = array( "blog" => array("entradaBlog","comentario") ); // Lista de controllers a los que se aplica este filter.
-   private $actions = "*"; // Lista de acciones a los que se aplica el filter
-   
-   public function getControllersFilter() { return $this->controllers; }
-   public function getActionsFilter()     { return $this->actions; }
-   
-   / **
-    * Debe retornar true si pasa o un ViewCommand si no pasa, o sea redireccionar o ejecutar una accion de un cotroller o hacer render de un string...
-    * /
-   public function apply($component, $controller, $action)
-   {
-   	// CUSTOM ACTION!
-      
-      $u = YuppSession::get("user"); // Lo pone en session en el login.
-      
-      if ( $u !== NULL ) return true;
-      
-      return $this->redirect( array("component"=>"blog", "controller" => "usuario", "action" => "login") );
-   }
-}
-*/
 
 ?>

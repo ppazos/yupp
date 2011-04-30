@@ -572,7 +572,7 @@ class PersistentObject {
       $type = $this->hasOne[ $attr ];
       if (!$type) return false; // Ni siquiera le pase un attributo valido...
 
-      // TODO (T#6): Esto es una verificacion de correctitud del modelo creado... no se si va aca... deberia ser algo previo, por ejemplo hacerse cuando se instala un componente.
+      // TODO (T#6): Esto es una verificacion de correctitud del modelo creado... no se si va aca... deberia ser algo previo, por ejemplo hacerse cuando se instala una app.
       if ( is_subclass_of($type, 'PersistentObject') )
       {
          // Check 1: Fijarsse si es una lista persistente (todavia no hecho), return false.

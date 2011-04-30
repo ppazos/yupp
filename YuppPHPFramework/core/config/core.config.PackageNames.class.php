@@ -16,42 +16,42 @@ class PackageNames {
 
     public static function isModelPackage( $package )
     {
-    	  return preg_match(self::MODEL_PACKAGE_REGEXP, $package);
+         return preg_match(self::MODEL_PACKAGE_REGEXP, $package);
     }
     
-    // Para sacar el componente del package de un modelo.
+    // Para sacar la app del package de un modelo.
     // PRE: isModelPackage( $package )
-    public static function getModelPackageComponent( $package )
+    public static function getModelPackageApp( $package )
     {
-    	  preg_match(self::MODEL_PACKAGE_REGEXP, $package, $matches);
+         preg_match(self::MODEL_PACKAGE_REGEXP, $package, $matches);
         return $matches[3];
     }
 
-//    public function getModelPackagePath( $component )
+//    public function getModelPackagePath( $app )
 //    {
-//    	  return "./apps/$component/model";
+//         return "./apps/$app/model";
 //    }
 
 
    /**
-    * getComponentNames
-    * Devuelve una lista de los nombres de los componentes 
+    * getAppNames
+    * Devuelve una lista de los nombres de las apps
     * existentes en la instalacion de Yupp (lee el filesystem).
     */
-   public static function getComponentNames()
+   public static function getAppNames()
    {
-      $componentNames = array();
+      $appNames = array();
       
-    	$dir = dir('./apps');
-      while (false !== ($component = $dir->read()))
+      $dir = dir('./apps');
+      while (false !== ($app = $dir->read()))
       {
-         if ( !String::startsWith( $component,"." ) && $component !== "core" && is_dir('./apps/'.$component))
+         if ( !String::startsWith( $app, "." ) && $app !== "core" && is_dir('./apps/'.$app))
          {
-            $componentNames[] = $component;
+            $appNames[] = $app;
          }
       }
       
-      return $componentNames;
+      return $appNames;
    }
 }
 ?>

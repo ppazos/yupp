@@ -6,7 +6,7 @@ class Router {
     private $parsedUrl = ""; // resultado de parse_url()
     private $urlParams;
     
-    private $requested_route; // [component=>xxx, controller=>yyy, action=>zzz]
+    private $requested_route; // [app=>xxx, controller=>yyy, action=>zzz]
     
     // Ex Mapping
     private $relative_logic_url; // algo como: blog/entradaBlog/show
@@ -25,12 +25,12 @@ class Router {
         
         /*
          * print_r( $preUrlParams );
-         * 0 component
+         * 0 app
          * 1 controller
          * 2 action (si hay)
          * 3 ... params.
          */
-        $this->requested_route = array( 'component' =>((!empty($preUrlParams[0])) ? $preUrlParams[0] : 'core'),
+        $this->requested_route = array( 'app'       =>((!empty($preUrlParams[0])) ? $preUrlParams[0] : 'core'),
                                         'controller'=>((!empty($preUrlParams[1])) ? $preUrlParams[1] : 'core'),
                                         'action'    =>((!empty($preUrlParams[2])) ? $preUrlParams[2] : 'index') );
       
@@ -173,14 +173,14 @@ class Router {
     // ex Mapping
     public function getLogicalRoute()
     {
-      // si no hay mapping para el componente, o si el que hay no matchea,
+      // si no hay mapping para la app, o si el que hay no matchea,
       // busca el Mapping de Core.
       $mapping = NULL;
-      $mappingPath = "apps/".$this->requested_route['component']."/ComponentMapping.php";
+      $mappingPath = "apps/".$this->requested_route['app']."/AppMapping.php";
       if ( file_exists($mappingPath) )
       {
          include_once( $mappingPath );
-         $mapping = new ComponentMapping();
+         $mapping = new AppMapping();
          if ( preg_match($mapping->mapping, $this->relative_logic_url ) )
          {
             return $mapping->getLogicalRoute( $this->field_list );
@@ -189,9 +189,9 @@ class Router {
          {
             // Va al mapping por defecto
             // Siempre existe
-            $mappingPath = "apps/core/ComponentMapping.php";
+            $mappingPath = "apps/core/AppMapping.php";
             include_once( $mappingPath );
-            $mapping = new ComponentMapping();
+            $mapping = new AppMapping();
             
             // Siempre matchea, ni pregunto...
             return $mapping->getLogicalRoute( $this->field_list );
@@ -201,9 +201,9 @@ class Router {
       {
          // Va al mapping por defecto
          // Siempre existe
-         $mappingPath = "apps/core/ComponentMapping.php";
+         $mappingPath = "apps/core/AppMapping.php";
          include_once( $mappingPath );
-         $mapping = new ComponentMapping();
+         $mapping = new AppMapping();
          
          // Siempre matchea, ni pregunto...
          return $mapping->getLogicalRoute( $this->field_list );

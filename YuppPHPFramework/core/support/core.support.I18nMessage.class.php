@@ -1,7 +1,7 @@
 <?php
 
 // TODO: sera mas rapido ponerle los valores mediante el metodo a() o escribir los mensajes directamente en el campo messages 
-// (haciendolo publico o protected y que los mensajes de los componentes hereden de el).
+// (haciendolo publico o protected y que los mensajes de las aplicaciones hereden de el).
 
 class I18nMessage
 {

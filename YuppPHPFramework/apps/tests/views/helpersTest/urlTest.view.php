@@ -11,28 +11,28 @@ $m = Model::getInstance();
   <body>
     <h1>Helpers Test: Url Test</h1>
    
-    Nombre del componente actual: <b>tests</b><br/>
+    Nombre de la aplicacion actual: <b>tests</b><br/>
     Nombre del controlador actual: <b>helpersTest</b><br/><br/>
    
     <div style="width: 700px; height: 220px; padding:10px; padding-right:10px; background-color: #ffff80; border: 1px dashed #000" id="content_div">
     
-      <b>Especificando solo la accion, se toma como componente y controlador los actuales:</b><br/>
+      <b>Especificando solo la accion, se toma como aplicacion y controlador los actuales:</b><br/>
       <?php echo h('url', array('action' => 'nombreAccion')); ?>
       <br/><br/>
       
-      <b>Especificando accion y controlador, se toma como componente el actual:</b><br/>
+      <b>Especificando accion y controlador, se toma como aplicacion el actual:</b><br/>
       <?php echo h('url', array('controller' => 'nombreController',
                                 'action'     => 'nombreAccion')); ?>
       <br/><br/>
       
-      <b>Especificando componente, controlador y accion:</b><br/>
-      <?php echo h('url', array('component'  => 'nombreComponente',
+      <b>Especificando aplicacion, controlador y accion:</b><br/>
+      <?php echo h('url', array('app'  => 'nombreAplicacion',
                                 'controller' => 'nombreController',
                                 'action'     => 'nombreAccion')); ?>
       <br/><br/>
       
       <b>Agregando un par de parametros:</b><br/>
-      <?php echo h('url', array('component'  => 'nombreComponente',
+      <?php echo h('url', array('app'  => 'nombreAplicacion',
                                 'controller' => 'nombreController',
                                 'action'     => 'nombreAccion',
                                 'id'         => 555,

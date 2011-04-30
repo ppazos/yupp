@@ -19,22 +19,21 @@ include_once('./core/persistent/core.persistent.PersistentObject.class.php');
 class ModelUtils {
 
    /**
-    * Devuelve la lista de los nombres de todas las clases de modelo de un componente,
+    * Devuelve la lista de los nombres de todas las clases de modelo de una aplicacion,
     * incluso si estan en subdirectorios.
     */
-   public static function getModelClasses( $component )
+   public static function getModelClasses( $app )
    {
       // el directorio del modelo es fijo, pero lo tengo que sacar de una configuracion, no hardcoded aca.
-      //$apps = PackageNames::getComponentNames();
+      //$apps = PackageNames::getAppNames();
       
       $classNames = array();
-      //foreach ( $apps as $component )
-      //{
-         $package = "$component/model"; // TODO: si hay subdirectorios, devolverlos tambien.
+
+         $package = "$app/model"; // TODO: si hay subdirectorios, devolverlos tambien.
 
          $model_path = YuppConventions::getModelPath( $package );
          
-         // El componente puede no tener directorio de model
+         // La aplicacion puede no tener directorio de model
          //if (file_exists($model_path))
          //{
          //   $_classNames = FileSystem::getFileNames($model_path, PackageNames::MODEL_FILE_REGEXP, array( PackageNames::MODEL_CLASS_GROUP )); // Todos los php del paquete utils, idem anterior, ahora sin el "utils."
@@ -45,16 +44,15 @@ class ModelUtils {
             $classNamesRecur = self::getModelClassesRecursive( $model_path );
             $classNames = array_merge($classNames, $classNamesRecur);
          }
-      //}
       
-      // LEvanta el directorio y los nombres de las clases.
-      // Grupo 1 es el nombre del componente
+      // Levanta el directorio y los nombres de las clases.
+      // Grupo 1 es el nombre de la aplicacion
       // Grupo 2 es el nombre de la clase
 
       // TODO: LA REGEXP DEL PAQUETE DE MODELO ME LO DEBERIA DAR UNA CLASE RESPONSABLE DE SABER CUALES SON LAS REGEXPS DE LOS PAQUETES DESTACADOS Y DADO UNA RUTA DE PAQUETES SABER DE QUE TIPO ES (modulos, core, modelo, vistas, acciones, etc.)
 
       // Los nombres estan codificados segun algun estandar (a definir) y se puede sacar el nombre de la clase del nombre del archivo.
-      // NOMBRES: modelDir/componente.ClassName.php
+      // NOMBRES: modelDir/app.ClassName.php
 
       return $classNames;
    }
@@ -200,7 +198,7 @@ class ModelUtils {
       // actual para obtener correctamente las subclases.
       // Mismo codigo que getSubclassesOf.
       $ctx = YuppContext::getInstance();
-      $appName = $ctx->getComponent();
+      $appName = $ctx->getApp();
       if ($appName == 'core')
       {
          // Si no se cargaron todas las clases y no se pasa el nombre de la app, no devuelve realmente todas las subclases, solo las que estan cargadas.
@@ -273,15 +271,15 @@ class ModelUtils {
       return $res;
    }
    
-   public static function getComponentForModelClass( $classname )
+   public static function getAppForModelClass( $classname )
    {
-      $apps = PackageNames::getComponentNames();
+      $apps = PackageNames::getAppNames();
       foreach ( $apps as $app )
       {
          // FIXME: si la clase esta definida en un subdir de /model no la encuentra.
        
          // TODO: que el nombre de la clase se obtenga desde las convenciones, la path tambien.
-         $path = "./apps/$app/model/$component.model.$classname.class.php";
+         $path = "./apps/$app/model/$app.model.$classname.class.php";
          if ( file_exists( $path ) )
          {
             return $app;

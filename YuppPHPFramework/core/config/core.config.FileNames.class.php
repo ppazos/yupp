@@ -52,7 +52,7 @@ class FileNames {
             
             if ( preg_match("/(.*)\.(.*)$/i", $res['package'], $matches_package) )
             {
-               $res['component'] = $matches_package[1]; 
+               $res['app'] = $matches_package[1]; 
             }
             
             $res['name'] = $matches[2];

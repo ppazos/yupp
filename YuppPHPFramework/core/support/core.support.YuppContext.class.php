@@ -6,17 +6,17 @@
 class YuppContext {
 
    // Esto podria ser la referencia al router con el request ya procesado.
-   private $component;     // componente actual
-   private $controller;    // controller actual
-   private $action;        // action actual
+   private $app;            // aplicacion actual
+   private $controller;     // controller actual
+   private $action;         // action actual
    
-   private $realApp = NULL; // Nombre de la aplicacion real. Se usa cuando se esta en core (component=core) 
+   private $realApp = NULL; // Nombre de la aplicacion real. Se usa cuando se esta en core (app=core) 
                             // pero se quiere realizar alguna operacion en la base para una clase de una 
                             // aplicacion particular, y se necesite el nombre de la app para crear la DAL 
                             // con la config de esa app. Esto ultimo lo hace PM.
    
    private $params = array(); // parametros del request
-   private $model  = array();  // Modelo devuelto por la ultima accion ejecutada
+   private $model  = array(); // Modelo devuelto por la ultima accion ejecutada
     
    private $locale = "es"; // actual locale seleccionado, en su forma de string, es_UY_xxxx
    
@@ -62,8 +62,8 @@ class YuppContext {
    }
    public function getMode() { return $this->mode; }
     
-   public function setComponent( $component ) { $this->component = $component; }
-   public function getComponent() { return $this->component; }
+   public function setApp( $app ) { $this->app = $app; }
+   public function getApp() { return $this->app; }
     
    public function setController( $controller ) { $this->controller = $controller; }
    public function getController() { return $this->controller; }
@@ -79,13 +79,6 @@ class YuppContext {
    
    public function setRealApp( $appName ) { $this->realApp = $appName; }
    public function getRealApp() { return $this->realApp; }
-   public function isAnotherApp() { return ($this->realApp != NULL && $this->realApp != $this->component); }
-   
-   /*
-   public function update()
-   {
-      YuppSession::set("_yupp_context_singleton_instance", $this); // actualizo la variable en la session...
-   }
-   */
+   public function isAnotherApp() { return ($this->realApp != NULL && $this->realApp != $this->app); }
 }
 ?>

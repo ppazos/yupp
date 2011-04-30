@@ -9,7 +9,7 @@ class ViewCommand {
     private $command;
 
     // Command execute
-    private $component;
+    private $app;
     private $controller;
     private $action;
 
@@ -30,7 +30,7 @@ class ViewCommand {
     public function isDisplayCommand() { return ($this->command == self::DISPLAY_COMMAND); }
     public function isStringDisplayCommand() { return ($this->command == self::STRING_DISPLAY_COMMAND); }
 
-    public function component()  { return $this->component; }
+    public function app()        { return $this->app; }
     public function controller() { return $this->controller; }
     public function action()     { return $this->action; }
 
@@ -42,11 +42,7 @@ class ViewCommand {
     
     public function flash($name = NULL)
     {
-      //print_r($this->flash);
-      //echo (($name === NULL) ? "A" : "B");
-      //return (($name === NULL) ? $this->flash : $this->flash[$name]);
       if ($name === NULL) return $this->flash;
-
       return $this->flash[$name];
     }
     
@@ -56,14 +52,14 @@ class ViewCommand {
     }
 
     /*
-     * Ejecutar una accion de un controller (DEBERIA SER DEL COMPONENTE ACTUAL!!!!)
+     * Ejecutar una accion de un controller (DEBERIA SER DE La APP ACTUAL!!!!)
      * Se ejecuta desde el controller.
      */
-    public static function execute($component, $controller, $action, $params, $flash)
+    public static function execute($app, $controller, $action, $params, $flash)
     {
        $c             = new ViewCommand();
        $c->command    = self::EXECUTE_COMMAND;
-       $c->component  = $component;
+       $c->app        = $app;
        $c->controller = $controller;
        $c->action     = $action;
        $c->params     = $params;
@@ -72,10 +68,9 @@ class ViewCommand {
     }
 
     /*
-     * Para mostrar una pagina del componente actual.
+     * Para mostrar una pagina del app actual.
      * Se ejecuta desde el controller.
      */
-    //public static function display($viewName, &$params, &$flash)
     public static function display($viewName, $params, $flash)
     {
        $c           = new ViewCommand();

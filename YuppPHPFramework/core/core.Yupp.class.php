@@ -24,7 +24,7 @@ class Yupp {
      */
     public function getAppNames()
     {
-       return PackageNames::getComponentNames();
+       return PackageNames::getAppNames();
     }
     
     /**
