@@ -248,8 +248,8 @@ Luego de liberar v0.3 se detectaron algunos bugs menores. Esta liberación corre
   * Extender la configuracion de DB de las aplicaciones para soportar los modos de ejecucion.
   * Quitar las referencias que hayan en PM y DAL a palabras clave de SQL que puedan depender de un motor específico y ponerlos en las respectivas clases DatabaseXXXX.
   * Agregar las referencias por loops en serialización a XML y JSON (HECHO).
-  * http://code.google.com/p/yupp/issues/detail?id=16
-  * http://code.google.com/p/yupp/issues/detail?id=87
+  * http://code.google.com/p/yupp/issues/detail?id=16 (HECHO)
+  * http://code.google.com/p/yupp/issues/detail?id=87 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=84 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=93
   * http://code.google.com/p/yupp/issues/detail?id=91
