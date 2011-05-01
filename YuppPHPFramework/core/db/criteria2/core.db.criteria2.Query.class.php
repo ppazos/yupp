@@ -1,4 +1,7 @@
 <?php
+
+YuppLoader::load( "core.db.criteria2", "Select" );
+
 class Query
 {
    // FIXME: todas las palabras clave de SQL deben ser pedidas a la clase XXXDatabase configurada para acceso a datos.

@@ -21,18 +21,13 @@ YuppLoader::load( "core.db.criteria2", "BinaryInfixCondition" );
 YuppLoader::load( "core.db.criteria2", "UnaryPrefixCondition" );
 YuppLoader::load( "core.db.criteria2", "Condition" );
 
-YuppLoader::load( "core.db.criteria2", "Select" ); // SelectItem y sus hijos tambien.
-YuppLoader::load( "core.db.criteria2", "Query" );
+//YuppLoader::load( "core.db.criteria2", "Select" ); // SelectItem y sus hijos tambien.
+//YuppLoader::load( "core.db.criteria2", "Query" );
 
 YuppLoader::load( "core.utils",       "Callback" );
 YuppLoader::load( "core.persistent",  "ArtifactHolder" );
 
 YuppLoader::load( "core.persistent", "MultipleTableInheritanceSupport" );
-
-/*
-Contine todas las funcionalidades de persistencia y no tiene estado.
-Las funciones podrian ser estaticas si no accedieran al campo $dal.
-*/
 
 /*
 TODOs GRANDEs
@@ -75,8 +70,6 @@ class PersistentManager {
 
    public static function getInstance( $load_estragegy = NULL )
    {
-      // prueba con singleton normal
-      //$instance = NULL;
       if (!self::$instance)
       {
          // Definicion de estrategia de carga. Por defecto es Lazy.
@@ -97,37 +90,8 @@ class PersistentManager {
 
          self::$instance = new PersistentManager( $po_loader );
       }
-      return self::$instance;
       
-      /* prueba con singleton normal
-      if ( !YuppSession::contains("_persistent_manager_singleton_instance") )
-      {
-         // Definicion de estrategia de carga. Por defecto es Lazy.
-         $po_loader = NULL;
-         switch ($load_estragegy)
-         {
-            case self::LAZY_LOAD_ESTRATEGY:
-               $po_loader = new LazyLoadStrategy();
-            break;
-            case self::CASCADE_LOAD_ESTRATEGY:
-               $po_loader = new CascadeLoadStrategy();
-            break;
-            default:
-               $po_loader = new LazyLoadStrategy();
-            break;
-         }
-         // /Definicion de estrategia de carga.
-
-         $instance = new PersistentManager( $po_loader );
-         YuppSession::set("_persistent_manager_singleton_instance", $instance);
-      }
-      else
-      {
-         $instance = YuppSession::get("_persistent_manager_singleton_instance");
-      }
-
-      return $instance;
-      */
+      return self::$instance;
    }
 
    private function __construct( $po_loader )
@@ -253,25 +217,15 @@ class PersistentManager {
       $refObj = NULL;
       if ( $owner->getHasManyType($ownerAttr) === PersistentObject::HASMANY_LIST )
       {
-         $refObj = new ObjectReference( array(
-                                          "owner_id" => $owner_id,
-                                          "ref_id"   => $ref_id,
-                                          "type"     => $relType,
-                                          "ord"      => $ord ) );
+         $refObj = new ObjectReference(array("owner_id"=>$owner_id, "ref_id"=>$ref_id, "type"=>$relType, "ord"=>$ord));
       }
       else
       {
-
-         $refObj = new ObjectReference( array(
-                                          "owner_id" => $owner_id,
-                                          "ref_id"   => $ref_id,
-                                          "type"     => $relType ) );
+         $refObj = new ObjectReference(array("owner_id"=>$owner_id, "ref_id"=>$ref_id, "type"=>$relType));
       }
 
       // se pasan instancias... para poder pedir el withtable q se setea en tiempo de ejecucion!!!!
       $tableName =  YuppConventions::relTableName( $owner, $ownerAttr, $child );
-
-//      echo "--- REL TABLE NAME: " . $tableName . " ---<br/>";
 
       // ========================================================================
       // VERIFICA DE QUE LA RELACION NO EXISTE YA.
@@ -727,7 +681,6 @@ class PersistentManager {
          //$superclases = ModelUtils::getAllAncestorsOf( $attrValues["class"] ); // $attrValues["class"] es la ultima en la estructura del carga de multiple tabla, puede tener subclases pero se guardan en la misma tabla que ella. Por eso necesito solo los padres xq son los que se pueden guardar en otras tablas.
          //$superclases[] = $attrValues["class"];
          
-      
          // Cargo la instancia parcial de la tabla de $attrValues["class"] tal que 
          // el atributo "super_id_$persistentClass" sea igual a $id.
 
@@ -748,10 +701,6 @@ class PersistentManager {
              * entonces, la consulta que se hace es dame el objeto con "super_id_$persistentClass = $id" (YuppConventions::superclassRefName( $superclassName ))
              */
             $tableName = YuppConventions::tableName( $cins );
-            
-            
-            //Logger::struct( $attrValues, "ATTR VALUES" );
-            
             
             // FIXED: si $persistentClass es A1 me genera super_id_A1 que no existe,
             // deberia ver la clase que genera la tabla donde esta A1 y pasarle esa clase.
@@ -834,12 +783,9 @@ class PersistentManager {
       // Soporte para herencia. (TODO: necesito mas que esto para multiples tablas)
       $realClass = $attrValues['class'];
       
-//      Logger::struct( $attrValues, "get_mti_object_byData 2" );
-      
       return $this->createObjectFromData( $realClass, $attrValues );
    
    } // get_mti_object_byData
-   
 
    // Trae un objeto simple sin asociaciones hasMany y solo los ids de hasOne.
    public function get_object( $persistentClass, $id )
@@ -1236,6 +1182,7 @@ class PersistentManager {
       // QIERO PEDIR SOLO LOS ELEMENTOS DE ObjectReference, para poder recorrerlo y ver si ya tengo objetos cargados,
       // y cargo solo los que no estan cargados. Seteo todos los objetos al atributo hasMany del objeto.
 
+      YuppLoader::load( "core.db.criteria2", "Query" );
       $q = new Query();
       $q->addFrom( $relTableName, 'ref' );  // person_phone ref // FIXME: ESTO ES addFrom.
       $q->addFrom( $relObjTableName, 'obj' );
@@ -2271,9 +2218,9 @@ class PersistentManager {
                    // Se toma luego de modificar las restricciones
                    $constraints = $sc_ins->getConstraints();
                    
-                   foreach( $props       as $name => $type ) $c_ins->addAttribute($name, $type);
-                   foreach( $hone        as $name => $type ) $c_ins->addHasOne($name, $type);
-                   foreach( $hmany       as $name => $type ) $c_ins->addHasMany($name, $type);
+                   foreach( $props as $name => $type ) $c_ins->addAttribute($name, $type);
+                   foreach( $hone  as $name => $type ) $c_ins->addHasOne($name, $type);
+                   foreach( $hmany as $name => $type ) $c_ins->addHasMany($name, $type);
                    
                    // Agrego las constraints al final porque puedo referenciar atributos que todavia no fueron agregados.
                    foreach( $constraints as $attr => $constraintList ) $c_ins->addConstraints($attr, $constraintList);
@@ -2508,6 +2455,7 @@ class PersistentManager {
 
       // Necesito el id del registro para poder eliminarlo...
       // esto es porque no tengo un deleteWhere y solo tengo un delete por id... (TODO)
+      YuppLoader::load( "core.db.criteria2", "Query" );
       $q = new Query();
       $q->addFrom( $tableName, "ref" )
           ->addProjection( "ref", "id" )
@@ -2643,8 +2591,6 @@ class SWPString {
 
      return $string;
   }
-
 }
-
 
 ?>
