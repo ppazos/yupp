@@ -118,9 +118,9 @@ class YuppConfig {
             // Trato de cargarla, puede ser que no tenga archivo de configuracion.
             if (file_exists($appConfigFile))
             {
-               include_once($appConfigFile);
+               include_once($appConfigFile); // Tiene definida la variable $db
           
-               $this->app_datasources[$appName] = $db; // $db se define en el archivo de configuracion.
+               $this->app_datasources[$appName] = $db[$this->currentMode]; // $db se define en el archivo de configuracion.
                
                // TODO: al igual que el datasource por defecto, el de cada app deberia depender del modo de ejecucion.
                return $this->app_datasources[$appName];
