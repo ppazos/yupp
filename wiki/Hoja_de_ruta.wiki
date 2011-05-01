@@ -245,7 +245,7 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * http://code.google.com/p/yupp/issues/detail?id=16 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=87 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=84 (HECHO)
-  * http://code.google.com/p/yupp/issues/detail?id=93
+  * http://code.google.com/p/yupp/issues/detail?id=93 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=91 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=86 (HECHO)
 
