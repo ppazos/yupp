@@ -238,9 +238,9 @@ Descarga: http://code.google.com/p/yupp/downloads/list
 
 ==v0.4:==
 
-  * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
   * Extender la configuracion de DB de las aplicaciones para soportar los modos de ejecucion. (HECHO)
   * Agregar las referencias por loops en serialización a XML y JSON (HECHO).
+  * http://code.google.com/p/yupp/issues/detail?id=97 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=16 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=87 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=84 (HECHO)
@@ -253,26 +253,25 @@ Descarga: http://code.google.com/p/yupp/downloads/list
 
   * Agregar el procesamiento de referencias de loops en la deserialización de XML a PO.
   * Mejorar Yupp Desktop con características como cantidad de información que se muestra de cada aplicación, ordenamiento y ubicación de iconos, búsqueda y filtrado de aplicaciones por nombre, descripción y tags, mostrar tags, permitir mostrar Yupp Desktop aún en modo PROD, permitir editar datos de descripción de las aplicaciones, como tags...
-  * Corregir información duplicada de ObjectReference en PersistentManager.generate, cuando se generan las tablas intermedias de relaciones hasMany.
-    * No dejar ejecutar tests en modo prod, tampoco correr bootstraps (es por seguridad).
+  * Capacidad de instalar y desinstalar aplicaciones a modo de sistema operativo instalando y desinstalando programas.
 
 
 ==v0.6: codename Deep Purple==
 
-  * http://code.google.com/p/yupp/issues/detail?id=36 (Operaciones de inspeccion)  
-  * http://code.google.com/p/yupp/issues/detail?id=16 (Verificar si la clase UrlProcessing es necesaria)
-  * Documentacion de los ciclos de vida de PO y todas las operaciones del YORM (necesario para mejorar performance y optimizar código).
+  * Corregir información duplicada de ObjectReference en PersistentManager.generate, cuando se generan las tablas intermedias de relaciones hasMany.
+    * No dejar ejecutar tests en modo prod, tampoco correr bootstraps (es por seguridad).
   * Integracion de modos de desarrollo, produccion y testing, y definición del comportamiento del sistema en cada modo.
-  * http://code.google.com/p/yupp/issues/detail?id=83 (línea de comandos)
-  * http://code.google.com/p/yupp/issues/detail?id=39 (Agregar soporte a Yupp Paths)
+  * Integración de SQL Server.
 
 
 ==v0.7:==
 
   * Mejoras para performance (verificar inclusiones y dependencias, optimizacion de codigo).
   * Integración con otras librerías JS/FX/AJAX
-  * Capacidad de instalar y desinstalar aplicaciones a modo de sistema operativo instalando y desinstalando programas.
   * Soporte para internacionalización automática de fechas
+  * http://code.google.com/p/yupp/issues/detail?id=41 (Agregar métodos dinámicos para realizar búsquedas)
+  * http://code.google.com/p/yupp/issues/detail?id=36 (Operaciones de inspeccion)
+  * Documentacion de los ciclos de vida de PO y todas las operaciones del YORM (necesario para mejorar performance y optimizar código).
 
 
 ==v0.8: codename U2==
@@ -285,7 +284,9 @@ Descarga: http://code.google.com/p/yupp/downloads/list
 
   * Integración del YORM con sistemas externos mediante WS:
     * Soporte para fuentes de datos JSON 
-    * Soporte para fuentes de datos XML 
+    * Soporte para fuentes de datos XML
+  * http://code.google.com/p/yupp/issues/detail?id=83 (línea de comandos)
+  * http://code.google.com/p/yupp/issues/detail?id=39 (Agregar soporte a Yupp Paths)
 
 
 ==v1.0: codename The Beatles==
@@ -303,10 +304,7 @@ Algunos temas importantes a organizar:
 
 Algunos temas que se irán haciendo a medida que haya tiempo:
 
-  * Escribir tests automaticos para el módulo persistent (para hacer en 0.1.8 y 0.1.9).
-
   * Característica YORM: campos calculados. Que se puedan definir funciones asociadas a campos y cuando se salva una instancia estas funciones se ejecutan y se asigna el valor resultante al campo. El framework agregaría la ejecución de esos métodos, para que el usuario no tenga que invocarlos él mismo cada vez que va a guardar algo. Esto sirve para calcular campos en función de los otros campos de la clase, incluyendo sus atributos relacionados, por ejemplo si se tiene una factura con líneas, el total de la factura se calcula a partir del parcial de cada línea.
-
   * PHPDoc de los paquetes core y db
   * PHPDoc del módulo persistent
   * PHPDoc del módulo mvc
