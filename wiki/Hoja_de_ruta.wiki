@@ -248,6 +248,8 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * http://code.google.com/p/yupp/issues/detail?id=91 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=86 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=82 (HECHO)
+  * http://code.google.com/p/yupp/issues/detail?id=99
+  * http://code.google.com/p/yupp/issues/detail?id=24
 
 
 ==v0.5:==
