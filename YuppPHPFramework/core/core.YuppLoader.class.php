@@ -1,7 +1,5 @@
 <?php
 
-//print_r( get_declared_classes() );
-
 include_once ('core/utils/core.utils.ModelUtils.class.php');
 include_once ('core/config/core.config.PackageNames.class.php');
 
@@ -86,7 +84,12 @@ class YuppLoader {
    {
       $cl = YuppLoader :: getInstance();
       
-      $apps = FileSystem::getSubdirNames("./apps");      
+      // Si estoy en una aplicacion que no es 'core', solo cargo el modelo de esa aplicacion.
+      // Si estoy en la aplicacion 'core', carga el modelo de todas las aplicaciones.
+      $ctx = YuppContext::getInstance();
+      $apps = array( $ctx->getApp() );
+      if ($apps[0] == 'core') $apps = FileSystem::getSubdirNames("./apps");
+            
       $packs = new PackageNames();
 
       // FIXME: que pasa si quiero cargar con refresh otras clases? p.e. MySQLDatabase se carga solo una vez porque el que la usa (DAL) es singleton.
@@ -101,6 +104,7 @@ class YuppLoader {
          }
 
          $cl->modelLoaded = true;
+         
          // necesaria para mantener actualizada la session con la instance del singleton. (xq no referencia a la session xa este es un valor desserealizado...)
          YuppSession :: set("_class_loader_singleton_instance", $cl); // actualizo la variable en la session...
       }
