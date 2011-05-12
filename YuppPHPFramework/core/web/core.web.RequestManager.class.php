@@ -241,9 +241,18 @@ class RequestManager {
   
          return;
       }
-      else if ( $command->isStringDisplayCommand() )
+      else if ( $command->isStringDisplayCommand() ) // mostrar string
       {
          echo $command->getString();
+         return;
+      }
+      else if ( $command->isDisplayTemplateCommand() ) // mostrar template
+      {
+         $params = array();
+         // TODO: poder pasarle path al helper, asi puedo poner el template en cualquier lado.
+         $params['name'] = $command->viewName(); // Nombre del template
+         $params['args'] = $command->params();
+         Helpers::template($params);
          return;
       }
       else // Es redirect porque no hay otro tipo...
