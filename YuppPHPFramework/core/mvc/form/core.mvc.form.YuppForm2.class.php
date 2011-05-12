@@ -291,7 +291,7 @@ class YuppFormField2
    
    public static function date($params)
    {
-      $label = $params['label'];
+      $label = ( (isset($params['label'])) ? $params['label'] : '' );
       unset($params['label']); // para que label no aparezca en la lista de params.
       $f = new YuppFormField2(self::DATE, $label);
       $f->set( $params );
@@ -300,7 +300,7 @@ class YuppFormField2
    
    public static function password($params)
    {
-      $label = $params['label'];
+      $label = ( (isset($params['label'])) ? $params['label'] : '' );
       unset($params['label']); // para que label no aparezca en la lista de params.
       $f = new YuppFormField2(self::PASSWORD, $label);
       $f->set( $params );
@@ -309,7 +309,7 @@ class YuppFormField2
 
    public static function select( $params ) //($name, $action, $label = "")
    {
-      $label = $params['label'];
+      $label = ( (isset($params['label'])) ? $params['label'] : '' );
       unset($params['label']); // para que label no aparezca en la lista de params.
       $f = new YuppFormField2(self::SELECT, $label);
       $f->set( $params );
@@ -318,7 +318,7 @@ class YuppFormField2
 
    public static function submit($params)
    {
-      $label = $params['label'];
+      $label = ( (isset($params['label'])) ? $params['label'] : '' );
       unset($params['label']); // para que label no aparezca en la lista de params.
       $f = new YuppFormField2(self::SUBMIT, $label);
       $f->set( $params );
@@ -327,7 +327,7 @@ class YuppFormField2
 
    public static function text($params)
    {
-      $label = $params['label'];
+      $label = ( (isset($params['label'])) ? $params['label'] : '' );
       unset($params['label']); // para que label no aparezca en la lista de params.
       $f = new YuppFormField2(self::TEXT, $label);
       $f->set( $params );
@@ -336,7 +336,7 @@ class YuppFormField2
    
    public static function radio($params)
    {
-      $label = $params['label'];
+      $label = ( (isset($params['label'])) ? $params['label'] : '' );
       unset($params['label']); // para que label no aparezca en la lista de params.
       $f = new YuppFormField2(self::RADIO, $label);
       $f->set( $params );
@@ -345,7 +345,7 @@ class YuppFormField2
    
    public static function check($params)
    {
-      $label = $params['label'];
+      $label = ( (isset($params['label'])) ? $params['label'] : '' );
       unset($params['label']); // para que label no aparezca en la lista de params.
       $f = new YuppFormField2(self::CHECK, $label);
       $f->set( $params );
@@ -354,7 +354,7 @@ class YuppFormField2
    
    public static function bigtext($params)
    {
-      $label = $params['label'];
+      $label = ( (isset($params['label'])) ? $params['label'] : '' );
       unset($params['label']); // para que label no aparezca en la lista de params.
       $f = new YuppFormField2(self::BIGTEXT, $label);
       $f->set( $params );
@@ -370,7 +370,7 @@ class YuppFormField2
    
    public static function file($params)
    {
-      $label = $params['label'];
+      $label = ( (isset($params['label'])) ? $params['label'] : '' );
       unset($params['label']); // para que label no aparezca en la lista de params.
       $f = new YuppFormField2(self::FILE, $label);
       $f->set( $params );
@@ -556,7 +556,6 @@ class YuppFormDisplay2
 
 //echo "VALUE: $value<br/>";
 //echo gettype($value);
-
 
             $fieldHTML .= '<div class="label check"><label for="checkbox_'. $fieldNumber .'">' . $field->getLabel() . '</label></div>';
             $fieldHTML .= '<div class="field check"><input type="checkbox" id="checkbox_'. $fieldNumber .'" name="'. $name .'" value="'. $value .'" '. (($field->get("on"))?'checked="true"':'') . $field->getTagParams() .' /></div>';
