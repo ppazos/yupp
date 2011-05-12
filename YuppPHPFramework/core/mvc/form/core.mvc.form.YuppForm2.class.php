@@ -640,8 +640,7 @@ class YuppFormDisplay2
    private static function display_ajax_form_jquery($form)
    {
       $html = '';
-      //$html .= h('js', array('name'=>'jquery/jquery-1.3.1.min'));
-      $html .= h('js', array('name'=>'jquery/jquery-1.5.min'));
+      $html .= h('js', array('name'=>'jquery/jquery-1.5.1.min'));
       $html .= h('js', array('name'=>'jquery/jquery.form.2_43'));
    
       // TODO: llamar a una funcion JS antes de hacer el request AJAX.

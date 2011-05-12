@@ -11,7 +11,7 @@ global $_base_dir;
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     
-    <?php echo h('js', array('name'=>'jquery/jquery-1.5.min')); ?>
+    <?php echo h('js', array('name'=>'jquery/jquery-1.5.1.min')); ?>
     <?php echo h('js', array('name'=>'jquery/jquery.corner')); ?>
     <?php /*echo h('css', array('name' => 'niftyCorners') ); */ ?>
     <?php /*echo h('js',  array('name' => 'niftycube') ); */ ?>
