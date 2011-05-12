@@ -34,7 +34,7 @@ class LayoutManager {
       if ( array_key_exists('app', $params) ) 
          $path .= '/apps/'. $params['app'] .'/javascript/'. $params['name'] .'.js';
       else // Ubicacion por defecto de todos los javascripts de todos los modulos
-         $path .= '/js/' . $params['name'] . '.js';
+         $path .= '/js/'. $params['name'] .'.js';
       
       /*
       if (!in_array($path, $this->referencedJSLibs))
@@ -44,9 +44,12 @@ class LayoutManager {
       */
       
       // Cambio que permite incluir JS desde layout (imprime directamente la referencia).
-      if (!in_array($path, $this->referencedJSLibs))
+      //if (!in_array($path, $this->referencedJSLibs)) // no importa la path, puede ser la misma lib y estar en paths distintas, el id es por el nombre
+      // FIXME: el nombre puede incluir una path, por lo que la lib puede ser la misma, pero si esta en distintas paths, dar distinto.
+      // p.e. si por un lado se incluye "jquery/jquery-1.5.1.min" y por otro solo "jquery-1.5.1.min" 
+      if (!array_key_exists($params['name'], $this->referencedJSLibs))
       {
-         $this->referencedJSLibs[] = $path;
+         $this->referencedJSLibs[$params['name']] = $path;
          echo '<script type="text/javascript" src="'. $path .'"></script>';
       }
    }
@@ -62,7 +65,7 @@ class LayoutManager {
       // Array ( [0] => /YuppPHPFramework/js/jquery/jquery-1.3.1.min.js )
     
       $jslibs = array('prototype','jquery'); //,'mootools','dojo','yui');
-      foreach ($this->referencedJSLibs as $jslibpath)
+      foreach ($this->referencedJSLibs as $jsname => $jslibpath)
       {
          foreach ($jslibs as $lib)
          {
