@@ -248,8 +248,11 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * http://code.google.com/p/yupp/issues/detail?id=91 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=86 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=82 (HECHO)
-  * http://code.google.com/p/yupp/issues/detail?id=99
+  * http://code.google.com/p/yupp/issues/detail?id=99 (HECHO)
   * http://code.google.com/p/yupp/issues/detail?id=24
+  * http://code.google.com/p/yupp/issues/detail?id=103 (HECHO)
+  * Actualización de librerías javascript: jQuery 1.5.1, TinyMCE 3.4.2
+  * Correccion de bug en removeFrom para relaciones hasMany
 
 
 ==v0.5:==
