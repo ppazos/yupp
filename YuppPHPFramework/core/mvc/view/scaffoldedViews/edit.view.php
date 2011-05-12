@@ -46,7 +46,7 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
     <?php $clazz = $m->get('object')->aGet('class'); ?>
     
     <div id="actions">
-      <a href="list?class=<?php echo $clazz ?>">List</a>
+      <!--<a href="list?class=<?php echo $clazz ?>">List</a>-->
     </div>
     <br/>
       
@@ -60,7 +60,7 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
     <?php echo DisplayHelper::errors( $m->get('object') ); ?>
       
     <form action="save" method="post">
-        <input type="hidden" name="id"    value="<?php echo $m->get('object')->aGet('id'); ?>" />
+        <input type="hidden" name="id" value="<?php echo $m->get('object')->aGet('id'); ?>" />
         <input type="hidden" name="class" value="<?php echo $m->get('object')->aGet('class'); ?>" />
         <input type="hidden" name="app" value="<?php echo $m->get('app'); ?>" />
       

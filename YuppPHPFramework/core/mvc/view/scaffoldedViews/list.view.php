@@ -63,7 +63,12 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
     <div align="center"><?php echo $m->flash('message'); ?></div>
     
     <div id="actions">
-      <a href="create?app=<?php echo $m->get('app') ?>&class=<?php echo $m->get('class') ?>">Create</a>
+      <?php
+        $ctx = YuppContext::getInstance();
+        $app = $m->get('app');
+        if ( !isset($app) ) $app = $ctx->getApp();
+      ?>
+      <a href="create?app=<?php echo $app; ?>&class=<?php echo $m->get('class') ?>">Create</a>
     </div>
     <br/>
     

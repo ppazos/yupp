@@ -43,7 +43,11 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
     
     <div align="center"><?php echo $m->flash('message'); ?></div>
     
-    <?php $app   = $m->get('app'); ?>
+    <?php
+        $ctx = YuppContext::getInstance();
+        $app = $m->get('app');
+        if ( !isset($app) ) $app = $ctx->getApp();
+    ?>
     <?php $clazz = $m->get('object')->aGet('class'); ?>
     <?php $id    = $m->get('object')->aGet('id'); ?>
     
