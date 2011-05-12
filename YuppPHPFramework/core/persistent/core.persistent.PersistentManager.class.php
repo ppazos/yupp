@@ -190,9 +190,29 @@ class PersistentManager {
       
       //echo "<h1>REF ID: $ref_id</h1>";
       
-      $hasManyAttrs = $owner->getHasMany();
+      // FIXME: ¿porque agarra el id de la superclase?
+      // Por que supuestamente necesita el id de la instancia de la clase declarada
+      // en la relacion hasMany, no el id real de la instancia que puede ser una
+      // especializacion de esa clase.
+      // Esto garantiza que el ref_id sera unico, cosa que si se usa el id de la instancia especializada
+      // y hay mas de una especializacion, no pasa que el ref_id sea unico. En ese caso, deberia guardar
+      // tambien la clase de la instancia especializada.
+      // El problema que en el removeFrom se usa el id de la instancia especializada, no el de la clase
+      // declarada en el hasMany.
+      
+      // FIXME: La condicion es redundante, es si: 2 clases no se mapean en la misma tabla AND las clase son distintas
+      // Si no se mapean en la misma tabla, ya las clases son distintas... 
+      //
+      // $hasManyAttrs[$ownerAttr] es la clase que tengo declarada en la asociacion hasMany
+      // $child->getClass() es la clase real de la instancia asociada
+      $hasManyAttrs = $owner->getHasMany();  // FIXME: puedo hacer $owner->getType($ownerAttr) en lugar de pedir todos los hasMany...
       if ( !self::isMappedOnSameTable($hasManyAttrs[$ownerAttr], $child->getClass()) && $hasManyAttrs[$ownerAttr] !== $child->getClass() )
       {
+         // FIXME: esto funciona si tengo un nivel de herencia, por eso le pide el super_id a $child,
+         // pero deberia ser recursiva hasta que obtenga el id de la clase declarada en la relacion
+         // hasMany.
+         // Ojo, creo que si tengo la instancia, esta tambien tiene todos los atributos super_id de todas
+         // las superclases, asi que no habria problema!.
          $ref_id = $child->aGet( YuppConventions::superclassRefName( $hasManyAttrs[$ownerAttr] ) );
          
          //$ref_id = $child->getMultipleTableId($hasManyAttrs[$ownerAttr]);
@@ -2444,10 +2464,35 @@ class PersistentManager {
          $ownerAttr = &$attr2;
          $child     = &$obj1;
       }
+      
+      Logger::getInstance()->log( 'PM::remove_assoc owner '.$owner->getClass().', child '. $child->getClass() );
 
       // Para eliminar no me interesa el tipo de relacion (si esta instanciada bidireccional o unidireccional).
+      // Quiero eliminar el que tenga ownerid y childid de los objetos que me pasaron.
+      // (obs: entonces no permito mas de una relacion entre 2 instancias!)                               );
 
-      // Quiero eliminar el que tenga ownerid y childid de los objetos que me pasaron. (obs: entonces no permito mas de una relacion entre 2 instancias!)                               );
+      // ======================================================================================
+      // En la salvada de hasMany en cascada, la entrada ref_id en la tabla de join
+      // usa el identificador de la instancias de la relacion declarada en la instancia
+      // padre, por lo que si la intancia relacionada mediante hasMany es una subclase
+      // de la clase declarada en la relacion hasMany, no puedo usar $child->getId() como
+      // ref_id, en ese caso tengo que buscar el id de la superclase declarada como tipo
+      // de la relacion hasMany. Esto es obviamente si $child se guarda en una tabla diferente
+      // que la superclase declarada en el hasMany de $owner.
+      
+      $ref_id = $child->getId();
+      $hasManyAttrs = $owner->getHasMany(); // FIXME: puedo hacer $owner->getType($ownerAttr) en lugar de pedir todos los hasMany...
+      if ( !self::isMappedOnSameTable($hasManyAttrs[$ownerAttr], $child->getClass()) )
+      {
+         // FIXME: esto funciona si tengo un nivel de herencia, por eso le pide el super_id a $child,
+         // pero deberia ser recursiva hasta que obtenga el id de la clase declarada en la relacion
+         // hasMany.
+         // Ojo, creo que si tengo la instancia, esta tambien tiene todos los atributos super_id de todas
+         // las superclases, asi que no habria problema!.
+         $ref_id = $child->aGet( YuppConventions::superclassRefName( $hasManyAttrs[$ownerAttr] ) );
+      }
+
+      Logger::getInstance()->log( 'PM::remove_assoc owner_id '.$owner->getId().', ref_id '. $ref_id );
 
       // se pasan instancias... para poder pedir el withtable q se setea en tiempo de ejecucion!!!!
       //
@@ -2458,15 +2503,12 @@ class PersistentManager {
       YuppLoader::load( "core.db.criteria2", "Query" );
       $q = new Query();
       $q->addFrom( $tableName, "ref" )
-          ->addProjection( "ref", "id" )
-            ->setCondition(
-               Condition::_AND()
-                 ->add( Condition::EQ("ref", "owner_id", $owner->getId()) )
-                 ->add( Condition::EQ("ref", "ref_id", $child->getId()) )
-              );
+        ->addProjection( "ref", "id" )
+        ->setCondition( Condition::_AND()
+          ->add( Condition::EQ("ref", "owner_id", $owner->getId()) )
+          ->add( Condition::EQ("ref", "ref_id", $ref_id) ) );
 
       $data = $this->dal->query( $q );
-
       $id = $data[0]['id']; // Se que hay solo un registro...
                             // TODO: podria no haber ninguno, OJO! hay que tener en cuenta ese caso.
 

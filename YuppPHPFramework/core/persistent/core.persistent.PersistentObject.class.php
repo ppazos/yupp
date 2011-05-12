@@ -2072,19 +2072,15 @@ Logger::getInstance()->po_log("aSet $full_attribute luego de dirtyOne=true " .__
             if ( $id != -1 )
             {
                // Busco en atributos hasMany attr y si encuentro elimino.
-               $hmList = $this->attributeValues[$attr];
-               foreach ( $hmList as $i => $obj )
+               foreach ( $this->attributeValues[$attr] as $i => $obj )
                {
                   // Busco por id.
                   // FIXME: el objeto DEBE tener id! (si lo cargue lazy tiene id, si no, tengo que guardarlo antes de preguntar por id!...)
-                  if ( $obj->getId() == $id ) // FIXME: OJO COMPARACION DE OBJETOS... DEBERIA COMPARAR ids?
+                  if ( $obj->getId() == $id )
                   {
-                     // TODO: debe actualiza la tabla de relacion, eliminando la relacion persistida!
+                     // Saca de la relacion el objeto con id=$id
                      $this->attributeValues[$attr][$i] = null;
                      $this->attributeValues[$attr] = array_filter($this->attributeValues[$attr]); // La forma PHP de hacerlo... array sin NULLs...
-
-                     // Actualizo la base:
-                     //remove_assoc( $obj1, $obj2, $attr1, $attr2, $logical = false );
 
                      // TODO: Verificar si el nombre de este atributo es el correcto!
                      // Dado el otro objeto y mi atributo, quiero el atributo del otro objeto que corresponda a la relacion con mi atributo.
@@ -2099,7 +2095,8 @@ Logger::getInstance()->po_log("aSet $full_attribute luego de dirtyOne=true " .__
 //                     echo '<h1 style="color:red;">OBJ2:  '. get_class($obj)   .'</h1>';
 //                     echo '<h1 style="color:red;">ATTR1: '. $attr  .'</h1>';
 //                     echo '<h1 style="color:red;">ATTR2: '. $attr2 .'</h1>';
-
+                     
+                     //remove_assoc( $obj1, $obj2, $attr1, $attr2, $logical = false );
                      // Por defecto la asociacion se borra fisicamente.
                      $pm->remove_assoc( $this, $obj, $attr, $attr2, $logical ); // TODOL: Ok ahora falta hacer que el get considere asociaciones solo con daleted false cuando carga.
 
