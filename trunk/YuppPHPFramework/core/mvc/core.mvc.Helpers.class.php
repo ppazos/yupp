@@ -61,12 +61,26 @@ class Helpers {
         $paramsMap['controller'] = NULL;
         $paramsMap['action']     = NULL;
         
+        // Parametros para la url
+        $params_url = "";
+        
+        // Si viene un array de params explicito, tambien va para la url
+        if (isset($paramsMap['params']) && is_array($paramsMap['params']))
+        {
+           foreach ($paramsMap['params'] as $key => $value) // FIXME: hay una funcion de PHP que ya hace esto...
+           {
+              $params_url .= $key ."=". $value ."&";
+           }
+           
+           $paramsMap['params'] = NULL; // Para que filtre
+        }
+        
+        
         $params = array_filter($paramsMap, "notNull"); // Saca nulls // ['params']; // opcional, es un mapa.
                                                        // FIXED: si tengo un 0 que es un valor valido par un param, me lo saca tambien!
                                                        // Ahora con callback notNull, el valor 0 se queda en el array. 
 
         // debe ser un array!
-        $params_url = "";
         $params_in_url = array();
         foreach ($params as $key => $value) // FIXME: hay una funcion de PHP que ya hace esto...
         {
@@ -75,6 +89,8 @@ class Helpers {
            if ( String::startsWith($key, "_param_") ) $params_in_url[ substr($key, 7) ] = $value; // agrega los _param_x en orden.
            else $params_url .= $key ."=". $value ."&";
         }
+        
+        // Saco el & sobrante de los params
         $params_url = substr($params_url, 0, -1);
 
         $params_in_url_str = "";
