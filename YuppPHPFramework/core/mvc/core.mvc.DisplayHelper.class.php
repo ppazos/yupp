@@ -225,15 +225,19 @@ class DisplayHelper {
            
            if ($relObj == NULL) continue;
            
+           $ctx = YuppContext::getInstance();
+           $app = $m->get('app');
+           if ( !isset($app) ) $app = $ctx->getApp();
+           
            // Link a vista de scaffolding del objeto relacionado con hasOne
            $res .= h('link', array(
-                     'app'  => 'core',
+                     'app'        => 'core', //$app, //( ($ctx->getApp()=='core') ? $m->get('app') : $ctx->getApp() ),
                      'controller' => 'core',
                      'action'     => 'show',
-                     'app'        => ( ($ctx->getApp()=='core') ? $m->get('app') : $ctx->getApp() ),
                      'class'      => $relObj->getClass(),
                      'id'         => $relObj->getId(),
-                     'body'       => $relObj->getClass() . ' ['. $relObj->getId() .']'
+                     'body'       => $relObj->getClass() . ' ['. $relObj->getId() .']',
+                     'params'     => array('app'=>$app)
                    ));
            
            $res .= '</td></tr>';
@@ -534,6 +538,15 @@ class DisplayHelper {
        
        echo h('js', array('name'=>'tiny_mce/tiny_mce')); // js/tiny_mce/tiny_mce.js
        echo '<script type="text/javascript">
+                 if (!htmlinit) // Si el usuario no define la funcion
+                 {
+                   var htmlinit = function() {
+                     //alert("htmlinit por defecto");
+                     // Dummy para que no de error la carga de TinyMCE, donde se
+                     // configura htmlinit como funcion de callback al cargar el editor.
+                     // A ser sobre escrita por el usuario...
+                   }
+                 }
                  tinyMCE.init({
                      mode:     "exact", //"textareas"
                      theme:    "advanced",
@@ -546,6 +559,16 @@ class DisplayHelper {
                      forced_root_block : false,
                      force_br_newlines : false,
                      cleanup_on_startup : true,
+                     
+                     // Setear el tamanio inicial del editor
+                     // http://tinymce.moxiecode.com/forum/viewtopic.php?id=9817
+                     width : "100%",
+                     height : "400",
+                     
+                     // Callback para cuando carga el editor, esta deberia ser implementada por el usuario
+                     // http://tinymce.moxiecode.com/wiki.php/Configuration:oninit
+                     oninit: htmlinit,
+                     
                      
                      plugins : "safari,style,layer,table,advhr,advimage,advlink,emotions,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template", //,imagemanager,filemanager",
                      //pagebreak,save,
