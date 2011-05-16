@@ -88,6 +88,9 @@ class DisplayHelper {
        $res = '<table>';
 
        $ctx = YuppContext::getInstance();
+       $m = Model::getInstance();
+       $app = $m->get('app'); // Cuando se genera por la ap "core", viene "app" como parametro.
+       if ( !isset($app) ) $app = $ctx->getApp(); // Cuando se genera por una app que no es "core"
 
        // Cabezal
        $res .= '<tr>';
@@ -97,35 +100,10 @@ class DisplayHelper {
            if ( $attr === 'deleted') continue;
            
            $res .= '<th>';
-
-           // FIXME: Problema, necesito los params actuales para saber que clase estoy mostrando, pero no tengo acceso. NO, ME PASAN LA CLASE!
-           //$res .= '<a href="'. Helpers::params2url( $ ) .'">'; // TODO: no tengo acceso a los params desde helpers.
-           // TODO: el order deberia ser toggleado, si ahora muestro ordenado por una columna, al hacer click en ella debo mostrar el orden inverso.
-           //       pero como no tengo acceso a los params no se realmente por cual columna se ordena ni la direccion actual.
-
-/*
-           $model = Model::getInstance();
-           $sort = $model->get('sort');
-           $dir = 'asc';
-
-           if ( $sort == $attr && $model->get('dir') == 'asc' ) $dir = 'desc'; // Cambia la direccion del atributo por el que esta ordenado ahora.
-*/
-
-           //$res .= '<a href="'. Helpers::params2url( array('class'=>$clazz, 'sort'=>$attr, 'dir'=>$dir) ) .'">'; // TODO: no tengo acceso a los params desde helpers.
-           //$res .= $attr; // TODO: Habria que ver si esto es i18n, deberia haber algun "display name" asociado al nombre del campo.
-           //$res .= '</a>';
-           
-           $res .= h('orderBy', array('attr'=>$attr, 'action'=>$ctx->getAction(), 'body'=>$attr));
+           $res .= h('orderBy', array('attr'=>$attr, 'action'=>$ctx->getAction(), 'body'=>$attr, 'params'=>array('app'=>$app,'class'=>$m->get('class'))));
            $res .= '</th>';
        }
        $res .= '</tr>';
-
-       $m = Model::getInstance();
-       $app = $m->get('app'); // Cuando se genera por la ap "core", viene "app" como parametro.
-       if (is_null($app))
-       {
-          $app = $ctx->getApp(); // Cuando se genera por una app que no es "core"
-       }
                 
        // Filas
        foreach ($pos as $po) // pos puede ser vacio...
@@ -140,7 +118,7 @@ class DisplayHelper {
              if ($attr == "id")
              {
                 //$res .= '<a href="show?class='. $po->aGet('class') .'&id='. $po->aGet($attr) .'">';
-                $res .= '<a href="'. h('url', array('app'=>$app, 'action'=>'show', 'class'=>$po->aGet('class'), 'id'=>$po->aGet($attr))) .'">';
+                $res .= '<a href="'. h('url', array('app'=>'core', 'action'=>'show', 'class'=>$po->aGet('class'), 'id'=>$po->aGet($attr), 'params'=>array('app'=>$app))) .'">';
                 $res .= $po->aGet($attr);
                 $res .= '</a>';
              }
