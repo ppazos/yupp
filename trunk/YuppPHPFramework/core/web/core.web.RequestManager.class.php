@@ -187,7 +187,7 @@ class RequestManager {
          // ================
       }
       
-      Logger::getInstance()->po_log("RM: ".__FILE__ .' '.__LINE__);
+      //Logger::getInstance()->po_log("RM: ".__FILE__ .' '.__LINE__);
       
       // /ROUTING
       // ====================================================
@@ -279,10 +279,11 @@ class RequestManager {
         // - http://www.php.net/manual/es/function.http-build-url.php
         // - http://www.php.net/manual/es/function.http-build-str.php //
         //
-        $url_params = $command->params(); //$urlproc->params(); // T#63 solo pasar los params del modelo no los del request.
+        $url_params = array();
         $url_params['app']        = $command->app();
         $url_params['controller'] = $command->controller();
         $url_params['action']     = $command->action();
+        $url_params['params']     = $command->params(); // T#63 solo pasar los params del modelo no los del request.
         
         // Agrega params a la url (fix a perdida del flash en redirect)
         foreach ($command->flash() as $key => $value)
