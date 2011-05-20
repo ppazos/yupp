@@ -47,9 +47,9 @@ $app = $m->get('app');
           <?php if (!empty($result['trace'])) : ?>
             <textarea><?php echo $result['trace']; ?></textarea>
           <?php endif; ?>
-           <?php if (!empty($result['moreInfo'])) : ?>
+           <?php /*if (!empty($result['moreInfo'])) : ?>
             <div class="moreInfo"><?php echo $result['moreInfo']; ?></div>
-          <?php endif; ?>
+          <?php endif;*/ ?>
         </div>
       <?php endforeach; ?>
    </body>
