@@ -104,7 +104,11 @@ class DisplayHelper {
            $res .= '</th>';
        }
        $res .= '</tr>';
-                
+       
+       
+       YuppLoader::load('core.app', 'App');
+       $theApp = new App($app);
+       
        // Filas
        foreach ($pos as $po) // pos puede ser vacio...
        {
@@ -117,10 +121,24 @@ class DisplayHelper {
              $res .= '<td>';
              if ($attr == "id")
              {
-                //$res .= '<a href="show?class='. $po->aGet('class') .'&id='. $po->aGet($attr) .'">';
-                $res .= '<a href="'. h('url', array('app'=>'core', 'action'=>'show', 'class'=>$po->aGet('class'), 'id'=>$po->aGet($attr), 'params'=>array('app'=>$app))) .'">';
-                $res .= $po->aGet($attr);
-                $res .= '</a>';
+                // Si en la aplicacion actual existe el controlador para esta clase de dominio, que vaya a la aplicacion actual y a ese controller.
+                // Si no, va a la app y controller "core".
+                if ($theApp->hasController($po->aGet('class')))
+                   $res .= '<a href="'. h('url',
+                                          array('app'    => $app,
+                                                'controller' => String::firstToLower( $po->aGet('class') ),
+                                                'action' => 'show',
+                                                'class'  => $po->aGet('class'),
+                                                'id'     => $po->aGet($attr),
+                                                'params' => array('app'=>$app))) .'">'. $po->aGet($attr) .'</a>';
+                else
+                   $res .= '<a href="'. h('url',
+                                          array('app'    => 'core',
+                                                'controller' => 'core',
+                                                'action' => 'show',
+                                                'class'  => $po->aGet('class'),
+                                                'id'     => $po->aGet($attr),
+                                                'params' => array('app'=>$app))) .'">'. $po->aGet($attr) .'</a>';
              }
              else
              {
