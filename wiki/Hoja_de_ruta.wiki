@@ -254,6 +254,8 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * Actualización de librerías javascript: jQuery 1.5.1, TinyMCE 3.4.2
   * Correccion de bug en removeFrom para relaciones hasMany
   * http://code.google.com/p/yupp/issues/detail?id=106 (HECHO)
+  * http://code.google.com/p/yupp/issues/detail?id=110
+  * http://code.google.com/p/yupp/issues/detail?id=109
 
 
 ==v0.5:==
