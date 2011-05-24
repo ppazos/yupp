@@ -275,10 +275,10 @@ class DisplayHelper {
              $res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
           break;
           case Datatypes::TIME: // Pueden ser 2 selects par hora y minutos.
-                   $res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
+             $res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
           break;
           case Datatypes::DATETIME: // podria ser los selects de date y time juntos...
-               $res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
+             $res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
           break;
        }
 
@@ -299,11 +299,11 @@ class DisplayHelper {
           case Datatypes::FLOAT_NUMBER: $res = '<span>'. $value .'</span>';
           break;
           case Datatypes::BOOLEAN:
-                //$res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
-                 // TODO I18n
-                //$res = '<select><option '. (($value)?'selected="true"':'') .'>TRUE</option><option '. ((!$value)?'selected="true"':'') .'>FALSE</option></select>';
+             //$res = '<input type="text" value="'. $value .'" name="'. $fieldName .'" />';
+             // TODO I18n
+             //$res = '<select><option '. (($value)?'selected="true"':'') .'>TRUE</option><option '. ((!$value)?'selected="true"':'') .'>FALSE</option></select>';
 
-                $res = '<input type="checkbox" '. (($value)?'checked="true"':'') .' disabled="true" />';
+             $res = '<input type="checkbox" '. (($value)?'checked="true"':'') .' disabled="true" />';
           break;
           case Datatypes::DATE: // podrian ser 3 selects para anio mes y dia, los cuales obtienen sus valores maximos y minimos de algun tipo de configuracion.
              $res = '<span>'. $value .'</span>';
@@ -547,7 +547,7 @@ class DisplayHelper {
                      mode:     "exact", //"textareas"
                      theme:    "advanced",
                      elements: "'. $name .'", // ids de los elementos a aplicar el wysiwyg
-                     language: "es",
+                     language: "en",
                      
                      // para evitar que ponga la tag P al ppio y final
                      // http://stackoverflow.com/questions/5211687/tinymce-problem-extra-paragraphs
