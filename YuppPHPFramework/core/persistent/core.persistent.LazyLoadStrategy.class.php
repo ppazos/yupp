@@ -13,6 +13,8 @@
  * @package core.persistent
  */
 
+YuppLoader::loadInterface( "core.persistent", "POLoader" );
+
 class LazyLoadStrategy implements POLoader {
 
     private $manager; // PersistentManager
@@ -44,6 +46,7 @@ class LazyLoadStrategy implements POLoader {
     */
    public function get( $clazz, $id )
    {
+      Logger::getInstance()->pm_log("PO LazyLoad::get ". $clazz."(".$id.") : " . __FILE__."@". __LINE__);
       return $this->manager->get_object( $clazz, $id );
    }
 }

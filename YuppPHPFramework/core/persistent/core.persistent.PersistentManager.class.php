@@ -14,20 +14,15 @@
  */
 
 YuppLoader::load( "core.db.criteria2", "Condition" );
-
 YuppLoader::load( "core.db.criteria2", "ComplexCondition" );
 YuppLoader::load( "core.db.criteria2", "CompareCondition" );
 YuppLoader::load( "core.db.criteria2", "BinaryInfixCondition" );
 YuppLoader::load( "core.db.criteria2", "UnaryPrefixCondition" );
-YuppLoader::load( "core.db.criteria2", "Condition" );
 
-//YuppLoader::load( "core.db.criteria2", "Select" ); // SelectItem y sus hijos tambien.
-//YuppLoader::load( "core.db.criteria2", "Query" );
+YuppLoader::load( "core.utils",        "Callback" );
+YuppLoader::load( "core.persistent",   "ArtifactHolder" );
 
-YuppLoader::load( "core.utils",       "Callback" );
-YuppLoader::load( "core.persistent",  "ArtifactHolder" );
-
-YuppLoader::load( "core.persistent", "MultipleTableInheritanceSupport" );
+YuppLoader::load( "core.persistent",   "MultipleTableInheritanceSupport" );
 
 /*
 TODOs GRANDEs
@@ -46,11 +41,6 @@ TODOs GRANDEs
      ya que si mando un null a un atributo no nulo va a saltar en la validacion de las constraints
      en lugar de dejarlo pasar hasta la validacion de la db.
 */
-
-YuppLoader::loadInterface( "core.persistent", "POLoader" );
-YuppLoader::load( "core.persistent", "LazyLoadStrategy" );
-YuppLoader::load( "core.persistent", "CascadeLoadStrategy" );
-
 
 /**
  * Esta clase implementa toda la logica necesaria para persistir objetos persistentes y 
@@ -77,12 +67,15 @@ class PersistentManager {
          switch ($load_estragegy)
          {
             case self::LAZY_LOAD_ESTRATEGY:
+               YuppLoader::load( "core.persistent", "LazyLoadStrategy" );
                $po_loader = new LazyLoadStrategy();
             break;
             case self::CASCADE_LOAD_ESTRATEGY:
+               YuppLoader::load( "core.persistent", "CascadeLoadStrategy" );
                $po_loader = new CascadeLoadStrategy();
             break;
             default:
+               YuppLoader::load( "core.persistent", "LazyLoadStrategy" );
                $po_loader = new LazyLoadStrategy();
             break;
          }
@@ -120,11 +113,6 @@ class PersistentManager {
    public function save_assoc( PersistentObject $owner, PersistentObject $child, $ownerAttr, $ord )
    {
       Logger::getInstance()->pm_log("PM::save_assoc " . get_class($owner) . " -> " . get_class($child));
-
-//echo "PM::save_assoc CHILD<br/>";
-//print_r($child);
-
-      //$dal = DAL::getInstance();
 
       // Considera la direccion de la relacion del owner con el child.
       // VERIFICAR: el owner de la relacion, como esta ahora, es la parte fuerte declarada o asumida,
@@ -170,94 +158,25 @@ class PersistentManager {
       // FIXME: (owner_id, ref_id) debe ser clave, o sea, unique porque primary key es "id". 
       // (en varios lugares como aca abajo y en remove_assoc considero que la relacion entre 2 objetos es unica en la misma tabla.)
       
-      // ====================================================================
-      // FIXME: el id que se guarda en ref deberia ser del objeto declarado
-      //        como tipo en la relacion hasMany, o sea $ownerAttr en $owner.
-      //        Esto es para solucionar el caso de autorrelacion con herencia.
-      //        donde tengo A(hasMany)A y B(heredaDe)A, si una instancia de B
-      //        tiene varias instancias de B asociadas (B1, B2), en la tabla
-      //        intermedia deberia guardarse como ref_id el B1.super_id_A y
-      //        B2.super_id_A, porque A es la clase donde se define la 
-      //        relacion hasMany y para la cual se crea la tabla intermedia
-      //        a_as_a. 
-      
-      // Si la clase del atributo hasMany no coincide con el objeto
-      // relacionado, es que el objeto relacionado es una subclase
-      // de la clase declarada en el hasMany.
-      // Yo quiero el id de ese elemento, lo encuentro en el 
-      // atributo super_id_$hasManyAttrs[$ownerAttr]
+      // No importa si el id es de la clase declarada en la relacion hasMany
+      // o el id de la clase concreta, ahora son todos iguales.
       $ref_id = $child->getId();
       
-      //echo "<h1>REF ID: $ref_id</h1>";
-      
-      // FIXME: ¿porque agarra el id de la superclase?
-      // Por que supuestamente necesita el id de la instancia de la clase declarada
-      // en la relacion hasMany, no el id real de la instancia que puede ser una
-      // especializacion de esa clase.
-      // Esto garantiza que el ref_id sera unico, cosa que si se usa el id de la instancia especializada
-      // y hay mas de una especializacion, no pasa que el ref_id sea unico. En ese caso, deberia guardar
-      // tambien la clase de la instancia especializada.
-      // El problema que en el removeFrom se usa el id de la instancia especializada, no el de la clase
-      // declarada en el hasMany.
-      
-      // FIXME: La condicion es redundante, es si: 2 clases no se mapean en la misma tabla AND las clase son distintas
-      // Si no se mapean en la misma tabla, ya las clases son distintas... 
-      //
-      // $hasManyAttrs[$ownerAttr] es la clase que tengo declarada en la asociacion hasMany
-      // $child->getClass() es la clase real de la instancia asociada
-      $hasManyAttrs = $owner->getHasMany();  // FIXME: puedo hacer $owner->getType($ownerAttr) en lugar de pedir todos los hasMany...
-      if ( !self::isMappedOnSameTable($hasManyAttrs[$ownerAttr], $child->getClass()) && $hasManyAttrs[$ownerAttr] !== $child->getClass() )
-      {
-         // FIXME: esto funciona si tengo un nivel de herencia, por eso le pide el super_id a $child,
-         // pero deberia ser recursiva hasta que obtenga el id de la clase declarada en la relacion
-         // hasMany.
-         // Ojo, creo que si tengo la instancia, esta tambien tiene todos los atributos super_id de todas
-         // las superclases, asi que no habria problema!.
-         $ref_id = $child->aGet( YuppConventions::superclassRefName( $hasManyAttrs[$ownerAttr] ) );
-         
-         //$ref_id = $child->getMultipleTableId($hasManyAttrs[$ownerAttr]);
-         // FIXME: se resuelve igual con getMultipleTableId( $superClass )
-      }
-
-      //echo "<h1>REF ID: $ref_id</h1>";
-      
       // El owner id debe ser el de la clase donde se declara la relacion hasmany
+      // De todas formas, los ids de todas las instancias parciales de la clase declarada
+      // van a ser los mismos
       $owner_id = $owner->getId();
-      if ( !$owner->attributeDeclaredOnThisClass($ownerAttr) )
-      {
-         $ownerSuperClass = $owner->getSuperClassWithDeclaredAttribute($ownerAttr);
-
-         $owner_id = $owner->aGet( YuppConventions::superclassRefName( $ownerSuperClass ) );
-         
-         // FIXME: se resuelve igual con getMultipleTableId( $superClass )
-      }
       
-//      echo "OwnerId: $owner_id<br/>";
-      
-      $refObj = NULL;
-      if ( $owner->getHasManyType($ownerAttr) === PersistentObject::HASMANY_LIST )
-      {
-         $refObj = new ObjectReference(array("owner_id"=>$owner_id, "ref_id"=>$ref_id, "type"=>$relType, "ord"=>$ord));
-      }
-      else
-      {
-         $refObj = new ObjectReference(array("owner_id"=>$owner_id, "ref_id"=>$ref_id, "type"=>$relType));
-      }
-
-      // se pasan instancias... para poder pedir el withtable q se setea en tiempo de ejecucion!!!!
-      $tableName =  YuppConventions::relTableName( $owner, $ownerAttr, $child );
-
       // ========================================================================
       // VERIFICA DE QUE LA RELACION NO EXISTE YA.
       // FIXME: ojo ahora tendria que tener en cuenta la direccion tambien!
 
       //Logger::getInstance()->pm_log("PM: owner_id=$owner_id, ref_id=$ref_id " . __LINE__);
-
+      // se pasan instancias... para poder pedir el withtable q se setea en tiempo de ejecucion!!!!
+      $tableName = YuppConventions::relTableName( $owner, $ownerAttr, $child );
       $params['where'] = Condition::_AND()
                            ->add( Condition::EQ($tableName, "owner_id", $owner_id ) )
                            ->add( Condition::EQ($tableName, "ref_id",   $ref_id) );
-
-      //Logger::struct($params, "PARAMS");
 
       // FIXME: llamar a exists de DAL
       if ( $this->dal->count($tableName, $params) == 0 )
@@ -267,6 +186,16 @@ class PersistentManager {
          // La asociacion se guarda con insert xq chekea q la relacion no exista para meterlo en la base.
          // TODO: deberia fijarme si los objetos con estos ids ya estan.
          // TODO2: Ademas deberia mantener las relaciones, si se eliminan objetos deberia borrar las relaciones!!!
+
+         $refObj = NULL;
+         if ( $owner->getHasManyType($ownerAttr) === PersistentObject::HASMANY_LIST )
+         {
+            $refObj = new ObjectReference(array("owner_id"=>$owner_id, "ref_id"=>$ref_id, "type"=>$relType, "ord"=>$ord));
+         }
+         else
+         {
+            $refObj = new ObjectReference(array("owner_id"=>$owner_id, "ref_id"=>$ref_id, "type"=>$relType));
+         }
 
          $this->dal->insert( $tableName, $refObj );
       }
@@ -287,15 +216,6 @@ class PersistentManager {
       //if (!$obj->validate()) return false;
       // ===========================================================================================
 
-      // TODO:
-      // Si es una herencia de 3 niveles, solo tengo el super_id del segundo nivel.
-      // Si es un update, tengo que saber el super_id del primer nivel tambien! (TODO: para acelerar esto podria tener una tabla que contenga todos los super_id, tipo un indice, es una idea, capaz es muy complicado...)
-      // Si es insert, no pasa nada, lo genero.
-      // (en caso de que la clase no se guarde en la misma tabla que sus superclases)
-      // bucle:
-      //  saco los atributos que van en la tabla que diga withTable.
-      //  ... estaria bueno tener una funcion que ya me haga esto...
-
       $tableName = YuppConventions::tableName( $obj );
 
       if ( !$obj->getId() ) // || !$dal->exists( $tableName, $obj->getId() ) ) // Si no tiene id, hago insert, si no update.
@@ -308,46 +228,38 @@ class PersistentManager {
          // Nuevo: si se modificaron campos simples o asociaciones hasone hago udate, si no, no.
          if ($obj->isDirty() || $obj->isDirtyOne())
          {
-             $pinss = MultipleTableInheritanceSupport::getPartialInstancesToSave( $obj ); 
-             foreach ( $pinss as $partialInstance )
-             {
-                $tableName = YuppConventions::tableName( $partialInstance );
+            // El primero es siempre el que corresponde con la superclase de nivel 1
+            $pinss = MultipleTableInheritanceSupport::getPartialInstancesToSave( $obj ); 
+            foreach ( $pinss as $partialInstance )
+            {
+               $tableName = YuppConventions::tableName( $partialInstance );
        
-                // Saco el id de la instancia parcial del $multipleTableIds
-                // El id se usa para hacer el update de cada instancia parcial.
-                $id = NULL;
-                if ( PersistentManager::isMappedOnSameTable( $partialInstance->getClass(), get_class($obj)) )
-                {
-                   //Logger::add( Logger::LEVEL_PM, "SACO ID DEL OBJ" );
-                   $id = $obj->getId();
-                }
-                else // SACO ID DE LA PARTIAL INSTANCE
-                {
-                   // pi->getClass da la clase real, luego se sobreescribe por la clase de obj para guardar ese valor.
-                   // La necesidad de tener el nombre de la clase en todas las tablas donde se guarde la instancia,
-                   // es de poder cargar la instancia total cuando se hace un get de una instancia parcial.
-                   $id = $obj->getMultipleTableId( $partialInstance->getClass() );
-                   
-                   // Seteo la clase real en cada una de las instancias parciales, para poder cargar (get, list, find) desde una instancia parcial.
-                   // Tiene la clase de la instancia seteada y quiero que el atributo class sea de la ultima instancia de la estructura de herencia.
-                }
+               // ========================================================================================
+               // Con el nuevo esquema de identificacion, el id del objeto es el mismo que el de todos
+               // los objetos parciales de MTI, por lo que no es necesario hacer esto de pedir los ids.
+               // Igualmente, como es update, tampoco lo veo necesario, porque la instancia parcial ya
+               // tendria el identificador del padre, para que setearselo de nuevo? y tambienm, para que
+               // setearle la class de nuevo si ya la tiene?
+
+               // El id de todas las instancias parciales es el mismo.
+               $id = $obj->getId();
                 
-                $partialInstance->setId( $id );
-                $partialInstance->setClass( $obj->getClass() ); // En ambos casos tengo que colocar la clase correcta porque getPartialInstancesToSave me devuelve solo las clases que generan tabla... y si tengo C1 me va a devolver C, y la clase se la tengo que setear en C1 aunque se mapee en la misma tabla.
+               $partialInstance->setId( $id );
+               $partialInstance->setClass( $obj->getClass() ); // En ambos casos tengo que colocar la clase correcta porque getPartialInstancesToSave me devuelve solo las clases que generan tabla... y si tengo C1 me va a devolver C, y la clase se la tengo que setear en C1 aunque se mapee en la misma tabla.
                 
-                //Logger::struct( $partialInstance, "PARTIAL INSTANCE" );
-                //Logger::struct( $this->getDataFromObject($partialInstance), "PARTIAL INSTANCE" );
+               //Logger::struct( $partialInstance, "PARTIAL INSTANCE" );
+               //Logger::struct( $this->getDataFromObject($partialInstance), "PARTIAL INSTANCE" );
           
-                // 2: Si existe, hace update
-                if ( $this->dal->exists( $tableName, $id ) ) // VERIFY: este chekeo se hace en save del PM...
-                {
-                   $this->dal->update( $tableName, $this->getDataFromObject($partialInstance) );
-                }
-                else
-                {
-                   Logger::getInstance()->dal_log("DAL::update NO EXISTE " . $tableName . " " . $id . " " . __LINE__);
-                }
-             } // foreach ( $pinss as $partialInstance )
+               // 2: Si existe, hace update
+               if ( $this->dal->exists( $tableName, $id ) ) // VERIFY: este chekeo se hace en save del PM...
+               {
+                  $this->dal->update( $tableName, $this->getDataFromObject($partialInstance) );
+               }
+               else
+               {
+                  Logger::getInstance()->dal_log("DAL::update NO EXISTE " . $tableName . " " . $id . " " . __LINE__);
+               }
+            } // foreach ( $pinss as $partialInstance )
          } // si esta dirty
       }
 
@@ -384,8 +296,6 @@ class PersistentManager {
              $sassoc = $obj->getSimpleAssocValues(); // TODO?: Podria chekear si debe o no salvarse en cascada...
              foreach ( $sassoc as $attrName => $assocObj )
              {
-                //echo "=== PO hasOne.attr: $attrName<br/>"; 
-                
                 // ojo el objeto debe estar cargado (se verifica eso)
                 if ( $assocObj !== PersistentObject::NOT_LOADED_ASSOC )
                 {
@@ -468,7 +378,6 @@ class PersistentManager {
                 
                 Logger::getInstance()->pm_log("save_cascade foreach hasManyAssoc: ". $attrName ." ". __FILE__ ." ". __LINE__ );
                 
-                //Logger::warn("HAS MANY ATTR: " . $attrName);
                 foreach ( $objList as $assocObj )
                 {
                    // Problema con cascada hasMany: a1 -> b1 -> c1 -> a1
@@ -486,6 +395,7 @@ class PersistentManager {
                       {
                          // salva objeto y sus asociaciones.
                          $this->save_cascade( $assocObj, $sessId );
+                         Logger::getInstance()->pm_log("PM::save_cascade objeto guardado: ". $assocObj->getClass(). " ". $assocObj->getId(). " " .__LINE__);
                       }
     
                       Logger::getInstance()->pm_log("PM::save_assoc save_assoc de ". $obj->getClass(). " ". $assocObj->getClass(). " " .__LINE__);
@@ -517,7 +427,6 @@ class PersistentManager {
    {
       Logger::getInstance()->pm_log("PersistentManager::save " . get_class($obj));
       $sessId = time()."_". rand()."_". rand(); // se genera una vez y se mantiene por todo el save. Se agregaron rands porque para saves consecutivos se hacia muy rapido y la sessId quedaba exactamente igual.
-      
       $this->save_cascade( $obj, $sessId );
    }
 
@@ -683,14 +592,11 @@ class PersistentManager {
     */
    private function get_mti_object_byData( $classLoaded, $attrValues )
    {
-      //Logger::getInstance()->pm_log("PersistentManager.get_mti_object_byData: CLASS LOADED: " . $classLoaded);
-      //Logger::struct( $attrValues, "ATTR VALUES" );
-      
+      Logger::getInstance()->pm_log("PM.get_mti_object_byData: CLASS LOADED: ". $classLoaded ." ". print_r($attrValues, true));
+
       // Nueva instancia de la clase real.
       $cins = new $attrValues["class"](array(), true); // Intancia para hallar nombre de tabla (solo para eso, no se usa luego).
       
-      //Logger::getInstance()->pm_log("POR EMPEZAR: " . __FILE__ . " " . __LINE__);
-  
       // Si no esta mapeado en la misma (pruebo con cins porque con obj puede no funcionar si es una clase de nivel 1).
       // O sea, si $persistentClass es A o A1 me dice que MTI es false aunque sea una instancia real de C, C1, G o G1.
       if ( MultipleTableInheritanceSupport::isMTISubclassInstance( $cins ) )
@@ -700,9 +606,6 @@ class PersistentManager {
          // 2.1: Cargar la ultima instancia parcial en la estructura de herencia.
          //$superclases = ModelUtils::getAllAncestorsOf( $attrValues["class"] ); // $attrValues["class"] es la ultima en la estructura del carga de multiple tabla, puede tener subclases pero se guardan en la misma tabla que ella. Por eso necesito solo los padres xq son los que se pueden guardar en otras tablas.
          //$superclases[] = $attrValues["class"];
-         
-         // Cargo la instancia parcial de la tabla de $attrValues["class"] tal que 
-         // el atributo "super_id_$persistentClass" sea igual a $id.
 
          // SOLO DEBE HACERSE SI LA CLASE $persistentClass no es la misma que la que dice su atributo "class"...
          // En ese caso, $sc_partial_instance es igual a los attrValues cargados al principio.
@@ -715,40 +618,15 @@ class PersistentManager {
          {
             // Necesito cargar porque el ultimo registro esta en otra tabla.
             
-            /* 
-             * tengo la clase => se de que tabla es
-             * en esa tabla debe haber un atributo super_id_$persistentClass,
-             * entonces, la consulta que se hace es dame el objeto con "super_id_$persistentClass = $id" (YuppConventions::superclassRefName( $superclassName ))
-             */
+            // FIXME: esto se puede simpligicar sabiendo que todas las instancias parciales de MTI tienen el mismo id.
             $tableName = YuppConventions::tableName( $cins );
             
-            // FIXED: si $persistentClass es A1 me genera super_id_A1 que no existe,
-            // deberia ver la clase que genera la tabla donde esta A1 y pasarle esa clase.
-            $classTableGenerator = MultipleTableInheritanceSupport::superclassThatGenerateMyTable( $classLoaded );
-            $condition = Condition::EQ( $tableName, 
-                                        YuppConventions::superclassRefName( $classTableGenerator ), 
-                                        $attrValues['id'] );
-            
-            
-            //Logger::getInstance()->pm_log("CONDITION: " . $condition->evaluate() . " " . __FILE__ . " " . __LINE__);
-            
-            $params = new ArrayObject(); // Para pasarle la referencia a un array vacio.
-            $list = $this->findByAttributeMatrix( $cins, $condition, $params ); // Devuelve matriz de atributos
-             
-            //Logger::struct( $list, "LAST INSTANCE" );
-             
-            // Verifico resultado...
-            if (count( $list ) !== 1 ) // resultado esperado es 1
-            {
-               throw new Exception("Se esperaba obtener exactamente un registro y hay " . count( $list ));
-            }
-             
-            // OJO! no es instance, es una matriz con datos!
-            $sc_partial_row = $list[0]; // FIXME: $sc_partial_instance no es un array !!!! ES UN PO instanciado!!! porque la consulta es sobre PO!!!!!!!!!!!!!!!!!
+            // Ahora el id en la clase de nivel 1, y el de la instancia final, es siempre el mismo.
+            // Por eso, pido directo por id
+            $sc_partial_row = $this->dal->get($tableName, $attrValues['id']);
          }
          
-         //Logger::struct($sc_partial_row, "Ultima instancia " . __FILE__ . " " . __LINE__);
-         
+         // Da igual cual id tome porque es el mismo para todas las instancias parciales de MTI
          $real_id = $sc_partial_row["id"]; // Id de la instancia que tengo que crear.
           
          // MERGE DE LA INSTANCIA CARGADA CON $sc_partial_instance
@@ -761,37 +639,22 @@ class PersistentManager {
          // VERIFY: capaz hacer merge en cada cargada es poco performante, hay que tomar tiempos y considerar otras alternativas.
          $attrValues = array_merge( $attrValues, $sc_partial_row ); // AttrValues va recolectando los atributos, en este caso el id de $sc_partial_instance esta bien que sobreescriba el id de la otra instancia parcial xq importa que quede el id de la ultima clase de la estructura de herencia.
           
-          
-         // 3: Verificar si hay mas instancias parciales, cargarlas y hacer merge de los atributos.
-         $scRefIdAttrs = array(); // identificadores de instancias superclases que se guardaron con la ultima instancia de la estructura de herencia.
-         foreach ($sc_partial_row as $attr => $value)
+
+         // Obtiene las instancias parciales para todas las superclases
+         $superclasses = ModelUtils::getAllAncestorsOf($attrValues['class']);
+         foreach ($superclasses as $mtiClass)
          {
-            if (YuppConventions::isRefName($attr))
+            // Solo quiero las superclases que no se hayan cargado, $persistentClass es la primera que se carga.
+            if ($mtiClass !== $classLoaded)
             {
-               $sc_name = YuppConventions::superclassFromRefName($attr);
-                  
-               // Solo quiero las superclases que no se hayan cargado, $persistentClass es la primera que se carga.
-               if ($sc_name !== $classLoaded) $scRefIdAttrs[ $sc_name ] = $value; // Nombre Clase => Id
-                  
-               // TODO: por velocidad podria hacer aqui mismo la cargada y merge, para poder probar mejor la hago en otro bucle abajo...
+               $tableName = YuppConventions::tableName( $mtiClass );
+               $scAttrValues = $this->dal->get( $tableName, $real_id ); // Se usa el mismo id para todas las instancias parciales
+               $attrValues = array_merge( $attrValues, $scAttrValues );
             }
          }
-          
-         // merge
-         foreach ($scRefIdAttrs as $sc_class => $sc_id)
-         {
-            // La instancia se crea en YuppConventions
-            $tableName = YuppConventions::tableName( $sc_class );
-            $scAttrValues = $this->dal->get( $tableName, $sc_id );
-              
-            // no considero el id, no sirve, sobreescribe null en el id...
-            //$scAttrValues["id"] = NULL;
-              
-            $attrValues = array_merge( $attrValues, $scAttrValues );
-         }
-         
+   
          // $attrValues deberia tener todos los atributos simples de las instancias parciales cargadas y el id de la ultima instancia de la estructura de herencia.   
-          
+         // No es necesario reescribirlo porque va a ser el mismo para toda las clases parciales del mti
          $attrValues["id"] = $real_id; // id real de la instancia
           
       } // if instancia parcial
@@ -810,7 +673,7 @@ class PersistentManager {
    // Trae un objeto simple sin asociaciones hasMany y solo los ids de hasOne.
    public function get_object( $persistentClass, $id )
    {
-      Logger::getInstance()->pm_log("PersistentManager.get_object " . $persistentClass . " " . $id);
+      Logger::getInstance()->pm_log("PM.get_object " . $persistentClass . " " . $id);
 
       // Si llega aqui es porque ya se verifico que no estaba en ArtifactHolder.
 
@@ -819,7 +682,6 @@ class PersistentManager {
       //$dal = DAL::getInstance();
       $obj = new $persistentClass(array(), true); // Intancia para hallar nombre de tabla (solo para eso, no se usa luego).
       $tableName = YuppConventions::tableName( $obj );
-
 
       // HERENCIA EN MULTIPLE TABLA
       // Cargo el registro de la clase que me mandan por su id, esto es para verificar si la clase que me mandan 
@@ -830,7 +692,6 @@ class PersistentManager {
       // una unica instanca, que es la que me piden.
       $attrValues = $this->dal->get( $tableName, $id );
       
-
 /*
  * VER: Otra posible solucion para mti, es que cargue solo los atributos que tengo en esa tabla, 
  * y luego cargue lo demas lazy, o sea: 
@@ -860,9 +721,6 @@ class PersistentManager {
       // Carga atributos simples
       foreach ($data as $colname => $value)
       {
-         // FIXME: si es un refName super_id_Clase, no va a encontrarlo como atributo 
-         //        porque la columna se va a llamar super_id_clase (clase en minuscula).
-         
          // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          // ACA ESTA EL PROBLEMA AL CARGAR QUE DICE QUE NO hasAttribute para normalizedName...
          
@@ -887,8 +745,6 @@ class PersistentManager {
          }
       }
       
-      $obj->updateMultipleTableIds();
-      
       // Apaga las banderas que se prendieron en la carga
       $obj->resetDirty();
 
@@ -912,242 +768,9 @@ class PersistentManager {
       return $data;
    }
 
-/*
-   // Trae los objetos asociados por hasOne.
-   public function get_simple_assocs( PersistentObject &$obj )
-   {
-      Logger::getInstance()->pm_log("PersistentManager.get_simple_assocs " . get_class( $obj ));
-
-      // FIXME: esto es lo mismo que getHasOne devolviendo solo los nombres (keys) ...
-      $hasOneRefAttrs = $obj->getSimpleAssocAttrNames(); // todos los atributos de referencias como email_id  // FIXME: ESTA MAL EL NOMBRE!!! LSO ATRIBUTOS SIMPLES SON "email" no "email_id"
-      foreach( $hasOneRefAttrs as $attr )
-      {
-         // attr tiene la forma "email_id"
-         // hasOneAttr Tiene la forma "email"
-         $hasOneAttr = DatabaseNormalization::getSimpleAssocName( $attr );
-
-         //Logger::log( "PM.get_simple_assocs @ hasOne Attr [$hasOneAttr]" );
-
-         $assocClass = $obj->getType( $hasOneAttr );
-
-         //Logger::log( "PM.get_simple_assocs @ hasOne Type [$assocClass]" );
-
-         $assocId = $obj->aGet( $attr ); // Valor de "email_id"
-
-         //Logger::log( "PM.get_simple_assocs @ id [$attr] [$assocId]" );
-         //print_r( $obj );
-
-         $assocObj = NULL;
-
-         //Logger::pm_log("PersistentManager.get_simple_assocs tengo el objeto asociado? " . $hasOneAttr . " ". $attr . " " . (( $obj->{"get" . $hasOneAttr}() == NULL ) ? 'NO' : 'SI') );
-         //print_r( $obj->{"get" . $hasOneAttr}() );
-
-         if ( $assocId && !$obj->{"get" . $hasOneAttr}() ) // Si lo tengo en null no tengo que cargar nada y si todavia no lo cargue (esto hace que si tengo loops de carga, no siga cargando cuando ya fue cargado...)
-         {
-            // Esto solo trae lo valores simples, y no los objetos asociados (NO PUEDO HACER SOLO ESTO SI QUIERO CARGAR EN CASCADA)
-            //$assocObj = $this->get_object( $assocClass, $assocId );
-
-            // Sigo cargando para adentro del assocObj!
-            // $this->get_assocs( $assocObj )
-
-            // SOL: TICKET #2.1
-            // TENGO QUE TRAERLO Y TODO LO ASOCIADO!!!! (CASCADA!!!)
-            $assocObj = $this->get( $assocClass, $assocId ); // EL GET HACE EL CHEKEO EN ARTIFACT HOLDER...
-                                                             // Y CARGA TODO EN CASCADA...
-         }
-
-         $obj->{"set" . $hasOneAttr}( $assocObj ); // setea "email" (e "email_id" se seta automaticamente!)
-      }
-
-      //return $obj; // No es necesario xq viene por referencia...
-
-   } // get_simple_assocs
-*/
-
-/*
-   // Trae objetos asociados por hasMany
-   public function get_many_assocs( PersistentObject &$obj )
-   {
-      Logger::getInstance()->pm_log("PersistentManager.get_many_assocs " . get_class( $obj ));
-
-      $dal = DAL::getInstance();
-
-      // FIXME: el problema de hacer el fetch con una consulta es que no puedo saver
-      // si el/los objetos ya estan cargados en el ArtifactHolder, no se si esto
-      // sea un problema... tal vez si lo cargo aunque ya este cargado lo unico que
-      // hago es agregarlo de nuevo en el ArtifactHolder y lsito... hay que ver.
-
-      $attrs = $obj->getHasMany();
-      foreach( $attrs as $attr => $class )
-      {
-         // Por cada atributo tengo una lista de objetos de ese tipo para traer.
-         // TODO: ver quien es el duenio de la relacion!
-         // VERIFY!!!: Como la relacion existe, si uno no es el duenio, DEBE ser el otro.
-         //
-         $relTableName = "";
-         $obj_is_owner = false;
-         if( $obj->isOwnerOf( $attr ) )
-         {
-            //$relTableName = $this->relTableName( get_class($obj), $class );
-            $relTableName = $this->relTableName( $obj, $attr, new $class() ); // Si yo soy owner, el atributo es mio...
-            $obj_is_owner = true;
-         }
-         else
-         {
-            // Si no soy owner tengo que pedir el atributo...
-            $ownerInstance = new $class();
-
-            $ownerAttrNameOfSameAssoc = $ownerInstance->getHasManyAttributeNameByAssocAttribute( get_class($obj), $attr );
-            //echo "<h1>getHasManyAttributeNameByAssocAttribute( ". get_class($obj) .", $attr )</h1>";
-            //echo "<h1>Owner Attribute Same Rel: $ownerAttrNameOfSameAssoc, AttrName: $attr</h1>";
-
-            $relTableName = $this->relTableName( $ownerInstance, $ownerAttrNameOfSameAssoc, $obj );
-            //$relTableName = $this->( $class, get_class($obj) ); // Esto pasa solo si la relacion es *..*
-                                                                            // TODO: si la rel es 1..* el lado 1 es siempre el duenio aunque el * no tenga el belongsTo!!!!!
-         }
-
-         // Armo un Query para hacer JOIN entre las tablas de $class y $obj_$class (o $class_$obj si $class es el duenio...)
-         // SELECT $class_attributes !!!
-         // FROM $class c, $obj_$class ref
-         // WHERE ref.owner_id = el id del duenio AND ref.ref_id = c.id (c son los objetos que quiero!!!!)
-         //
-         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-         //$relObjTableName = $this->tableName( $class );
-         $insHasMany = new $class(); // cambio para soporte de herencia!!!
-         $relObjTableName = $this->tableName( $insHasMany );
-
-         $q = new Query();
-         $q->add( new Table( $relTableName, "ref") )  // person_phone ref
-           ->add( new Table( $relObjTableName , "obj") ); // phone obj
-
-         // Un cacho de codigo en la contruccion de $q
-         // Seteo las proyecciones por los atributos del objeto de clase $class
-         $ins = new $class();
-         $obj_attrs = $ins->getAttributeTypes();
-         foreach( $obj_attrs as $obj_attr => $type )
-         {
-            $q->add( new Projection( $obj_attr, $q->getTable(1)) ); // WARNING: Si luego los nombres de las columnas se filtran como lso nombres de las tablas, aca deberia hacerse tambien ese filtro! en lugar de usar derecho el nombre del atributo como nombre de columna en la tabla.
-         }
-
-         // FIXME: Falta considerar el type de la relacion, y ver si soy el lado fuerte o debil
-         // de la relacion, y pedir todos (en el caso de ser el lado fuerte), y si soy el lado
-         // debil, pedir solo los que tienen type bidir...
-         // YA LO PUSE, HAY QUE PROBARLO. OK, FUNKA BIEN.
-
-         // Tengo que ver el objeto en la tabla de referehcia si es el owner_id o el ref_id
-         if ( $obj_is_owner )
-         {
-             $q->setCondition(
-               Condition::_AND()
-                    ->add( Condition::_EQ(new TableAttribute($q->getTable(0), "owner_id"), new ReferenceValue($obj->getId())) ) // ref.owner_id = el id del duenio (person_phone.owner_id = obj->getId)
-                    ->add( Condition::_EQ(new TableAttribute($q->getTable(0), "ref_id"), NULL, new TableAttribute( $q->getTable(1), "id")) ) // ref.ref_id = c.id (person_phone.ref_id = phone.id)
-                    // TableAttribute ( Table $table, $attributeName, $isLiteral = false)
-                    // _EQ( Attribute $attr, ReferenceValue $refValue = NULL, Attribute $refAttr = NULL )
-             );
-         }
-         else // Aca obj es ref_id y class es owner_id !!! (soy el lado debil)
-         {
-            $q->setCondition(
-               Condition::_AND()
-                    ->add( Condition::_EQ(new TableAttribute($q->getTable(0), "ref_id"),   new ReferenceValue($obj->getId())) ) // ref.owner_id = el id del duenio (person_phone.ref_id = obj->getId)
-                    ->add( Condition::_EQ(new TableAttribute($q->getTable(0), "owner_id"), NULL, new TableAttribute( $q->getTable(1), "id")) ) // ref.ref_id = c.id (person_phone.owner_id = phone.id)
-                    ->add( Condition::_EQ(new TableAttribute($q->getTable(0), "type"),     new ReferenceValue( ObjectReference::TYPE_BIDIR ) )) // type = bidir
-                    // TableAttribute ( Table $table, $attributeName, $isLiteral = false)
-                    // _EQ( Attribute $attr, ReferenceValue $refValue = NULL, Attribute $refAttr = NULL )
-             );
-         }
-
-         //Logger::info( $q->evaluate() );
-
-         // $q trae todos los elementos asociados...
-         // recorro y creo lso objetos
-         // como reslutado tengo una lista de PO.
-
-         $data = $dal->query( $q->evaluate() ); // Trae todos los objetos linkeados... (solo sus atributos simples)
-
-         //echo "<br/>=====================XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br/>";
-         //print_r( $data );
-         //echo "<br/>=====================XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br/>";
-
-         $objList = array(); // Donde poner los objetos
-
-         // Crear cada objeto
-         //$attrValues = $dal->get( $tableName, $id );
-         foreach ( $data as $many_attrValues ) // $many_attrValues es un array asociativo de atributo/valor (que son los atributos simples de una instancia de la clase)
-         {
-            $a_many_obj = new $class();
-
-            // Carga atributos simples
-            foreach ($many_attrValues as $a_many_obj_attr => $many_value)
-            {
-               // ESTO MISMO SE DEBE REVISAR EN get_simple_assocs //
-               // TODO: Ver como se cargan los NULLs
-               // TODO: Tambien hay que ver como se cargan los booleanos ya que parece cargar NULLs en
-               //       lugar de false (lo que guardo y lo que cargo difieren en que uno tiene un valor 0 en
-               //       un boolean como "deleted" y el otro parece no tener valor, parece ser NULL!)
-               $a_many_obj->{"set" . $a_many_obj_attr}( $many_value ); // TODO: Se podria tambien agregar un set(attr, value).
-            }
-
-            // ===========================================
-            // Agrega el objeto al ArtifactHolder
-            // ===========================================
-            // Aca no puedo usar el archifact holder como cache xq cargo antes de preguntar,
-            // ademas se carga un lote todo junto, no los objetos uno por uno.
-            // Lo que me queda es simplemente agregarlo al artifact holder por si otro objeto
-            // tiene un hasOne a este, ahi si funciona el cache.
-            // ===========================================
-//            if ( ArtifactHolder::getInstance()->existsModel( $class, $a_many_obj->getId() ) ) // Si ya esta cargado...
-//            {
-//               ArtifactHolder::getInstance()->addModel( $a_many_obj );
-//            }
-//            else // Si ya esta cargado => tambien lo estan los objetos relacionados
-//                 // (xq ahora es todo en cascada), tons solo carga lo asociado si no esta cargado el objeto. (SI NO SE QUEDA HACIENDO LOOP EN LA CARGA de loop hasMany...)
-//            {
-//               // Intento para ver si trae lso objetos relacionados --------------------------
-//               $this->get_simple_assocs( $a_many_obj ); // OK
-//               $this->get_many_assocs( $a_many_obj ); // OK
-//            }
-
-        // FIXME:
-        // Problema: puedo estar cargando un objeto ya cargado y al asociarlo tengo que usar la intancia ya
-        // cargada porque si le seteo la nueva intancia que cargo, aunque todos los atributos tengan el
-        // mismo valor, el modelo es distinto, ya que las referencias estan mal. Por eso si cargo un objeto
-        // ya cargado me tengo que quedar con el objeto cargado y desechar el que cargue (lo que me da la idea
-        // de que el metodo que use para cargar los objetos es medio cagada porque no puedo checkear si esta
-        // cargado ANTES de cargarlo..)
-        //
-            if ( !ArtifactHolder::getInstance()->existsModel( $class, $a_many_obj->getId() ) ) // Si ya esta cargado...
-            {
-               ArtifactHolder::getInstance()->addModel( $a_many_obj );
-
-               // Intento para ver si trae lso objetos relacionados --------------------------
-               $this->get_simple_assocs( $a_many_obj ); // OK
-               $this->get_many_assocs( $a_many_obj ); // OK
-            }
-            else // Si ya esta cargado, la instancia que se asocia es la ya cargada, no la cargada ahora.
-            {
-               $a_many_obj = ArtifactHolder::getInstance()->getModel( $class, $a_many_obj->getId() ); // Me quedo con el objeto cargado antes!
-            }
-
-            // TODO: SOPORTE PARA LISTAS: TICKET #7
-            // Aqui es donde el soporte para listas empieza ya que deberia respetar el orden de cada objeto
-            // y aqui se cargan los objetos como son guardados (no se sabe bien el orden). Para respetar las
-            // listas cada objeto tambien se carga con un indice, simplemente ese indice es utilizado aqui
-            // para agregar los objetos a la lista hasMany :)
-            $objList[] = $a_many_obj;
-         }
-
-         // Seteo la lista de objetos hasMany
-         $obj->{"set" . $attr}( $objList );
-
-      }
-   } // get_many_assocs
-*/
-
-   // =========================
-   // Obtiene solo una asociacion.
-   //
+   /**
+    * Obtiene solo una asociacion.
+    */
    public function get_many_assoc_lazy( PersistentObject $obj, $hmattr )
    {
       Logger::getInstance()->pm_log("PersistentManager.get_many_assoc_lazy " . get_class( $obj ) . " " . $hmattr);
@@ -1161,8 +784,6 @@ class PersistentManager {
       // (***)
       $_obj = new $hmattrClazz(); // Intancia para hallar nombre de tabla.
       $relObjTableName = YuppConventions::tableName( $_obj );
-      
-//      echo "   relObjTableName = $relObjTableName<br/>";
 
       // FIXME: el problema de hacer el fetch con una consulta es que no puedo saver
       // si el/los objetos ya estan cargados en el ArtifactHolder, no se si esto
@@ -1177,13 +798,11 @@ class PersistentManager {
       $obj_is_owner = false;
       if( $obj->isOwnerOf( $hmattr ) )
       {
-//         echo "   obj isOwnerOf hmattr<br/>";
          $relTableName = YuppConventions::relTableName( $obj, $hmattr, new $hmattrClazz() );
          $obj_is_owner = true;
       }
       else
       {
-//         echo "   obj !isOwnerOf hmattr<br/>";
          // Si no soy owner tengo que pedir el atributo...
          $ownerInstance = new $hmattrClazz();
          $ownerAttrNameOfSameAssoc = $ownerInstance->getHasManyAttributeNameByAssocAttribute( get_class($obj), $hmattr );
@@ -1198,7 +817,7 @@ class PersistentManager {
       //
       // =================================================================================
 
-      // ===============================================================================================================
+      // =================================================================================
       // QIERO PEDIR SOLO LOS ELEMENTOS DE ObjectReference, para poder recorrerlo y ver si ya tengo objetos cargados,
       // y cargo solo los que no estan cargados. Seteo todos los objetos al atributo hasMany del objeto.
 
@@ -1224,20 +843,9 @@ class PersistentManager {
       // Necesito saber el nombre del atributo de los ids asociados.
       $hm_assoc_attr = "owner_id"; // FIXME: poner el string en una clase de convensiones de yupp
 
-      // como id del obj necesito el id del objeto donde se declara el atributo HM con
-      // nombre hmattr.
+      // Los ids de todas las instnacias parciales de la clase declarada en el atributo
+      // hasMany, van a ser todos iguales, por eso uso el id del objeto que viene.
       $obj_id = $obj->getId();
-      if ( !$obj->attributeDeclaredOnThisClass($hmattr) )
-      {
-         // Busco la superclase donde se declara el atributo.
-         $ownerSuperClass = $obj->getSuperClassWithDeclaredAttribute($hmattr);
-         
-//         echo "ownerSuperClass: $ownerSuperClass<br/>";
-         
-         $obj_id = $obj->aGet( YuppConventions::superclassRefName( $ownerSuperClass ) );
-      }
-      
-//      echo "obj_id $obj_id<br/>";
 
       // Tengo que ver el objeto en la tabla de referehcia si es el owner_id o el ref_id
       if ( $obj_is_owner )
@@ -1274,13 +882,8 @@ class PersistentManager {
       // Trae todos los objetos linkeados... (solo sus atributos simples)
       $data = $this->dal->query( $q );
 
-//Logger::struct( $data, "get_many_assoc_lazy data" );
-
       // FIN QUERY...
       
-      //echo "PM.get_many_assoc_lazy<br/>";
-      //print_r( $data );
-
       $wasDirty = $obj->isDirtyMany();
 
       // Ojo, se prenden bits de dirty (es necesario detectar si no estaba dirty antes, para saber si puede limpiar).
@@ -1329,8 +932,6 @@ class PersistentManager {
             $rel_obj = $this->get_mti_object_byData( $hmattrClazz, $many_attrValues );
          }
 
-//Logger::struct($rel_obj, "get_many_assoc_lazy rel_obj");
-
          $obj->aAddTo( $hmattr, $rel_obj );
       }
       
@@ -1363,7 +964,7 @@ class PersistentManager {
    // Hace select por el id y devuelve null si no encuentra.
    public function get( $persistentClass, $id )
    {
-      Logger::getInstance()->pm_log("PersistentManager.get " . $persistentClass . " " . $id);
+      Logger::getInstance()->pm_log("PM.get " . $persistentClass . " " . $id);
 
       //////////////////////////////////////////////////////////
       //
@@ -1451,10 +1052,6 @@ class PersistentManager {
 
       $params['where'] = $cond;
 
-      //echo "<h1>A:". Condition::EQ($objTableName, "deleted", '0')->evaluate() . "</h1>";
-      //echo "<h1>". $cond->evaluate() ."</h1>"; // OK
-
-
       $allAttrValues = $this->dal->listAll( $objTableName, $params );
       // FIXME: Ahora me devuelve todos las columnas, necesito solo ID y CLASS, luego con eso pido todo lo demas
       // usando otras funciones que ya tengo, sobre todo para respetar la estrategia de carga.
@@ -1480,10 +1077,7 @@ class PersistentManager {
 
          // Carga considerando estrategia... y se fija en el holder si ese objeto no esta ya cargado.
 
-         $obj = NULL;
-         
          //  (*) Soporte para MTI como en get_object (incluye a createObjectFromData).
-         //$obj = $this->get_mti_object_byData( $persistentClass, $attrValues );
          $obj = $this->get_mti_object_byData( $class, $row );
          
          /* Ya cargo toda la informacion, no necesito consultar de nuevo, uso createObjectFromData.
@@ -1518,6 +1112,9 @@ class PersistentManager {
     */
    private function findByAttributeMatrix( PersistentObject $instance, Condition $condition, ArrayObject $params )
    {
+      Logger::getInstance()->pm_log("PM::findByAttributeMatrix ". $instance->getClass() ." : " . __FILE__."@". __LINE__);
+
+      // FIXME: misma logica que en listAll, reutilizar codigo.      
       $tableName = YuppConventions::tableName( $instance );
 
       // Quiero solo los registros de las subclases y ella misma.
@@ -1571,22 +1168,27 @@ class PersistentManager {
     */
    public function findBy( PersistentObject $instance, Condition $condition, ArrayObject $params )
    {
+      Logger::getInstance()->pm_log("PM::findBy ". $instance->getClass() ." : " . __FILE__."@". __LINE__);
+      
+      // Consulta para saber la clase real (subclase concreta) del objeto que se está pidiendo
       $allAttrValues = $this->findByAttributeMatrix( $instance, $condition, $params ); //$dal->listAll( $tableName, $params ); // FIXME: AHORA TIRA TODOS LOS ATRIBUTOS Y NECESITO SOLO CLASS e ID.
 
       $res = array(); // Lista de objetos
       foreach ($allAttrValues as $row)
       {
-         $persistentClass = $row['class']; // soporte de herencia!!!!
-
+         // FIXED: http://code.google.com/p/yupp/issues/detail?id=110
+         // Si la clase real (row[class]) es distinta a la clase por la que busco ($instance->getClass()),
+         // la clase por la que busco será una superclase de la real.
+         
          // Carga considerando estrategia... y se fija en el holder si ese objeto no esta ya cargado.
          $obj = NULL;
-         if ( ArtifactHolder::getInstance()->existsModel( $persistentClass, $row['id'] ) ) // Si ya esta cargado...
+         if ( ArtifactHolder::getInstance()->existsModel( $row['class'], $row['id'] ) ) // Si ya esta cargado...
          {
-            $obj = ArtifactHolder::getInstance()->getModel( $persistentClass, $row['id'] );
+            $obj = ArtifactHolder::getInstance()->getModel( $row['class'], $row['id'] );
          }
          else
          {
-            $obj = $this->po_loader->get($persistentClass, $row['id']); // Define la estrategia con la que se cargan los objetos...
+            $obj = $this->po_loader->get($row['class'], $row['id']); // Define la estrategia con la que se cargan los objetos...
             ArtifactHolder::getInstance()->addModel( $obj ); // Lo pongo aca para que no se guarde luego de la recursion de las assocs...
          }
 
@@ -1705,135 +1307,37 @@ class PersistentManager {
    //public function delete( &$persistentInstance, $id, $logical )
    public function delete( $persistentInstance, $id, $logical )
    {
-      Logger::add( Logger::LEVEL_PM, "PM::delete " . __LINE__ );
+      Logger::add( Logger::LEVEL_PM, "PM::delete ". __FILE__."@". __LINE__ );
       
       // TODO: setear deleted a la instancia si se pudo hacer el delete en la tabla!
-
-      //Logger::getInstance()->pm_log("PM::delete " . $persistentInstance->getClass() . " " . $id . " : " . __FILE__."@". __LINE__);
-      
       /*
-      TODO:
-      Operacion no trivial.
-      Eliminacion en cascada o no?
-      Que pasa si una instancia tiene belongsTo esta instancia, pero tambien tiene balongsTo otra instancia de otra cosa? Lo mas logico seria no eliminarla.
-      ???
+      TODO: Que pasa si una instancia tiene belongsTo esta instancia, pero tambien tiene belongsTo
+            otra instancia de otra cosa? Lo mas logico seria no eliminarla. ???
       */
-
-      // Esto borra solo un objeto, falta ver el tema de los objetos asociados y el borrado en cascada...
-      //$dal = DAL::getInstance();
-
-      // Soporte MTI
-      if (!MultipleTableInheritanceSupport::isMTISubclassInstance( $persistentInstance ))
-      {
-         //Logger::add( Logger::LEVEL_PM, "No es MTI " . __LINE__ );
-         
-         $this->dal->delete2( $persistentInstance->getClass(), $id, $logical );
-      }
-      else
-      {
-         //Logger::add( Logger::LEVEL_PM, "Es MTI " . __LINE__ );
-         
-         // Se asume que la instancia ya es la ultima porque esta cargada con "get" 
-         // o con "listAll" que garantiza que carga la instancia completa.
-         
-         $attrValues = $persistentInstance->getAttributeValues();
-         
-         /*
+      // TODO: Esto borra solo un objeto, falta ver el tema de los objetos asociados y el borrado en cascada...
+      /*
          TODO: Si es MTI se que se va a llamar varias veces seguidas a DAL.delete, porque 
                no dejar que las consultas se acumulen en un buffer (string) en DAL y luego
                se ejecuten todas juntas, es mas, podria rodear con BEGIN y COMMIT para 
                hacerla transaccional.
-         */
-         
-         // Recorre los atributos, buscando los super_id_xx, y eliminando cada instancia parcial.
-         foreach( $attrValues as $attr => $value )
+      */
+      
+      // Se asume que la instancia ya es la ultima porque esta cargada con "get" 
+      // o con "listAll" que garantiza que carga la instancia completa.
+      
+      // Borra el registro de la clase actual (no estaba incluida en los ancestors si es MTI)
+      // Si no es MTI, este es el lunico delete que se hace
+      $this->dal->delete( $persistentInstance->getClass(), $id, $logical );
+      
+      // Soporte MTI
+      if (MultipleTableInheritanceSupport::isMTISubclassInstance( $persistentInstance ))
+      {
+         // Ahora tengo que pedir las superclases y para cada una, borrar la instancia parcial
+         $superclasses = ModelUtils::getAllAncestorsOf($persistentInstance->getClass());
+         foreach ($superclasses as $mtiClass)
          {
-            if (YuppConventions::isRefName($attr)) // Es super_id_xx?
-            {
-               //Logger::getInstance()->log( "REF NAME: " . $attr );
-               $class = YuppConventions::superclassFromRefName($attr);
-               
-               $this->dal->delete2( $class, $value, $logical );
-            }
-            else if ($attr === 'id')
-            {
-               $this->dal->delete2( $persistentInstance->getClass(), $value, $logical ); 
-            }
+            $this->dal->delete( $mtiClass, $id, $logical ); // Todas las instancias parciales tienen el mismo id 
          }
-         
-/*
-         // Si la instancia de la clase, no se corresponde con el valor del atributo "class", 
-         // tengo que cargar la clase real y ver todos los super_id_XXX para poder eliminar
-         // las instancias parciales. (parecido a lo que se hace en get_object)
-         $persistentClass = get_class($persistentInstance);  // Clase real de la instancia
-         $cclass          = $persistentInstance->getClass(); // Atributo class de la instancia
-         
-         // OJO: el delete de DAL hace update, y el update actualiza todas las clases de la esctructura.
-         // Aca se esta iterando por todas las clases de la estructura haciendo trabajo innecesario y lo que se obtiene es inconsistente.
-         // Voy a simplificar esta parte y verificar si con el delete de DAL ya se hacen los deletes de las instancias parciales.
-         
-         
-         if ( $cclass !== $persistentClass ) // Si no soy la ultima instancia
-         {
-            // Quiero el PO de clase $persistentInstance->getClass() que tenga el id de 
-            // $persistentInstance en su atributo super_id_get_class($persistentInstance).
-            //
-            $cins = new $cclass();
-            $tableName = YuppConventions::tableName( $cins ); // tableName es de la tabla con la ultima clase de la estructura de herencia!
-            
-            // Con el id del super_id del PO que me pasan y la tabla de la ultima clase de la estructura de herencia, 
-            // pido el registor de esa ultima clase que es la que tiene todos los super_ids.
-            //
-            $condition = Condition::EQ( $tableName, YuppConventions::superclassRefName( $persistentClass ), $id );
-            $params = array(); // Para pasarle la referencia a un array vacio.
-            $list = $this->findByAttributeMatrix( $cins, $condition, $params ); // Devuelve matriz de atributos
-            
-            // Verifico resultado, deberia ser un unico registro porque se pide con id de instancia.
-            $size = count( $list );
-            if ($size != 1 ) // resultado esperado es 1
-            {
-               throw new Exception("Se esperaba obtener exactamente un registro y hay $size");
-            }
-
-            $data_matrix = $list[0]; // No es una matriz xq es un solo registro...
-            
-
-//            foreach( $data_matrix as $attr => $value )
-//            {
-//               if (YuppConventions::isRefName($attr))
-//               {
-//                  Logger::getInstance()->log( "REF NAME: " . $attr );
-//                  $class = YuppConventions::superclassFromRefName($attr);
-//                  
-//                  $tableName = YuppConventions::tableName( $class );             
-//                  $dal->delete( $tableName, $value, $logical ); // si es refName, value es un id
-//               }
-//            }
-
-            
-            // FIXME: Esto deberia eliminar un solo registro y deberia iterar aca por cada instancia parcial, eliminandola. 
-            
-            // Elimino la ultima instancia parcial.
-            $tableName = YuppConventions::tableName( $data_matrix['class'] ); // OBS: data_matrix[class] es lo mismo que persistentInstance->getClass().
-            $dal->delete( $tableName, $data_matrix['id'], $logical );
-         }
-         else // si ya soy la ultima instancia
-         {
-            $mtids = $persistentInstance->getMultipleTableIds();
-            
-//            foreach( $mtids as $class => $id )
-//            {
-//               $tableName = YuppConventions::tableName( $class );                                
-//               $dal->delete( $tableName, $id, $logical ); 
-//            }
-            
-            // FIXME: Esto deberia eliminar un solo registro y deberia iterar aca por cada instancia parcial, eliminandola. 
-            // Elimino la ultima instancia parcial.
-            $tableName = YuppConventions::tableName( $persistentInstance->getClass() );
-            $dal->delete( $tableName, $persistentInstance->getId(), $logical ); // getId deberia ser igual al que me estan pasando como parametro.
-         }
-*/
-
       }
    } // delete
 
@@ -1869,46 +1373,12 @@ class PersistentManager {
    }
    */
 
-
-   // Genera la tabla.
-   //public function generate( object $persistentClass )
-   // Si en algun lado tengo todos los nombres de las clases persistentes, puedo generar automaticamente TODO EL MODELO!!!! jua jua jua!
-   // Genera tablas intermedias para relaciones 1..* y *..*
-   /*
-   public function generate( $className )
-   {
-      // Si la tabla existe deberia hacer un respaldo y borrarla y generarla de nuevo.
-      //DROP TABLE IF EXISTS `acceso`;
-
-      // Si la clase tiene un nombre de tabla, uso ese, si no el nombre de la clase.
-      $tableName = $this->tableName($className);
-      $ins = new $className();
-
-      $dal = DAL::getInstance();
-      $dal->createTable( $tableName, $ins );
-
-      // TODO: crear tablas intermedias para las relaciones hasMany.
-      // Estas tablas deberan ser creadas por las partes que no tienen el belongsTo, o sea la clase duenia de la relacion.
-      $hasMany = $ins->getHasMany();
-
-      foreach ( $hasMany as $attr => $assocClassName )
-      {
-         if ( $ins->isOwnerOf( $attr ) ) // VERIFY, FIXME, TODO: Toma la asuncion de que el belongsTo es por clase. Podria generar un problema si tengo dos atributos de la misma clase pero pertenezco a uno y no al otro porque el modelo es asi.
-         {
-            $tableName =  $this->relTableName( $className, $assocClassName );
-            $dal->createTable( $tableName, new ObjectReference() ); // El objeto que modela la tabla es ObjectReference, un objeto persistente especial para este fin: modelar relaciones.
-         }
-      }
-   }
-   */
-
    /**
     * generate
     * Genera la tabla para una clase y todas las tablas intermedias 
     * para sus relaciones hasMany de la que son suyas.
     * 
     * Si dalForApp es NULL se usa this->dal, de lo contrario se usa esa DAL.
-    * 
     */
    private function generate( $ins, $dalForApp = NULL )
    {
@@ -1923,10 +1393,6 @@ class PersistentManager {
 
       // Si la clase tiene un nombre de tabla, uso ese, si no el nombre de la clase.
       $tableName = YuppConventions::tableName( $ins );
-      
-      //Logger::show("Crear tabla: $tableName", "h2");
-
-      // =========================================================
       
       // Ya se sabe que id es el identificador de la tabla, es un atributo inyectado por PO.
       $pks = array (
@@ -1948,9 +1414,6 @@ class PersistentManager {
                            'nullable' => true)
                    );
       */
-      
-      // Generar columnas para atributos, menos el id, y para las referencias de MTI (super_id_XXX).
-      // Luego, para las referencias de MTI se generan FKs.
       
       // =====================================================================================================
 //      $nullable = NULL; // Hay que determinar si el atributo es nullable.
@@ -2020,19 +1483,6 @@ class PersistentManager {
       
       // =========================================================
       //Logger::struct( $cols, "=== COLS ===" );
-      
-      /*
-      $mti_attrs = $ins->getMTIAttributes();
-      foreach ( $mti_attrs as $attr )
-      {
-         $cols[] = array(
-                    'name' => $attr,
-                    'type' => Datatypes :: INT_NUMBER, // Se de que tipo son porque son inyectados por PO.
-                    'nullable' => false
-                   );
-      }
-      */
-      // =========================================================
 
       $dal->createTable2($tableName, $pks, $cols, $ins->getConstraints());      
 
@@ -2048,7 +1498,6 @@ class PersistentManager {
          
          //if ($ins->isOwnerOf( $attr )) Logger::show("isOwner: $attr", "h3");
          //if ($ins->attributeDeclaredOnThisClass( $attr )) Logger::show("attributeDeclaredOnThisClass: $attr", "h3");
-         
          
          // VERIFY, FIXME, TODO: Toma la asuncion de que el belongsTo es por clase.
          // Podria generar un problema si tengo dos atributos de la misma clase pero
@@ -2138,7 +1587,7 @@ class PersistentManager {
                  'type' => Datatypes :: INT_NUMBER, // Se de que tipo, esta definido asien PO.
                  'nullable' => true );
          
-       // Si es una lista se genera la columna "ord".
+      // Si es una lista se genera la columna "ord".
       /*
       $hmattrType = $ins->getHasManyType( $attr );
       if ( $hmattrType === PersistentObject::HASMANY_LIST )
@@ -2180,17 +1629,9 @@ class PersistentManager {
     
           foreach( $A as $clazz )
           {
-             //Logger::getInstance()->pm_log("foreach $clazz " . __FILE__ . " " . __LINE__);
-             
              $struct = MultipleTableInheritanceSupport::getMultipleTableInheritanceStructureToGenerateModel( $clazz );
     
-             //Logger::struct( $struct, "MTI Struct" . __FILE__ . " " . __LINE__);
-    
              // struct es un mapeo por clave las clases que generan una tabla y valor las clases que se mapean a esa tabla.
-             // TODO: para cada tabla que sea generada, que no sea la tabla de la superclase (la que hereda de PO) tiene que inyectarse un 
-             //       atributo "super_id", que va a ser FK a la tabla de la superclase (distinta a la que se almacena la subclase).
-             //       Entonces, los atributos que se debem megear son los de las claves y las clases valor en este mapeo.
-             
              foreach ($struct as $class => $subclassesOnSameTable)
              {
                 // Instancia que genera tabla
@@ -2199,9 +1640,7 @@ class PersistentManager {
                 
                 // Para cara subclase que se mapea en la misma tabla
                 foreach ( $subclassesOnSameTable as $subclass )
-                { 
-                   //Logger::getInstance()->pm_log( "Subclass on same table $class -> $subclass" . __FILE__ . " " . __LINE__);
-                   
+                {
                    $sc_ins = new $subclass(); // Para setear los atributos.
                    
                    $props = $sc_ins->getAttributeTypes();
@@ -2253,42 +1692,13 @@ class PersistentManager {
                    $suc_ins = new $parent_class();
                    $c_ins = PersistentObject::less($c_ins, $suc_ins); // Saco los atributos de la superclase
                 }
-    
-                // FKs
-                // Inyecto FKs de las subclases a las superclases (solo a la principal, no a las subclases de ella que se mapean en la misma tabla y son superclases mias)
-                // Ejemplo, si -> es "hereda de" y (wt) es que tiene definido "withTable": F->E(wt)->D->C(wt)->B->A,
-                // Para generar la tabla de E-F, tengo que ponerle los ids de C y A (superclases principales que se guardan en otras tablas).
-                // PAra generar la tabla de D-C, tengo que ponerle el id de A.
-                
-                //Logger::struct( $struct, "Estructura para generar las tablas" );
-                
-                // Recorro la estructura para arriba, hasta el PO
-    
-                while ( $parent_class !== 'PersistentObject' )
-                {
-                   if ( array_key_exists($parent_class, $struct) ) // Si es una clase principal
-                   {
-                      // FIXME: el nombre del atributo deberia se parte de las convenciones o de DB NORMALIZATION!
-                      $c_ins->addAttribute( YuppConventions::superclassRefName($parent_class), // super_id_nomclase
-                                            Datatypes::INT_NUMBER );
-                                            
-                      //Logger::getInstance()->log( "Inyecta super_id a: " . $parent_class );
-                   }
-                   
-                   $parent_class = get_parent_class($parent_class); // Le puedo pasar instancias o nombres de clases!
-                }
-                // /Inyecto FKs
-                
                 
                 $tableName = YuppConventions::tableName( $c_ins );
-    //            echo __FILE__ . ' ' . __LINE__ . " $tableName<br/>";
-                
-                // FIXME:
+
                 // FIXME: esta operacion necesita instanciar una DAL por cada aplicacion.
                 // La implementacion esta orientada a la clase, no a la aplicacion, hay que modificarla.
                 
                 // Si la tabla ya existe, no la crea.
-                //if ( !DAL::getInstance()->tableExists( $tableName ) )
                 if ( !$dalForApp->tableExists( $tableName ) )
                 {
                    // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
@@ -2311,36 +1721,15 @@ class PersistentManager {
              $tableName = YuppConventions::tableName( $ins );
              $fks = array();
              
-             // FKS super_id_XXX
-             $mti_attrs = $ins->getMTIAttributes();
-             
-             //Logger::struct( $mti_attrs, "MTI ATTRS" );
-             //Logger::struct( $ins, "OBJ" );
-             
-             foreach ( $mti_attrs as $attr )
-             {
-                // $attr = super_id_unaClase
-                $refClass     = YuppConventions::superclassFromRefName( $attr );
-                $refTableName = YuppConventions::tableName( $refClass );
-                
-                $fks[] = array(
-                          'name'    => $attr,
-                          'table'   => $refTableName,
-                          'refName' => 'id' // Se que esta referencia es al atributo "id".
-                         );
-             }
-             
-             
              // FKs hasOne
              $ho_attrs = $ins->getHasOne();
              foreach ( $ho_attrs as $attr => $refClass )
              {
-                // Problema: pasa lo mismo que pasaba en YuppConventions.relTableName,
-                // esta tratando de inyectar la FK en la tabla incorrecta porque la instancia
-                // es de una superclase de la clase donde se declara la relacion HasOne,
-                // entonces hay que verificar si una subclase no tiene ya el atributo hasOne
-                // declarado, para asegurarse que es de la instancia actual y no intentar generar
-                // la FK si no lo es.
+                // Problema: pasa lo mismo que pasaba en YuppConventions.relTableName, esta tratando
+                // de inyectar la FK en la tabla incorrecta porque la instancia es de una superclase
+                // de la clase donde se declara la relacion HasOne, entonces hay que verificar si una
+                // subclase no tiene ya el atributo hasOne declarado, para asegurarse que es de la
+                // instancia actual y no intentar generar la FK si no lo es.
                 
                 $instConElAtributoHasOne = NULL;
                 $subclasses = ModelUtils::getAllAncestorsOf( $ins->getClass() );
@@ -2373,10 +1762,6 @@ class PersistentManager {
              // FKs tablas intermedias HasMany
              $hasMany = $ins->getHasMany();
              
-
-    //         Logger::getInstance()->pm_log("OwnerClass: " . $ins->getClass() . " " . __FILE__ . " " . __LINE__);
-    //         Logger::getInstance()->pm_log("OwnerTable: " . YuppConventions::tableName( $ins->getClass() ) . " " . __FILE__ . " " . __LINE__);
-    
              foreach ( $hasMany as $attr => $assocClassName )
              {
                 //Logger::getInstance()->pm_log("AssocClassName: $assocClassName, attr: $attr");
@@ -2471,26 +1856,9 @@ class PersistentManager {
       // Quiero eliminar el que tenga ownerid y childid de los objetos que me pasaron.
       // (obs: entonces no permito mas de una relacion entre 2 instancias!)                               );
 
-      // ======================================================================================
-      // En la salvada de hasMany en cascada, la entrada ref_id en la tabla de join
-      // usa el identificador de la instancias de la relacion declarada en la instancia
-      // padre, por lo que si la intancia relacionada mediante hasMany es una subclase
-      // de la clase declarada en la relacion hasMany, no puedo usar $child->getId() como
-      // ref_id, en ese caso tengo que buscar el id de la superclase declarada como tipo
-      // de la relacion hasMany. Esto es obviamente si $child se guarda en una tabla diferente
-      // que la superclase declarada en el hasMany de $owner.
-      
+      // El id de la superclase, es igual que el id de la clase declarada en el hasMany, y el mismo que la instancia final
+      // Por eso uso el id del objeto directamente
       $ref_id = $child->getId();
-      $hasManyAttrs = $owner->getHasMany(); // FIXME: puedo hacer $owner->getType($ownerAttr) en lugar de pedir todos los hasMany...
-      if ( !self::isMappedOnSameTable($hasManyAttrs[$ownerAttr], $child->getClass()) )
-      {
-         // FIXME: esto funciona si tengo un nivel de herencia, por eso le pide el super_id a $child,
-         // pero deberia ser recursiva hasta que obtenga el id de la clase declarada en la relacion
-         // hasMany.
-         // Ojo, creo que si tengo la instancia, esta tambien tiene todos los atributos super_id de todas
-         // las superclases, asi que no habria problema!.
-         $ref_id = $child->aGet( YuppConventions::superclassRefName( $hasManyAttrs[$ownerAttr] ) );
-      }
 
       Logger::getInstance()->log( 'PM::remove_assoc owner_id '.$owner->getId().', ref_id '. $ref_id );
 
@@ -2518,29 +1886,6 @@ class PersistentManager {
    
    
    // Metodos utilitarios para manejar mapeo de herencia multi-tabla
-   
-   
-   
-   /**
-    * Devuelve true si la subclase esta mapeada en la misma tabla que la superclase.
-    * @param $class superclase de subclass.
-    * @param $subclass subclase de class.
-    * @pre class es superclase de subclass.
-    */
-   /*
-   public static function isMappedOnSameTableSubclass( $class, $subclass )
-   {
-      // TODO: pasando instancias seria mas rapido...
-      
-      $c_ins = new $class();
-      $sc_ins = new $subclass();
-      
-      
-      // Esto tambien deberia poder hacerse mediante YuppConventions::tableName
-      return ( $sc_ins->getWithTable() !== NULL &&
-               $sc_ins->getWithTable() !== $c_ins->getWithTable() );
-   }
-   */
    
    /** FIXME: no deberia ser de PO? o de MTISup? no deberia estar en PM deberia ser algo del model utils o mti support.
     * Devuelve true si ambas clases se mapean en la misma tabla, las clases podrian ser 
@@ -2594,45 +1939,5 @@ class PersistentManager {
    }
    
 } // PersistentManager
-
-
-// FIXME: mover a basic.String.
-class SWPString {
-
-  // 1. Necesito una estrategia de nombrado que pueda ser invertida sin ambiguedad (nombre atributo -> cnombre valido de columna -> nombre atributo)
-  // 2. Ver cuales son los nombres validos de columnas
-  // 3. Tengo que definir ciertas restricciones sobre los nombres de atributos para poder evitar ambiguedades en la desconversion.
-  // 4. Dichas restricciones serian los estandares de nombrado de atributos.
-
-  public static function toUnderscoreNotation($string)
-  {
-      $string = preg_replace('/[\'"]/', '', $string); // Saca comillas
-      //$string = preg_replace('/[^a-zA-Z0-9]+/', '_', $string); // Saca primer caracter a _ ???
-
-      // Kiero tambien que reemplace las mayusculas por _minusculas... ESTO ES CONVERSIoN DE CAMEL CASE...
-      $string = preg_replace('/([A-Z])/', '_$1', $string);
-
-      $string = trim($string, '_'); // Si la primera era mayuscula, queda con un _ al principio.
-      $string = strtolower($string);
-
-      return $string;
-  }
-
-  // Si recibe un underscore notation, lo vuelve a camel case, o sea se puede hacer camel -> underscore -> camel y quedar el mismo.
-  public static function toCamelCase( $string )
-  {
-     //$string = preg_replace('/_([a-z])/', strtoupper('$1'), $string);  // No funka
-
-     // El problema es como hacer para saber si la primer letra es mayuscula o minuscula!!!!
-     // Podemos usar conversiones e nlo que refiere a los atributos por ejemplo empiezan con minusculas!!!
-
-     $busca = array("_a", "_b", "_c", "_d", "_e", "_f", "_g", "_h", "_i", "_j", "_k", "_l", "_m", "_n", "_o", "_p", "_q", "_r", "_s", "_t", "_u", "_v", "_w", "_x", "_y", "_z");
-     $cambia = array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
-
-     $string = str_replace($busca, $cambia, $string);
-
-     return $string;
-  }
-}
 
 ?>
