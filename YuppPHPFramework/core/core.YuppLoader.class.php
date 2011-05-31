@@ -154,7 +154,7 @@ class YuppLoader {
       include_once ($incPath); // esto lo tengo que hacer aunque ya tenga la clase registrada xq si no php no se da cuenta que tiene que incluirla...
 
       // No se quiere guardar el script, solo ejecutarlo
-      if ($type !== 'script' && !isset ($this->loadedClasses[$incPath])) // registro solo si no se incluyo ya.
+      if ($type !== 'script' && !isset($this->loadedClasses[$incPath])) // registro solo si no se incluyo ya.
       {
          // Guardo la info de la clase cargada.
          $this->loadedClasses[$incPath] = array (
