@@ -14,6 +14,8 @@
  * 
  */
 
+YuppLoader::loadInterface( "core.persistent", "POLoader" );
+
 class CascadeLoadStrategy implements POLoader {
 
     private $manager; // PersistentManager
@@ -57,6 +59,8 @@ class CascadeLoadStrategy implements POLoader {
     */
    public function get( $clazz, $id )
    {
+      Logger::getInstance()->pm_log("PO CascadeLoad::get ". $clazz."(".$id.") : " . __FILE__."@". __LINE__);
+      
       // manager->get_object
       $obj = $this->manager->get_object( $clazz, $id );
 
