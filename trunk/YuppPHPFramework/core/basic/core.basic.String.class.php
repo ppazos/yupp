@@ -94,6 +94,38 @@ class String {
      */
    }
    
+   // Si recibe un underscore notation, lo vuelve a camel case, o sea se puede hacer camel -> underscore -> camel y quedar el mismo.
+   public static function toCamelCase( $string )
+   {
+      //$string = preg_replace('/_([a-z])/', strtoupper('$1'), $string);  // No funka
+
+      // El problema es como hacer para saber si la primer letra es mayuscula o minuscula!!!!
+      // Podemos usar conversiones e nlo que refiere a los atributos por ejemplo empiezan con minusculas!!!
+
+      $busca = array("_a", "_b", "_c", "_d", "_e", "_f", "_g", "_h", "_i", "_j", "_k", "_l", "_m", "_n", "_o", "_p", "_q", "_r", "_s", "_t", "_u", "_v", "_w", "_x", "_y", "_z");
+      $cambia = array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+
+      $string = str_replace($busca, $cambia, $string);
+
+      return $string;
+   }
+   
+   /*
+    * public static function toUnderscoreNotation($string)
+      {
+          $string = preg_replace('/[\'"]/', '', $string); // Saca comillas
+          //$string = preg_replace('/[^a-zA-Z0-9]+/', '_', $string); // Saca primer caracter a _ ???
+    
+          // Kiero tambien que reemplace las mayusculas por _minusculas... ESTO ES CONVERSIoN DE CAMEL CASE...
+          $string = preg_replace('/([A-Z])/', '_$1', $string);
+    
+          $string = trim($string, '_'); // Si la primera era mayuscula, queda con un _ al principio.
+          $string = strtolower($string);
+    
+          return $string;
+      }
+    */
+   
    /**
     * Verifica si el string tiene formato de fecha.
 	* FIXME: cuidado que tambien matchea datetimes.
