@@ -228,26 +228,12 @@ class ModelUtils {
       
       $loadedClasses = YuppLoader::getLoadedModelClasses();
       $res = array();
-
-      /* Con getLoadedModelClasses se obtiene un array de nombres de clases, no classInfo
-      foreach ( $loadedClasses as $classInfo ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
-      {
-         // class info tiene: package, class y filename.
-         //echo "1: " . $classInfo['class'] . "<br/>";
-         //echo "2: " . $clazz . "<br/>";
-         //echo "ClassInfo<br/>";
-         //print_r( $classInfo );
-         //echo "ClassInfo.class: " . $classInfo['class'] . ", ". $clazz ."<br/>";
-
-         if ( is_subclass_of( $classInfo['class'], $clazz ) ) $res[] = $classInfo['class'];
-      }
-      */
       
       foreach ( $loadedClasses as $loadedClass ) // Si la clase cargada tiene como padre a clazz, es subclase de clazz.
       {
-         if ( class_exists($loadedClass))
+         if ( class_exists($loadedClass) && is_subclass_of($loadedClass, $clazz) )
          {
-            if ( is_subclass_of( $loadedClass, $clazz ) ) $res[] = $loadedClass;
+            $res[] = $loadedClass;
          }
       }
 
