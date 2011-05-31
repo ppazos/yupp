@@ -73,10 +73,6 @@ class Condition {
          //echo "No tiene el attribute<br/>";
       }
       
-      //print_r($this->subconditions);
-      //throw new Exception("");
-      
-      
       if (is_array($this->subconditions))
       {
          foreach ($this->subconditions as $cond)
@@ -86,6 +82,24 @@ class Condition {
       }
       
       return false;
+   }
+   
+   /**
+    * Retorna la primer condicion que encuentre para el atributo attr.
+    * Si no encuentra, retorna NULL.
+    */
+   public function getCondForAttr($attr)
+   {
+      if (isset($this->attribute) && $this->attribute->attr == $attr) return $this;
+      if (is_array($this->subconditions))
+      {
+         foreach ($this->subconditions as $cond)
+         {
+            if (($rcond = $cond->getCondForAttr($attr)) !== NULL) return $rcond; // Recursiva
+         }
+      }
+      
+      return NULL;
    }
    
    /**
