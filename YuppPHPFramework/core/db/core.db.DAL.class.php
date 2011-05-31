@@ -320,8 +320,6 @@ class DAL {
 // luego setearle el id a cada una (este paso no estaba en el insert), y luego crear
 // la consulta como siempre y hacer el update.
 
-      //Logger::struct( $obj, "PO_INS update" . __FILE__ . " " . __LINE__ ); // EL OBJ LLEGA SIN super_id_C !!!!!!!!
-
 // =================================================================================================================================
 // FIXME: esto se deberia hacer en PM y en DAL no se deberian manejar ni POs ni temas de consistencia entre instancias parciales.
 // =================================================================================================================================
@@ -454,7 +452,7 @@ class DAL {
     * 
     * @todo No le deberia pasar class, deberia pasarle solo la tabla, DAL no debe saber de PO.
     */
-   public function delete2( $class, $id, $logical )
+   public function delete( $class, $id, $logical )
    {
       Logger::add( Logger::LEVEL_DAL, "DAL::delete " . __LINE__ );
       
@@ -465,7 +463,7 @@ class DAL {
       
       $this->deleteFromTable( $tableName, $id, $logical );
       
-   } // delete2
+   }
 
 
    /**
@@ -489,111 +487,6 @@ class DAL {
       }
    } // deleteFromTable
    
-
-   // Elimina un objeto unico
-   /**
-    * FIXME: toda la logica esta deberia estar en PM y solo hacer el delete simple de una row, no deberia haber dependencias a PO.
-    * @param $tableName nombre de la tabla correspondiente a la ultima clase de la estructura de herencia de MTI.
-    * @param $id identificador del registro a eliminar en la tabla $tableName.
-    * @param $logical indica si la eliminacion es logica o fisica.
-    */
-   /*
-   public function delete( $tableName, $id, $logical )
-   {
-      Logger::getInstance()->dal_log("DAL::delete " . $tableName . " " . $id);
-
-      // DELETE FROM table_name
-      // WHERE column_name = some_value
-      //
-      if ( $id === NULL ) throw new Exception("DAL.delete: id no puede ser null");
-
-      if ($logical)
-      {  
-         // FIXME: el problema real es que esto se deberia hacer un nivel mas arriba, en PM...
-         // FIXME:         
-         // FIXME:
-         // FIXME: ESTA ROW NO INCLUYE ATRIBUTOS DE OTRAS TABLAS!!! POR ESO LOS ATRIBUTOS DE A y C quedan en NULL...
-         $row = $this->get( $tableName, $id ); // obtiene un array de valores!!! no un objeto!!! // FIXME: no es necesario cargar todo para setear un solo atributo... deleted a true.
-         
-         // ---
-         // FIXME: T#24 esto tiene que ver con que get devuelve array asociativo y update un PO, no deberia hacer el mapeo aqui.
-         //$realClass = $row['class']; // ES LA ULTIMA CLASE DE LA ESTRUCTURA, QUE TIENE TODOS LOS SUPER_IDs
-         //$obj = new $realClass(); // Instancia a devolver, instanciado en la clase correcta.
-
-         // Genero un PO desde cero y le agrego solo los atributos que quiero updatear.
-         $obj = new PersistentObject();
-
-         // NECESITO SOLO LOS SUPER_IDS
-         $obj->setId( $row['id'] );
-         $obj->setClass( $row['class'] );
-         $obj->setDeleted( true );
-         foreach ($row as $attr => $value)
-         {
-            if (YuppConventions::isRefName($attr)) // si es super_id_XX
-            {
-               $obj->addAttribute($attr, Datatypes::INT_NUMBER);
-               $obj->aSet( $attr, $value );
-            }
-         }
-         
-         $superclasses = ModelUtils::getAllAncestorsOf( $row['class'] ); // puede ser en cualquier orden!
-         $superclasses[] = $row['class'];
-         $struct = MultipleTableInheritanceSupport::getMultipleTableInheritance( $superclasses ); // Mapa de clases y subclases que se mapean en la misma tabla.
-         // [C =>[..], A=>[..], G=>[..]]
-         
-         //Logger::struct( $struct, "DELETE STRUCT<hr/>" );
-         
-         // Solo quiero actualizar los campos deleted de cada tabla de MTI.
-         $mtiClasses = array_keys( $struct ); // [C, A, G]
-
-         foreach ($mtiClasses as $mtiClass)
-         {
-            $mtiObj = new PersistentObject( array("deleted"=>true) );
-            
-            //Logger::getInstance()->log( "ROW CLASS: " . $row['class'] );
-            //Logger::getInstance()->log( "MTI CLASS: " . $mtiClass );
-            
-            // No solo deben ser distintas las clases, tengo que garantizar que se mapean en distintas tablas!
-            //if ($row['class'] !== $mtiClass)
-            if ( !PersistentManager::isMappedOnSameTable( $row['class'], $mtiClass) ) // FIXME: DAL invocando a PM... esta funcionalidad no deberia estar en PM deberia ser algo del model utils o mti support.
-            { 
-               $superIdAttr = YuppConventions::superclassRefName( $mtiClass );
-               
-               //Logger::getInstance()->log( "CLASS: " . $mtiClass . " SUPER ID ATTR: " . $superIdAttr);
-               
-               $superId = $obj->aGet($superIdAttr);
-               
-               $mtiObj->setId( $superId );
-            }
-            else
-            {
-               $mtiObj->setId( $id );
-            }
-            
-            $mtiObj->setClass( $row['class'] );
-            
-            //$partialInstances[] = $mtiObj;
-            
-            //Logger::struct( $mtiObj, "DELETE PartialInstance, mtiObj<hr/>" );
-            
-            // Actualiza deleted
-            $tableName = YuppConventions::tableName( $mtiClass );
-            //$this->update_query($mtiObj, $tableName);
-            $this->update_query2( $data, $tableName );
-         }
-      }
-      else
-      {
-         Logger::getInstance()->dal_log("DAL::delete FISICAL " . __LINE__);
-         
-         // FIXME: no considera instancias parciales y no las elimina!
-         
-         $q = "DELETE FROM " . $tableName . " WHERE id=" . $id;
-
-         $this->db->execute( $q );
-      }
-   } // delete
-   */
    
    // TODO: un exists que reciba un queryBuilder, seria algo como existsWhere...
 
@@ -610,18 +503,31 @@ class DAL {
       // FIXME: deberia estar en PM
       // Soporte para multiple table inheritance mapping.
       // Si el objeto no tiene mti simplemente se devuelve un array con el mismo objeto de entrada.
+      // El primero es siempre el que corresponde con la superclase de nivel 1
       $pinss = MultipleTableInheritanceSupport::getPartialInstancesToSave( $obj );
       
       //Logger::getInstance()->dal_log("insert_query count MTI ". count($pinss) . " " . __FILE__ . " " . __LINE__ );
       //Logger::struct( $pinss );
       
+      // ======================================================================================================
+      // http://code.google.com/p/yupp/issues/detail?id=111
+      // New: para simplificar el esquema de identificacion de instancias parciales de una instancia MTI,
+      //      todas las subclases tendran el mismo identificador que la superclase de nivel 1, asi hay que
+      //      generar un solo identificador, ahorrando multiples consultas.
+    
+      // Necesito la tabla para la superclase, no la del objeto ($tableName)
+      // Si viene un ObjectReference, no resuelve bien su nombre de tabla porque es calculado, entonces dejo el tableName que viene.
+      $superTableName = $tableName;
+      if ($obj->getClass() != 'ObjectReference')
+         $superTableName = YuppConventions::tableName( $pinss[0] );
+         
+      $id = $this->generateNewId($superTableName); // Pide sobre la tableName de la superclase
+      $obj->setId( $id );
       
       if ( count($pinss) == 1 ) // si no es mti, salva el caso de ObjectReference.
       {
          //Logger::struct( $pinss, "DAL.insert 1 ($tableName)" ); // OBS: si obj es comentario, pinss tiene un objeto que es Entrada, no Comentario.
          //Logger::struct( $obj, "DAL.insert 1 ($tableName)" );
-         
-         $obj->setId( $this->generateNewId($tableName) );
          
          // Ahora inserta...
          Logger::getInstance()->dal_log("insert_query call " . __FILE__ . " " . __LINE__ );
@@ -630,7 +536,8 @@ class DAL {
       else
       {
          //Logger::struct( $pinss, "DAL.insert 2 ($tableName)" );
-         
+         // ESTO SE DEBERIA HACER EN PM!
+
          // Procesa el modelo, arma instancias parciales, setea ids...
          foreach ( $pinss as &$partialInstance )
          {
@@ -641,56 +548,16 @@ class DAL {
             
             $tableName = YuppConventions::tableName( $partialInstance );
             
-            // Tengo que generar un nuevo id.
-            $partialInstance->setId( $this->generateNewId($tableName) );
-      
-            // Soporte para MTI
-            if ( !PersistentManager::isMappedOnSameTable($obj->getClass(), $partialInstance->getClass()) )
-            {
-               $obj->addMultipleTableId($partialInstance->getClass(), $partialInstance->getId());
-            }
-            else
-            {
-               $obj->setId( $partialInstance->getId() ); // Seteo el id del objeto
-            }
-      
-            // ESTO SE DEBERIA HACER EN PM!
-            // FIXME: cada partialInstance tiene a su vez que guardar los ids de las superclases en MTIds, para poder guardar el valor en los atributos "super_id_SuperClase".
-           
-            // FIXME: Problema> NO TIENE LOS ATRIBUTOS super_id... hay que inyectarlos!!!!
-            //$obj->updateMultipleTableIds(); // Actualiza para obj los "super_id_SuperClase", TODO: falta hacer lo mismo para las otras instancias parciales.
-            $obj->updateSuperIds(); 
+            // Todas las instancias parciales usan el mismo id
+            $partialInstance->setId( $id );
       
             // Seteo la clase real en cada una de las instancias parciales, para poder cargar (get, list, find) desde una instancia parcial.
             $partialInstance->setClass( $obj->getClass() );
             
          } // foreach
          
-         //Logger::struct( $obj ); // FIXME: aparece seteado el super_id_A pero salva null...
-         
-         $mtids = $obj->getMultipleTableIds();
-         
-         //Logger::struct( $mtids, "MTIDs" );
-         
-         // Setea los atributos super_id_XXX
          foreach ( $pinss as &$partialInstance )
          {
-            if (get_parent_class($partialInstance) !== 'PersistentObject') // Setear super_id_SuperClass para cada instancia parcial menos para la clase de nivel 1.
-            {
-               foreach ( $mtids as $sclass => $id )
-               {
-                  $superIdAttr = YuppConventions::superclassRefName( $sclass );
-                  
-                  if ( $partialInstance->hasAttribute( $superIdAttr ) )
-                  {
-                     $partialInstance->aSet( $superIdAttr, $id );
-                  }
-               }
-            }
-            
-            //Logger::struct( $pinss, "DAL.insert 2.1 ($tableName)" );
-            
-            // Ahora inserta...
             Logger::getInstance()->dal_log("insert_query MTI call " . __FILE__ . " " . __LINE__ );
             $this->insert_query( $partialInstance );
             
@@ -698,7 +565,7 @@ class DAL {
       } // si es mti
 
       Logger::getInstance()->dal_log("/DAL::insert");
-      return $obj->getId(); // DEvuelvo el id generado...
+      return $obj->getId(); // Devuelvo el id generado...
       
    } // insert
 
