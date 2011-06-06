@@ -446,6 +446,7 @@ class DatabaseMySQL {
       // Si es 0 me devuelve null...
       if ( is_null($refVal) ) return 'NULL'; // Ver si se sigue necesitando por la correccion de IS NULL e IS NOT NULL
       if ( $refVal === 0 ) return "0";
+      if ( is_bool($refVal) ) return (($refVal)?'1':'0');
       if ( is_numeric($refVal) ) return $refVal; // Si busca por un numero, aunque el tipo fuera TEXT no encuentra si no se le sacan las comillas.
       
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
