@@ -416,6 +416,7 @@ class DatabaseSQLite {
    {
       // Si es 0 me devuelve null...
       if ( $refVal === 0 ) return "0";
+      if ( is_bool($refVal) ) return (($refVal)?'1':'0');
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
    }
    
