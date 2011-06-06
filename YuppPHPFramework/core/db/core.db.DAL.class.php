@@ -146,10 +146,7 @@ class DAL {
 
          //echo "RES SIZE: " . $this->db->resultCount() . "<br/>";
 
-         while ( $row = $this->db->nextRow() )
-         {
-            $res[] = $row;
-         }
+         while ( $row = $this->db->nextRow() ) $res[] = $row;
       }
       catch (Exception $e)
       {
@@ -189,18 +186,6 @@ class DAL {
       // TODO:
       // ESTA LLAMADA: $dbms_type = $this->db->getTextType( $type, $maxLength );
       // Deberia cambiarse por: $this->db->getDBType( $attrType, $attrConstraints ); // Y todo el tema de ver el largo si es un string lo hace adentro.
-      
-      //         CREATE TABLE `tabla_nueva` (
-      //          `id` INT NOT NULL ,
-      //          `user` VARCHAR( 50 ) NOT NULL ,
-      //          PRIMARY KEY ( `id` )
-      //         ) ENGINE = innodb;  
-      //          
-      //         CREATE TABLE table_name (
-      //           id    INTEGER  PRIMARY KEY, << utiliza esta forma de declarar PKs, obs, no puedo declarar mas de una, de la otra forma si!
-      //           col2  CHARACTER VARYING(20),
-      //           col3  INTEGER REFERENCES other_table(column_name), << usa esta forma de declaracon de FKs
-      //         ... )
 
       // Obs: REFERENCES no me crea la FK, no se si porque no existe la tabla  la que hago referencia o porque se define de otra forma.
       // Asi funca: ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
@@ -389,17 +374,6 @@ class DAL {
       if ($params === NULL ) throw new Exception("DAL.getAll: params es null");
       else
       {
-         // SELECT column FROM table
-         // LIMIT 10 OFFSET 10
-         
-         /*
-           FROM "nombre_tabla"
-           [WHERE "condición"]
-           ORDER BY "nombre_columna" [ASC, DESC]
-           ...
-           ORDER BY "nombre1_columna" [ASC, DESC], "nombre2_columna" [ASC, DESC]
-         */
-
          // No puede tener offset sin limit! se chekea arriba.
          // Si viene max siempre viene offset, se chekea arriba.
          if (array_key_exists("max", $params))
@@ -414,7 +388,7 @@ class DAL {
          }
       }
 
-//Logger::struct( $params, "PARAMS" );
+      // Logger::struct( $params, "PARAMS" );
 
       // Where siempre viene porque en PM se inyecta las condicioens sobre las subclases (soporte de herencia)
       $q = "SELECT * FROM " . $tableName . " WHERE " .
@@ -681,8 +655,8 @@ class DAL {
       //return $this->db->generateNewId($tableName);
 
       $q = "SELECT MAX(id) AS max FROM ". $tableName;
-      $this->db->query( $q ); // DBSTD
-      $row = $this->db->nextRow(); //mysql_fetch_assoc( $result ); // DBSTD
+      $this->db->query( $q );
+      $row = $this->db->nextRow();
 
 //print_r($row);
 
@@ -752,29 +726,9 @@ class DAL {
    
    public function tableColNames( $tableName ) //: string[]
    {
-      /* MySQL:
-       * DESCRIBE `person`;
-       * or you can use
-       * SHOW COLUMNS FROM `person`; 
-       * http://dev.mysql.com/doc/refman/5.0/en/show-columns.html
-       */
+      $q = "show columns from `$tableName`"; // SOLO FUNCIONA CON ESTAS COMILLAS `, no con '.
+      $res = $this->query( $q );
        
-       $q = "show columns from `$tableName`"; // SOLO FUNCIONA CON ESTAS COMILLAS `, no con '.
-       //$q = "DESCRIBE '$tableName'";
-       $res = $this->query( $q );
-       
-       /* Devuelve un array de descripciones de columnas:
-        * Array
-        * (
-        *    [Field] => id
-        *    [Type] => int(11)
-        *    [Null] => NO
-        *    [Key] => PRI
-        *    [Default] => 
-        *    [Extra] => 
-        * )
-        */
-
       $ret = array();
       foreach ( $res as $colDesc )
       {
@@ -810,7 +764,6 @@ class DAL {
         * )
         */
    }
-   
 }
 
 ?>
