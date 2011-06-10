@@ -27,39 +27,58 @@ class DatabasePostgreSQL {
    {
       //Logger::getInstance()->log("DatabasePostgreSQL::connect " . $dbhost ." ". $dbuser ." ". $dbpass ." ". $dbName);
 
+      // Retorna: PostgreSQL connection resource on success, FALSE on failure. 
       $this->connection = pg_connect("host=$dbhost dbname=$dbName user=$dbuser password=$dbpass");
+      
       // "host=sheep port=5432 dbname=mary user=lamb password=foo"
       // connect to a database named "mary" on the host "sheep" with a username and password
 
-      //echo "SE CONECTA<br/>";
-      //print_r( $this->connection );
+      Logger::getInstance()->log("DatabasePostgreSQL::connect ". $this->connection);
 
       if ( !$this->connection )
       {
          throw new Exception( "No pudo conectarse a PostgreSQL: " . pg_last_error($this->connection) );
       }
 
-      $this->selectDB( $dbName );
+      //$this->selectDB( $dbName );
    }
 
-   private function selectDB ( $dbName )
+   private function selectDB( $dbName )
    {
       //Logger::getInstance()->log("DatabasePostgreSQL::selectDB");
+      // No se usa, va en el connect
    }
 
-   public function disconnect ()
+   public function disconnect()
    {
-      //Logger::getInstance()->log("DatabasePostgreSQL::disconnect");
+      Logger::getInstance()->log("DatabasePostgreSQL::disconnect ". $this->connection);
       
-      if(!pg_close($this->connection))
+      // Al crear 2 conecciones, se usan 2 instancias de esta clase, pero la
+      // conexion en ambas instancias tiene el mismo identificador de recurso.
+      // Entonces cuando una se cierra, automaticamente el recuso queda invalido,
+      // y cuando la otra instancia cierra, da error en pg_close.
+      // Como en la doc (http://www.php.net/manual/en/function.pg-close.php)
+      // dice: "Using pg_close() is not usually necessary, as non-persistent open
+      // connections are automatically closed at the end of the script", saco el
+      // close y dejo que se cierre la conexion de forma automatica.
+      // Otra opcion es decirle al pg_connect que cree una conexion nueva cada vez.
+      // ver: http://www.php.net/manual/en/function.pg-close.php
+       
+      $this->connection = NULL;
+      
+      /*
+      if ($this->connection !== NULL)
       {
-         //print "Failed to close connection to " . pg_host($this->connection) . ": " .
-         pg_last_error($this->connection) . "<br/>\n";
+         if(!pg_close($this->connection))
+         {
+            //print "Failed to close connection to " . pg_host($this->connection) . ": " .
+            pg_last_error($this->connection) . "<br/>\n";
+         }
+
+         Logger::getInstance()->log("DatabasePostgreSQL::disconnect Successfully disconnected from database");
+         $this->connection = NULL;
       }
-      else
-      {
-         //print "Successfully disconnected from database";
-      }
+      */
    }
 
    // OJO! lo que devuelve es un recurso PostgreSQL... el resultado deberia tratarse internamente...
@@ -561,8 +580,8 @@ class DatabasePostgreSQL {
    {
       // Si es 0 me devuelve null...
       if ( is_null($refVal) ) return 'NULL';
+      if ( is_bool($refVal) ) return (($refVal)?'TRUE':'FALSE');
       if ( $refVal === 0 ) return "'0'";
-      if ( is_bool($refVal) ) return (($refVal)?'1':'0');
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
    }
    
