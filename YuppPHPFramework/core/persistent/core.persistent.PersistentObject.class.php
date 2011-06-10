@@ -1495,8 +1495,11 @@ class PersistentObject {
                else
                {
                   // TODO: otro valor posible podria ser "true" o "false" como strings.
-                  if ( $value === "0" || $value === 0 ) $this->attributeValues[ $attribute ] = false;
-                  else if ( $value === "1" || $value === 1 ) $this->attributeValues[ $attribute ] = true;
+                  // TODO: ademas depende del DBMS
+                  //  - "0"/"1" para MySQL funciona
+                  //  - "f"/"t" para Postgres funciona
+                  if ( $value === "0" || $value === 0 || $value === "f" ) $this->attributeValues[ $attribute ] = false;
+                  else if ( $value === "1" || $value === 1 || $value === "t" ) $this->attributeValues[ $attribute ] = true;
                }
             }
             else
