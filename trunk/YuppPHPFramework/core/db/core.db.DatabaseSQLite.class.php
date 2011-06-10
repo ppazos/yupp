@@ -363,7 +363,7 @@ class DatabaseSQLite {
             $where = $this->evaluateENEQCondition( $condition );
          break;
          case Condition::TYPE_LIKE:
-            $where .= $this->evaluateLIKECondition( $condition );
+            $where = $this->evaluateLIKECondition( $condition );
          break;
          case Condition::TYPE_ILIKE:
             $where = $this->evaluateILIKECondition( $condition );
@@ -611,7 +611,6 @@ class DatabaseSQLite {
    }
    //
    // /EVALUACION DE CONSULTAS ======================================================
-   
 }
 
 ?>
