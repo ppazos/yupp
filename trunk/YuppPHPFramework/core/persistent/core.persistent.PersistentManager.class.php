@@ -594,6 +594,8 @@ class PersistentManager {
    {
       Logger::getInstance()->pm_log("PM.get_mti_object_byData: CLASS LOADED: ". $classLoaded ." ". print_r($attrValues, true));
 
+      // $attrValues['id'] es el identificador de todas las instancias parciales de MTI.
+
       // Nueva instancia de la clase real.
       $cins = new $attrValues["class"](array(), true); // Intancia para hallar nombre de tabla (solo para eso, no se usa luego).
       
@@ -610,7 +612,7 @@ class PersistentManager {
          // SOLO DEBE HACERSE SI LA CLASE $persistentClass no es la misma que la que dice su atributo "class"...
          // En ese caso, $sc_partial_instance es igual a los attrValues cargados al principio.
          $sc_partial_row = NULL; // Matriz de datos simples
-         if ( self::isMappedOnSameTable($attrValues["class"], $classLoaded) )
+         if ( self::isMappedOnSameTable($attrValues['class'], $classLoaded) )
          {
             $sc_partial_row = $attrValues; // Ya es la ultima instancia, no cargo nada mas.
          }
@@ -618,7 +620,7 @@ class PersistentManager {
          {
             // Necesito cargar porque el ultimo registro esta en otra tabla.
             
-            // FIXME: esto se puede simpligicar sabiendo que todas las instancias parciales de MTI tienen el mismo id.
+            // FIXME: esto se puede simplificar sabiendo que todas las instancias parciales de MTI tienen el mismo id.
             $tableName = YuppConventions::tableName( $cins );
             
             // Ahora el id en la clase de nivel 1, y el de la instancia final, es siempre el mismo.
@@ -626,9 +628,6 @@ class PersistentManager {
             $sc_partial_row = $this->dal->get($tableName, $attrValues['id']);
          }
          
-         // Da igual cual id tome porque es el mismo para todas las instancias parciales de MTI
-         $real_id = $sc_partial_row["id"]; // Id de la instancia que tengo que crear.
-          
          // MERGE DE LA INSTANCIA CARGADA CON $sc_partial_instance
          //
          // AHORA DEBERIA VER, con esta instancia cargada, si falta cargar otra instancia (aparte de la primera que cargue y esta).
@@ -648,20 +647,14 @@ class PersistentManager {
             if ($mtiClass !== $classLoaded)
             {
                $tableName = YuppConventions::tableName( $mtiClass );
-               $scAttrValues = $this->dal->get( $tableName, $real_id ); // Se usa el mismo id para todas las instancias parciales
+               $scAttrValues = $this->dal->get( $tableName, $attrValues['id'] ); // Se usa el mismo id para todas las instancias parciales
                $attrValues = array_merge( $attrValues, $scAttrValues );
             }
          }
    
-         // $attrValues deberia tener todos los atributos simples de las instancias parciales cargadas y el id de la ultima instancia de la estructura de herencia.   
-         // No es necesario reescribirlo porque va a ser el mismo para toda las clases parciales del mti
-         $attrValues["id"] = $real_id; // id real de la instancia
+         // $attrValues deberia tener todos los atributos simples de las instancias parciales cargadas.
           
       } // if instancia parcial
-      else
-      {
-         //Logger::getInstance()->pm_log("NO ES MTI: " . __FILE__ . " " . __LINE__);
-      }
 
       // Soporte para herencia. (TODO: necesito mas que esto para multiples tablas)
       $realClass = $attrValues['class'];
