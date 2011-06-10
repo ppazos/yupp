@@ -31,8 +31,7 @@ class DatabaseMySQL {
       // Asi, las conexiones de distintas apps son manejadas de forma independiente, aun si usan la misma BD.
       $this->connection = mysql_connect($dbhost, $dbuser, $dbpass, true);
 
-      //echo "SE CONECTA<br/>";
-      //print_r( $this->connection );
+      Logger::getInstance()->log("DatabaseMySQL::connect ". $this->connection);
 
       if ( !$this->connection )
       {
@@ -56,7 +55,7 @@ class DatabaseMySQL {
 
    public function disconnect ()
    {
-      //Logger::getInstance()->log("DatabaseMySQL::disconnect");
+      Logger::getInstance()->log("DatabaseMySQL::disconnect " . $this->connection);
 
       if ($this->connection !== NULL)
       {
