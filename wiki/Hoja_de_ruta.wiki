@@ -1,4 +1,4 @@
-#summary ¡ Ya estamos en v0.3 !
+#summary ¡ Ya estamos en v0.4 !
 #labels Phase-Requirements,Featured
 
   * http://code.google.com/p/yupp/downloads/list 
@@ -236,7 +236,7 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * Mejoras a Yupp Desktop: filtro de aplicaciones, acceso a noticias desde twitter (HECHO)
 
 
-==v0.4:==
+==v0.4: liberado==
 
   * Extender la configuracion de DB de las aplicaciones para soportar los modos de ejecucion. (HECHO)
   * Agregar las referencias por loops en serialización a XML y JSON (HECHO).
