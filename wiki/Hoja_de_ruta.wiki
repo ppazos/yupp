@@ -236,7 +236,7 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * Mejoras a Yupp Desktop: filtro de aplicaciones, acceso a noticias desde twitter (HECHO)
 
 
-==v0.4: liberado==
+==v0.4: codename Genesis 3 (liberado)==
 
   * Extender la configuracion de DB de las aplicaciones para soportar los modos de ejecucion. (HECHO)
   * Agregar las referencias por loops en serialización a XML y JSON (HECHO).
@@ -257,7 +257,7 @@ Descarga: http://code.google.com/p/yupp/downloads/list
   * http://code.google.com/p/yupp/issues/detail?id=111 (HECHO)
 
 
-==v0.5:==
+==v0.5: codename Genesis 4==
 
   * Agregar el procesamiento de referencias de loops en la deserialización de XML a PO.
   * Mejorar Yupp Desktop con características como cantidad de información que se muestra de cada aplicación, ordenamiento y ubicación de iconos, búsqueda y filtrado de aplicaciones por nombre, descripción y tags, mostrar tags, permitir mostrar Yupp Desktop aún en modo PROD, permitir editar datos de descripción de las aplicaciones, como tags...
