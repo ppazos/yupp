@@ -1,6 +1,8 @@
 #summary Algunas ideas para mejorar distintos aspectos del framework
 #labels Featured,Phase-Requirements,ideas
 
+<wiki:toc max_depth="3" />
+
 = Comando único para indicar parámetros de entrada =
 
 Es la misma idea de los comandos de salida de los controladores, tanto para mostrar una vista como para hacer un redirect, solo que este comando de entrada se crearía al inicio del request. La idea sería que resuelva mucha de la funcionalidad que hoy se resuelve en el routing con Filter, Executer y RequestManager, tal que pueda resolver todos los parámetros de entrada, los parámetros de ejecución (app, controller, accion), y los parámetros contextuales de la ejecución (p.e. si muestro o no logs, el modo de ejecución, el locale, etc).
