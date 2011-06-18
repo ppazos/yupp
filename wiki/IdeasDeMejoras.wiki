@@ -50,12 +50,13 @@ Tal vez se necesite agregar algo en YuppLoader para cargar plugins.
 == Estructura del framework ==
 
 Para soportar plugins, el framework podría tener la siguiente estructura:
-
+{{{
 yupp
 |_ apps
 |_ core
    |_ plugin
 |_ plugins
+}}}
 
 En yupp/core/plugin estaría toda la lógica que permite gestionar los plugins.
 
