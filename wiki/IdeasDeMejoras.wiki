@@ -63,3 +63,12 @@ yupp
 En yupp/core/plugin estaría toda la lógica que permite gestionar los plugins.
 
 En yupp/plugins estarían los plugins instalados para su uso, y los plugins descargados para su instalación.
+
+=== Layout plugin ===
+
+La idea de este plugin sería poder agregar estructuras (como una barra superior, barra inferior, menú, etc) como un contenedor del contenido que muestre una vista de alguna aplicación. Incluso, si la vista ya utiliza un layout de la aplicación, el plugin layout se podría ejecutar: 1. como extensión del layout de la aplicación, o 2. como un contenedor de la vista que devuelve la aplicación (con su layout o sin él), esta sería la idea de "layout anidado" que se van aplicando sucesivamente unos sobre otros, y en núcleo de esta ejecución sería la vista.
+
+Para que esto funcione, el componente que hoy hace el rendering con layouts (LayoutManager), debería poder preguntarle a una aplicación si está usando el plugin de layout, y le daría lo necesario para que éste pueda aplicarse sobre el resultado de la vista y layout de la aplicación.
+
+Otro tema interesante, es que el layout formalmente no dice cuál será si contenido, sino que define un contenedor. El programador será responsable de definir su contenido, por ejemplo si quiere mostrar una barra superior con un menú, o cualquier otro elemento que aplique sobre toda la vista.
+Una parametrización posbiles sería el poder verificar una condición, que si no se cumple, no se aplica el plugin layout sobre la vista. Esto podría ser una regla de seguridad, por ejemplo, si la barra superior con menú que muestra el plugin layout, es un editor de una página, si el usuario no está logueado o si no tiene permisos de edición, no se le mostrará el menú.
