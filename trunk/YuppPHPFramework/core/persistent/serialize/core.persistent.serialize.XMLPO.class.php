@@ -119,11 +119,16 @@ class XMLPO {
                {
                   if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                   {
-                     self::toXMLSingle($relObj, $xml_dom_doc, $hm_node, $recursive, $loopDetection);
+                     //self::toXMLSingle($relObj, $xml_dom_doc, $hm_node, $recursive, $loopDetection);
+                     
+                     // Para los objetos dentro de hasMany el nombre de la tag, es el de la clase declarada,
+                     // que puede ser distinto del de la clase concreta.
+                     self::toXMLSingle($relObj, $xml_dom_doc, $hm_node, $recursive, $loopDetection, $clazz);
                   }
                   else // referencia por loop
                   {
-                     $node = $xml_dom_doc->createElement( $attr );
+                     //$node = $xml_dom_doc->createElement( $attr ); // crea un nodo roles y quiero Rol
+                     $node = $xml_dom_doc->createElement( $relObj->getClass() ); 
                      
                      // La path es la key del valor get_class($relObj).'_'.$relObj->getId() en loopdetection!
                      $keys = array_keys((array)$loopDetection, get_class($relObj).'_'.$relObj->getId());
@@ -132,7 +137,7 @@ class XMLPO {
                      $node->setAttribute( 'ref', $path ); 
                      
                      // Para la primer llamada, este nodo es el dom_document
-                     $currentNode->appendChild( $node );
+                     $hm_node->appendChild( $node );
                   }
                }
                
@@ -147,6 +152,7 @@ class XMLPO {
     * Si debe parsear hasMany y hasOne, usa el segundo parametro 
     * para seguir la recursion, y el primero queda en NULL.
     */
+   /*
    public static function fromXML($xmlstr, $xmlnode = NULL)
    {
       // TODO: falta resolver loops.
@@ -170,6 +176,7 @@ class XMLPO {
          // - atributo type: si es hasOne
          // - nombre de la etiqueta: si es hasMany
          $type = (string)$xmlnode['type'];
+         
          if (!empty($type)) // Es hasOne
          {
             $clazz = $type;
@@ -222,6 +229,7 @@ class XMLPO {
             
       return $po_ins;
    }
+   */
 }
 
 ?>
