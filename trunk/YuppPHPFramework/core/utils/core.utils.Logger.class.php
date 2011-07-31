@@ -68,7 +68,7 @@ class Logger {
       {
          for ($i=0; $i<4; $i++)
          {
-            if ($levels[$i] !== NULL)
+            if (isset($levels[$i]) && $levels[$i] !== NULL)
             {
                for ($j=0; $j<$i; $j++) $string .= "   "; // tantos tabs como el nivel
                
