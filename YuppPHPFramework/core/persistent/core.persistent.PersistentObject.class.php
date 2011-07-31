@@ -38,8 +38,6 @@ class PersistentObject {
    const HASMANY_COLLECTION = "collection";
    const HASMANY_SET       = "set";
    const HASMANY_LIST      = "list";
-   
-   protected $xml; // Auxiliar para crear el XML
 
    // Necesario para poder llamar a las funciones CRUD de forma estatica.
    protected static $thisClass; // auxiliar para metodos estaticos...
@@ -1400,6 +1398,19 @@ class PersistentObject {
       }
       else if ( array_key_exists ( $attr, $this->hasMany ) )
       {
+         // Si tengo una relacion hasMany con migo mismo, tengo 1->* o *->*, para ambos casos debería devolver true.
+         // FIXME: Esto no se cumple completamente si tengo multiples relaciones entre las clases.
+         //        Porque si tengo bidireccionalidad y cardinalidad *, deberia pedir un belongsTo declarado.
+         //        El problema es que si A hasMany A, y le pregunto al hijo si hasMany el padre, me va a decir siempre true,
+         //        lo que deberia hacer es linkear los roles de las relaciones en ambas clases (en este caso solo A), para
+         //        saber cual es la contraparte de la relacion en la otra clase, por ejemplo: A->*(sub_as)A, cuando le pregunto
+         //        a A si tiene una relacion reversa con A, a traves de sub_as, deberia decir false.
+         //        En este caso, deberia decir true: A(parent)*<->*(sub_as)A, y la relacion inversa por el rol "sub_as" tiene
+         //        el rol "parent". Para poder hacerlo, falta un constructor que me permita declarar una relacion con sus 2 roles
+         //        en la clase origen y en la clase destino.
+         if ($this->hasMany[$attr]==$_thisClass) return true;
+         
+         
          $obj = new $this->hasMany[$attr]();
 
          if ($obj->hasOneOfThis( $_thisClass )) // 4) bidireccional 1..*
@@ -1471,6 +1482,14 @@ class PersistentObject {
    // Ahora esta es setAttributeValue
    public function aSet( $attribute, $value )
    {
+      /*
+      if ($value instanceof PersistentObject)
+         Logger::getInstance()->po_log("aSet $attribute ".$value->getClass());
+      else
+         Logger::getInstance()->po_log("aSet $attribute ".(string)$value);
+      */
+      
+      
       // Chekeo is_scalar para seteo de atributos simples.
       // Se agregaron returns para los casos de seteo correcto.
       // Chekeo de is_null para hasOne.
@@ -1819,9 +1838,9 @@ class PersistentObject {
     */
    public function aAddTo ($attribute, $value)
    {
-      Logger::add( Logger::LEVEL_PO, "PO::aAddTo $attribute []=". $value->getClass() ." ". __LINE__ );
+      //Logger::add( Logger::LEVEL_PO, "PO::aAddTo $attribute []=". $value->getClass() ." ". __LINE__ );
       
-      //Logger::getInstance()->po_log("aAddTo $attribute []=".$value->getClass());
+      Logger::getInstance()->po_log("aAddTo $attribute []=".$value->getClass());
       
       // CHEK: attribute es un atributo hasMany
       // CHEK: value es un PO, TODO: podria pasarle una lista y que agregue todos los elementos.
