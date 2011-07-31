@@ -1,12 +1,12 @@
 ﻿=NOTAS DE LA VERSION:=
 
-  * Versión 0.3 de Yupp PHP Framework
+  * Versión 0.4 de Yupp PHP Framework
 
 
 =Incluye los siguientes componentes:=
 
-  * versión 0.9.9 del YORM (Yupp Object Relational Mapping)
-  * versión 0.5 del YMVC (Yupp Model View Controller)
+  * versión 1.0 del YORM (Yupp Object Relational Mapping)
+  * versión 0.5.1 del YMVC (Yupp Model View Controller)
   * versión 0.1.3 del Yupp Desktop
 
 
@@ -27,24 +27,24 @@ Preguntas frecuentes: http://code.google.com/p/yupp/wiki/FAQ
 
 =Cambios con respecto a la versión 0.2.5=
 
-  * http://code.google.com/p/yupp/issues/detail?id=78 (Error por uso de is_a())
-  * http://code.google.com/p/yupp/issues/detail?id=30 (Se completa la generación recursiva de JSON)
-  * http://code.google.com/p/yupp/issues/detail?id=70 (Mostrar la columna por la cual esta ordenada un listado)
-  * http://code.google.com/p/yupp/issues/detail?id=6  (Se agrega shortcut al helper message)
-  * http://code.google.com/p/yupp/issues/detail?id=29 (Se agrega seguridad para ejecutar acciones de CoreController? en modo PROD
-  * http://code.google.com/p/yupp/issues/detail?id=13 (Crear helpers para generación de campos para formularios)
-  * http://code.google.com/p/yupp/issues/detail?id=37 (Se cierra luego de verificar que funciona)
-  * http://code.google.com/p/yupp/issues/detail?id=28 (Si YuppForm? no recibe los parametros para armar la url de la acción, los toma del contexto)
-  * http://code.google.com/p/yupp/issues/detail?id=72 (Se implementa método PO.preValidate())
-  * Se incluyeron las nuevas versiones de las librerías javascript jQuery y Prototype.
-  * Se mejora la vista de ajaxLinkTest para seleccionar librería javascript entre prototype y jquery.
-  * Se corrige un warning que daba PHP 5.2.10 por llamar al date() sin haber seteado el default time zone.
-  * Mejoras a Yupp Desktop: filtro de aplicaciones
-  * Generar instancias de PO a parir del XML generado al serializar la instancia (transformación inversa a la serialización).
-  * Sacar la serializacion a XML de PO a una clase aparte.
-  * Juntar paquetes support y utils en utils. Poner en ese utils las clases del paquete config que no sean de configuracion del framework.
-  * Se agrega el parámetro 'path' al helper template.
-  * Se agrega el parámetro 'attrs' a los helpers link y ajax_link.
+  * Extender la configuracion de DB de las aplicaciones para soportar los modos de ejecucion.
+  * Agregar las referencias por loops en serialización a XML y JSON.
+  * http://code.google.com/p/yupp/issues/detail?id=97
+  * http://code.google.com/p/yupp/issues/detail?id=16
+  * http://code.google.com/p/yupp/issues/detail?id=87
+  * http://code.google.com/p/yupp/issues/detail?id=84
+  * http://code.google.com/p/yupp/issues/detail?id=93
+  * http://code.google.com/p/yupp/issues/detail?id=91
+  * http://code.google.com/p/yupp/issues/detail?id=86
+  * http://code.google.com/p/yupp/issues/detail?id=82
+  * http://code.google.com/p/yupp/issues/detail?id=99
+  * http://code.google.com/p/yupp/issues/detail?id=103
+  * Actualización de librerías javascript: jQuery 1.5.1, TinyMCE 3.4.2
+  * Correccion de bug en removeFrom para relaciones hasMany
+  * http://code.google.com/p/yupp/issues/detail?id=106
+  * http://code.google.com/p/yupp/issues/detail?id=109
+  * http://code.google.com/p/yupp/issues/detail?id=111
+  * Otros cambios y correcciones menores.
 
 
 =¿Que contiene esta liberación?=
