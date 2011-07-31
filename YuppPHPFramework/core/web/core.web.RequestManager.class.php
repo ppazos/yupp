@@ -384,6 +384,5 @@ class RequestManager {
       $layoutManager->renderWithLayout( $pagePath );
       
    } // render
-   
 }
 ?>
