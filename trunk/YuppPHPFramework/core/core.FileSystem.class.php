@@ -170,8 +170,7 @@ class FileSystem
    // TODO: Mejorar! leer con un buffer grande en lugar de linea por linea!
    public static function read ($fileName)
    {
-      if (!file_exists($fileName)) return null;
-
+      if (!file_exists($fileName)) return NULL;
       $lineasEOL = file($fileName);
 
       $s = "";
@@ -181,6 +180,13 @@ class FileSystem
       }
 
       return $s;
+   }
+   
+   public static function readLines($filename)
+   {
+      if (!file_exists($filename)) return NULL;
+      $lineasEOL = file($filename);
+      return $lineasEOL;
    }
 
 
@@ -339,6 +345,5 @@ class FileSystem
       }
 
     */
-
 }
 ?>
