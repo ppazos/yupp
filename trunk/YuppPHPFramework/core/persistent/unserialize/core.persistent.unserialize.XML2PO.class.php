@@ -51,6 +51,20 @@ class XML2PO {
    //       si el $xmlstr no tiene el formato generado por toXML(PO).
    public static function toPO( $xmlstr, XSLTProcessor $xslt = NULL )
    {
+      if ($xslt != NULL)
+      {
+         //$doc = DOMDocument::loadXML($xmlstr);
+         $doc = new DOMDocument();
+         $doc->loadXML($xmlstr, LIBXML_NOCDATA);
+         $xmlstr = $xslt->transformToXML( $doc );
+      }
+
+      if ($xmlstr === NULL)
+      {
+        echo 'la transformacion retorna NULL<br/>';
+        return null;
+      }
+    
       // Tengo que cargar todas las clases de la aplicacion actual porque
       // se como se llaman, pero no se donde estan.
       YuppLoader::loadModel();
