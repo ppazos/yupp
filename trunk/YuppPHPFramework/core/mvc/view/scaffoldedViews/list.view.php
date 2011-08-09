@@ -43,7 +43,6 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
         padding-right: 5px;
         padding-left: 5px;
       }
-      
       .order_desc, .order_asc {
          background-position: 0px;
          background-repeat: no-repeat;
@@ -76,6 +75,11 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
       
     </br></br>
       
-    <?php echo h('pager', array('count'=>$m->get('count'), 'max'=>$m->get('max'), 'offset'=>$m->get('offset'))); ?>
+    <?php echo h('pager', array(
+                            'count'  => $m->get('count'),
+                            'max'    => $m->get('max'),
+                            'offset' => $m->get('offset'),
+                            'params' => array('app' => $app),
+                            'class'  => $m->get('class'))); ?>
   </body>
 </html>
