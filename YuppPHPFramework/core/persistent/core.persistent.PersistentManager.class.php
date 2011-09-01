@@ -1196,7 +1196,7 @@ class PersistentManager {
    /**
     * 
     */
-   public function findByQuery( Query $q )
+   public static function findByQuery( Query $q )
    {
       return $this->dal->query( $q );
    }
