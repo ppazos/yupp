@@ -2,7 +2,6 @@
   $m = Model::getInstance();
   $app = $m->get('app');
 ?>
-
 <html>
   <head>
   </head>
