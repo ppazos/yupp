@@ -156,6 +156,26 @@ class DAL {
 
       return $res;
    }
+   
+   public function sqlQuery($q)
+   {
+      $res = array();
+      try
+      {
+         if ( !$this->db->query( $q ) ) throw new Exception("ERROR");
+
+         //echo "RES SIZE: " . $this->db->resultCount() . "<br/>";
+
+         while ( $row = $this->db->nextRow() ) $res[] = $row;
+      }
+      catch (Exception $e)
+      {
+         echo $e->getMessage();
+         echo $this->db->getLastError(); // DBSTD
+      }
+
+      return $res;
+   }
 
 
    // FIXME: depende del DBMS
