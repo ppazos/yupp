@@ -214,9 +214,10 @@ class Helpers {
         
        $script = "<script type=\"text/javascript\">
 function $func {
-   new Ajax.Request('". self::url(array_filter($paramsMap)) ."', {
-                     onLoading: $before,   
-                     onSuccess: $callback
+   new Ajax.Request('". self::url(array_filter($paramsMap)) ."', {";
+       if ($before != NULL) $script .= "onLoading: $before,";   
+       if ($callback != NULL) $script .= "onSuccess: $callback";
+       $script .= "
    });
 }
 </script>";
@@ -247,9 +248,10 @@ function $func {
        $script = "<script type=\"text/javascript\">
 function $func {
    $.ajax({
-      url: '". self::url(array_filter($paramsMap)) ."',
-      beforeSend: $before,
-      success: $callback
+      url: '". self::url(array_filter($paramsMap)) ."',";
+       if ($before != NULL) $script .= "beforeSend: $before,";
+       if ($callback != NULL) $script .= "success: $callback";
+       $script .= "
    });
 }
 </script>\n\n";
@@ -306,7 +308,8 @@ function $func {
        if ( !array_key_exists('name', $params) ) throw new Exception('Helpers::template: parametro "name" es obligatorio y no esta presente.');
        if ( !array_key_exists('args', $params) || !is_array($params['args']) )  throw new Exception('Helpers::template: parametro "args" no puede ser null y ser un array.');
        
-       $url = "";
+       $url = '';
+       $path = '';
        
        if ( array_key_exists('url', $params) )
        {
@@ -329,7 +332,6 @@ function $func {
              $controller = $ctx->getController();
 
           // Nuevo: path entre el directorio de vistas y donde se ubica el template
-          $path = '';
           if ( array_key_exists('path', $params) )
              $path = $params['path'] . '/';
 
