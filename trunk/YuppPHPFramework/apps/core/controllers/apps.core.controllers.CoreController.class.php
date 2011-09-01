@@ -110,6 +110,12 @@ class CoreController extends YuppController {
     */
    public function appControllersAction()
    {
+      // FIX: http://code.google.com/p/yupp/issues/detail?id=121
+      if (!Yupp::appExists($this->params['app']))
+      {
+         $this->params['message'] = 'Verifique que la aplicacion <b>'. $this->params['app'] .'</b> existe';
+         return $this->render('404');
+      }
       return;
    }
    
@@ -197,9 +203,7 @@ class CoreController extends YuppController {
       
       // Verifica que la clase esta cargada, si no, carga todo (porque no se de que aplicacion es)
       $loadedClasses = get_declared_classes(); //YuppLoader::getLoadedModelClasses(); // FIXME: Tengo clases cargadas en YuppLoader pero no estan incluidas (debe ser por persistencia del singleton en session)
-      if (!in_array($clazz, $loadedClasses))
-         YuppLoader::loadModel();
-      
+      if (!in_array($clazz, $loadedClasses)) YuppLoader::loadModel();
 
       eval ('$list = ' . $clazz . '::listAll( $this->params );'); // Se pasan los params por si vienen atributos de paginacion.
       $this->params['list'] = $list;
@@ -208,6 +212,33 @@ class CoreController extends YuppController {
       $this->params['count'] = $count; // Maximo valor para el paginador.
 
       return $this->render("list");
+   }
+   
+   /**
+    * Listado de objetos relacionados por hasMany a otro objeto.
+    * id: identificador del objeto padre
+    * class: clase del objeto padre
+    * attr: nombre del atributo hasmany en el objeto padre
+    * refclass: clase de los objetos hasmany
+    */
+   public function listManyAction()
+   {
+      $app = $this->params['app'];
+      $class = $this->params['class'];
+      $id = $this->params['id'];
+      $attr = $this->params['attr'];
+      $refclass = $this->params['refclass'];
+      
+      $ctx = YuppContext::getInstance();
+      $ctx->setRealApp( $app );
+      
+      $loadedClasses = get_declared_classes(); //YuppLoader::getLoadedModelClasses(); // FIXME: Tengo clases cargadas en YuppLoader pero no estan incluidas (debe ser por persistencia del singleton en session)
+      if (!in_array($class, $loadedClasses)) YuppLoader::loadModel();
+      
+      eval ('$obj = '. $class .'::get('.$id.');');
+      $list = $obj->aGet($attr);
+      
+      return $this->renderTemplate('../list', array('list'=>$list, 'class'=>$refclass));
    }
 
    // FIXME: misma accion implementada en YuppController, lo unico distinto es como saca el nombre de la clase a mostrar.
