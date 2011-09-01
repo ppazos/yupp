@@ -850,12 +850,12 @@ class PersistentObject {
 
       if ( is_array($this->constraints) )
       {
-         Logger::getInstance()->po_log("PO:validate A");
+         //Logger::getInstance()->po_log("PO:validate A");
          
          // Para cada campo
          foreach ( $this->constraints as $attr => $constraintArray )
          {
-            Logger::getInstance()->po_log("PO:validate B ($attr)");
+            //Logger::getInstance()->po_log("PO:validate B ($attr)");
             
             // =========================================
             // FIXME: reutilizar validateOnly
@@ -879,7 +879,7 @@ class PersistentObject {
             
             if (is_null($value))
             {
-                Logger::getInstance()->po_log("PO:validate Nullable de '$attr' (el valor es null)");
+                //Logger::getInstance()->po_log("PO:validate Nullable de '$attr' (el valor es null)");
                 
                 $nullable = $this->getConstraintOfClass($attr, 'Nullable');
                 if (!is_null($nullable) && $nullable->evaluate($value))
@@ -890,7 +890,7 @@ class PersistentObject {
             }
             else if ($value === '') // Si el valor es vacio, hace lo mismo que nullable por con Blank
             {
-                Logger::getInstance()->po_log("PO:validate Blank de '$attr' (el valor es vacio)");
+                //Logger::getInstance()->po_log("PO:validate Blank de '$attr' (el valor es vacio)");
                 
                 $blank = $this->getConstraintOfClass($attr, 'BlankConstraint');
                 if (!is_null($blank) && $blank->evaluate($value))
@@ -904,7 +904,7 @@ class PersistentObject {
             // Ve el resto de las restricciones
             foreach ( $constraintArray as $constraint )
             {
-               Logger::getInstance()->po_log("PO:validate C");
+               //Logger::getInstance()->po_log("PO:validate C");
                
                // FIXME: para no tener que verificar si un atributo que es de la clase tenga un valor,
                //        al inicializar la clase pasandole un array con algunos valores, deberia poner
@@ -917,7 +917,7 @@ class PersistentObject {
               
                if ( !$constraint->evaluate($value) )
                {
-                  Logger::getInstance()->po_log("PO:validate evaluate constraint falla: ". get_class($constraint));
+                  //Logger::getInstance()->po_log("PO:validate evaluate constraint falla: ". get_class($constraint));
                   
                   $valid = false;
 
