@@ -132,7 +132,9 @@ class YuppLoader {
                // por lo que verificando si la clase ya esta cargada antes de intentar cargarla de
                // nuevo, ahorraria esos loads en cascada.
                if (!$this->isLoadedClass($finfo['package'], $finfo['name']))
-                  $this->load($finfo['package'], $finfo['name']);
+               {
+                  $this->load($finfo['package'], $finfo['name']); 
+               }
             }
          }
       }
@@ -268,6 +270,16 @@ class YuppLoader {
             include_once $incPath;
          }
       }
+   }
+   
+   /**
+    * Si se llama a esta y luego a loadModel, se deberia cargar todo de nuevo.
+    */
+   public static function forceReload()
+   {
+      $cl = YuppLoader :: getInstance();
+      $cl->modelLoaded = false;
+      YuppSession :: set("_class_loader_singleton_instance", $cl); // actualizo la variable en la session...
    }
 }
 
