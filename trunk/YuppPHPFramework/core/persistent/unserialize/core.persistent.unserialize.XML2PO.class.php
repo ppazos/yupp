@@ -61,22 +61,42 @@ class XML2PO {
 
       if ($xmlstr === NULL)
       {
-        echo 'la transformacion retorna NULL<br/>';
-        return null;
+         echo 'la transformacion retorna NULL<br/>';
+         return null;
       }
     
       // Tengo que cargar todas las clases de la aplicacion actual porque
       // se como se llaman, pero no se donde estan.
+      YuppLoader::forceReload();
       YuppLoader::loadModel();
+      
+      
+      // FIXME: no carga las clases del imp!
+      //print_r(YuppLoader::getLoadedClasses());
+      
       
       // Parseo el XML (deberia tener el formato de toXML)
       $xml = simplexml_load_string($xmlstr);
+      
+      
+      // Referencias a paths con objetos para resolver referencias por loops
+      $pathObj = new ArrayObject();
+      
+      
+      // ***
+      // TODO: ver si el nodo raiz es un objeto simple o una coleccion.
+      // <personas type="collection" of="IMPPersona">
+      if (!empty($xml['type']) && $xml['type'] == 'collection')
+      {
+         // nodes, parentAttr, path, pathObj
+         $list_po = self::toPOCollection($xml->children(), '/'.$xml->getName(), $pathObj);
+         return $list_po;
+      }
 
       // Para el primer nodo, la clase es el nombre del elemento
       $class = $xml->getName();
       
-      // Referencias a paths con objetos para resolver referencias por loops
-      $pathObj = new ArrayObject();
+      
       $po = self::toPOSingle($class, $xml, '', -1, $pathObj);
 
       // TODO: no necesito loop detection para no entrar en loops infinitos,
@@ -167,7 +187,7 @@ class XML2PO {
                // TODO: si esta el ref, tendria que ir a buscar el objeto referenciado por su path.
                //       tengo que tener una coleccion de objetos cada uno con su path.
 
-
+//echo "tag2: $hmChName<br/>";
                //$class = $hmChName; // $hmChName es la clase declarada
                $class = (string)$hmXML['type']; // type es la clase concreta
                
@@ -191,6 +211,7 @@ class XML2PO {
          }
          else // es hasOne
          {
+//echo "tag3: $chName<br/>";
             //$path .= '/'.$xml->getName();
             $hoObj = self::toPOSingle($type, $child, $path, -1, $pathObj);
             $po->aSet($chName, $hoObj);
@@ -198,6 +219,43 @@ class XML2PO {
       }
       
       return $po;
+   }
+   
+   // ***
+   /**
+    * parentAttr es el nombre del atributo hasMany, si corresponde a una coleccion hm.
+    */
+   private static function toPOCollection($nodes, $colectionName, $pathObj)
+   {
+      $values = array();
+      $i = 0; // Para la path de hm
+      foreach ($nodes as $hmChName=>$hmXML)
+      {
+           // Todavia no manejo referencias
+           if (!empty($hmXML['ref']))
+           {
+              //echo 'ref hm: '. $hmXML['ref'] .'<br/>';
+              
+              // Si encuentra ref aca, es para atributo hasOne
+              $hoObj = $pathObj[(string)$hmXML['ref']]; // Si encuentra ref, deberia tener el objeto en pathObj.
+              $values[] = $hoObj;
+              
+              continue;
+           }
+
+           // TODO: si esta el ref, tendria que ir a buscar el objeto referenciado por su path.
+           //       tengo que tener una coleccion de objetos cada uno con su path.
+
+//echo "tag: $hmChName<br/>";
+           $class = (string)$hmXML['type']; // type es la clase concreta
+           
+           
+           $hmObj = self::toPOSingle($class, $hmXML, $colectionName, $i, $pathObj);
+           $values[] = $hmObj;
+           $i++;
+      }
+      
+      return $values;
    }
 }
 
