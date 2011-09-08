@@ -26,12 +26,15 @@ class YuppController {
      */
     public function flowExists( $actionName )
     {
+       // FIXME:!!!!! si actionName es get, me da que getFlow existe pero es un 
+       // metodo interno que esta definido mas abajo, no es un flow real!
+       // La solucion rapida es ponerle _ al ppio, pero eviar que haya acciones con _ al ppio.
        return method_exists($this, $actionName . "Flow"); // Se fija si el metodo inicializador del flow existe en el controller.
     }
     
     public function flowLoaded( $actionName )
     {
-       return ( $this->getFlow( $actionName ) !== NULL );
+       return ( $this->_getFlow( $actionName ) !== NULL );
     }
     
     /**
@@ -43,7 +46,7 @@ class YuppController {
        CurrentFlows::getInstance()->addFlow( $flow );
     }
     
-    public function &getFlow( $flowName )
+    public function &_getFlow( $flowName )
     {
        return CurrentFlows::getInstance()->getFlow( $flowName );
     }
