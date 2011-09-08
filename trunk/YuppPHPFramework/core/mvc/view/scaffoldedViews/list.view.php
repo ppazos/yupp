@@ -9,6 +9,7 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
 ?>
 <html>
   <head>
+    <?php echo h('js', array("name" => "jquery/jquery-1.6.1.min") ); ?>
     <style>
       body {
          font-family: arial, verdana, tahoma;
@@ -25,13 +26,17 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
          border-bottom: 1px solid #ddd;
          padding: 5px;
          background-color: #ddd;
-         color: #fff;
+         color: #000;
          background: #fff url(<?php echo $_base_dir; ?>/images/shadow.jpg) bottom repeat-x;
+         font-family: arial, verdana, tahoma;
+         font-size: 12px;
       }
       td {
          border-bottom: 1px solid #ddd;
          padding: 5px;
          background-color: #f5f5f5;
+         font-family: arial, verdana, tahoma;
+         font-size: 12px;
       }
       #actions {
           background: #fff url(<?php echo $_base_dir; ?>/images/shadow.jpg) bottom repeat-x;
@@ -63,18 +68,20 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
     
     <div id="actions">
       <?php
-        $ctx = YuppContext::getInstance();
         $app = $m->get('app');
-        if ( !isset($app) ) $app = $ctx->getApp();
+        if ( !isset($app) ) $app = YuppContext::getInstance()->getApp();
       ?>
       <a href="create?app=<?php echo $app; ?>&class=<?php echo $m->get('class') ?>">Create</a>
     </div>
     <br/>
     
     <?php echo DisplayHelper::model( $m->get('list'), "list", $m->get('class') ); ?>
-      
     </br></br>
-      
+    
+    <?php /*
+    <?php h('template', array('name'=>'list', 'url'=>'./apps/core/views', 'args'=>array('list'=>$m->get('list'), 'class'=>$m->get('class')))); ?>
+    */ ?>
+    
     <?php echo h('pager', array(
                             'count'  => $m->get('count'),
                             'max'    => $m->get('max'),
