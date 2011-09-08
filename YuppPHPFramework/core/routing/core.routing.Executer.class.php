@@ -71,7 +71,7 @@ class Executer {
             
               // ===============================================================================
               // Get Flow from controller
-              $flow = $controllerInstance->getFlow($action); // La accion es el nombre del flow.
+              $flow = $controllerInstance->_getFlow($action); // La accion es el nombre del flow.
               
               if (!$flow->isInitialized())
               {
