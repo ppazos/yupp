@@ -533,8 +533,11 @@ class CoreController extends YuppController {
       YuppLoader::load('core.http', 'HTTPRequest');
       
       $req = new HTTPRequest();
-      $req->setTimeOut(10);
+      $req->setTimeOut(20);
       $res = $req->HTTPRequestGet('http://api.twitter.com/1/statuses/user_timeline.json?screen_name=ppazos&trim_user=1');
+      
+      //print_r($req);
+      //print_r($res);
       
       if ($res->getStatus() == '200')
       {

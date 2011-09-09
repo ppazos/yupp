@@ -240,21 +240,27 @@ global $_base_dir;
             
             $.each( res, function( idx, item )
             {
-              if (item.text.indexOf('yupp') != -1)
+              if (item.text.indexOf('yupp') != -1 || item.text.indexOf('Yupp') != -1)
               {
                 count++; 
 
                 // Pone el link con tag <a>
                 //textWithLink = item.text.replace(/(http:\/\/([a-zA-Z0-9_\-\.]+[.]{1}){2}[a-zA-z0-9_\-\.]+(\/{1}[a-zA-Z0-9_\-\.\?&=#:]+)*\/?)/i, '<a href="$1" target="_blank">$1</a>' );
                 
-                // si quiero acortar el lin y poner ... luego de un largo maximo:
+                // si quiero acortar el link y poner ... luego de un largo maximo:
                 // 0 es el texto, 1 el link.
                 // el problema es que si tuviera texto despues del link, esto cambia.
                 //alert( item.text.split(/(http:\/\/([a-zA-Z0-9_\-\.]+[.]{1}){2}[a-zA-z0-9_\-\.]+(\/{1}[a-zA-Z0-9_\-\.\?&=#:]+)*\/?)/i) );
-                partes = item.text.split(/(http:\/\/([a-zA-Z0-9_\-\.]+[.]{1}){2}[a-zA-z0-9_\-\.]+(\/{1}[a-zA-Z0-9_\-\.\?&=#:]+)*\/?)/i);
+                //partes = item.text.split(/(http:\/\/([a-zA-Z0-9_\-\.]+[.]{1}){2}[a-zA-z0-9_\-\.]+(\/{1}[a-zA-Z0-9_\-\.\?&=#:]+)*\/?)/i);
+                partes = item.text.split(/(http:\/\/([a-zA-Z0-9_\-\.]+[.]{1})[a-zA-z0-9_\-\.]+(\/{1}[a-zA-Z0-9_\-\.\?&=#:]+)*\/?)/i);
                 
-                textWithLink = partes[0] + '<a href="'+ partes[1] +'" target="_blank">'+ partes[1].substring(0, 35) + ((partes[1].length>35)?'...':'') +'</a>';
+                //console.log(partes);
                 
+                if (partes.length>1)
+                   textWithLink = partes[0] + '<a href="'+ partes[1] +'" target="_blank">'+ partes[1].substring(0, 35) + ((partes[1].length>35)?'...':'') +'</a>'; // texto con link
+                else
+                   textWithLink = partes[0]; // solo texto
+                   
                 news = '<div id="twitter_news_'+count+'" class="twitter_news_item">'+ textWithLink +'</div>';
                 
                 // =============================================
