@@ -12,7 +12,6 @@
  * @package core.persistent
  * 
  */
-
 class ArtifactHolder {
 
    private static $instance = NULL;
@@ -72,7 +71,6 @@ class ArtifactHolder {
 
       return ( $this->getModel($class, $id) != NULL );
    }
-
 }
 
 ?>

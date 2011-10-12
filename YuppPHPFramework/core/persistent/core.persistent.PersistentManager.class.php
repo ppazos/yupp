@@ -306,7 +306,7 @@ class PersistentManager {
                    {
                       //Logger::getInstance()->pm_log("LOOP DETECTADO " . get_class($obj) . " " . get_class($assocObj));
     
-                      // Agrega al objeto un callback cuando para que se llame cuando termine de llamarse, para salvar el objeto hasOne asociado.
+                      // Agrega al objeto un callback para que se llame cuando termine de salvarse, para salvar el objeto hasOne asociado.
                       // Se salva el objeto actual sin el asociado (assocObj viene a ser instancia de A del modelo A -> B -> C -> A, donde obj viene a ser instancia de C).
                       // Esto deja a obj inconsistente, pero se arregla con el callback cuando termina de salvar a A, se actualiza la referencia de C a A.
     
