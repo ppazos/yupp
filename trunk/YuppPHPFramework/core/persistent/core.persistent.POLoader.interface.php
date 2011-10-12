@@ -11,7 +11,6 @@
  * @version v0.9.0
  * @package core.persistent
  */
-
 /**
  * Implementada por las estrategias de carga de instancias de Persistentobjects desde la base.
  */

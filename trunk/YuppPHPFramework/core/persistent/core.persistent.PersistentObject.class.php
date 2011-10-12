@@ -1196,6 +1196,7 @@ class PersistentObject {
       // Si es vacio, o si no es numerico, o si no es entero
       if (!isset($ret['offset']) || !is_numeric($ret['offset']) || (int)$ret['offset'] != $ret['offset']) $ret['offset'] = 0;
       
+      // FIXME: el 500 deberia ser parametrico y cada desarrollador lo debe definir como mas le convenga.
       // Si es vacio, o si no es numerico, o si no es entero, o si max es mas que 500 (ver http://code.google.com/p/yupp/issues/detail?id=91)
       if (!isset($ret['max']) || !is_numeric($ret['max']) || (int)$ret['max'] != $ret['max'] || $ret['max'] > 500) $ret['max'] = 50; // Numero por defecto, hardcoded.
       
