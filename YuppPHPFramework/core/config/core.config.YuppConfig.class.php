@@ -74,6 +74,15 @@ class YuppConfig {
                              );
    */
    private $default_datasource = array(
+                                   /*
+                                   self::MODE_DEV  => array(
+                                     'type'     => self::DB_POSTGRES,
+                                     'url'      => 'localhost',
+                                     'user'     => 'postgres',
+                                     'pass'     => 'postgres',
+                                     'database' => 'yupp_dev'
+                                   ),
+                                   */
                                    self::MODE_DEV  => array(
                                      'type'     => self::DB_MYSQL,
                                      'url'      => 'localhost',
