@@ -4,7 +4,6 @@
  * Singleton no persistente.
  * Representa el modelo que se le pasa al view.
  */
-
 class Model {
 
     private static $instance = NULL;
@@ -85,6 +84,5 @@ class Model {
        print_r( $this->model );
        echo "</pre>";
     }
-
 }
 ?>
