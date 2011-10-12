@@ -20,9 +20,7 @@
  * nombre: si tipo = view => es el nombre de la vista o pagina (dinamica) que contiene el archivo
  * nombre: si tipo = action => es el nombre de la accion. La accion es una clase pero es un tipo particular y destacado de clase, por eso no se usa tipo=class
  *
- *
  */
-
 class FileNames {
 
     public static function getClassFilename( $package, $clazz )

@@ -3,7 +3,6 @@
 /**
  * Clase que implementa las convenciones de Yupp
  */
-
 class YuppConventions {
    
    /**
