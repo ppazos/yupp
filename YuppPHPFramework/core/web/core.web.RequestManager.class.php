@@ -19,7 +19,6 @@ YuppLoader :: load('core.mvc', 'Model');
  * Implementa el proceso y control de generacion de paginas a partir del request.
  * Proceso de urls, verificacion de permisos, ejecucion de acciones, pasarle modelo al view, render del view, etc.
  */
-
 class RequestManager {
 
    private function __construct() {}
