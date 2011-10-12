@@ -3,10 +3,6 @@
 // Depende de clase FileSystem xq tiene que leer los archivos
 // de un directorio dado para levantar clases (include de esos archivos).
 
-/*
- * Created on 24/02/2008
- */
-
 // FIXME: usar YuppLoader
 // Con Loader me da un error de que no encuentra a la clase core.config.FileNames en YuppLoader...
 //YuppLoader::load("core",'FileSystem');

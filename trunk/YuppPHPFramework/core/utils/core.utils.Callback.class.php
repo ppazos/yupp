@@ -1,8 +1,4 @@
 <?php
-/*
- * Created on 02/01/2008
- *
- */
 
 // ver: http://www.php.net/manual/es/language.pseudo-types.php
 //      http://www.php.net/manual/es/language.pseudo-types.php#language.types.callback
