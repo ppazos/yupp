@@ -3,7 +3,6 @@
 /**
  * Clase para acceder a la informacion del framework.
  */
-
 class Yupp {
 
     function __construct()

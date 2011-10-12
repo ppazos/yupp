@@ -1,12 +1,10 @@
 <?php
 
-
 /*
  * Created on 25/02/2008
  *
  * Clase auxiliar para manejar el filesystem.
  */
-
 class FileSystem
 {
 
