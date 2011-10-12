@@ -270,7 +270,6 @@ class Logger {
          echo '</div>';
       }
    }
-
 }
 
 ?>
