@@ -20,5 +20,4 @@ class AppMapping {
                   // 'action'     => (array_key_exists(2, $field_list)) ? NULL : $field_list[2]); // Si dejo que el campo sea null y uso su valor, en PHP 5.2.8 me tira un notice: index 2 not defined.
    }
 }
-
 ?>
