@@ -5,7 +5,6 @@ $m = Model::getInstance();
 YuppLoader::load("core.mvc.form", "YuppForm2");
 
 ?>
-
 <html>
   <head>
     <title>Helpers Test: Form Test</title>
@@ -20,31 +19,70 @@ YuppLoader::load("core.mvc.form", "YuppForm2");
             return document.layers[elemID]
          }
       }
-      
-      /*
-      // Handler para jquery
-      function after_function (responseText, statusText, xhr, form)
-      {
-        //alert("aaaaaa: "+responseText);
-      
-        var div = getObj('content_div');
-        div.innerHTML = responseText;
-      }
-      */
-      
-      // Handler para prototype
-      function after_function (res)
-      {
-        //alert("aaaaaa: "+res.responseText);
-      
-        var div = getObj('content_div');
-        div.innerHTML = res.responseText;
-      }
-      
     </script>
+      
+    <?php if ($m->get('jslib')=='prototype') : ?>
+    
+      <?php echo h('js', array('name' => 'prototype_170') ); ?>
+      
+      <script type="text/javascript">
+        
+        // Handler para prototype
+        function before_function (form)
+        {
+          alert('before submit: ' + JSON.stringify(form.serialize(true)));
+        }
+      
+        function after_function (res)
+        {
+          var div = getObj('content_div');
+          div.innerHTML = res.responseText;
+        }
+      </script>
+      
+    <?php else : ?>
+    
+      <?php echo h('js', array('name'=>'jquery/jquery-1.5.1.min')); ?>
+      <script type="text/javascript">
+        
+        // Handler para jquery
+        function before_function (formData, jqForm, options)
+        {
+          // formData is an array; here we use $.param to convert it to a string to display it 
+          // but the form plugin does this for you automatically when it submits the data 
+          var queryString = $.param(formData); 
+         
+          // jqForm is a jQuery object encapsulating the form element.  To access the 
+          // DOM element for the form do this: 
+          // var formElement = jqForm[0]; 
+         
+          alert('before submit: \n\n' + queryString); 
+         
+          // here we could return false to prevent the form from being submitted; 
+          // returning anything other than false will allow the form submit to continue 
+          return true; 
+        }
+        
+        function after_function (responseText, statusText, xhr, form)
+        {
+          var div = getObj('content_div');
+          div.innerHTML = responseText;
+        }
+      </script>
+      
+    <?php endif; ?>
+    
   </head>
   <body>
     <h1>Helpers Test: Form Test</h1>
+   
+    <form>
+      <select name="jslib">
+        <option value="jquery" <?php echo (( in_array($m->get('jslib'), array(NULL, '', 'jquery')) )?'selected="true"':''); ?>>jquery</option>
+        <option value="prototype" <?php echo (( $m->get('jslib')=='prototype' )?'selected="true"':''); ?>>prototype</option>
+      </select>
+      <input type="submit" value="seleccionar libreria" />
+    </form>
    
     <?php if ($m->flash('message')) { ?>
       <div class="flash"><?php echo $m->flash('message'); ?></div><br/>
@@ -71,7 +109,7 @@ YuppLoader::load("core.mvc.form", "YuppForm2");
     <div style="width: 500px; padding:10px; padding-right:10px; background-color: #ffff80; border: 1px dashed #000">
     
       <?php
-          $f = new YuppForm2(array("app"=>"tests", "controller"=>"helpersTest", "action"=>"formTest", "isAjax"=>true, "ajaxCallback"=>"after_function"));
+          $f = new YuppForm2(array("app"=>"tests", "controller"=>"helpersTest", "action"=>"formTest", "isAjax"=>true, "ajaxBeforeSubmit"=>"before_function", "ajaxCallback"=>"after_function"));
           $f->add( YuppForm2::text(array('name'=>"titulo", 'value'=>$m->get('titulo'), 'label'=>"Titulo")) )
             ->add( YuppForm2::bigtext(array('name'=>"texto", 'value'=>$m->get('texto'), 'label'=>"Texto")) )
             ->add( YuppForm2::submit(array('name'=>'doit_ajax', 'label'=>"Enviar")) )
