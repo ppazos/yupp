@@ -5,7 +5,7 @@
  * 
  * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
  */
-
+ 
 YuppLoader::load('core.persistent', 'PersistentObject');
 
 class XML2PO {
@@ -56,6 +56,12 @@ class XML2PO {
          //$doc = DOMDocument::loadXML($xmlstr);
          $doc = new DOMDocument();
          $doc->loadXML($xmlstr, LIBXML_NOCDATA);
+         
+         // TEST: hay 252
+         $xpath = new DOMXPath($doc);
+         $nodelist = $xpath->query('//cuerpo/personas/persona');
+         echo 'Hay '. $nodelist->length . ' nodos persona<br/>';
+         
          $xmlstr = $xslt->transformToXML( $doc );
       }
 
@@ -64,6 +70,11 @@ class XML2PO {
          echo 'la transformacion retorna NULL<br/>';
          return null;
       }
+      
+      
+      // DEBUG
+      //FileSystem::write('archivo_transformado_alta_pac.xml', $xmlstr);
+      
     
       // Tengo que cargar todas las clases de la aplicacion actual porque
       // se como se llaman, pero no se donde estan.
@@ -78,6 +89,14 @@ class XML2PO {
       // Parseo el XML (deberia tener el formato de toXML)
       $xml = simplexml_load_string($xmlstr);
       
+
+
+      // TEST: hay 252!
+      $arr = $xml->xpath('//IMPPersona ');
+      echo "En el transformado hay ". count($arr) ." personas<br/>";
+      
+      
+      
       
       // Referencias a paths con objetos para resolver referencias por loops
       $pathObj = new ArrayObject();
@@ -88,8 +107,18 @@ class XML2PO {
       // <personas type="collection" of="IMPPersona">
       if (!empty($xml['type']) && $xml['type'] == 'collection')
       {
+         // TEST:
+         // 252 nodos!
+         echo count ( $xml->children() ) ."<br/>";
+        
          // nodes, parentAttr, path, pathObj
          $list_po = self::toPOCollection($xml->children(), '/'.$xml->getName(), $pathObj);
+         
+         
+         // TEST: error hay 381 personas!
+         echo "Hay ". count($list_po) . " en la lista de PO<br/>";
+         
+         
          return $list_po;
       }
 
@@ -168,7 +197,7 @@ class XML2PO {
             //$class = (string)$child['of'];
             
             $values = array();
-            $i = 0; // Para la path de hm
+            $j = 0; // Para la path de hm
             foreach ($child->children() as $hmChName=>$hmXML)
             {
                // Todavia no manejo referencias
@@ -198,14 +227,14 @@ class XML2PO {
                // FIXME: el i deberia ser por tag que se llama igual, pero si los elementos
                // son de distinta clase concreta, la tag se llama distinto.
                $hmpath = $path.'/'.$chName;
-               $hmObj = self::toPOSingle($class, $hmXML, $hmpath, $i, $pathObj);
+               $hmObj = self::toPOSingle($class, $hmXML, $hmpath, $j, $pathObj);
                
                // si hago addTo y el po tiene id, va a querer cargar
                // la coleccion de la base, y si hay elementos, van a 
                // aparecer doble.
                //$po->aAddTo($child->getName(), $hmObj);
                $values[] = $hmObj;
-               $i++;
+               $j++;
             }
             $po->aSet($chName, $values);
          }
@@ -229,8 +258,12 @@ class XML2PO {
    {
       $values = array();
       $i = 0; // Para la path de hm
-      foreach ($nodes as $hmChName=>$hmXML)
+      $h = 0;
+      //foreach ($nodes as $hmChName=>$hmXML) // Con esto, si en nodes hay 252 elementos, me hace 381 vueltas.
+      for ($i=0; $i<count($nodes); $i++) // Con esto hace 252 vuelta! OK!
       {
+        $hmXML = $nodes[$i];
+        
            // Todavia no manejo referencias
            if (!empty($hmXML['ref']))
            {
@@ -252,8 +285,15 @@ class XML2PO {
            
            $hmObj = self::toPOSingle($class, $hmXML, $colectionName, $i, $pathObj);
            $values[] = $hmObj;
-           $i++;
+           //$i++;
+           $h++;
       }
+      
+      // TEST:
+      // i es 381 y count de nodes es 252!!!
+      // FIXME: es toPOSingle que esta tocando los $i internamente!
+      echo "Se hace loop de ". $i . " vueltas sobre una lista de ". count($nodes) ." elementos<br/>";
+      echo $h."<br/>";
       
       return $values;
    }
