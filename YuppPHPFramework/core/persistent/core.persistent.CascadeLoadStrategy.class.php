@@ -13,7 +13,6 @@
  * @package core.persistent
  * 
  */
-
 YuppLoader::loadInterface( "core.persistent", "POLoader" );
 
 class CascadeLoadStrategy implements POLoader {

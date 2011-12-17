@@ -12,7 +12,6 @@
  * @version v0.9.0
  * @package core.persistent
  */
-
 YuppLoader::loadInterface( "core.persistent", "POLoader" );
 
 class LazyLoadStrategy implements POLoader {
