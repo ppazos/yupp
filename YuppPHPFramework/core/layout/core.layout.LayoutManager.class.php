@@ -12,7 +12,6 @@ class LayoutManager {
       return self::$instance;
    }
    
-   
    // Registro de las librerias javscript referenciadas y que deben ser incluidas en el header de la vista.
    // El helper js es quien hace el registro.
    private $referencedJSLibs = array();
