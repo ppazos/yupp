@@ -3,7 +3,6 @@
 /**
  * @author Pablo Pazos Gutierrez (pablo.swp@gmail.com)
  */
-
 class Executer {
 
     private $params;
