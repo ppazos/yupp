@@ -122,7 +122,7 @@ class Helpers {
        }
        // /Soporte para attrs en el link
        
-       return '<a href="'. self::url(array_filter($paramsMap, "notNull")) .'"'. $strattrs .'">'. $body .'</a>';
+       return '<a href="'. self::url(array_filter($paramsMap, "notNull")) .'"'. $strattrs .'>'. $body .'</a>';
     }
     
     /**
