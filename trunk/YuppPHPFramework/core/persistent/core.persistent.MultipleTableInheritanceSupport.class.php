@@ -11,7 +11,6 @@
  * @version v0.9.0
  * @package core.persistent
  */
- 
 class MultipleTableInheritanceSupport {
 
    /**
