@@ -1,9 +1,8 @@
 <?php
 
 // TODO: hacer un contador de TODOs, FIXMEs y VERIFY en los archivos del framework.
+class YuppStats {
 
-class YuppStats
-{
    function YuppStats() {}
 
    /**
