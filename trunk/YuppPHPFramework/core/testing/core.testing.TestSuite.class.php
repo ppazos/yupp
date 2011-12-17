@@ -64,7 +64,6 @@ class TestSuite {
    {
       return $this->reports;
    }
-   
 }
 
 ?>
