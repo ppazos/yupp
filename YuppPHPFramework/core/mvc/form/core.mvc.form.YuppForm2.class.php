@@ -28,7 +28,8 @@ class YuppForm2
    private $method = "post"; // Metodo para enviar el form
    
    private $isAjax; // True si se submitea el form por ajax.
-   private $ajaxCallback; // Funcion JS que se llama al submitea via ajax el form.
+   private $ajaxCallback; // Funcion JS que se llama al recibir la respuesta al submit via ajax el form.
+   private $ajaxBeforeSubmit; // Funcion JS se se llama antes del submit via ajax.
    private $id;
 
    private static $counter = 0;
@@ -86,8 +87,9 @@ class YuppForm2
       
       if ( isset($params['isAjax']) )
       {
-         $this->isAjax       = $params['isAjax'];
-         $this->ajaxCallback = $params['ajaxCallback'];
+         $this->isAjax           = $params['isAjax'];
+         $this->ajaxCallback     = $params['ajaxCallback']; // obligatorio
+         $this->ajaxBeforeSubmit = ( isset($params['ajaxBeforeSubmit']) ? $params['ajaxBeforeSubmit'] : NULL ); // opcional
       }
       
       // Para ids autogenerados
@@ -98,8 +100,11 @@ class YuppForm2
    
    public function getId() { return $this->id; }
    public function hasFileFields() { return $this->hasFileFields; }
-   public function getAjaxCallback() { return $this->ajaxCallback; }
+   
    public function isAjax() { return $this->isAjax; }
+   public function getAjaxCallback() { return $this->ajaxCallback; }
+   public function getAjaxBeforeSubmit() { return $this->ajaxBeforeSubmit; }
+   
    public function get() { return $this->fields; }
    public function getMethod() { return $this->method; }
 
@@ -626,6 +631,7 @@ class YuppFormDisplay2
       $html .= '<script type="text/javascript">' .
                'Event.observe(window, "load", function() {'.
                '  Event.observe("'.$form->getId().'", "submit", function(event) {'.
+               ((!is_null($form->getAjaxBeforeSubmit())) ? '    '. $form->getAjaxBeforeSubmit() .'($("'.$form->getId().'"));' : '' ) .
                '    $("'.$form->getId().'").request({'.
                '      onSuccess: '. $form->getAjaxCallback() .
                '    });'.
@@ -642,17 +648,12 @@ class YuppFormDisplay2
       $html = '';
       $html .= h('js', array('name'=>'jquery/jquery-1.5.1.min'));
       $html .= h('js', array('name'=>'jquery/jquery.form.2_43'));
-   
-      // TODO: llamar a una funcion JS antes de hacer el request AJAX.
-      // Dependencia con jQuery.
-      //$formHTML .= '<script type="text/javascript">$(document).ready(function() { '.
-      //             '$(\'#'. $form->getId() .'\').ajaxForm(function() {'. $form->getAjaxCallback() . '(); });'. 
-      //             '});</script>';
       
       // http://jquery.malsup.com/form/#ajaxForm
       $html .= '<script type="text/javascript">$(document).ready(function() { '.
                '  var options = {'.
                '    success: '. $form->getAjaxCallback() .
+               ((!is_null($form->getAjaxBeforeSubmit())) ? ', beforeSubmit: '. $form->getAjaxBeforeSubmit() : '' ) .
                '  };'.
                '  $(\'#'. $form->getId() .'\').ajaxForm(options);'. 
                '  });' .
@@ -674,26 +675,6 @@ class YuppFormDisplay2
          
          //$formHTML .= self::display_ajax_form_jquery($form);
          //$formHTML .= self::display_ajax_form_prototype($form);
-         
-         /*
-          $formHTML .= h('js', array('name'=>'jquery/jquery-1.3.1.min'));
-          $formHTML .= h('js', array('name'=>'jquery/jquery.form.2_18'));
-       
-          // TODO: llamar a una funcion JS antes de hacer el request AJAX.
-          // Dependencia con jQuery.
-          //$formHTML .= '<script type="text/javascript">$(document).ready(function() { '.
-          //             '$(\'#'. $form->getId() .'\').ajaxForm(function() {'. $form->getAjaxCallback() . '(); });'. 
-          //             '});</script>';
-          
-          // http://jquery.malsup.com/form/#ajaxForm
-          $formHTML .= '<script type="text/javascript">$(document).ready(function() { '.
-                       'var options = {
-                          //beforeSubmit:  showRequest,  // pre-submit callback 
-                          success:       '. $form->getAjaxCallback() .'  // post-submit callback 
-                       };' .
-                       '$(\'#'. $form->getId() .'\').ajaxForm(options);'. 
-                       '});</script>';
-         */
       }
       
       $fieldCount = 0;
@@ -711,12 +692,10 @@ class YuppFormDisplay2
          
          if ($fieldOrGroup instanceof YuppFormField2)
          {
-            //$formHTML .= self::displayField($fieldOrGroup, &$fieldCount);
             $formHTML .= self::displayField($fieldOrGroup);
          }
          else
          {
-            //$formHTML .= self::displayGroup($fieldOrGroup, &$fieldCount);
             $formHTML .= self::displayGroup($fieldOrGroup);
          }
       }
