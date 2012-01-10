@@ -2041,6 +2041,10 @@ class PersistentObject {
       // FIXME: si no esta salvado (no tiene id), no se puede hacer delete.
       $pm = PersistentManager::getInstance();
       $pm->delete( $this, $this->getId(), $logical ); // FIXME: no necesita pasarle el id, el objeto ya lo tiene...
+      
+      // http://code.google.com/p/yupp/issues/detail?id=127
+      if ($logical)
+         $this->setDeleted(true);
    }
    
 
