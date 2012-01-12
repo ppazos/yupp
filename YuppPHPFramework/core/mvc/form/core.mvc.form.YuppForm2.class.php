@@ -518,7 +518,9 @@ class YuppFormDisplay2
             
             $value = $field->get("value");
             $options = $field->get("options");
-            
+            if ($options === NULL)
+               throw new Exception("El argumento 'options' es obligatorio para el campo SELECT." . __FILE__ . " " . __LINE__);
+               
             $fieldHTML .= '<div class="label select"><label for="'.$name.'">' . $field->getLabel() . '</label></div>';
             $fieldHTML .= '<div class="field select"><select name="'. $name .'"'. $field->getTagParams() .'>';
             foreach ( $options as $opt_value => $text )
