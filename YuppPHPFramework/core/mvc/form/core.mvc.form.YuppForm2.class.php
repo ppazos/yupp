@@ -648,7 +648,8 @@ class YuppFormDisplay2
    private static function display_ajax_form_jquery($form)
    {
       $html = '';
-      $html .= h('js', array('name'=>'jquery/jquery-1.5.1.min'));
+      //$html .= h('js', array('name'=>'jquery/jquery-1.5.1.min'));
+      $html .= h('js', array('name'=>'jquery/jquery-1.7.1.min'));
       $html .= h('js', array('name'=>'jquery/jquery.form.2_43'));
       
       // http://jquery.malsup.com/form/#ajaxForm
