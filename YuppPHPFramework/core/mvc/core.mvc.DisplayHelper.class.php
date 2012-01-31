@@ -525,7 +525,7 @@ class DisplayHelper {
      *       aca como un string simple que se pega en la pagina. Ahorraria codigo y la 
      *       inclusion de JS es mas ordenada. Idem para YUI Calendar, NiftyCorners, Prototype, etc.
      */
-    public static function html( $name, $content = '' )
+    public static function html( $name, $content = '', $params = array() )
     {
        ob_start(); // agarro el output y devuelvo el string
        
@@ -559,7 +559,7 @@ class DisplayHelper {
                      // Setear el tamanio inicial del editor
                      // http://tinymce.moxiecode.com/forum/viewtopic.php?id=9817
                      width : "100%",
-                     height : "400",
+                     height : "'.((isset($params['height']))?$params['height']:400).'",
                      
                      // Callback para cuando carga el editor, esta deberia ser implementada por el usuario
                      // http://tinymce.moxiecode.com/wiki.php/Configuration:oninit
