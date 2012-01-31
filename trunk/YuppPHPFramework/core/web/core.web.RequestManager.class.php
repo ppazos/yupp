@@ -349,6 +349,12 @@ class RequestManager {
          {
             // FIXME: verificar que existe, porque no se implementaron todos los errores...
             $pagePath = 'core/mvc/view/error/'.$command->viewName().'.view.php'; // No puede no existir, es parte del framework!
+            
+            $codes = array(404=>'Not Found',
+                           500=>'Internal Server Error');
+            
+            // header("HTTP/1.0 500 Internal Server Error");
+            header("HTTP/1.0 ".$command->viewName()." ".$codes[$command->viewName()]);
          }
          else
          {
@@ -359,6 +365,8 @@ class RequestManager {
                                               new ArrayObject(array('message'=>'La vista <b>'.$pagePath.'</b> no existe')),
                                               new ArrayObject() );
             $pagePath = 'core/mvc/view/error/404.view.php';
+            
+            header("HTTP/1.0 404 Not Found");
          }
          
          // FIXME: con esto de arriba no es necesario tener mas el "mode".
