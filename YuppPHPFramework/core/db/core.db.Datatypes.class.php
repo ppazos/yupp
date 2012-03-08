@@ -33,8 +33,6 @@ class Datatypes {
    {
       return ($type == self::DATE || $type == self::TIME || $type == self::DATETIME);
    }
-
-
 }
 
 ?>

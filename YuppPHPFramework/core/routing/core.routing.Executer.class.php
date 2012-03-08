@@ -53,6 +53,7 @@ class Executer {
 
            // Debe verificar si tiene la accion y si la puede ejecutar, si no va a index.
            // FIXME: para que pasarle el nombre del controller al mismo controller???
+           
            $controllerInstance = new $controllerClassName( $this->params ); // Se usa abajo!!!
    
            // Si hay except la agarra en el try del index.php
