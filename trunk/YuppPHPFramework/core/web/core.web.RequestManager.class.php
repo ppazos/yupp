@@ -107,10 +107,24 @@ class RequestManager {
           }
           else
           {
+             // FIXME: hay un problema con actionParam cuando se manda desde un form.
+             // La accion que aparece en la URL es la de la action del form, pero la
+             // vista que se muestra es la que renderea la acction actionParam. La URL
+             // deberia ser tambien la que diga actionParam. Por eso haria un redirect
+             // en lugar de un render.
              $lr['action'] = $actionParam;
           }
       }
-          
+      
+      
+      // Si en logicalRoute se ponen parametros ej. en el AppMapping,
+      // se deben agregar al router como customParams:
+      if (isset($lr['params']))
+      {
+         $router->addCustomParams( $lr['params'] ); // Deberia ser un array...
+      }
+      
+      
       //Logger::struct( $lr, "LOGICAR ROUTE 2 " .__FILE__.' '.__LINE__ );
            
       // *******************************************************************************
