@@ -241,7 +241,7 @@ function $func {
        /**
         * Depende de prototype, con esto me aseguro que se incluye en LayoutManager.
         */
-       self::js( array("name" => "jquery/jquery-1.5.1.min") );
+       self::js( array("name" => "jquery/jquery-1.7.1.min") );
        
        $func = "ajax_link_". self::getCounter()."()";
         
