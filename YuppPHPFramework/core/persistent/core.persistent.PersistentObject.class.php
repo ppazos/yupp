@@ -1062,13 +1062,19 @@ class PersistentObject {
       {
          $attr = substr($method, 10); // El problema es que con "tolower" el atributo "fechaNac" queda como "fechanac" y no lo encuentra...
 
-         // TODO:
+         // TODO: HECHO
          // Esto se ve afectado por el lazy load?
          // Si porque la busqueda actualmente se hace en memoria
          // Para hacerlo bien robusto, deberia cargar todo, buscar, eliminar en memoria y eliminar en la base (eliminar a relacion no el objeto!)
 
          $attr = String::firstToLower($attr);
          $this->aRemoveFrom( $attr, $args[0] );
+      }
+      else if ( substr($method,0,13) == "removeAllFrom" )
+      {
+         $attr = substr($method, 13);
+         $attr = String::firstToLower($attr);
+         $this->aRemoveAllFrom( $attr );
       }
       else if ( substr($method,-8) == "Contains" )
       {
@@ -1934,99 +1940,179 @@ class PersistentObject {
       }
    } // aAddTo
 
+   /**
+    * @pre si $value es un PersistentObject, debe tener el id seteado.
+    */
    public function aRemoveFrom ($attribute, $value, $logical = false)
    {
       // CHEK: attribute es un atributo hasMany
       // CHEK: value es un PO, TODO: podria pasarle una lista y que remueva todos los elementos.
       $attr = self::getAssocRoleName( $attribute ); // Podria tener codificador el nombre de la asociacion.
 
-      // CHECK 1: El atributo esta en la lista de atributos hasMany
-      if ( array_key_exists($attr, $this->hasMany) )
-      {
-         $pm = PersistentManager::getInstance();
-
-         // FIXME: Este codigo se repite en otras operaciones que trabajan sobre atributos hasMany... 
-         // deberia reusar el codigo y hacer una funcion.
-         // Soporte lazy load...
-         if ( $this->attributeValues[ $attr ] == self::NOT_LOADED_ASSOC )
-         {
-            // Si el objeto esta guardado, trae las clases ya asociadas, si no, inicializa el vector.
-
-            if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
-            {
-               $pm->get_many_assoc_lazy( $this, $attr ); // Carga elementos de la coleccion... si es que los hay... y si no inicializa con un array.
-            }
-            else // Si no esta salvado...
-            {
-               $this->attributeValues[ $attr ] = array(); // Inicializa el array...
-            }
-         }
-
-         // =================================================================
-         // Aqui llega con la coleccion cargada o inicializada, siempre!
-         // =================================================================
-
-         // Si la coleccion no tiene elementos no hace nada.
-         if ( count($this->attributeValues[ $attr ]) > 0 )
-         {
-            // Idem a *Contains
-            $id = -1;
-            if ( is_int($value) ) // Busca por id
-            {
-               $id = $value;
-            }
-
-            if ( is_subclass_of($value, 'PersistentObject') ) // Busca por id del PO
-            {
-               $id = $value->getId(); // TODO CHECK: debe tener id seteado!
-            }
-
-            // TODO: porque el valor del id seria -1? Seria si el objeto todavia no has sido guardado?
-            if ( $id != -1 )
-            {
-               // Busco en atributos hasMany attr y si encuentro elimino.
-               foreach ( $this->attributeValues[$attr] as $i => $obj )
-               {
-                  // Busco por id.
-                  // FIXME: el objeto DEBE tener id! (si lo cargue lazy tiene id, si no, tengo que guardarlo antes de preguntar por id!...)
-                  if ( $obj->getId() == $id )
-                  {
-                     // Saca de la relacion el objeto con id=$id
-                     $this->attributeValues[$attr][$i] = null;
-                     $this->attributeValues[$attr] = array_filter($this->attributeValues[$attr]); // La forma PHP de hacerlo... array sin NULLs...
-
-                     // TODO: Verificar si el nombre de este atributo es el correcto!
-                     // Dado el otro objeto y mi atributo, quiero el atributo del otro objeto que corresponda a la relacion con mi atributo.
-                     $attr2 = $obj->getHasOneAttributeNameByAssocAttribute( get_class($this), $attr );
-                     if (!$attr2) $attr2 = $obj->getHasManyAttributeNameByAssocAttribute( get_class($this), $attr );
-                     // FIXME: Problema si el atributo es hasOne! no encuentra el nombre del atributo!
-                     // TODO: La operacion deberia ser para los 2 lados y ser tanto para n-n como para 1-n
-
-                     // FIXME: Si la relacion es 1<->* deberia setear en NULL el lado 1 (ya lo mencione en otro lugar...) y salvar ese objeto.
-
-//                     echo '<h1 style="color:red;">OBJ1:  '. get_class($this)  .'</h1>';
-//                     echo '<h1 style="color:red;">OBJ2:  '. get_class($obj)   .'</h1>';
-//                     echo '<h1 style="color:red;">ATTR1: '. $attr  .'</h1>';
-//                     echo '<h1 style="color:red;">ATTR2: '. $attr2 .'</h1>';
-                     
-                     //remove_assoc( $obj1, $obj2, $attr1, $attr2, $logical = false );
-                     // Por defecto la asociacion se borra fisicamente.
-                     $pm->remove_assoc( $this, $obj, $attr, $attr2, $logical ); // TODOL: Ok ahora falta hacer que el get considere asociaciones solo con daleted false cuando carga.
-
-                     // Marca como editado el hasMany
-                     $this->dirtyMany = true;
-
-                     return;
-                  }
-               }
-            } // Si el elmento esta en la coleccion (necesito el ID!)
-         } // si la coleccion no es vacia
-      }
-      else
+      // CHECK 1: El atributo NO esta en la lista de atributos hasMany
+      if ( !array_key_exists($attr, $this->hasMany) )
       {
          throw new Exception("El atributo ". $attr ." no existe en la clase (" . get_class($this) . ")");
       }
-   }
+      
+      $pm = PersistentManager::getInstance();
+
+      // FIXME: Este codigo se repite en otras operaciones que trabajan sobre atributos hasMany... 
+      // deberia reusar el codigo y hacer una funcion.
+      // Soporte lazy load...
+      if ( $this->attributeValues[ $attr ] == self::NOT_LOADED_ASSOC )
+      {
+         // Si el objeto esta guardado, trae las clases ya asociadas, si no, inicializa el vector.
+
+         if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
+         {
+            $pm->get_many_assoc_lazy( $this, $attr ); // Carga elementos de la coleccion... si es que los hay... y si no inicializa con un array.
+         }
+         else // Si no esta salvado...
+         {
+            $this->attributeValues[ $attr ] = array(); // Inicializa el array...
+         }
+      }
+
+      // =================================================================
+      // Aqui llega con la coleccion cargada o inicializada, siempre!
+      // =================================================================
+
+      // Si la coleccion no tiene elementos no hace nada.
+      if ( count($this->attributeValues[ $attr ]) == 0 ) return;
+     
+      // =================================================================
+      // Aqui llega si hay elementos en la coleccion.
+      // =================================================================
+
+      // Idem a *Contains
+      $id = -1;
+      if ( is_int($value) ) // Busca por id
+      {
+         $id = $value;
+      }
+      else if ( is_subclass_of($value, 'PersistentObject') ) // Busca por id del PO
+      {
+         $id = $value->getId(); // TODO CHECK: debe tener id seteado!
+         if (is_null($id))
+         {
+            throw new Exception("El objeto que se desea remover debe tener el id seteado y tiene id vacio.");
+         }
+      }
+
+      if ( $id != -1 )
+      {
+         // Busco en atributos hasMany attr y si encuentro elimino.
+         foreach ( $this->attributeValues[$attr] as $i => $obj )
+         {
+            // Busco por id.
+            if ( $obj->getId() == $id )
+            {
+               // Saca de la relacion el objeto con id=$id
+               $this->attributeValues[$attr][$i] = null;
+               $this->attributeValues[$attr] = array_filter($this->attributeValues[$attr]); // La forma PHP de hacerlo... array sin NULLs...
+    
+               // TODO: Verificar si el nombre de este atributo es el correcto!
+               // Dado el otro objeto y mi atributo, quiero el atributo del otro objeto que corresponda a la relacion con mi atributo.
+               $attr2 = $obj->getHasOneAttributeNameByAssocAttribute( get_class($this), $attr );
+               if ($attr2 == NULL) $attr2 = $obj->getHasManyAttributeNameByAssocAttribute( get_class($this), $attr );
+               // FIXME: Problema si el atributo es hasOne! no encuentra el nombre del atributo!
+               // TODO: La operacion deberia ser para los 2 lados y ser tanto para n-n como para 1-n
+    
+               // FIXME: Si la relacion es 1<->* deberia setear en NULL el lado 1 (ya lo mencione en otro lugar...) y salvar ese objeto.
+    
+    //                     echo '<h1 style="color:red;">OBJ1:  '. get_class($this)  .'</h1>';
+    //                     echo '<h1 style="color:red;">OBJ2:  '. get_class($obj)   .'</h1>';
+    //                     echo '<h1 style="color:red;">ATTR1: '. $attr  .'</h1>';
+    //                     echo '<h1 style="color:red;">ATTR2: '. $attr2 .'</h1>';
+                 
+               //remove_assoc( $obj1, $obj2, $attr1, $attr2, $logical = false );
+               // Por defecto la asociacion se borra fisicamente.
+               $pm->remove_assoc( $this, $obj, $attr, $attr2, $logical ); // TODO: Ok ahora falta hacer que el get considere asociaciones solo con daleted false cuando carga.
+    
+               // Marca como editado el hasMany
+               $this->dirtyMany = true;
+    
+               return;
+            } // Si el elmento esta en la coleccion
+         }
+      } // Necesito el id porque se usa para matchear
+   } // aRemoveFrom
+
+
+   /**
+    * Similar a aRemoveFrom, pero quita todos los elementos del atributo hasMany.
+    */
+   public function aRemoveAllFrom ($attribute, $logical = false)
+   {
+      // CHEK: attribute es un atributo hasMany
+      // CHEK: value es un PO, TODO: podria pasarle una lista y que remueva todos los elementos.
+      $attr = self::getAssocRoleName( $attribute ); // Podria tener codificador el nombre de la asociacion.
+
+      // CHECK 1: El atributo NO esta en la lista de atributos hasMany
+      if ( !array_key_exists($attr, $this->hasMany) )
+      {
+         throw new Exception("El atributo ". $attr ." no existe en la clase (" . get_class($this) . ")");
+      }
+      
+      $pm = PersistentManager::getInstance();
+
+      // FIXME: Este codigo se repite en otras operaciones que trabajan sobre atributos hasMany... 
+      // deberia reusar el codigo y hacer una funcion.
+      // Soporte lazy load...
+      if ( $this->attributeValues[ $attr ] == self::NOT_LOADED_ASSOC )
+      {
+         // Si el objeto esta guardado, trae las clases ya asociadas, si no, inicializa el vector.
+
+         if ( $this->getId() && $pm->exists( get_class($this), $this->getId() ) )
+         {
+            $pm->get_many_assoc_lazy( $this, $attr ); // Carga elementos de la coleccion... si es que los hay... y si no inicializa con un array.
+         }
+         else // Si no esta salvado...
+         {
+            $this->attributeValues[ $attr ] = array(); // Inicializa el array...
+         }
+      }
+
+      // =================================================================
+      // Aqui llega con la coleccion cargada o inicializada, siempre!
+      // =================================================================
+
+      // Si la coleccion no tiene elementos no hace nada.
+      if ( count($this->attributeValues[ $attr ]) == 0 ) return;
+     
+      // =================================================================
+      // Aqui llega si hay elementos en la coleccion.
+      // =================================================================
+
+
+      // Busco en atributos hasMany attr y si encuentro elimino.
+      foreach ( $this->attributeValues[$attr] as $i => $obj )
+      {
+         // Saca de la relacion el objeto con id=$id
+         $this->attributeValues[$attr][$i] = null;
+         $this->attributeValues[$attr] = array_filter($this->attributeValues[$attr]); // La forma PHP de hacerlo... array sin NULLs...
+
+         // TODO: Verificar si el nombre de este atributo es el correcto!
+         // Dado el otro objeto y mi atributo, quiero el atributo del otro objeto que corresponda a la relacion con mi atributo.
+         $attr2 = $obj->getHasOneAttributeNameByAssocAttribute( get_class($this), $attr );
+         if ($attr2 == NULL) $attr2 = $obj->getHasManyAttributeNameByAssocAttribute( get_class($this), $attr );
+         // FIXME: Problema si el atributo es hasOne! no encuentra el nombre del atributo!
+         // TODO: La operacion deberia ser para los 2 lados y ser tanto para n-n como para 1-n
+
+         // echo '<h1 style="color:red;">OBJ1:  '. get_class($this)  .'</h1>';
+         // echo '<h1 style="color:red;">OBJ2:  '. get_class($obj)   .'</h1>';
+         // echo '<h1 style="color:red;">ATTR1: '. $attr  .'</h1>';
+         // echo '<h1 style="color:red;">ATTR2: '. $attr2 .'</h1>';
+         
+         // Por defecto la asociacion se borra fisicamente.
+         $pm->remove_assoc( $this, $obj, $attr, $attr2, $logical ); // TODO: Ok ahora falta hacer que el get considere asociaciones solo con daleted false cuando carga.
+      }
+      
+      // Marca como editado el hasMany
+      $this->dirtyMany = true;
+      
+   } // aRemoveAllFrom
 
 
    /**
