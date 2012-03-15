@@ -1820,7 +1820,10 @@ class PersistentManager {
 //      return $array !== NULL;
 //   }
 
-   /** ES COMO LO CONTRARIO DE SAVE_ASSOC, pero para solo un registro. save_assoc( PersistentObject &$owner, PersistentObject &$child, $ownerAttr )
+   /**
+    * Se usa solo desde PO::aRemoveFrom y PO::aRemoveAllFrom.
+    * 
+    * ES COMO LO CONTRARIO DE SAVE_ASSOC, pero para solo un registro. save_assoc( PersistentObject &$owner, PersistentObject &$child, $ownerAttr )
     * Elimina la asociacion hasMany entre los objetos. (marca como eliminada o borra fisicamente el registro en la tabla de join correspondiente a la relacion entre los objetos).
     * attr1 es un atributo de obj1
     * attr2 es un atributo de obj2
@@ -1836,7 +1839,12 @@ class PersistentManager {
       $owner     = &$obj1;
       $ownerAttr = &$attr1;
       $child     = &$obj2;
-      if ( $obj2->isOwnerOf( $attr1 ) ) // Si la asoc al obj1 es duenia de obj2
+      
+      // FIXME: si obj1 y obj2 son el mismo objeto, y se tiene relacion 1<->*
+      //        con ese objeto, siempre va a decir que obj2 es owner del obj1,
+      //        porque la relacion es identica (va a dar que obj1 es owner de
+      //        obj2, porque se hace por definicion de la clase no de la instancia).
+      if ( $obj1->getClass() != $obj2->getClass() && $obj2->isOwnerOf( $attr1 ) ) // Si la asoc al obj1 es duenia de obj2
       {
          $owner     = &$obj2;
          $ownerAttr = &$attr2;
@@ -1857,7 +1865,7 @@ class PersistentManager {
 
       // se pasan instancias... para poder pedir el withtable q se setea en tiempo de ejecucion!!!!
       //
-      $tableName =  YuppConventions::relTableName( $owner, $ownerAttr, $child );
+      $tableName = YuppConventions::relTableName( $owner, $ownerAttr, $child );
 
       // Necesito el id del registro para poder eliminarlo...
       // esto es porque no tengo un deleteWhere y solo tengo un delete por id... (TODO)
