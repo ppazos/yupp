@@ -558,7 +558,7 @@ class DisplayHelper {
                      
                      // Setear el tamanio inicial del editor
                      // http://tinymce.moxiecode.com/forum/viewtopic.php?id=9817
-                     width : "100%",
+                     width : "'.((isset($params['width']))?$params['width']:'100%').'",
                      height : "'.((isset($params['height']))?$params['height']:400).'",
                      
                      // Callback para cuando carga el editor, esta deberia ser implementada por el usuario
@@ -568,10 +568,11 @@ class DisplayHelper {
                      
                      plugins : "safari,style,layer,table,advhr,advimage,advlink,emotions,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template", //,imagemanager,filemanager",
                      //pagebreak,save,
-                     theme_advanced_buttons1 : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect,|,forecolor,backcolor",
-                     theme_advanced_buttons2 : "cut,copy,paste,pastetext,pasteword,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview",
-                     theme_advanced_buttons3 : "tablecontrols,|,removeformat,visualaid,|,sub,sup,|,charmap,emotions,media,advhr,|,fullscreen",
-                     theme_advanced_buttons4 : "insertlayer,moveforward,movebackward,absolute,|,styleprops,|,attribs,|,visualchars,nonbreaking,template,blockquote,|,insertfile,insertimage",
+                     theme_advanced_buttons1 : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
+                     //theme_advanced_buttons2 : "cut,copy,paste,pastetext,pasteword,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview",
+                     theme_advanced_buttons2 : "forecolor,backcolor,|,bullist,numlist,|,outdent,indent,blockquote,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview",
+                     theme_advanced_buttons3 : "tablecontrols,|,removeformat,visualaid,|,sub,sup",
+                     theme_advanced_buttons4 : "insertlayer,moveforward,movebackward,absolute,|,styleprops,|,attribs,|,visualchars,nonbreaking,template,blockquote,|,insertfile,insertimage,|,charmap,emotions,media,advhr,|,fullscreen",
                      //pagebreak,hr,del,ins,cite,abbr,acronym,styleselect,|,search,replace,
                            
                      theme_advanced_statusbar_location : "bottom",
