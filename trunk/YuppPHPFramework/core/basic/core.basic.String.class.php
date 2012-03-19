@@ -58,7 +58,8 @@ class String {
    
    public static function removeNonLetterChars( $string )
    {
-     return str_replace( array("?","¿"), array("",""), $string );
+     //return str_replace( array("?","¿"), array("",""), $string );
+     return preg_replace("/[^A-Za-z0-9\s]/", "", $string );
    }
    
    public static function toUnderscore($string)
