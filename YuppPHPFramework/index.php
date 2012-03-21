@@ -56,6 +56,7 @@ YuppLoader :: load('core.utils', 'Logger');
 // TODO: mover a la configuracion
 // Configuro logger para que no muestre mensajes:
 // Comentar esta linea para ver los logs.
+// FIXME: log apagado por defecto para no tener que apagarlo en cada request
 Logger::getInstance()->off(); 
 //Logger::getInstance()->setFile("logger.txt");
 // ============================================================
@@ -80,6 +81,7 @@ try
 catch (Exception $e)
 {
    // FIXME: mostrar la vista de error 500
+   // FIXME: en modo PROD NUNCA deberia mostrar paths ni el stacktrace.
    echo '<html><body>';
      echo '<h1>Ha ocurrido un error!</h1>'; // TODO: i18n
      echo '<div style="border:1px solid #333; padding:10px; width:800px;">';
