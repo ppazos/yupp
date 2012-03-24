@@ -30,7 +30,6 @@ function my_warning_handler($errno, $errstr, $errfile, $errline, $errcontext)
    throw new Exception( $errstr );
 }
 
-
 /*
 DateTime date_create ( [string $time [, DateTimeZone $timezone]] )
 DateTimeZone timezone_open ( string $timezone )
@@ -50,17 +49,6 @@ YuppLoader :: load('core.web', 'RequestManager');
 YuppLoader :: load('core.mvc', 'YuppController'); // Se usa en cada controlador que lo extiende.
 YuppLoader :: load('core.mvc', 'Helpers'); // Usado para acceder a la funcion h()
 YuppLoader :: load('core.utils', 'Logger');
-
-
-// ============================================================
-// TODO: mover a la configuracion
-// Configuro logger para que no muestre mensajes:
-// Comentar esta linea para ver los logs.
-// FIXME: log apagado por defecto para no tener que apagarlo en cada request
-//Logger::getInstance()->off(); 
-//Logger::getInstance()->setFile("logger.txt");
-// ============================================================
-
 
 //[SCRIPT_NAME] => /Persistent/index.php
 // Dejo algunas variables globales utiles:
