@@ -364,10 +364,11 @@ class RequestManager {
             // FIXME: verificar que existe, porque no se implementaron todos los errores...
             $pagePath = 'core/mvc/view/error/'.$command->viewName().'.view.php'; // No puede no existir, es parte del framework!
             
-            $codes = array(404=>'Not Found',
+            // FIXME: poner un error general por si no esta en la lista
+            $codes = array(403=>'Forbidden',
+                           404=>'Not Found',
                            500=>'Internal Server Error');
             
-            // header("HTTP/1.0 500 Internal Server Error");
             header("HTTP/1.0 ".$command->viewName()." ".$codes[$command->viewName()]);
          }
          else
