@@ -57,7 +57,7 @@ YuppLoader :: load('core.utils', 'Logger');
 // Configuro logger para que no muestre mensajes:
 // Comentar esta linea para ver los logs.
 // FIXME: log apagado por defecto para no tener que apagarlo en cada request
-Logger::getInstance()->off(); 
+//Logger::getInstance()->off(); 
 //Logger::getInstance()->setFile("logger.txt");
 // ============================================================
 

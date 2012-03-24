@@ -8,7 +8,7 @@ class Logger {
    //       apagar los de menos nivel y poder ver los de mas nivel, asi puedo debugear por capa o por
    //       importancia del modulo.
 
-   private $active = true;
+   private $active = false;
    private static $instance = NULL;
 
    // Para guardar logs en archivo.
