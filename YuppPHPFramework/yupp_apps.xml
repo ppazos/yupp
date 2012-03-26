@@ -5,7 +5,7 @@
 	<author>Pablo Pazos Gutierrez (pablo.swp@gmail.com)</author>
 	<version>0.1.5</version>
 	<hash>22a6c645f861e33536ed9c7f757b807e3cdb56e1</hash>
-	<ulr>http://yupp-apps.googlecode.com/files/blog-v015.zip</url>
+	<url>http://yupp-apps.googlecode.com/files/blog-v015.zip</url>
   </app>
   <app>
     <name>Yupp Portal</name>
@@ -13,7 +13,7 @@
 	<author>Pablo Pazos Gutierrez (pablo.swp@gmail.com)</author>
 	<version>0.3.5</version>
 	<hash>c69a5a6d18714633c989774c8596e36224ae4b20</hash>
-	<ulr>http://yupp-apps.googlecode.com/files/portal-v035.zip</url>
+	<url>http://yupp-apps.googlecode.com/files/portal-v035.zip</url>
   </app>
   <app>
     <name>Yupp Movix</name>
@@ -21,7 +21,7 @@
 	<author>Pablo Pazos Gutierrez (pablo.swp@gmail.com)</author>
 	<version>0.1</version>
 	<hash>65bc2db4b9a3ee66de0fdb044d8ffdf32997306d</hash>
-	<ulr>http://yupp-apps.googlecode.com/files/movix-v01.zip</url>
+	<url>http://yupp-apps.googlecode.com/files/movix-v01.zip</url>
   </app>
   <app>
     <name>Hello World</name>
@@ -29,6 +29,6 @@
 	<author>Pablo Pazos Gutierrez (pablo.swp@gmail.com)</author>
 	<version>0.1.5</version>
 	<hash>353a2630b11404180bfd29013c161442c69d08c9</hash>
-	<ulr>http://yupp-apps.googlecode.com/files/helloWorld-v015.zip</url>
+	<url>http://yupp-apps.googlecode.com/files/helloWorld-v015.zip</url>
   </app>
 </yupp_apps>
