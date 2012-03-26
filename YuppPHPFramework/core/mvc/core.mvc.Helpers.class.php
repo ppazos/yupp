@@ -108,6 +108,8 @@ class Helpers {
     public static function link($paramsMap)
     {
        // Deberia chekear nombre de la app, controller, action. (se hace en url)
+       if (!isset($paramsMap['body'])) throw new Exception('El array de parametros debe contener la clave "body"');
+       
        $body = $paramsMap['body'];
        $paramsMap['body'] = NULL;
        
