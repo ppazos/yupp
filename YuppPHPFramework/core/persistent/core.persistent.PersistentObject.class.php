@@ -1161,8 +1161,7 @@ class PersistentObject {
    {
       Logger::getInstance()->po_log("PersistentObject.get " . self::$thisClass . " " . $id);
 
-      $obj = PersistentManager::getInstance()->get( self::$thisClass, $id );
-      return $obj;
+      return PersistentManager::getInstance()->get( self::$thisClass, $id );
    }
 
 

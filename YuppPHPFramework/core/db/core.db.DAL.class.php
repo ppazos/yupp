@@ -68,7 +68,11 @@ class DAL {
    }
    */
 
-   public function __construct($appName)
+   /**
+    * @param String appName
+    * @param Array datasource puede servir para usar distintos datasources para distintas pruebas mas alla de los 3 modos de ejecucion. 
+    */
+   public function __construct($appName, $datasource = NULL)
    {
       Logger::getInstance()->log("DAL::construct");
       
@@ -90,8 +94,8 @@ class DAL {
       $this->appName = $appName;
       
       Logger::getInstance()->log("appName: $appName");
-      
-      $datasource = $cfg->getDatasource($appName);
+      if ($datasource == NULL)
+         $datasource = $cfg->getDatasource($appName);
       
       // FIXME: Esto es solo para mysql y postgres =====
       $this->url      = $datasource['url'];
@@ -134,14 +138,18 @@ class DAL {
       $this->db->disconnect();
    }
 
+
    // Ejecuta una consulta y devuelve el resultado como una matriz asociativa.
    // FIXME: Devolver referencia para que no copie ?
    public function query( Query $query )
    {
+      return $this->sqlQuery( $this->db->evaluateQuery( $query ) );
+      /*
       $res = array();
       try
       {
          $q = $this->db->evaluateQuery( $query );
+         
          if ( !$this->db->query( $q ) ) throw new Exception("ERROR");
 
          //echo "RES SIZE: " . $this->db->resultCount() . "<br/>";
@@ -153,10 +161,14 @@ class DAL {
          echo $e->getMessage();
          echo $this->db->getLastError(); // DBSTD
       }
-
+      
       return $res;
+      */
    }
    
+   /**
+    * Ejecuta queries de sql.
+    */
    public function sqlQuery($q)
    {
       $res = array();
@@ -175,6 +187,15 @@ class DAL {
       }
 
       return $res;
+   }
+   
+   
+   /**
+    * Ejecuta inserts o updates de sql.
+    */
+   public function sqlExecute($q)
+   {
+      $this->db->execute( $q );
    }
 
 
@@ -371,7 +392,13 @@ class DAL {
       }
 
       // TODO: deberia exceptuar o retornar null?
-      throw new Exception("DAL.get: no se encuentra el objeto con id ". $id . " en la tabla " . $tableName);
+      //throw new Exception("DAL.get: no se encuentra el objeto con id ". $id . " en la tabla " . $tableName);
+      // Retorno un array vacio porque se espera que retorne un array.
+      // Luego el PM se encarga de devolver NULL si no existe el objeto con id $id.
+      // Sino se hace esto, la except puede llegar hasta el usuario final... y el programador deberia hacer catch de cada get, es mas natural ver si el objeto es null en lugar de tener catchs por todos lados.
+      // http://code.google.com/p/yupp/issues/detail?id=132
+      
+      return array();
    }
 
 
@@ -456,7 +483,6 @@ class DAL {
       $tableName = YuppConventions::tableName( $class );
       
       $this->deleteFromTable( $tableName, $id, $logical );
-      
    }
 
 
