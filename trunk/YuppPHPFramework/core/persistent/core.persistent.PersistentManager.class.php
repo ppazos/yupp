@@ -693,6 +693,10 @@ class PersistentManager {
  * (o sea, lazy load para atributos simples)
  */
  
+      // http://code.google.com/p/yupp/issues/detail?id=132
+      if (count($attrValues) == 0) return NULL;
+      
+ 
       // 2: Verificar si es una instancia parcial y cargar las demas instancias parciales, mergear, y generar la instancia final.
       
       return $this->get_mti_object_byData( $persistentClass, $attrValues );
@@ -993,7 +997,9 @@ class PersistentManager {
          // FIXME: solo si la clase estaba limpia antes de la operacion
          //$obj->resetDirty(); // Apaga las banderas que se prendieron en la carga
 
-         ArtifactHolder::getInstance()->addModel( $obj ); // Lo pongo aca para que no se guarde luego de la recursion de las assocs...
+         // http://code.google.com/p/yupp/issues/detail?id=132
+         if ($obj != NULL)
+            ArtifactHolder::getInstance()->addModel( $obj ); // Lo pongo aca para que no se guarde luego de la recursion de las assocs...
       }
       
       return $obj;
