@@ -5,7 +5,6 @@
  */
 
 YuppLoader::load('core.mvc', 'ViewCommand');
-YuppLoader::load('core.mvc.webflow', 'CurrentFlows');
 
 class YuppController {
 
@@ -19,38 +18,6 @@ class YuppController {
     
     protected $isAjax = false; // True si el pedido HTTP se hizo mediante AJAX
     
-    /**
-     * Como el nombre del flow ocupa el lugar de la accion, 
-     * el RequestManager (en realidad router.Executer) debe 
-     * preguntar si la accion es el nombre de un flow o una accion comun.
-     */
-    public function flowExists( $actionName )
-    {
-       // FIXME:!!!!! si actionName es get, me da que getFlow existe pero es un 
-       // metodo interno que esta definido mas abajo, no es un flow real!
-       // La solucion rapida es ponerle _ al ppio, pero eviar que haya acciones con _ al ppio.
-       return method_exists($this, $actionName . "Flow"); // Se fija si el metodo inicializador del flow existe en el controller.
-    }
-    
-    public function flowLoaded( $actionName )
-    {
-       return ( $this->_getFlow( $actionName ) !== NULL );
-    }
-    
-    /**
-     * Carga una instancia del web flow en la sesion mediante CurrentFlows.
-     */
-    public function loadFlow( $flowName )
-    {
-       $flow = $this->{$flowName . "Flow"}();
-       CurrentFlows::getInstance()->addFlow( $flow );
-    }
-    
-    public function &_getFlow( $flowName )
-    {
-       return CurrentFlows::getInstance()->getFlow( $flowName );
-    }
-
     // TODO: Agregar IndexAction que haga un render de una pagina por defecto para el controller.
     
     // Ahora controller y action los obtiene de Context, no es necesario pasarselos como parametro.
@@ -222,21 +189,15 @@ class YuppController {
          $obj->setProperties($this->params);
          if (!$obj->save()) // Con validacion de datos!
          {
-            // create
             $this->params['object'] = $obj;
-
             return $this->render("create");
          }
 
-         // show
          $this->params['object'] = $obj;
-
          return $this->redirect( array('action'=>'show', 'params'=>array('id'=>$obj->getId())) );
       }
 
-      // create
       $this->params['object'] = $obj;
-      //return $this->render("create", $this->params);
       return $this->render("create");
    }
    
@@ -255,8 +216,8 @@ class YuppController {
    {
       $context = YuppContext::getInstance();
       $clazz = String::firstToUpper( $context->getController() );
-      
       $id  = $this->params['id'];
+      
       eval('$obj = '. $clazz .'::get( $id );');
       $obj->setProperties( $this->params );
        
@@ -275,8 +236,8 @@ class YuppController {
    {
       $context = YuppContext::getInstance();
       $clazz = String::firstToUpper( $context->getController() );
-      
       $id  = $this->params['id'];
+      
       eval('$ins = '. $clazz .'::get( $id );');
       
       $ins->delete(true); // Eliminacion logica, si fuera fisica tendria que actualizar los links a las entradas, o borrar tambien las entradas del user.
