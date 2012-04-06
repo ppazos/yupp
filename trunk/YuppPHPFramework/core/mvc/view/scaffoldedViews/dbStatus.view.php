@@ -10,113 +10,111 @@ global $_base_dir;
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <style>
       body {
-         font-family: arial, verdana, tahoma;
-         font-size: 12px;
-         background-color: #efefef;
+       font-family: arial, verdana, tahoma;
+       font-size: 12px;
+       background-color: #efefef;
+       margin: 0;
       }
       h1 {
-         margin: 0px;
-         padding-top: 35px;
-         display: inline-block;
+       margin: 0px;
+       padding-top: 35px;
+       display: inline-block;
       }
       table, tr, td {
-         margin: 0px;
-         padding: 0px;
-         border: 0px;
+       margin: 0px;
+       padding: 0px;
+       border: 0px;
       }
       #actions {
-          background: #fff url(<?php echo $_base_dir; ?>/images/shadow.jpg) bottom repeat-x;
-          border: 1px solid #ccc;
-          border-style: solid none solid none;
-          padding: 7px 12px;
+        background: #fff url(<?php echo $_base_dir; ?>/images/shadow.jpg) bottom repeat-x;
+        border: 1px solid #ccc;
+        border-style: solid none solid none;
+        padding: 7px 12px;
+      }
+      #actions a {
+        text-decoration: none;
       }
       #apps {
-         background-color: #fff;
-         padding: 10px;
+        background-color: #fff;
+        padding: 10px;
+        border: 1px solid #dfdfdf;
+        margin: 10px;
       }
       .menu_btn {
          padding: 15px;
          padding-left: 20px;
          padding-right: 20px;
-         margin-top: 5px;
+         
          margin-left: 5px;
          /*width: 110px;*/
          text-align: center;
       }
       .menu_btn.active {
-         background-color: #fff; /* tab activa del menu superior */
+        background-color: #fff; /* tab activa del menu superior */
+        border-top-right-radius: 5px;
+        -moz-border-radius-topright: 5px;
+        border-top-left-radius: 5px;
+        -moz-border-radius-topleft: 5px;
       }
       .menu_btn img {
-         border: 0px;
+        border: 0px;
       }
       #apps ul {
-         margin: 0px;
-         padding: 0px;
-         /*position: relative;*/
-         /*left: 0px;*/
-         list-style: none;
+        margin: 0px;
+        padding: 0px;
+        list-style: none;
       }
       #apps li {
-       width: 460px;
+       /*width: 460px;*/
+       width: 49%; /* 2 columnas */
        min-height: 140px;
-       /*height: auto;*/ /* necesario para que el anchor se expanda al alto 100% */
-       /*_height: 100px;*/ /* IE6 */
-       /*border: 1px solid #000;*/
-       /*display: -moz-inline-stack;*/ /* FF2*/
        display: inline-block;
        vertical-align: top; /* BASELINE CORRECCIÓN*/
        padding: 5px;
-       margin: 0px;
-       /*margin-right: 5px;*/
-       /*margin-bottom: 7px;*/
+       margin: 0 0 1px 0;
        zoom: 1; /* IE7 (hasLayout)*/
-       *display: inline; /* IE */
-       background-color: #ffff80;
+       *display: inline-block; /* IE */
+       /*background-color: #ffff80;*/
+       background-color: #efefef;
       }
       #apps li:hover {
-         background-color: #99ddff;
-         /*cursor: pointer;*/
+        background-color: #99ddff;
       }
       #apps li a {
-         /*height: 100%;*/
-         display: block;
-         /*text-decoration: none;*/
-         /*color: #000;*/
+        display: block;
       }
       .app_icon {
-         display: inline-block;
-         vertical-align: top;
-         width: 64px;
-         margin: 0px;
-         margin-right: 3px;
-         padding: 0px;
-         float: left;
+        display: inline-block;
+        vertical-align: top;
+        width: 64px;
+        margin: 0px;
+        margin-right: 3px;
+        padding: 0px;
+        float: left;
       }
       .app_icon img {
-         border: 0px;
+        border: 0px;
       }
       .app_details {
-         display: inline-block;
-         vertical-align: top;
-         /*width: 370px;*/
-         width: 100%;
-         /*border: 1px solid #000;*/
-         margin: 0px;
-         padding: 5px;
-         padding-top: 3px;
-         padding-right: 0px;
-         float: left;
+        display: inline-block;
+        vertical-align: top;
+        width: 100%;
+        /*border: 1px solid #000;*/
+        margin: 0px;
+        padding: 5px;
+        padding-top: 3px;
+        padding-right: 0px;
+        float: left;
       }
-
       .info {
          display: block;
          margin-top: 40px;
          overflow: auto;
          height: 100px;
       }
-      
       table#top {
-         width: 100%;
+        width: 100%;
+        padding: 5px 10px 0 10px;
       }
       td#logo {
          /*display: inline-block;*/
@@ -129,6 +127,12 @@ global $_base_dir;
       .right {
          float: right;
       }
+      .message_ok {
+        padding: 10px;
+        background-color: #DFF0D8;
+        border: 1px solid #D6E9C6;
+        color: #468847;
+      }
     </style>
   </head>
   <body>
@@ -140,19 +144,13 @@ global $_base_dir;
         <td id="top_right">
           <h1>Yupp PHP Framework</h1>
           <div class="right menu_btn active">
-            <a href="<?php echo h('url', array(
-                       'app'=>'core',
-                       'controller'=>'core',
-                       'action'=>'dbStatus'));?>">
+            <a href="<?php echo h('url', array('app'=>'core', 'controller'=>'core', 'action'=>'dbStatus'));?>">
               <?php echo h('img', array('src'=>'db_64.png')); ?><br/>
               Base de datos
             </a>
           </div>
           <div class="right menu_btn">
-            <a href="<?php echo h('url', array(
-                       'app'=>'core',
-                       'controller'=>'core',
-                       'action'=>'index'));?>">
+            <a href="<?php echo h('url', array('app'=>'core', 'controller'=>'core', 'action'=>'index'));?>">
               <?php echo h('img', array('src'=>'app_64.png')); ?><br/>
               Aplicaciones
             </a>
@@ -168,9 +166,10 @@ global $_base_dir;
                    'body'=>'Nueva Aplicacion'));?>
     </div>
     <div id="apps">
-    
-      <div align="center"><?php echo $m->flash('message'); ?></div>
-    
+      <?php if ($m->flash('message') != NULL) : ?>
+        <div align="center" class="message_ok"><?php echo $m->flash('message'); ?></div>
+      <?php endif; ?>
+      
       <!-- fixme: no deberia mostrarse si el modo es produccion, esto es solo para dev -->
       <h2>Informacion del modelo</h2>
       Muestra que tablas fueron generadas para el modelo y que tablas falta generar, 
@@ -181,16 +180,14 @@ global $_base_dir;
         {
           if (!$allTablesCreated)
           {
-            echo "Existe modelo para el que no se generaron las tablas &iquest;desea crear las tablas ahora?<br/>";
-            echo "<h3>";
-            echo h("link",
-                   array("action" => "createModelTables",
-                         "body"   => "Crear tablas"));
-            echo "</h3>";
+            echo 'Existe modelo para el que no se generaron las tablas &iquest;desea crear las tablas ahora?<br/>';
+            echo '<h3>';
+            echo h('link', array('action'=>'createModelTables', 'body'=>'Crear tablas'));
+            echo '</h3>';
           }
           else
           {
-            echo "<h3>Se generaron todas las tablas para el modelo.</h3>";
+            echo '<h3>Se generaron todas las tablas para el modelo.</h3>';
           }
         }
       ?>
@@ -227,8 +224,7 @@ global $_base_dir;
               {
                 foreach ( $classInfo as $class => $info )
                 {
-                  echo '<b>'. $class .'</b> se guarda en la tabla: <b>'. 
-                       $info['tableName'] .'</b> (' . $info['created'] .')<br/>';
+                  echo '<b>'.$class.'</b> se guarda en la tabla: <b>'.$info['tableName'].'</b> ('.$info['created'].')<br/>';
                 }
               }
               echo '</div>';
@@ -237,9 +233,7 @@ global $_base_dir;
             ?>
           </div>
         </li>
-        <?php
-          endforeach;
-        ?>
+        <?php endforeach; ?>
       </ul>
     </div>
   </body>

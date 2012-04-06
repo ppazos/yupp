@@ -10,17 +10,14 @@ global $_base_dir;
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    
     <?php echo h('js', array('name'=>'jquery/jquery-1.7.1.min')); ?>
     <?php echo h('js', array('name'=>'jquery/jquery.corner')); ?>
-    <?php /*echo h('css', array('name' => 'niftyCorners') ); */ ?>
-    <?php /*echo h('js',  array('name' => 'niftycube') ); */ ?>
-
     <style>
       body {
         font-family: arial, verdana, tahoma;
         font-size: 12px;
         background-color: #efefef;
+        margin: 0;
       }
       h1 {
         margin: 0px;
@@ -44,55 +41,64 @@ global $_base_dir;
       #apps {
         background-color: #fff;
         padding: 10px;
+        border: 1px solid #dfdfdf;
+        margin: 10px;
       }
       .menu_btn {
         padding: 15px;
         padding-left: 20px;
         padding-right: 20px;
-        argin-top: 5px;
+        
         margin-left: 5px;
         /*width: 110px;*/
         text-align: center;
       }
       .menu_btn.active {
         background-color: #fff; /* tab activa del menu superior */
+        border-top-right-radius: 5px;
+        -moz-border-radius-topright: 5px;
+        border-top-left-radius: 5px;
+        -moz-border-radius-topleft: 5px;
       }
       .menu_btn img {
         border: 0px;
       }
       #apps ul {
-        margin: 0px;
-        padding: 0px;
-        /*position: relative;*/
-        /*left: 0px;*/
+        margin: 0;
+        padding: 0;
         list-style: none;
+        
+        display: table;
+        width: 100%;
       }
       #apps li {
-       width: 230px;
-       min-height: 100px;
-       height: 100px; /* necesario para que el anchor se expanda al alto 100% */
-       _height: 100px; /* IE6 */
-       /*border: 1px solid #000;*/
-       display: -moz-inline-stack; /* FF2*/
+       /* width: 230px; */
+       min-height: 65px;
+       height: 65px; /* necesario para que el anchor se expanda al alto 100% */
+       _height: 65px; /* IE6 */
+       
+       /*
+       display: -moz-inline-stack; / * FF2 * /
        display: inline-block;
+       */
+       
        vertical-align: top; /* BASELINE CORRECCIÓN*/
-       padding: 5px;
+       padding: 10px 0 10px 10px;
        margin: 0px;
-       /*margin-right: 5px;*/
-       /*margin-bottom: 7px;*/
+       /*margin-bottom: 1px;*/
        zoom: 1; /* IE7 (hasLayout)*/
        *display: inline; /* IE */
-       background-color: #ffff80;
+       /*background-color: #ffff80;*/
+       
+       display: table-cell;
+       /*width: 19%;*/
+       float: left;
       }
       #apps li:hover {
         background-color: #99ddff;
-        /*cursor: pointer;*/
       }
       #apps li a {
-        /*height: 100%;*/
         display: block;
-        /*text-decoration: none;*/
-        /*color: #000;*/
       }
       .app_icon {
         display: inline-block;
@@ -118,6 +124,7 @@ global $_base_dir;
       }
       table#top {
         width: 100%;
+        padding: 5px 10px 0 10px;
       }
       td#logo {
         /*display: inline-block;*/
@@ -137,6 +144,12 @@ global $_base_dir;
       }
       .highlight {
         font-weight: bold;
+      }
+      .message_ok {
+        padding: 10px;
+        background-color: #DFF0D8;
+        border: 1px solid #D6E9C6;
+        color: #468847;
       }
       
       #twitter_news_count {
@@ -354,20 +367,13 @@ global $_base_dir;
         <td id="top_right">
           <h1>Yupp PHP Framework</h1>
           <div class="right menu_btn">
-            <a href="<?php echo h('url', array(
-                       'app'=>'core',
-                       'controller'=>'core',
-                       'action'=>'dbStatus'));?>">
-              
+            <a href="<?php echo h('url', array( 'app'=>'core', 'controller'=>'core', 'action'=>'dbStatus'));?>">
               <?php echo h('img', array('src'=>'db_64.png')); ?><br/>
               Base de datos
             </a>
           </div>
           <div class="right menu_btn active">
-            <a href="<?php echo h('url', array(
-                       'app'=>'core',
-                       'controller'=>'core',
-                       'action'=>'index'));?>">
+            <a href="<?php echo h('url', array('app'=>'core', 'controller'=>'core', 'action'=>'index'));?>">
               <?php echo h('img', array('src'=>'app_64.png')); ?><br/>
               Aplicaciones
             </a>
@@ -396,7 +402,9 @@ global $_base_dir;
     </div>
     
     <div id="apps">
-      <div align="center"><?php echo $m->flash('message'); ?></div>
+      <?php if ($m->flash('message') != NULL) : ?>
+        <div align="center" class="message_ok"><?php echo $m->flash('message'); ?></div>
+      <?php endif; ?>
     
       <ul>
         <?php foreach ($apps as $app) : ?>
@@ -412,7 +420,6 @@ global $_base_dir;
                     try {
                        echo h('img', array('app'=>$app->getName(), 'src'=>'app_64.png', 'w'=>64, 'h'=>64));
                     } catch (Exception $e) {
-                       //echo $e->getMessage();
                        echo h('img', array('src'=>'app_64.png', 'w'=>64, 'h'=>64));
                     }
                   ?>
@@ -424,8 +431,8 @@ global $_base_dir;
                 <?php
                 if ($app->hasBootstrap())
                 {
-                   echo h('link', array("action"        => "executeBootstrap",
-                                        "body"          => "Ejecutar arranque",
+                   echo h('link', array("action"  => "executeBootstrap",
+                                        "body"    => "Ejecutar arranque",
                                         "appName" => $app->getName()) );
                 }
                 //else  echo 'No tiene BS<br/>';
