@@ -366,6 +366,11 @@ class PersistentManager {
          Logger::getInstance()->pm_log("PM::save_assoc save_object ". $obj->getClass() ." @".__LINE__);
          
          // salva el objeto simple, verificando restricciones en la instancia $obj
+         // FIXME: esta operacion no verifica restricciones, se deberia validar el objeto antes de salvar.
+         //        la validacion para el objeto raiz de la estrucura se hace en PO, pero no para el resto
+         //        de los objetos asociados que se salvan en cascada
+         // FIXME: el problema es que si falla la validacion de un objeto salvado en cascada, deberia
+         //        abortar todo el save, o sea ser transaccional, y esto todavia no esta soportado.
          $this->save_object( $obj, $sessId );
 
          // Si se han modificado los hasMany
@@ -385,28 +390,30 @@ class PersistentManager {
                    // No se cual es la condicion para salvar la relacion solo, voy a intentar solo decir que c1 es owner de a1 a ver que pasa...
                    if ( $obj->isOwnerOf( $attrName ) )
                    {
-                      Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." isOwnerOf $attrName. " .__LINE__);
+                      //Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." isOwnerOf $attrName. " .__LINE__);
                       
                       // FIXME ?: por que aca no es igual que en las relaciones hasOne?
                       
-                      // VERIFY: si el objeto asociado esta salvado, la asociacion tambien ????
-                      // VERIFY: Salva en cascada solo si soy el duenio de la relacion.. esto esta bien para 1..* ??
-                      if (!$assocObj->isSaved( $sessId )) 
+                      // FIXME: Es probable que el assocObj no se haya salvado en esta sesion y que este salvado.
+                      //        Se pudo haber creado y salvado antes, y luego asociado a hasMany del obj.
+                      //        Habria que preguntar si NO esta salvado en esta session o si esta dirty.
+                      if (!$assocObj->isClean() || !$assocObj->isSaved( $sessId )) 
                       {
                          // salva objeto y sus asociaciones.
                          $this->save_cascade( $assocObj, $sessId );
-                         Logger::getInstance()->pm_log("PM::save_cascade objeto guardado: ". $assocObj->getClass(). " ". $assocObj->getId(). " " .__LINE__);
+                         //Logger::getInstance()->pm_log("PM::save_cascade objeto guardado: ". $assocObj->getClass(). " ". $assocObj->getId(). " " .__LINE__);
                       }
     
-                      Logger::getInstance()->pm_log("PM::save_assoc save_assoc de ". $obj->getClass(). " ". $assocObj->getClass(). " " .__LINE__);
+                      //Logger::getInstance()->pm_log("PM::save_assoc save_assoc de ". $obj->getClass(). " ". $assocObj->getClass(). " " .__LINE__);
                       
+                      // El objeto puede estar salvado y la relacion no.
                       // Actualiza tabla intermedia.
                       // Necesito tener, si la relacion es bidireccional, el nombre del atributo de assocObj que tiene Many obj, podria haber varios!
                       $this->save_assoc( $obj, $assocObj, $attrName, $ord ); // Se debe salvar aunque a1 este salvado (problema loop hasmany)
                    }
                    else
                    {
-                      Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." !isOwnerOf $attrName. " .__LINE__);
+                      //Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." !isOwnerOf $attrName. " .__LINE__);
                    }
                    
                    $ord++;
