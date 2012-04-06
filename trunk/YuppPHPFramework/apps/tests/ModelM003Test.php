@@ -47,12 +47,6 @@ YuppLoader :: load("core.web", "UrlProcessing");
 YuppLoader :: load("core.web", "PageHistory");
 YuppLoader :: load("core.web", "RequestManager");
 
-// WebFlow
-YuppLoader :: load("core.mvc.webflow", "CurrentFlows");
-YuppLoader :: load("core.mvc.webflow", "WebFlow");
-YuppLoader :: load("core.mvc.webflow", "State");
-YuppLoader :: load("core.mvc.webflow", "Transition");
-
 YuppLoader :: load("core.mvc", "YuppController"); // FIXME: No se si es necesario cargarlo xq no se usa directamente.
 YuppLoader :: load("core.mvc", "Helpers");
 YuppLoader :: load("core.mvc", "DisplayHelper");
