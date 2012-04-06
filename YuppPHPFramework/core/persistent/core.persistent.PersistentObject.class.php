@@ -98,11 +98,9 @@ class PersistentObject {
    {
       $this->dirtyMany = false;
    }
-   
-   // Apaga los dirty bits que no esten ya dirty
    public function isClean()
    {
-      return ($this->dirty ||$this->dirtyOne || $this->dirtyMany );
+      return !($this->dirty || $this->dirtyOne || $this->dirtyMany );
    }
    public function isDirty()
    {
@@ -427,10 +425,10 @@ class PersistentObject {
       // no me va a poner el valor xq el atributo no estaba inyectado!
 
       // 3: Inyecta el atributo id de tipo int.
-      $this->attributeTypes[ "id" ]  = Datatypes::INT_NUMBER; // Los tipos de los ids son int.
-      $this->attributeValues[ "id" ] = NULL; // No tengo ningun objeto asociado.
+      $this->attributeTypes['id']  = Datatypes::INT_NUMBER; // Los tipos de los ids son int.
+      $this->attributeValues['id'] = NULL; // No tengo ningun objeto asociado.
 
-      
+
       // Me fijo si en args viene algun valor de atributo
       // FIXME: no deberia poder modificar valor de atributos inyectados, el comportamiento posterior es impredecible.
       foreach ( $args as $attr => $value )
@@ -441,37 +439,29 @@ class PersistentObject {
          // FIXME: hace lo mismo que setProperties pero distinto
          if ( array_key_exists($attr, $this->attributeTypes) )
          {
-            $this->attributeValues[$attr] = $value;
-             
+            $this->attributeValues[$attr] = trim($value); // Si es un valor simple, lo limpio por espacios extras.
+            
             // Si es una instancia nueva, siempre estara dirty si le pongo valores simples.
             $this->dirty = true;
          }
          else if ( array_key_exists($attr, $this->hasOne) )
          {
+            if (!is_subclass_of($value, 'PersistentObject')) throw new Exception('Se espera un valor de tipo PersistentObject para el atributo '.$attr);
+            
             $this->attributeValues[$attr] = $value;
-             
+            
             // Si es una instancia nueva, siempre estara dirty si le pongo valores simples.
             $this->dirtyOne = true;
          }
          else if ( array_key_exists($attr, $this->hasMany) )
          {
+            if (!is_array($value)) throw new Exception('Se espera un valor de tipo array para el atributo '.$attr);
+            
             $this->attributeValues[$attr] = $value;
-             
+            
             // Si es una instancia nueva, siempre estara dirty si le pongo valores simples.
             $this->dirtyMany = true;
          }
-         
-         /*
-         // OJO, PUEDO INICIALIZAR ATRIBUTOS EN HASONE Y HASMANY TAMBIEN, EL PREGUNTAR PUEDE SERVIR PARA HACER CHECKEOS SOBRE EL VALOR QUE SE PASA, si en un PO para hasOne, si es un array para hasMany.
-          if ( array_key_exists($attr, $this->attributeTypes) ||
-               array_key_exists($attr, $this->hasOne) ||
-               array_key_exists($attr, $this->hasMany) )
-          {
-             // TODO: verificar que es del mismo tipo, verificar que es un valor valido
-             // con respecto a las constraints. Esto es un setAttrbuteValue( $attr ) pero mas rapido...
-             $this->attributeValues[$attr] = $value;
-          }
-          */
       }
    } // construct
 
@@ -489,6 +479,8 @@ class PersistentObject {
    // La idea es llamarla desde getSimpleAssocValues para obtener todos los objetos persistentes relacionados 1..1
    public function isSimplePersistentObject( $attr )
    {
+      // FIXME: chequear que attr esta en hasOne.
+      
       $type = $this->hasOne[ $attr ];
       if (!$type) return false; // Ni siquiera le pase un attributo valido...
 
@@ -529,7 +521,7 @@ class PersistentObject {
             // SI HAGO TODO EL CHEKEO EN setAttributeValue, solo llamo a esa y listo...
             
              // FIXME: si es un objeto tambien le hago trim???, es porque setProperties es solo para
-             //        atrbutos simples (que pasa con numeros y booleanos con trim???)
+             //        atrbutos simples (que pasa con numeros y booleanos con trim???) y con arrays para hasMany?
             $this->attributeValues[ $attr ] = trim( $params[$attr] );
             
             // Marco como dirty en atributos simples (asignar en cada loop del for es mas barato
