@@ -129,7 +129,6 @@ class YuppStats {
                 "./core/mvc/form",
                 "./core/mvc/view/error",
                 "./core/mvc/view/scaffoldedViews",
-                "./core/mvc/webflow",
                 "./core/persistent",
                 "./core/persistent/serialize",
                 "./core/routing",
