@@ -11,6 +11,7 @@ PersistentObject representa la superclase de todos las clases del modelo persist
 List es un array con índices enteros.
 Map es un array con índices con algún valor, ej. un string.
 
+{{{
 <object> __call(<string>$method, <array>$args)
 
 <PersistentObject >__construct(<array>$args, <boolean>$isSimpleInstance)
@@ -165,3 +166,4 @@ validate($validateCascade = false)
 
 validateOnly( $attrs )
 
+}}}
