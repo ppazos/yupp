@@ -152,7 +152,7 @@ class PersistentManager {
       // puede ser hasOne  => owner (1)<->(*)child tengo que ver si tengo linkeado owner en child, si lo tengo, es de tipo 2.
       // puede ser hasMany => owner (*)<->(*)child, con owner la parte fuerte, tengo que fijarme si child contains al owner, si es asi, es de tipo 2.
       $hoBidirChildAttr = $child->getHasOneAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
-      if ( $hoBidirChildAttr ) // hasOne
+      if ( $hoBidirChildAttr != NULL) // hasOne
       {
          $assocObj = $child->aGet($hoBidirChildAttr);
 
@@ -165,7 +165,7 @@ class PersistentManager {
       else // si el atributo no era de hasOne, es hasMany
       {
          $hmBidirChildAttr = $child->getHasManyAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
-         if ( $hmBidirChildAttr && $child->aContains( $hmBidirChildAttr, $owner->getId() ) ) // FIXME: No se como se llama el atributo como para preguntar si child tiene a owner...
+         if ( $hmBidirChildAttr != NULL && $child->aContains( $hmBidirChildAttr, $owner->getId() ) ) // FIXME: No se como se llama el atributo como para preguntar si child tiene a owner...
          {
             $relType = ObjectReference::TYPE_BIDIR;
          }
@@ -438,10 +438,6 @@ class PersistentManager {
                       // Actualiza tabla intermedia.
                       // Necesito tener, si la relacion es bidireccional, el nombre del atributo de assocObj que tiene Many obj, podria haber varios!
                       $this->save_assoc( $obj, $assocObj, $attrName, $ord ); // Se debe salvar aunque a1 este salvado (problema loop hasmany)
-                   }
-                   else
-                   {
-                      //Logger::getInstance()->pm_log("PM::save_assoc ". $obj->getClass()." !isOwnerOf $attrName. " .__LINE__);
                    }
                    
                    $ord++;
@@ -1190,9 +1186,9 @@ class PersistentManager {
 
       $params['where'] = $cond_total;
 
-      $allAttrValues = $this->dal->listAll( $tableName, $params ); // FIXME: AHORA TIRA TODOS LOS ATRIBUTOS Y NECESITO SOLO CLASS e ID.
-      
-      return $allAttrValues;
+      // Valores de todos los atributos
+      // FIXME: AHORA TIRA TODOS LOS ATRIBUTOS Y NECESITO SOLO CLASS e ID.
+      return $this->dal->listAll( $tableName, $params );
       
    } // findByAttributeMatrix
 
@@ -1234,9 +1230,6 @@ class PersistentManager {
    } // findBy
    
 
-   /**
-    * 
-    */
    public static function findByQuery( Query $q )
    {
       return $this->dal->query( $q );
@@ -1256,36 +1249,6 @@ class PersistentManager {
     */
    public function count( $ins )
    {
-      /*
-      $objTableName = YuppConventions::tableName( $ins );
-      $params = array();
-
-      // Quiero solo los registros de las subclases y ella misma.
-      $class = get_class( $ins );
-      $scs = ModelUtils::getAllSubclassesOf( $class );
-      $scs[] = $class;
-
-      // Definicion de la condicion.
-      $cond = Condition::_AND();
-      if ( count($scs) == 1 )
-      {
-         $cond->add( Condition::EQ($objTableName, "class", $scs[0]) );
-      }
-      else
-      {
-          $cond_a = Condition::_OR();
-          foreach ($scs as $subclass)
-          {
-              $cond_a->add( Condition::EQ($objTableName, "class", $subclass) );
-          }
-          $cond->add( $cond_a );
-      }
-      
-      $cond->add( Condition::EQ($objTableName, "deleted", 0) );
-      $params['where'] = $cond;
-
-      return $this->dal->count( $objTableName, $params );
-      */
       return $this->countBy($ins, NULL);
    }
 
@@ -1334,7 +1297,6 @@ class PersistentManager {
    } // countBy
 
 
-
    // Elimina un objeto de la base de datos.
    // Logical indica si la eliminacion es solo logica o es fisica.
    // FIXME: no es necesario pasar el id, lo tiene la instancia adentro.
@@ -1375,37 +1337,6 @@ class PersistentManager {
       }
    } // delete
 
-   // Nombre de la tabla que modela una relacion.
-   //public function relTableName( $ownerClassName, $childClassName )
-   /**
-    * Nombre de la tabla de relaciones entre 2 clases, considerando el nombre del atributo de un lado de la relacion.
-    * @param PersistentObject $ins1 Lado fuerte de la relacion entre $ins1 e $ins2
-    * @param string $inst1Attr atributo de $ins1 que apunta a $ins2
-    * @param PersistentObject $ins2 Lado debil de la relacion.
-    *
-    */
-   // FIXME: T#32 esta funcion deberia ir en la clase que implementa las convenciones.
-   /*
-   public function relTableName( $ins1, $inst1Attr, $ins2 )
-   {
-      if ( $ins1->getWithTable() != NULL && strcmp($ins1->getWithTable(), "") != 0 ) // Me aseguro que haya algo.
-      {
-         $tableName1 = $ins1->getWithTable();
-      }
-
-      if ( $ins2->getWithTable() != NULL && strcmp($ins2->getWithTable(), "") != 0 ) // Me aseguro que haya algo.
-      {
-         $tableName2 = $ins2->getWithTable();
-      }
-
-      $tableName1 = DatabaseNormalization::table( $tableName1 );
-      $tableName2 = DatabaseNormalization::table( $tableName2 );
-
-      // TODO: Normalizar $inst1Attr ?
-
-      return $tableName1 . "_" . $inst1Attr . "_" . $tableName2; // owner_child
-   }
-   */
 
    /**
     * generate
@@ -1561,8 +1492,6 @@ class PersistentManager {
             $this->generateHasManyJoinTable($ins, $attr, $assocClassName, $dal);          
          }
       }
-
-      // hasOne no necesita tabla intermedia...
       
    } // generate
    
