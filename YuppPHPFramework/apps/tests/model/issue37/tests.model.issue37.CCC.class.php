@@ -10,6 +10,10 @@ class CCC extends BBB
       
       $this->addAttribute('attrCCC',  Datatypes :: TEXT);
       
+      $this->addConstraints('attrCCC' , array (
+         Constraint :: minLength(5)
+      ));
+      
       parent :: __construct($args, $isSimpleInstance);
    }
    public static function listAll( ArrayObject $params )
