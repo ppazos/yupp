@@ -100,6 +100,24 @@ class PersistentManager {
       
       $this->dal = new DAL($appName); // FIXME: de donde saco el nombre de la app actual???
    }
+   
+   /**
+    * Transaccionalidad.
+    */
+   public function withTransaction()
+   {
+      $this->dal->withTransaction();
+   }
+   
+   public function commitTransaction()
+   {
+      $this->dal->commitTransaction();
+   }
+   
+   public function rollbackTransaction()
+   {
+      $this->dal->rollbackTransaction();
+   }
 
    /**
     * Se llama para los elementos asociados por hasMany. (independientemente que la relacion sea * o 1 del otro lado)
@@ -214,6 +232,7 @@ class PersistentManager {
       // FIXME: Para la instancia ppal, si pasa el validate de PO.save, viene y
       //        lo ejecuta de nuevo aca. Subir alguna bandera para que no lo haga.
       //if (!$obj->validate()) return false;
+      // El validate ahora se hace en el save_cascade
       // ===========================================================================================
 
       $tableName = YuppConventions::tableName( $obj );
@@ -291,6 +310,9 @@ class PersistentManager {
          // Nuevo: solo salva si se ha cambiado un atributo o una relacion hasOne (dirty)
          if ($obj->isDirtyOne())
          {
+             // La relacion con los hasOne, o sea el id, se salva como atributo simple en save_object.
+             // Este codigo de abajo solo verifica si hay que salvar en cascada cada objeto hasOne que tenga asociado.
+            
              //asOne no necesita tablas intermedias (salvar la referencia)
              // Retorna los valores no nulos de hasOne
              $sassoc = $obj->getSimpleAssocValues(); // TODO?: Podria chekear si debe o no salvarse en cascada...
@@ -301,7 +323,8 @@ class PersistentManager {
                 {
                    //echo "=== PO loaded: $attrName<br/>";
                    
-                   // Si se detecta un loop en el salvado del modelo,
+                   // Si se detecta un loop en el salvado del modelo.
+                   // FIXME: deberia salvar solo si el objeto soy owner del relacionado.
                    if ( $assocObj->isLoopMarked( $sessId ) )
                    {
                       //Logger::getInstance()->pm_log("LOOP DETECTADO " . get_class($obj) . " " . get_class($assocObj));
@@ -335,20 +358,22 @@ class PersistentManager {
                    }
                    else // Si no es un loop en el modelo, salva en cascada como siempre...
                    {
-                      if (!$assocObj->isSaved( $sessId ) && $obj->isOwnerOf( $attrName )) // VERIFY:  si el objeto asociado esta salvado, la asociacion tambien ????
-                      {                                                              // VERIFY: Salva en cascada solo si soy el duenio de la relacion.. esto esta bien para 1..* ??
-                         Logger::getInstance()->pm_log("PM::save_assoc save_cascade de ". $assocObj->getClass() .__LINE__);
+                      // El objeto puede estar salvado en otra sesion, por ejemplo se crea y salva, y luego se asocia al obj.
+                      // La condicion es: si no esta salvado en esta session o esta sucio, salvo en cascada.
+                      if ($obj->isOwnerOf( $attrName ) && (!$assocObj->isClean() || !$assocObj->isSaved( $sessId )))
+                      {
+                         //Logger::getInstance()->pm_log("PM::save_assoc save_cascade de ". $assocObj->getClass() .__LINE__);
+                         
+                         // Valido el objeto antes de intentar salvarlo
+                         // La excepcion se catchea en el save y hace rollback de todo el save en cascada.
+                         if (!$assocObj->validate()) throw new Exception("El objeto ". $assocObj->getClass() ." (".$assocObj->getId().") no valida. ". __FILE__." ".__LINE__);
                          
                          // hasOne no necesita tablas intermedias (salvar la referencia)
                          // salva objeto y sus asociaciones.
                          $this->save_cascade( $assocObj, $sessId );
                       }
                    }
-                } // si esta cargado
-                else
-                {
-                   //echo "=== PO not loaded: $attrName<br/>";
-                }
+                } // Si el hasOne esta cargado. Sino esta cargado, no hago nada (la relacion se actualiza en save_object).
              } // Para cada objeto asociado
 
              // ------------------------------------------------------------------------------------------------------------------
@@ -362,8 +387,7 @@ class PersistentManager {
          } // si la instancia esta dirty
          
          //Logger::struct( $obj , "PRE PM.save_object en PM.save_cascade");
-         
-         Logger::getInstance()->pm_log("PM::save_assoc save_object ". $obj->getClass() ." @".__LINE__);
+         //Logger::getInstance()->pm_log("PM::save_assoc save_object ". $obj->getClass() ." @".__LINE__);
          
          // salva el objeto simple, verificando restricciones en la instancia $obj
          // FIXME: esta operacion no verifica restricciones, se deberia validar el objeto antes de salvar.
@@ -381,7 +405,7 @@ class PersistentManager {
              {
                 $ord = 0;
                 
-                Logger::getInstance()->pm_log("save_cascade foreach hasManyAssoc: ". $attrName ." ". __FILE__ ." ". __LINE__ );
+                //Logger::getInstance()->pm_log("save_cascade foreach hasManyAssoc: ". $attrName ." ". __FILE__ ." ". __LINE__ );
                 
                 foreach ( $objList as $assocObj )
                 {
@@ -399,6 +423,10 @@ class PersistentManager {
                       //        Habria que preguntar si NO esta salvado en esta session o si esta dirty.
                       if (!$assocObj->isClean() || !$assocObj->isSaved( $sessId )) 
                       {
+                         // Valido el objeto antes de intentar salvarlo
+                         // La excepcion se catchea en el save y hace rollback de todo el save en cascada.
+                         if (!$assocObj->validate()) throw new Exception("El objeto ". $assocObj->getClass() ." (".$assocObj->getId().") no valida. ". __FILE__." ".__LINE__);
+                         
                          // salva objeto y sus asociaciones.
                          $this->save_cascade( $assocObj, $sessId );
                          //Logger::getInstance()->pm_log("PM::save_cascade objeto guardado: ". $assocObj->getClass(). " ". $assocObj->getId(). " " .__LINE__);

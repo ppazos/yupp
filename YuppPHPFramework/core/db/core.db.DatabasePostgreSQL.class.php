@@ -12,7 +12,8 @@ class DatabasePostgreSQL {
    private $lastQuery = NULL;
    private $lastResult = NULL;
    private $queryCount; // Cantidad de consultas para un request (deberia ser singleton para poder saber)
-
+   private $transactionOn = false;
+   
    public function __construct()
    {
       $this->queryCount = 0;
@@ -79,6 +80,31 @@ class DatabasePostgreSQL {
          $this->connection = NULL;
       }
       */
+   }
+
+   // http://www.thegeekstuff.com/2009/05/15-advanced-postgresql-commands-with-examples/
+   public function withTransaction()
+   {
+      $this->execute('BEGIN');
+      $this->transactionOn = true;
+   }
+   
+   public function commitTransaction()
+   {
+      if ($this->transactionOn)
+      {
+         $this->execute('COMMIT');
+         $this->transactionOn = false;
+      }
+   }
+   
+   public function rollbackTransaction()
+   {
+      if ($this->transactionOn)
+      {
+         $this->execute('ROLLBACK');
+         $this->transactionOn = false;
+      }
    }
 
    // OJO! lo que devuelve es un recurso PostgreSQL... el resultado deberia tratarse internamente...
@@ -335,6 +361,14 @@ class DatabasePostgreSQL {
    {
       $res = $this->query( "select tablename from pg_tables" );
       return $res;
+   }
+   
+   /**
+    * Devuelve un set de opciones que se usan desde DAL para crear las tablas en la base.
+    */
+   public function tableOptions()
+   {
+      return "";
    }
 
 /*

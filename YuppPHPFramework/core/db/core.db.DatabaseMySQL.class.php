@@ -12,6 +12,8 @@ class DatabaseMySQL {
    private $lastQuery = NULL;
    private $lastResult = NULL;
    private $queryCount; // Cantidad de consultas para un request (deberia ser singleton para poder saber)
+   private $transactionOn = false; // True si hay una transaccion que no fue commiteada o rollbackeada
+   
 
    public function __construct()
    {
@@ -61,6 +63,45 @@ class DatabaseMySQL {
       {
          mysql_close($this->connection); // No necesito pasar la coneccion
          $this->connection = NULL;
+      }
+   }
+   
+   // FIXME!
+   // Cuidado: si las tablas son de tipo MyISAM NO SOPORTAN TRANSACCIONES!
+   //  http://forums.mysql.com/read.php?21,68686,69229#msg-69229
+   
+   // Se podria saber que tipo de engine usa la tabla y soportar o no transacciones
+   // http://stackoverflow.com/questions/213543/how-can-i-check-mysql-engine-type-for-a-specific-table
+   // esto no deberia hacerse online, sino que deberia ser configuracion...
+   
+   // http://stackoverflow.com/questions/2708237/php-mysql-transactions-examples
+   // http://www.java2s.com/Code/SQL/Procedure-Function/savepointexample.htm
+   // http://www.databasejournal.com/features/mysql/article.php/3382171/Transactions-in-MySQL.htm
+   // Que pasa si hago un withTransaction, query, query...
+   // y hay una except antes de poder llamar a commit o rollback?
+   // Por ahora se tiene que encargar el programador.
+   public function withTransaction()
+   {
+      $this->execute('SET AUTOCOMMIT=0');
+      $this->execute('START TRANSACTION');
+      $this->transactionOn = true;
+   }
+   
+   public function commitTransaction()
+   {
+      if ($this->transactionOn)
+      {
+         $this->execute('COMMIT');
+         $this->transactionOn = false;
+      }
+   }
+   
+   public function rollbackTransaction()
+   {
+      if ($this->transactionOn)
+      {
+         $this->execute('ROLLBACK');
+         $this->transactionOn = false;
       }
    }
 
@@ -306,6 +347,23 @@ class DatabaseMySQL {
       return $res;
    }
    
+   /**
+    * Devuelve un set de opciones que se usan desde DAL para crear las tablas en la base.
+    */
+   public function tableOptions()
+   {
+      // http://dev.mysql.com/doc/refman/5.0/en/charset-database.html
+      // http://dev.mysql.com/doc/refman/5.0/en/charset-applications.html
+      // http://stackoverflow.com/questions/2344118/utf-8-general-bin-unicode
+      // http://stackoverflow.com/questions/341273/what-does-character-set-and-collation-mean-exactly
+
+      // InnoDB es necesario para transaccionalidad, si se usa MyISAM no hay transaccionalidad y no se
+      // podria hacer saves en cascada (sino recorro toda la estructura antes y la valido, y luego hago
+      // los inserts y updates).
+      
+      // TODO: sacar de config
+      return " ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci";
+   }
    
    // EVALUACION DE CONSULTAS ======================================================
    //
