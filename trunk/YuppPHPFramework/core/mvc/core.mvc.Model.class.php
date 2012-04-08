@@ -16,23 +16,23 @@ class Model {
 
     public static function getInstance()
     {
-    	 if (self::$instance == NULL) self::$instance = new Model();
+       if (self::$instance == NULL) self::$instance = new Model();
        return self::$instance;
     }
 
     public function setModel( $params )
     {
-    	 $this->model = $params;
+        $this->model = $params;
     }
 
     public function add($key, $value)
     {
-    	 $this->model[$key] = $value;
+        $this->model[$key] = $value;
     }
 
     public function get($key)
     {
-    	 if ( isset($this->model[$key]) ) return $this->model[$key];
+       if ( isset($this->model[$key]) ) return $this->model[$key];
        return NULL;
     }
     
@@ -53,15 +53,14 @@ class Model {
     public function flash($key)
     {
        if ( isset($this->flash[$key]) ) return $this->flash[$key];
-       
        return NULL;
     }
     
     public function addFlash( $params )
     {
-    	 foreach ($params as $key => $value)
+       foreach ($params as $key => $value)
        {
-       	 $this->flash[$key] = $value;
+           $this->flash[$key] = $value;
        }
     }
 
@@ -73,13 +72,13 @@ class Model {
      */
     public function reset()
     {
-    	 $this->flash = array();
+        $this->flash = array();
        $this->model = array();
     }
 
     public function show()
     {
-    	 echo "<pre>";
+       echo "<pre>";
        print_r( $this->flash );
        print_r( $this->model );
        echo "</pre>";
