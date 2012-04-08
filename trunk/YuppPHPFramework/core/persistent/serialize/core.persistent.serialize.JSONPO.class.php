@@ -10,6 +10,45 @@ YuppLoader::load('core.persistent', 'PersistentObject');
 
 class JSONPO {
 
+   // FIXME: loopDetection se basa en que el objeto tenga id, si no esta salvado no podria convertirlo a JSON.
+   //        lo que se puede hacer es que cada objeto siempre tenga un identificador de instancia en memoria aunque no este salvado en la base.
+   // http://code.google.com/p/yupp/issues/detail?id=135 
+
+   // TODO: test
+   public static function toJSONArray( $list = array(), $recursive = false, $attr = '', $loopDetection = NULL, $currentPath = '' )
+   {
+      if (is_null($loopDetection)) $loopDetection = new ArrayObject();
+      
+      $json = '[';
+      
+      // Mismo codigo que en hasMany de toJSON
+      $idx = 0; // Se usa para la referencia por loop en la JSON path
+      foreach ($list as $obj)
+      {
+         // TODO: ver si obj es PO
+         if(!in_array($obj->getClass().'_'.$obj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
+         {
+            if (!empty($attr))
+               $json .= self::toJSON( $obj, $recursive, $loopDetection, $currentPath.'.'.$attr.'['.$idx.']' ) .', ';
+            else
+               $json .= self::toJSON( $obj, $recursive, $loopDetection, $currentPath.'['.$idx.']' ) .', ';
+         }
+         else // referencia por loop
+         {
+            // Agrego un objeto referencia
+            $keys = array_keys((array)$loopDetection, $obj->getClass().'_'.$obj->getId());
+            $path = $keys[0];
+            $json .= '"'.$attr.'": "'. $path .'", ';
+         }
+         $idx++;
+      }
+      
+      $json = substr($json, 0, -2);
+      $json .= ']';
+      
+      return $json;
+   }
+
    /**
     * Si $resursive es true, se cargan las asociaciones de la clase y tambien se pasan a json.
     */
@@ -95,11 +134,19 @@ class JSONPO {
             
             if ( count($relObjs) > 0 )
             {
+               $json .= ', "'. $attr .'": ';
+               $json .= self::toJSONArray($relObjs, $recursive, $attr, $loopDetection, $currentPath);
+               
+               /*
                $json .= ', "'. $attr .'": [';
+               
+               echo "attr hasMany $attr<br/>";
                
                $idx = 0; // Se usa para la referencia por loop en la JSON path
                foreach ($relObjs as $relObj)
                {
+                  echo 'relObj: '. $relObj->getClass().'_'.$relObj->getId() .'<br/>';
+                
                   if(!in_array($relObj->getClass().'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                   {
                      $json .= self::toJSON( $relObj, $recursive, $loopDetection, $currentPath.'.'.$attr.'['.$idx.']' ) .', ';
@@ -114,10 +161,10 @@ class JSONPO {
                   
                   $idx++;
                }
-                
+               
                $json = substr($json, 0, -2); // Saco ', ' del final
-                
                $json .= ']';
+               */
             }
          }
       }
