@@ -1,0 +1,167 @@
+#summary core.persistent
+#labels persistent
+
+= Introducción =
+
+PersistentObject representa la superclase de todos las clases del modelo persistente de las aplicaciones Yupp.
+
+
+= Métodos =
+
+List es un array con índices enteros.
+Map es un array con índices con algún valor, ej. un string.
+
+<object> __call(<string>$method, <array>$args)
+
+<PersistentObject >__construct(<array>$args, <boolean>$isSimpleInstance)
+
+<void> aAddTo ($attribute, PersistentObject $value)
+
+<boolean> aContains( $attribute, $value )
+
+<void> addAttribute( $name, $type )
+
+<void> addConstraints( $attr, $constraints )
+
+<void> addHasMany( $name, $clazz, $type = self::HASMANY_COLLECTION )
+
+<void> addHasOne( $name, $clazz )
+
+<object> aGet( $attr )
+El tipo del resultado dependerá del tipo del atributo $attr y del tipo de relación (atributo común, hasOne o hasMany)
+
+<void> aRemoveAllFrom ($attribute, $logical = false)
+
+<void> aRemoveFrom ($attribute, $value, $logical = false)
+
+<void> aSet( $attribute, $value )
+
+<boolean> attributeDeclaredOnThisClass( $attr )
+
+<boolean> belonsToClass( $className )
+
+<void> delete( $logical = false )
+
+<void> executeAfterSave()
+
+<void> executeBeforeSave()
+
+<string|NULL> getAttributeByColumn( $colname )
+Nombre del atributo por nombre de su correspondiente columna en la base de datos. NULL si $colname no es la columna de ningún atributo de la clase.
+
+<Map> getAttributeTypes()
+Mapeo nombre de atributo => clase
+
+<Map> getAttributeValues()
+Mapeo nombre de atributo => valor
+
+<Constraint> getConstraintOfClass( $attr, $class )
+Restricción de clase $class para el atributo $attr. NULL sino hay correspondencias.
+
+<List<Constraint>> getConstraints( $attr = NULL )
+Si $attr es NULL, devuelve todas las restricciones, sino, devuelve solo las restricciones para el atributo $attr.
+
+<Map> getErrors()
+Devuelve mapeo de errores para cada atributo.
+
+<List> getFieldErrors( $attr )
+Errores para el atributo $attr.
+
+<string> getFullAttributename( $attrWithoutAssocName )
+
+<Map> getHasMany()
+Mapeo de atributos y clases en hasMany.
+
+<string|NULL> getHasManyAttributeNameByAssocAttribute( $assocClass, $assocAttribute )
+Nombre del atributo hasMany de $this, correspondiente a la relación desde la clase $assocClass en su atributo $assocAttribute. Se usa para detectar casos de relaciones bidireccionales y encontrar correspondencias entre relaciones para saber donde cargar las relaciones cuando se cargan los objetos desde la base de datos.
+
+<Map> getHasOne()
+Mapeo de los atributos y las clases en hasOne.
+
+
+<string|NULL> getHasOneAttributeNameByAssocAttribute( $assocClass, $assocAttribute )
+Idem a getHasManyAttributeNameByAssocAttribute pero para hasOne.
+
+<List> getManyAssocAttrNames()
+Lista de atributos en hasMany.
+
+<Map> getManyAssocValues()
+Valores no nulos para cada atributo hasMany.
+
+<int> getSessId()
+
+<List> getSimpleAssocAttrNames()
+
+<Map> getSimpleAssocValues()
+
+<Map> getSimpleAttrValues()
+
+<> getSuperClassWithDeclaredAttribute( $attr )
+
+<DataType|PersistentObject|NULL> getType( $attr )
+Clase o tipo del atributo, NULL sino es un atributo de la clase.
+
+<string> getWithTable()
+
+<> hasAttribute( $attr )
+
+<booleam> hasErrors()
+
+<boolean> hasFieldErrors( $attr )
+
+<List> hasManyAttributesOfClass( $clazz )
+
+<boolean> hasManyOfThis( $clazz )
+
+<List> hasOneAttributesOfClass( $clazz )
+
+<booleam> hasOneOfThis( $clazz )
+
+<booleam> isClean()
+
+isDirty()
+
+isDirtyMany()
+
+isDirtyOne()
+
+isLoopMarked( $sessId )
+
+isOwnerOf( $attr )
+
+isSaved( $sessId )
+
+isSimplePersistentObject( $attr )
+
+nullable( $attr )
+
+preValidate()
+
+registerAfterSaveCallback( Callback $cb )
+
+registerBeforeSaveCallback( Callback $cb )
+
+removeAttribute( $attr )
+
+resetDirty()
+
+resetDirtyMany()
+
+save()
+
+setLoopDetectorSessId( $sessId )
+
+setProperties( ArrayObject $params )
+
+setSessId( $sessId )
+
+setWithTable( $tableName )
+
+single_save()
+
+update_simple_assocs()
+
+validate($validateCascade = false)
+
+validateOnly( $attrs )
+
