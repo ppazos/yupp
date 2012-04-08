@@ -2,6 +2,7 @@
 
 YuppLoader::load('tests.model.002', 'Cara');
 YuppLoader::load('tests.model.002', 'Nariz');
+YuppLoader::load('tests.model.a004', 'Pagina');
 YuppLoader::load('core.persistent.serialize', 'JSONPO');
 
 class ExtraTestsController extends YuppController {
@@ -52,6 +53,86 @@ class ExtraTestsController extends YuppController {
       Logger::getInstance()->off();
       
       return $this->renderString('fin');
+   }
+   
+   function toJSONArrayAction()
+   {
+      $list = array(
+        new Cara( array(
+          "color" => "blanco",
+          "nariz" => new Nariz( array(
+            "tamanio"=>"chica"
+          )) 
+        )),
+        new Cara( array(
+          "color" => "negro",
+          "nariz" => new Nariz( array(
+            "tamanio"=>"mediana"
+          )) 
+        )),
+        new Cara( array(
+          "color" => "pardo",
+          "nariz" => new Nariz( array(
+            "tamanio"=>"grande"
+          )) 
+        ))
+      );
+      
+      print_r( JSONPO::toJSONArray($list, true) );
+      
+      return $this->renderString('');
+   }
+   
+   /**
+    * Usa test a004.
+    */
+   function toJSONArrayHasManyAction()
+   {
+      $list = array(
+        new Pagina( array(
+          "titulo" => "blanco", "contenido" => "zzz xxx ccc",
+          "subpages" => array(
+            new Pagina( array(
+              "titulo" => "rojo", "contenido" => "rrr ttt yyy"
+            )),
+            new Pagina( array(
+              "titulo" => "verde", "contenido" => "uuu iii ooo",
+              "subpages" => array(
+                new Pagina( array(
+                  "titulo" => "azul", "contenido" => "fff ggg hhh"
+                ))
+              )
+            ))
+          ) 
+        )),
+        new Pagina( array(
+          "titulo" => "negro", "contenido" => "aaa sss ddd",
+          "subpages" => array(
+            new Pagina( array(
+              "titulo" => "anaranjado", "contenido" => "jjj kkk lll"
+            ))
+          ) 
+        )),
+        new Pagina( array(
+          "titulo" => "pardo", "contenido" => "qqq www eee"
+        ))
+      );
+      
+      $sps = $list[0]->getSubPages();
+      $sps[0]->setOwner( $list[0] );
+      $sps[1]->setOwner( $list[0] );
+      
+      $sps01 = $sps[1]->getSubpages();
+      $sps01[0]->setOwner( $sps[1] );
+      
+      foreach ($list as $p)
+        if (!$p->save()) print_r($p->getErrors());
+      
+      
+      print_r( JSONPO::toJSONArray($list, true) );
+      
+      
+      return $this->renderString('');
    }
 }
 ?>
