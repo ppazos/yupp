@@ -38,6 +38,10 @@ global $_base_dir;
       #actions a {
          text-decoration: none;
       }
+      #actions img {
+         vertical-align: middle;
+         border: none;
+      }
       #apps {
         background-color: #fff;
         padding: 10px;
@@ -63,15 +67,16 @@ global $_base_dir;
       .menu_btn img {
         border: 0px;
       }
-      #apps ul {
+      
+      /* Layout grid por defecto */
+      #apps ul.grid {
         margin: 0;
         padding: 0;
         list-style: none;
-        
         display: table;
         width: 100%;
       }
-      #apps li {
+      #apps ul.grid li {
        /* width: 230px; */
        min-height: 65px;
        height: 65px; /* necesario para que el anchor se expanda al alto 100% */
@@ -91,9 +96,76 @@ global $_base_dir;
        /*background-color: #ffff80;*/
        
        display: table-cell;
-       /*width: 19%;*/
        float: left;
       }
+      #apps ul.grid #list_header {
+        display: none;
+      }
+      
+      /* Layout list */
+      #apps ul.list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: table;
+        width: 100%;
+      }
+      #apps ul.list li {
+       padding: 10px 0 10px 10px;
+       margin: 0px;
+       display: table;
+      }
+      
+      #apps ul.list .app_icon {
+        width: 32px;
+        vertical-align: middle;
+        display: table-cell;
+        padding: 0 10px 0 0;
+        margin: 0;
+      }
+      #apps ul.list .app_icon img {
+        width: 100%; /* Cuidado es al % de la div app_icon */
+        height: 50%;
+      }
+      #apps ul.list .app_details {
+        display: table-cell;
+        width: 100%;
+        float: none;
+        padding: 0;
+        vertical-align: middle;
+      }
+      #apps ul.list .app_details_container {
+        display: table;
+        width: 100%;
+      }
+      #apps ul.list .app_name, #apps ul.list .app_description, #apps ul.list .app_actions {
+        display: table-cell;
+        padding: 0 10px 0 0;
+      }
+      #apps ul.list .app_name {
+        width: 20%
+      }
+      #apps ul.list .app_description {
+        width: 60%;
+      }
+      #apps ul.list .app_actions {
+        width: 20%;
+      }
+      
+      #apps ul.list #list_header {
+        width: 100%;
+      }
+      #apps ul.list #list_header div {
+        font-weight: bold;
+      }
+      #apps ul.list li.zebra {
+        background-color: #eeeeee;
+      }
+      #apps ul.list li.zebra:hover {
+        background-color: #90d0f0;
+      }
+      
+      /* Estilos comunes a layout list y grid */
       #apps li:hover {
         background-color: #99ddff;
       }
@@ -239,6 +311,26 @@ global $_base_dir;
           if (selectedLink) selectedLink.removeClass('highlight');
           link.addClass('highlight');
           selectedLink = link;
+        });
+        
+        $('#layout_list').click( function()
+        {
+           apps = $('ul', $('#apps'));
+           apps.removeClass('grid');
+           apps.addClass('list');
+           
+           $("#apps ul > li:nth-child(even)").addClass("zebra");
+           
+           return false;
+        });
+        
+        $('#layout_grid').click( function()
+        {
+           apps = $('ul', $('#apps'));
+           apps.removeClass('list');
+           apps.addClass('grid');
+           
+           return false;
         });
         
         // News From Twitter
@@ -399,6 +491,9 @@ global $_base_dir;
       <?php endforeach; ?>
       |
       <a href="#" id="show_twitter">Novedades <span id="twitter_news_count"></span></a>
+      |
+      <a href="#" id="layout_grid"><?php echo h('img', array('src'=>'grid_layout.png')); ?></a>
+      <a href="#" id="layout_list"><?php echo h('img', array('src'=>'list_layout.png')); ?></a>
     </div>
     
     <div id="apps">
@@ -406,10 +501,16 @@ global $_base_dir;
         <div align="center" class="message_ok"><?php echo $m->flash('message'); ?></div>
       <?php endif; ?>
     
-      <ul>
+      <ul class="grid">
+        <li id="list_header">
+          <div class="app_icon">&nbsp;</div>
+          <div class="app_name">Apicacion</div>
+          <div class="app_description">Description</div>
+          <div class="app_actions">Acciones</div>
+        </li>
         <?php foreach ($apps as $app) : ?>
           <li class="app <?php echo $app->getName(); ?>">
-              <div class="app_icon">
+            <div class="app_icon">
                 <a href="<?php echo h('url', array(
                             'app'=>$app->getName(),
                             'controller'=>$app->getDescriptor()->entry_point->controller,
@@ -424,10 +525,16 @@ global $_base_dir;
                     }
                   ?>
                 </a>
-              </div>
-              <div class="app_details">
-                <b><?php echo $app->getDescriptor()->name; ?></b><br/>
-                <?php echo $app->getDescriptor()->description; ?><br/>
+            </div>
+            <div class="app_details">
+              <div class="app_details_container">
+                <div class="app_name">
+                <b><?php echo $app->getDescriptor()->name; ?></b>
+                </div>
+                <div class="app_description">
+                <?php echo $app->getDescriptor()->description; ?>
+                </div>
+                <div class="app_actions">
                 <?php
                 if ($app->hasBootstrap())
                 {
@@ -435,7 +542,6 @@ global $_base_dir;
                                         "body"    => "Ejecutar arranque",
                                         "appName" => $app->getName()) );
                 }
-                //else  echo 'No tiene BS<br/>';
                 ?>
                 <?php
                 if ($app->hasTests())
@@ -445,7 +551,9 @@ global $_base_dir;
                                         "name"   => $app->getName()) );
                 }
                 ?>
+                </div>
               </div>
+            </div>
           </li>
         <?php endforeach; ?>
       </ul>
