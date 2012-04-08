@@ -55,9 +55,16 @@ class TestSuite {
       }
    }
    
-   public function report($type, $msg, $trace = '', $moreInfo = '')
+   public function report($type, $msg, $trace = '', $moreInfo = '', $params = array())
    {
-      $this->reports[] = array('type'=>$type, 'msg'=>$msg, 'trace'=>$trace, 'moreInfo'=>$moreInfo);
+      // Esto se podria poner en la vista
+      // Muestra variables con valor y tipo
+      $_params = '';
+      foreach ($params as $key=>$value)
+      {
+         $_params .= $key.'='.$value.'('.gettype($value).')'."\n";
+      }
+      $this->reports[] = array('type'=>$type, 'msg'=>$msg, 'trace'=>$trace, 'moreInfo'=>$moreInfo, 'params'=>$_params);
    }
    
    public function getReports()

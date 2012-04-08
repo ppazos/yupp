@@ -10,7 +10,7 @@ abstract class TestCase {
       $this->suite = $suite;
    }
    
-   public function assert($cond, $msg = 'Error')
+   public function assert($cond, $msg = 'Error', $params = array())
    {
       // TODO: obtener un mensaje que diga mas, linea, clase y
       //       metodo donde se intenta verificar la condicion
@@ -22,7 +22,7 @@ abstract class TestCase {
          
          ob_start(); 
          debug_print_backtrace(); // Stack de llamadas que resultaron en un test que falla
-         $trace = ob_get_contents();
+         $trace = ob_get_contents(); // Trace es lo mismo que moreInfo pero abajo se procesa para mostrar solo el trace que importa.
          $moreInfo = ob_get_contents(); // Todos los echos y prints que se pudieron hacer
          ob_end_clean(); 
 
@@ -43,7 +43,7 @@ abstract class TestCase {
 
           */
          
-         $this->suite->report('ERROR', $msg, $trace, $moreInfo);
+         $this->suite->report('ERROR', $msg, $trace, $moreInfo, $params);
       }
       else
       {
