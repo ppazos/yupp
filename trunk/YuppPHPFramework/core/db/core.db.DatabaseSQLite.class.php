@@ -25,6 +25,7 @@ class DatabaseSQLite {
    private $lastQuery = NULL;
    private $lastResult = NULL;
    private $queryCount; // Cantidad de consultas para un request (deberia ser singleton para poder saber)
+   private $transactionOn = false;
 
    public function __construct()
    {
@@ -53,6 +54,31 @@ class DatabaseSQLite {
    {
       //Logger::getInstance()->log("DatabaseMySQL::disconnect");
       // SQLite no tiene disconnect
+   }
+   
+   // http://www.sqlite.org/lang_transaction.html
+   public function withTransaction()
+   {
+      $this->execute('BEGIN');
+      $this->transactionOn = true;
+   }
+   
+   public function commitTransaction()
+   {
+      if ($this->transactionOn)
+      {
+         $this->execute('COMMIT');
+         $this->transactionOn = false;
+      }
+   }
+   
+   public function rollbackTransaction()
+   {
+      if ($this->transactionOn)
+      {
+         $this->execute('ROLLBACK');
+         $this->transactionOn = false;
+      }
    }
 
    // TODO: devolver true o false por si se pudo o no hacer la consulta...
@@ -278,7 +304,13 @@ class DatabaseSQLite {
       return $res;
    }
    
-   
+   /**
+    * Devuelve un set de opciones que se usan desde DAL para crear las tablas en la base.
+    */
+   public function tableOptions()
+   {
+      return "";
+   }
 
 
    // EVALUACION DE CONSULTAS ======================================================

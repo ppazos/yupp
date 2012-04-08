@@ -235,7 +235,8 @@ class DAL {
       // capaz deveria crear las tablas y luego todas las FKs.
       
       $q_ini = "CREATE TABLE " . $tableName . " (";
-      $q_end = ");";
+      //$q_end = ");";
+      $q_end = ")";
       
       // Keys obligatorias: name, type.
       // Keys opcionales: default.
@@ -303,6 +304,13 @@ class DAL {
       */
       
       $q = $q_ini . $q_pks . substr($q_cols,0,-2) . $q_end; // substr para sacar ", " del final.
+
+      // FIXME: para que funcione la transaccionalidad, el motor de la DB en MySQL debe ser InnoDB
+      // hay que agregar esto a la consulta: ENGINE = InnoDB; al final
+      // http://dev.mysql.com/doc/refman/5.1/en/create-table.html
+      // Agrega opciones sobre el charset y el collate
+      $q .= $this->db->tableOptions();
+
 
       //Si hay una excepcion, va a la capa superior.
       $this->db->execute( $q );
@@ -506,6 +514,25 @@ class DAL {
          $this->db->execute( $q );
       }
    } // deleteFromTable
+   
+   
+   /**
+    * Transaccionalidad.
+    */
+   public function withTransaction()
+   {
+      $this->db->withTransaction();
+   }
+   
+   public function commitTransaction()
+   {
+      $this->db->commitTransaction();
+   }
+   
+   public function rollbackTransaction()
+   {
+      $this->db->rollbackTransaction();
+   }
    
    
    // TODO: un exists que reciba un queryBuilder, seria algo como existsWhere...
