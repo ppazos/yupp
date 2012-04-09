@@ -179,3 +179,8 @@ Método __call, opción set
     * Inmediato: se actualiza tambien la base. Mas simple, pero se tiene una consulta con cada set.
     * Post set: se actualiza solo en memoria, la base se actualiza al hacer el save. Mas complejo xq se deben verificar cosas que cambiaron para eliminar objetos (asociaciones) de la base, se ahorra consultas al hacer set, pero se hacen mas consultas al hacer save.
   * Sobre todo hay que tener cuidado si se hace un ser de un atributo hasMany, porque si le meto una lista de objetos con set a un atributo hasMany tengo que eliminar las referencias anteriores en la base para que no haya inconsistencias. Por lo que Set Inmediato seria una buena opcion.
+
+Método save
+  * Si esta clase es sublase de otra clase persistente, se deben mergear los atributos de toda la estructura de herencia en una clase persistente "ficticia" y se salva esa clase persistente.
+  * Para esto se llama a "getInheritanceStructurePersistentObject".
+  * CAMBIO: NO ESTO NO VA ACA!!! (creo que está en PM)
