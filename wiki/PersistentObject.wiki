@@ -167,3 +167,9 @@ validate($validateCascade = false)
 validateOnly( $attrs )
 
 }}}
+
+
+Comentarios del quitados código
+
+Campo $belongsTo
+* Posiblemente para modelos complejos, el belongsTo tenga que ser a nivel de rol de asociacion no a nivel de clase.
