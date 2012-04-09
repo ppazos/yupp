@@ -184,3 +184,6 @@ Método save
   * Si esta clase es sublase de otra clase persistente, se deben mergear los atributos de toda la estructura de herencia en una clase persistente "ficticia" y se salva esa clase persistente.
   * Para esto se llama a "getInheritanceStructurePersistentObject".
   * CAMBIO: NO ESTO NO VA ACA!!! (creo que está en PM)
+
+Comentario general:
+  * Se puede usar el __call para simular metodos findAllByXXXAndYYY ... en el fondo es un constructor de Query... (xq hay que usar And u Or).
