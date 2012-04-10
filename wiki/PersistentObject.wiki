@@ -187,3 +187,10 @@ Método save
 
 Comentario general:
   * Se puede usar el __call para simular metodos findAllByXXXAndYYY ... en el fondo es un constructor de Query... (xq hay que usar And u Or).
+
+Método validate:
+  * TODO: Verificar restricciones sobre asociaciones hasOne (p.ej. NotNull).
+  * En la validación de hasOne: puedo pedirle los errores y adjuntarlos a los mios ($this->errors) puede ser con un prefijo del nombre del atributo, y estos errores pueden ir en cascada hasta el objeto original que se esta validando asi se puede saber si hubo un error en el objeto o en uno relacionado.
+    * Creo que si se valida en cascada, los errores de cada clase los debería tener cada clase, y los errores sobre las relaciones deberían estar en la clase donde fue declarada la relación.
+  * 
+
