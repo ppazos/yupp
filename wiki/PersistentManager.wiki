@@ -115,3 +115,158 @@ FIXME: si obj1 y obj2 son el mismo objeto, y se tiene relacion 1<->*
       }
       */
 }}}
+
+=== Método comentado ===
+
+{{{
+   // Hace el insert, si no existe, o updatea si existe.
+   public static function _save( PersistentObject &$obj )
+   {
+      Logger::log("PersistentManager::save");
+
+     // FIXME 1: Si tengo asociado 1 objeto persistente, y tengo la instancia cargada (no solo el id),
+     // tengo q ver si tengo que persistirla o no, o sea si es en cascada. Si tengo que persistir,
+     // hago una cola de objetos a persistir, y cada vez que encuentro uno nuevo lo meto en la cola
+     // con su instancia y cuando termino con el objeto actual, vuelvo a ese y repito el procedimiento
+     // hasta tener la cola vacia.
+
+     // Salva en cascada los objetos simples relacionados...
+     // FIXME: El problema de hacerlo asi es que cuando salvo el objeto asociado se le asigna un id,
+     // y ese id no lo puedo salvar en el objeto que lo tiene asociado porque ya lo salve antes.
+     // Par resolver est ose deberia hacer lo siguiente:
+     // 1. Manejar la estrcutura como stack. Y Salvar el ultimo primero, asi el id generado queda disponible para el padre,
+     //    el problema es como darse cuenta quien es el padre en el stack...
+     // A -> B -> C,D
+     // 1: Salvo D, quiero ponerle el id a B
+     // 2: Salvo C, quiero ponerle el id a B
+     // 3: Salvo B, quiero ponerle el id a A
+     // 4: Salvo A.
+
+     // 1: identifico la relacion mediante la clase padre B, el nombre del atributo "unD_id", y el nomnbre de la clase D. "b_un_d_id_d",
+     // esto lo guardo aparte (asociado a esa instancia de D) y antes de salvar D.
+     // Cuando salvo D, con su id y la key de la relacion, busco la clase en el stack que
+     // tenga esa relacion (el tema es que puede haber otra B con la misma relacion, pero es otra instancia!),
+     // lo mejor es pasarle tambien la B o crear un back-ref temporal para poder saber a quien setearle el id.
+     //
+     // SOL!!!!!!!!
+     // O si capaz, hago la recorrida BFS, salvo primero todas las clases directamente asociadas con la actual,
+     // pero la hago recursiva y en la vuelta de la recurcion seteo los ids!!!!
+
+
+     // Este id identifica el momento de la operacion de salvado y se usa para marcar todos los elementos que se salvaron en la misma operacion.
+     // Sirve tembien para saber cuales objetos fueron salvados en la operacion actual, de modo de cortar posibles loops de salvado
+     // por haber loops en las asociaciones del modelo.
+     $sessId = time();
+
+
+     $dal = DAL::getInstance();
+     $objTableName = PersistentManager::tableName( get_class($obj) );
+
+     // ======================
+     // TODO: Deberia generar FK para cada elemento asociado!!!!!
+     // ======================
+
+      $assocObjectsQueue = array(); // Cola de objetos simples asociados.
+      $assocObjectsQueue[] = $obj; // Inicializo con el objeto que quiero guardar.
+
+      // Estructura para saber cuales son los "padres" (origen de la relacion) de cada objeto.
+      $assocOwners = array(); // VERIFY: ESTO ALCANZA???
+
+      // Salva cada objeto y los que se tienen asociados
+      while ( sizeof($assocObjectsQueue) > 0 )
+      {
+         $objToSave = array_pop( $assocObjectsQueue );
+
+         //
+         //echo "QUEUE: <br>";
+         //print_r( $assocObjectsQueue );
+         //echo "OBJ TO SAVE: <br>";
+         //print_r( $objToSave );
+         //
+
+         // Si el objeto no fue salvado en la operacion actual...
+         if (!$objToSave->isSaved( $sessId ))
+         {
+            $tableName = PersistentManager::tableName( get_class($objToSave) );
+
+            if ( !$dal->exists( $tableName, $obj->getId() ) ) // Si no tiene id, hago insert, si no update.
+            {
+               // Solo se deberian mandar atributos simples!!!!!!!!!!!!!!!!
+               $dal->insert( $tableName, $objToSave ); // Salva los objetos, con sus datos simples.
+            }
+            else
+            {
+               $dal->update( $tableName, $objToSave );
+            }
+
+            // Marco como salvado
+            $objToSave->setSessId( $sessId );
+
+
+            // Encolo demas objetos relacionados...
+            $assocObjects = $objToSave->getSimpleAssocValues(); // Podria chekear si debe o no salvarse en cascada...
+            // TODO: si es null algun objeto asociado, tengo que poner el atributo en NULL en la base!!!!!
+
+            //echo "XXXXXXXXXXXXX<br>";
+            //print_r( $assocObjects );
+            //echo "YYYYYYYYYYYYY<br>";
+
+            // TODO: La solucion seria salvar el objeto padre y los hijos en la misma vuelta,
+           //       asi poder salvar las referencias, con lo que hay que tener cuidado es
+           //       cuando se salvan los hijos tambien se debe hacer en 2 niveles pero no
+           //       se deben salvar xq ya se salvaron. Podria hacerse recursivo!
+           //
+            // Si quiero salvar los ObjectReference aca me hacen falta los ids de los objetos asociados... los cuales deberia salvarlos antes...
+            //foreach ( $assocObjects as $aobj )
+            //{
+            //}
+
+            $assocObjectsQueue = array_merge($assocObjectsQueue, $assocObjects);
+
+            // =======================================================================================================================
+            // ESTO ES NECESARIO PARA HACER EL LOAD !!!!!!!!!!!!!!!!!!!
+            //
+            // TODO: para los objetos asociados por has many tengo que generar tablas intermedias a mano para mantener las relaciones.
+            // Deberia poder crear e insertar usando DAL.
+            // La idea que tengo es hacer una operacion para crear tablas (ya esta) con el nombre de
+            // los 2 objetos concatenados (el padre primero y luego el hijo).
+            // Luego, quiero poder hacer insert en esa tabla, de objetos dinamicos, en su representacion de
+            // array asociativo, nombreCampo=>valor, y los campos serian los ids del padre y del hijo.
+            //
+            //$refTableName = NO TENGO EL NOMBRE DE LA CLASE PADRE! CON LA COLA PIERDO LA REFERENCIA AL PADRE!!! ME FALTA ALGUNA ESTRUCTURA...
+            //$dal->createTable( $refTableName, new ObjectReference() ); // Esto deberia hacerse en el generate, no aca...
+
+            // =======================================================================================================================
+            // TODO: para las relaciones 1..* deberia borrar los objetos asociados actualmente y agregar los objetos con los que viene.
+            // 1. Esto se podira hacer borrando todos los asociados actualmente en la base y guardando los que trae.
+            // 2. La solucion mas sofisticada es ver que objetos fueron modificados, cuando detecto una modificacion guardo ese objeto.
+            //    (se podria usar un atributo "version" o simplemente una bandera de modificado)
+            //
+            // =======================================================================================================================
+            // TODO: Agregarle los objetos del hasMany. Puedo tener varios declarados en hasMany, cada valor es una lista de objetos.
+            //
+            $manyAssocObjects = $objToSave->getManyAssocValues(); // Es una lista de listas de objetos.
+
+            foreach ($manyAssocObjects as $objList)
+            {
+               // TODO: La solucion seria salvar el objeto padre y los hijos en la misma vuelta,
+               //       asi poder salvar las referencias, con lo que hay que tener cuidado es
+               //       cuando se salvan los hijos tambien se debe hacer en 2 niveles pero no
+               //       se deben salvar xq ya se salvaron. Podria hacerse recursivo!
+               //
+               // Si quiero salvar los ObjectReference aca me hacen falta los ids de los objetos asociados... los cuales deberia salvarlos antes...
+               //foreach ( $objList as $aobj )
+               //{
+               //}
+               $assocObjectsQueue = array_merge($assocObjectsQueue, $objList);
+            }
+
+            // (FIXED) uso el sessId para saber si salve o no, marcando los salvados.
+            // FIXME: No puedo caer en problemas de loops, o sea si tengo A->B->C->A que A se salve de nuevo porque
+            // lo tiene aosciado C y C se salve porque lo tiene A.
+            // Tengo que introducir algun algoritmo que me permita saber que objetos ya fueron salvados y cuales no.
+            // (por lo menos un atributo de marca para cada objeto asi voy marcando los salvados)
+         }
+      }
+   } // save
+}}}
