@@ -73,14 +73,16 @@ Cargo el registro de la clase que me mandan por su id, esto es para verificar si
 
 == remove_assoc ==
 
+{{{
 FIXME: si obj1 y obj2 son el mismo objeto, y se tiene relacion 1<->*
        con ese objeto, siempre va a decir que obj2 es owner del obj1,
        porque la relacion es identica (va a dar que obj1 es owner de
        obj2, porque se hace por definicion de la clase no de la instancia).
+}}}
 
 == isMappedOnSameTable ==
 
-
+{{{
       /*
       // Chekeo ambos casos de subclass primero...
       if ( is_subclass_of($class1, $class2) )
@@ -112,4 +114,4 @@ FIXME: si obj1 y obj2 son el mismo objeto, y se tiene relacion 1<->*
          return ($table1 === $table2);
       }
       */
-
+}}}
