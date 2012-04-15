@@ -1,0 +1,115 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+Add your content here.
+
+
+= Métodos =
+
+
+= Comentarios =
+
+== General: ==
+
+TODOs GRANDEs
+
+  # Mantener las asociaciones:
+    # Si salvo un objeto que ya esta guardado deberia:
+      # verificar que los objetos asociados, tanto por hasOne o hasMany, siguien ahi o no, si no:
+        # es hasOne: el id del objeto deberia ponerse en null.
+        # es hasMany: deberia eliminar las asociaciones en las tablas intermedias. (en lugar de preguntar/actualizar , podria eliminar todo y actualizar todo, hay que ver que es mas costoso en tiempo).
+  # PARA SOPORTE DE HERENCIA
+    # ES NECESARIO poner nullables los atributos de las clases que no son hijas de PO, asi clases hermanas pueden agregarse a la tabla y no saltan restricciones de la tabla porque tiene atributos en null.
+    # Solucion: todos los atributos menos los inyectados, como id, deleted y class, son nullables, ya que si mando un null a un atributo no nulo va a saltar en la validacion de las constraints en lugar de dejarlo pasar hasta la validacion de la db.
+
+
+== Método save_assoc ==
+
+
+      // Considera la direccion de la relacion del owner con el child.
+   // VERIFICAR: el owner de la relacion, como esta ahora, es la parte fuerte declarada o asumida,
+   //            pero la relacion podria ser bidireccional y sin restricciones estructurales,
+   //            instancias de child pueden tener varios owners sin que estos tengas asociados
+   //            a esos childs, o sea, las relaciones instanciadas son l2r.
+   //            Como esta ahora al pedir relaciones l2r, como ahora no tiene info en la base
+   //            q diga q son asi, se instancia la relacion como bidir, por lo que no queda
+   //            el mismo snapshot que fue el que se salvo.
+
+   // En una relacion n-n bidireccional, es necesario verificar si la instancia de esa relacion
+   // es tambien bidireccional (si tengo visibilidad para ambos lados desde cada elemento de la relacion).
+
+
+== Método save_object ==
+
+   // FIX: faltaba validar clases relacionadas
+   // http://code.google.com/p/yupp/issues/detail?id=50
+   // FIXME: Para la instancia ppal, si pasa el validate de PO.save, viene y
+   //        lo ejecuta de nuevo aca. Subir alguna bandera para que no lo haga.
+   //if (!$obj->validate()) return false;
+   // El validate ahora se hace en el save_cascade
+
+
+== Método get_object ==
+
+HERENCIA EN MULTIPLE TABLA
+Cargo el registro de la clase que me mandan por su id, esto es para verificar si la clase que me mandan es realmente la clase de la instancia que me piden. Si $persistentClass no esta mapeada en la misma  tabla que el atributo "class" del registro, cargo el registro de la clase que diga la columna "class", ya que ese registro es el que tiene todos los ids inyectados por MTI y es la que me deja cargar todos los registros de instancias parciales para luego unirlos y generar una unica instanca, que es la que me piden.
+
+
+== Método get_many_assoc_lazy ==
+
+  * FIXME: el problema de hacer el fetch con una consulta es que no puedo saver si el/los objetos ya estan cargados en el ArtifactHolder, no se si esto sea un problema... tal vez si lo cargo aunque ya este cargado lo unico que hago es agregarlo de nuevo en el ArtifactHolder y lsito... hay que ver. Por cada atributo tengo una lista de objetos de ese tipo para traer.
+  * TODO: ver quien es el duenio de la relacion!
+  * VERIFY!!!: Como la relacion existe, si uno no es el duenio, DEBE ser el otro.
+
+
+== Método delete ==
+
+  * TODO: setear deleted a la instancia si se pudo hacer el delete en la tabla!
+  * TODO: Que pasa si una instancia tiene belongsTo esta instancia, pero tambien tiene belongsTo otra instancia de otra cosa? Lo mas logico seria no eliminarla. ???
+  * TODO: Esto borra solo un objeto, falta ver el tema de los objetos asociados y el borrado en cascada...
+  * TODO: Si es MTI se que se va a llamar varias veces seguidas a DAL.delete, porque no dejar que las consultas se acumulen en un buffer (string) en DAL y luego se ejecuten todas juntas, es mas, podria rodear con BEGIN y COMMIT para hacerla transaccional.
+
+
+== remove_assoc ==
+
+FIXME: si obj1 y obj2 son el mismo objeto, y se tiene relacion 1<->*
+       con ese objeto, siempre va a decir que obj2 es owner del obj1,
+       porque la relacion es identica (va a dar que obj1 es owner de
+       obj2, porque se hace por definicion de la clase no de la instancia).
+
+== isMappedOnSameTable ==
+
+
+      /*
+      // Chekeo ambos casos de subclass primero...
+      if ( is_subclass_of($class1, $class2) )
+      {
+         return self::isMappedOnSameTableSubclass( $class1, $class2 );
+      }
+      else if ( is_subclass_of($class2, $class1) )
+      {
+         return self::isMappedOnSameTableSubclass( $class2, $class1 );
+      }
+      else
+      {
+         $c1_ins = new $class1();
+         $c2_ins = new $class1();
+      
+         // SOLUCION COMPLICADA PERO CORRECTA.
+         // Me tengo que fijar si pertenecen a la misma estructura de herencia (si son primas o hermanas).
+         // Luego me fijo en alguna superclase comun y desde ahi busco en que tabla se mapean.
+         // ...
+         
+         // No lo podria hacer simplemente comparando withTable? se que si tiene y son distintos se mapean en distintas tablas,
+         // y si una no tiene ya se que la que tiene va en otra tabla aunque pertenezca a la misma estructura de herencia.
+         // Pero si ninguna tiene withTable, tengo que encontrar quien define la tabla para cada clase y ver si son la misma...
+         // Para este caso (que incluye a los otros tengo) la funcion tableName que deberia dar el nombre de la tabla para 
+         // cualquier instancia, tenga o no withTable declarado en la instancia.
+         $table1 = YuppConventions::tableName( $c1_ins );
+         $table2 = YuppConventions::tableName( $c2_ins );
+         
+         return ($table1 === $table2);
+      }
+      */
+
