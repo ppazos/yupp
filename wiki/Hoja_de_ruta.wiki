@@ -261,7 +261,10 @@ Descarga: http://code.google.com/p/yupp/downloads/list
 
   * Agregar el procesamiento de referencias de loops en la deserialización de XML a PO.
   * Mejorar Yupp Desktop con características como cantidad de información que se muestra de cada aplicación, ordenamiento y ubicación de iconos, búsqueda y filtrado de aplicaciones por nombre, descripción y tags, mostrar tags, permitir mostrar Yupp Desktop aún en modo PROD, permitir editar datos de descripción de las aplicaciones, como tags...
-  * Capacidad de instalar y desinstalar aplicaciones a modo de sistema operativo instalando y desinstalando programas.
+  * Capacidad de instalar y desinstalar aplicaciones a modo de sistema operativo instalando y desinstalando programas. Ideas de scripts para comprimir y descomprimir apps:
+    * http://www.phpconcept.net/pclzip/user-guide
+    * http://www.phpclasses.org/package/945-PHP-Create-tar-gzip-bzip2-zip-extract-tar-gzip-bzip2-.html
+    * http://www.phpclasses.org/package/6110-PHP-Create-archives-of-compressed-files-in-ZIP-format.html
 
 
 ==v0.6: codename Deep Purple==
