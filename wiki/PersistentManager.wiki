@@ -270,3 +270,14 @@ FIXME: si obj1 y obj2 son el mismo objeto, y se tiene relacion 1<->*
       }
    } // save
 }}}
+
+
+=== Método comentado ===
+
+{{{
+// para getMultipleTableInheritance que filtre la solucion.
+function filter_not_null( $array )
+{
+   return $array !== NULL;
+}
+}}}
