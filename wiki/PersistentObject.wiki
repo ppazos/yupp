@@ -249,3 +249,29 @@ Método validate:
       return substr( $attributeRawName, -$pos);
    }
 }}}
+
+
+=== Comentarios en getHasOneAttributeNameByAssocAttribute ===
+
+{{{
+      /* Esto esta mal porque no solo tengo que preguntar si tengo un atributo de esta clase,
+       * sino que si ese atributo es de esa clase y es de la misma relacion que el atributo
+       * assocAttribute.
+       * Tener en cuenta que attributesOfSameRelationship devuelve true si ninguno de los 2
+       * tiene el nombre de la relacion codificado en el nombre. O sea, no verifica que los
+       * atributos pertenezcan a las clases ni que esas clases tengan relaciones declaradas
+       * entre ellas. Esa verificacion deberia hacerse en algun lado.
+       * 
+      $hoattrs = $this->hasOneAttributesOfClass( $assocClass );
+      $tam = sizeof($hoattrs);
+      if ( $tam == 0 ) return NULL; // throw new Exception("PO.getHasManyAttributeNameByAssocAttribute: no tiene un atributo hasMany a " . $assocClass);
+      if ( $tam == 1 ) return $hoattrs[0]; // Si hay uno, es ese!
+
+      // Si hay muchos, tengo que ver por el nombre de asociacion codificado en el nombre de los atributos.
+      foreach ($hoattrs as $attrName)
+      {
+         // attrName es un atributo hasMany que apunta a assocClass desde la clase de la instancia actual ($this)
+         if ( self::attributesOfSameRelationship( $attrName, $assocAttribute ) ) return $attrName;
+      }
+      */
+}}}
