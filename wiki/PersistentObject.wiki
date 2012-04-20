@@ -192,5 +192,60 @@ Método validate:
   * TODO: Verificar restricciones sobre asociaciones hasOne (p.ej. NotNull).
   * En la validación de hasOne: puedo pedirle los errores y adjuntarlos a los mios ($this->errors) puede ser con un prefijo del nombre del atributo, y estos errores pueden ir en cascada hasta el objeto original que se esta validando asi se puede saber si hubo un error en el objeto o en uno relacionado.
     * Creo que si se valida en cascada, los errores de cada clase los debería tener cada clase, y los errores sobre las relaciones deberían estar en la clase donde fue declarada la relación.
-  * 
 
+
+=== Métodos removidos ===
+
+/**
+ * Esta operacon es para cuando pido asociaciones por el nombre del atributo pero sin el nombre de asociacion,
+ * si el nombre completo del atributo es role__assoc y ejecuto la accion obj->getRole() necesito obtener el
+ * nombre completo a partir solo del role, para esto el rol no debe repetirse.
+ */
+{{{
+   public function getFullAttributename( $attrWithoutAssocName )
+   {
+      Logger::getInstance()->po_log("getFullAttributename attrWithoutAssocName = $attrWithoutAssocName");
+      
+      foreach ($this->hasMany as $attr => $clazz)
+      {
+         $pos = stripos($attr, $attrWithoutAssocName);
+         if ($pos === 0) // veo si el nombre del atributo es prefijo del nombre real, me viene "role" y $attr es "role__assoc".
+         {
+            Logger::getInstance()->po_log("getFullAttributename return (hm) = $attr");
+            return $attr;
+         }
+      }
+      // TODO: creo que no lo necesito para hasOne... verificar.
+      // SI, porque cuando se hace setAttr() necesito el nombre del atributo con asociacion.
+      foreach ($this->hasOne as $attr => $clazz)
+      {
+         $pos = stripos($attr, $attrWithoutAssocName);
+         if ($pos === 0) // veo si el nombre del atributo es prefijo del nombre real, me viene "role" y $attr es "role__assoc".
+         {
+            Logger::getInstance()->po_log("getFullAttributename return (ho) = $attr");
+            return $attr;
+         }
+      }
+   }
+}}}
+
+/**
+ * Dado el nombre de un atributo, que potencialmente podria tener codificado el nombre de la relacion, por ejemplo:
+ * role__assoc, devuelve solo el nombre del role, si no tiene el nombre de la asociacion, simplemente devuelve el mismo valor.
+ */
+{{{
+   public static function getAssocRoleName( $attributeRawName )
+   {
+      Logger::getInstance()->po_log("getAssocRoleName attributeRawName = $attributeRawName");
+      
+      $pos = strrpos($attributeRawName, "__");
+      if ( $pos === false )
+      {
+         Logger::getInstance()->po_log("getAssocRoleName return1 = $attributeRawName");
+         return $attributeRawName;
+      }
+      
+      Logger::getInstance()->po_log("getAssocRoleName return2 = ". substr( $attributeRawName, -$pos));
+      return substr( $attributeRawName, -$pos);
+   }
+}}}
