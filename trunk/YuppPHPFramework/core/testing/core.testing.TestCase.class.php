@@ -27,7 +27,7 @@ abstract class TestCase {
          ob_end_clean(); 
 
          // Se quita la llamada a este metodo de el stack (assert)
-         $pos = strpos($trace, "\n");
+         $pos = strpos($trace, "\n#1  ");
          if ($pos !== false)
          {
             $trace = substr($trace, $pos);
