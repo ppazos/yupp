@@ -30,7 +30,7 @@ class LayoutManager {
       $path = $_base_dir;
       
       // Busca la ubicacion en una app particular
-      if ( array_key_exists('app', $params) ) 
+      if ( isset($params['app']) || array_key_exists('app', $params) ) 
          $path .= '/apps/'. $params['app'] .'/javascript/'. $params['name'] .'.js';
       else // Ubicacion por defecto de todos los javascripts de todos los modulos
          $path .= '/js/'. $params['name'] .'.js';
