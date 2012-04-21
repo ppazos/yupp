@@ -102,12 +102,12 @@ class YuppController {
     {
        $ctx = YuppContext::getInstance();
 
-       if ( array_key_exists('app', $params) ) // Si no me lo pasan, tengo que poner el actual.
-           $app  = $params['app'];
+       if (isset($params['app']) || array_key_exists('app', $params)) // Si no me lo pasan, tengo que poner el actual.
+           $app = $params['app'];
        else
-           $app  = $ctx->getApp();
+           $app = $ctx->getApp();
            
-       if ( array_key_exists('controller', $params) ) // Si no me lo pasan, tengo que poner el actual.
+       if (isset($params['controller']) || array_key_exists('controller', $params)) // Si no me lo pasan, tengo que poner el actual.
            $controller = $params['controller'];
        else
            $controller = $ctx->getController();
@@ -115,9 +115,9 @@ class YuppController {
        // FIXME: si no se le pasa action se ejecuta la accion index?? deberia tirar una excepcion si no me pasan la accion??
        $action = $params['action'];
        
-       if ( !isset($params['params']) ) $params['params'] = array();
+       if (!isset($params['params'])) $params['params'] = array();
        
-       return ViewCommand::execute( $app, $controller, $action, $params['params'], $this->flash );
+       return ViewCommand::execute($app, $controller, $action, $params['params'], $this->flash);
     }
     
     
