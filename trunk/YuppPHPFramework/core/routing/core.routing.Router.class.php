@@ -125,7 +125,7 @@ class Router {
     }
     public function getGetParam( $name )
     {
-       if ( array_key_exists($name, $_GET) ) return $_GET[$name];
+       if (isset($_GET[$name]) || array_key_exists($name, $_GET)) return $_GET[$name];
        return NULL;
     }
     
@@ -135,7 +135,7 @@ class Router {
     }
     public function getPostParam( $name )
     {
-       if ( array_key_exists($name, $_POST) ) return $_POST[$name];
+       if (isset($_POST[$name]) || array_key_exists($name, $_POST)) return $_POST[$name];
        return NULL;
     }
     
@@ -164,7 +164,7 @@ class Router {
     
     public function getCookie( $name )
     {
-       if ( array_key_exists($name, $_COOKIE) ) return $_COOKIE[$name];
+       if (isset($_COOKIE[$name]) || array_key_exists($name, $_COOKIE)) return $_COOKIE[$name];
        return NULL;
     }
     
