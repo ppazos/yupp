@@ -59,6 +59,22 @@ class DisplayHelper {
           echo "</ul>";
        }
     }
+    
+    public static function fieldErrors($po, $attr)
+    {
+       $res = '';
+       if ($po->hasFieldErrors($attr))
+       {
+          $errors = $po->getFieldErrors($attr);
+          $res .= '<ul>';
+          foreach ( $errors as $error )
+          {
+             $res .= '<li>' . $error . '</li>';
+          }
+          $res .= '</ul>';
+       }
+       return $res;
+    }
 
 
     /**
@@ -182,6 +198,14 @@ class DisplayHelper {
               }
               
               $res .= self::field_to_html_edit( $attr, $type, $po->aGet($attr), $maxStringLength );
+              
+              // Si el campo tiene errores, los muestro
+              if ($po->hasFieldErrors($attr))
+              {
+                 $res .= '<div class="errors">';
+                 $res .= self::fieldErrors($po, $attr);
+                 $res .= '</div>';
+              }
            }
            $res .= '</td></tr>';
         }
