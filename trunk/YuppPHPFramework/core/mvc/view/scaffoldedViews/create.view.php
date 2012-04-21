@@ -51,7 +51,7 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
     <?php $clazz = $m->get('object')->aGet('class'); ?>
 
     <div id="actions">
-      <a href="list?class=<?php echo $clazz ?>">List</a>
+      <a href="list?app=<?php echo $m->get('app'); ?>&class=<?php echo $clazz; ?>">List</a>
     </div>
     <br/>
       
