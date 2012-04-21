@@ -316,12 +316,10 @@ class CoreController extends YuppController {
 
       if (!$obj->save()) // Con validacion de datos!
       {
-         // create
          $this->params['object'] = $obj;
          return $this->render("edit");
       }
 
-      // show
       $this->params['object'] = $obj;
       return $this->render("show");
    }
@@ -361,7 +359,6 @@ class CoreController extends YuppController {
       if (!in_array($clazz, $loadedClasses))
          YuppLoader::loadModel();
       
-      
       $obj = new $clazz (); // Crea instancia para mostrar en la web los valores por defecto para los atributos que los tengan.
       $appName = $this->params['app'];
       
@@ -375,19 +372,23 @@ class CoreController extends YuppController {
       if (isset($this->params['doit'])) // create
       {
          $obj->setProperties($this->params);
+         
+         //Logger::getInstance()->on();
+         //Logger::struct($ctx);
+         
          if (!$obj->save()) // Con validacion de datos!
          {
-            // create
+            $this->flash['message'] = 'Ha ocurrido un error al guardar';
+            
+            // FIXME: redirect a show
             $this->params['object'] = $obj;
             return $this->render("create");
          }
 
-         // show
          $this->params['object'] = $obj;
          return $this->render("show");
       }
 
-      // create
       $this->params['object'] = $obj;
       return $this->render("create");
    }
