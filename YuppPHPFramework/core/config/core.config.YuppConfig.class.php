@@ -119,34 +119,27 @@ class YuppConfig {
       // Si viene appName y no tengo la configuracion cargada
       if ($appName !== NULL)
       {
-         if (!array_key_exists($appName, $this->app_datasources))
+         if (isset($this->app_datasources[$appName]) || array_key_exists($appName, $this->app_datasources))
          {
-            //echo 'Inclusion config'.$appName.'<br/>';
-            $appConfigFile = './apps/'.$appName.'/config/db_config.php';
-             
-            // Trato de cargarla, puede ser que no tenga archivo de configuracion.
-            if (file_exists($appConfigFile))
-            {
-               include_once($appConfigFile); // Tiene definida la variable $db
-          
-               $this->app_datasources[$appName] = $db[$this->currentMode]; // $db se define en el archivo de configuracion.
-               
-               // TODO: al igual que el datasource por defecto, el de cada app deberia depender del modo de ejecucion.
-               return $this->app_datasources[$appName];
-            }
-             
-            // No hay config para la app, devuelve la configuracion por defecto.
+            return $this->app_datasources[$appName];
          }
-         else // Si existe la config cargada para esa app
+         
+         $appConfigFile = './apps/'.$appName.'/config/db_config.php';
+             
+         // Trato de cargarla, puede ser que no tenga archivo de configuracion.
+         if (file_exists($appConfigFile))
          {
+            include_once($appConfigFile); // Tiene definida la variable $db
+      
+            $this->app_datasources[$appName] = $db[$this->currentMode]; // $db se define en el archivo de configuracion.
+           
+            // TODO: al igual que el datasource por defecto, el de cada app deberia depender del modo de ejecucion.
             return $this->app_datasources[$appName];
          }
       }
 
       // Si llega aca es porque, la app no tiene archivo de configuracion, o porque no se paso un nombre de app para cargar su config.
-      
-      //Logger::getInstance()->log("YuppConfig: datasource por defecto");
-      
+
       // Discucion por mode
       return $this->default_datasource[$this->currentMode];
    }
