@@ -93,7 +93,10 @@ class DAL {
       
       $this->appName = $appName;
       
-      Logger::getInstance()->log("appName: $appName");
+//      Logger::getInstance()->on();
+//      Logger::getInstance()->log("DAL __construct appName: $appName");
+//      Logger::getInstance()->off();
+      
       if ($datasource == NULL)
          $datasource = $cfg->getDatasource($appName);
       
@@ -106,6 +109,8 @@ class DAL {
       
       // Constructor por configuracion del dbms
       // OBS: cada vez que agregue un soporte nuevo tengo que agregar la opcion al switch.
+      
+      // FIXME: que la configuracion use directamente los nombres de las clases de DB para ahorrar el switch.
       
       // TODO: deberia tener una fabrica con esto adentro, y la fabrica tal vez deberia cargar
       // las clases automaticamente en lugar de ir agregando cada tipo de conector en el switch.
@@ -137,7 +142,6 @@ class DAL {
       Logger::getInstance()->log("DAL::destruct ". $this->appName);
       $this->db->disconnect();
    }
-
 
    // Ejecuta una consulta y devuelve el resultado como una matriz asociativa.
    // FIXME: Devolver referencia para que no copie ?
@@ -188,7 +192,6 @@ class DAL {
 
       return $res;
    }
-   
    
    /**
     * Ejecuta inserts o updates de sql.
@@ -418,35 +421,33 @@ class DAL {
     */
    public function listAll( $tableName, ArrayObject $params )
    {
-      Logger::getInstance()->dal_log("DAL::listAll " . $tableName);
+      Logger::getInstance()->dal_log('DAL::listAll ' . $tableName);
       
-      // TODO: EN PARAMS PDRIA PASAR CONDICIONES SOBRE ATRIBUTOS, PARA HACER BUSQUEDAS QUE ACEPTEN "WHERE", esto lo necesito
+      // TODO: EN PARAMS PDRIA PASAR CONDICIONES SOBRE ATRIBUTOS, PARA HACER BUSQUEDAS QUE ACEPTEN 'WHERE', esto lo necesito
       //       para soportar herencia, ya q el listAll debe traer solo instancias de clases de la estructura de herencia
       //       de la clase que necesito (o deberia pasarle tambien la clase que nenecito ??? )
-      $limit = "";
-      $orderBy = "";
+      $limit = '';
+      $orderBy = '';
 
-      if ($params === NULL ) throw new Exception("DAL.getAll: params es null");
-      else
+      if ($params === NULL ) throw new Exception('DAL.getAll: params es null');
+
+      // No puede tener offset sin limit! se chekea arriba.
+      // Si viene max siempre viene offset, se chekea arriba.
+      if (isset($params['max']) || array_key_exists('max', $params))
       {
-         // No puede tener offset sin limit! se chekea arriba.
-         // Si viene max siempre viene offset, se chekea arriba.
-         if (array_key_exists("max", $params))
-         {
-            $limit = " LIMIT " . $params["max"];
-            if (array_key_exists("offset", $params)) $limit .= " OFFSET " . $params["offset"];
-         }
+         $limit = ' LIMIT ' . $params['max'];
+         if (isset($params['offset']) || array_key_exists('offset', $params)) $limit .= ' OFFSET ' . $params['offset'];
+      }
 
-         if (array_key_exists("sort", $params) && $params['sort'])
-         {
-            $orderBy = " ORDER BY ". $params["sort"] ." ". $params["dir"] ."";
-         }
+      if (isset($params['sort']) || array_key_exists('sort', $params)) // && $params['sort'])
+      {
+         $orderBy = ' ORDER BY '. $params['sort'] .' '. $params['dir'];
       }
 
       // Logger::struct( $params, "PARAMS" );
 
       // Where siempre viene porque en PM se inyecta las condicioens sobre las subclases (soporte de herencia)
-      $q = "SELECT * FROM " . $tableName . " WHERE " .
+      $q = 'SELECT * FROM ' . $tableName . ' WHERE ' .
            $this->db->evaluateAnyCondition( $params['where'] ) .
            $orderBy . $limit;
       
@@ -537,11 +538,12 @@ class DAL {
    
    // TODO: un exists que reciba un queryBuilder, seria algo como existsWhere...
 
-   public function insert( $tableName, &$obj )
+   //public function insert($tableName, &$obj)
+   public function insert($tableName, $obj)
    {
       // FIXME: obj deberia ser una matriz de valores, no un PO. A DAL no deverian llegar POs.
       //        Y todas las operaciones sobre el PO deberian hacerse tambien en PM.
-      Logger::getInstance()->dal_log("DAL::insert " . __FILE__ . " " . __LINE__);
+      Logger::getInstance()->dal_log("DAL::insert ". $obj->getClass() ." in table=$tableName");
 
       // DBG
       //FileSystem::appendLine("LOG.txt", "DAL_INSERT: " . $tableName . " (" . $obj->getId() . ")");
@@ -577,7 +579,7 @@ class DAL {
          //Logger::struct( $obj, "DAL.insert 1 ($tableName)" );
          
          // Ahora inserta...
-         Logger::getInstance()->dal_log("insert_query call " . __FILE__ . " " . __LINE__ );
+         //Logger::getInstance()->dal_log("insert_query call " . __FILE__ . " " . __LINE__ );
          $this->insert_query( $obj, $tableName );
       }
       else
@@ -593,7 +595,8 @@ class DAL {
             // para esas instancias parciales tengo que generar el nombre de la tabla.
             // Aunque para la tambla del objeto tengo el nombre, lo genero de nuevo para simplificar logica, de todos modos es el mismo...
             
-            $tableName = YuppConventions::tableName( $partialInstance );
+            // Esta tabla no se usa! abajo en insert_query se saca el nombre de la tabla del propio objeto
+            //$tableName = YuppConventions::tableName( $partialInstance );
             
             // Todas las instancias parciales usan el mismo id
             $partialInstance->setId( $id );
@@ -605,8 +608,8 @@ class DAL {
          
          foreach ( $pinss as &$partialInstance )
          {
-            Logger::getInstance()->dal_log("insert_query MTI call " . __FILE__ . " " . __LINE__ );
-            $this->insert_query( $partialInstance );
+            //Logger::getInstance()->dal_log("insert_query MTI call " . __FILE__ . " " . __LINE__ );
+            $this->insert_query( $partialInstance ); // Saca la tabla del objeto, por eso no se la paso
             
          } // foreach
       } // si es mti
@@ -657,6 +660,8 @@ class DAL {
     */
    private function insert_query( $object, $tableName = NULL )
    {
+      Logger::getInstance()->dal_log("DAL:insert_query " . __FILE__ . " " . __LINE__ );
+      
       // INSERT INTO hello_world_persona ( nombre ,edad ,class ,id ,deleted ) VALUES ('pepe' ,'12' ,'Persona' ,'6' ,'' );
       if (!$tableName) $tableName = YuppConventions::tableName( $object );
       
@@ -699,7 +704,7 @@ class DAL {
 //        le hice correcciones para postgres, pero en mysql va a andar mal...
    public function count( $tableName, $params = array() )
    {
-      Logger::getInstance()->log("DAL::count $tableName");
+      Logger::getInstance()->dal_log("DAL::count $tableName");
       
       //return $this->db->count( $tableName,$params );
       
@@ -710,11 +715,7 @@ class DAL {
       }
 
       $this->db->query( $q );
-
       $row = $this->db->nextRow();
-
-//print_r($row);
-
       return $row['cant']; // dice que no existe el indice 'cant' aunque consulte con count(id) as cant
    }
 
@@ -723,16 +724,13 @@ class DAL {
 // ahi habria que decirle que no sume, que el resultado es 1 derecho.
    public function generateNewId ( $tableName )
    {
-      //Logger::getInstance()->log("DAL::generateNewId $tableName");
+      //Logger::getInstance()->dal_log("DAL::generateNewId $tableName");
       
       //return $this->db->generateNewId($tableName);
 
       $q = "SELECT MAX(id) AS max FROM ". $tableName;
       $this->db->query( $q );
       $row = $this->db->nextRow();
-
-//print_r($row);
-
       return ($row['max']+1);
    }
 
