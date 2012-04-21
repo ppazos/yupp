@@ -36,6 +36,19 @@ class Logger {
    const LEVEL_DAL = 2;  // Index 2
    const LEVEL_DB  = 3;  // Index 3
    
+   // Colores de errores
+   const INFO_COLOR = '#6af';
+   const WARNING_COLOR = '#ffff80';
+   const ERROR_COLOR = '#f66';
+   
+   // Colores por componente
+   const DAL_COLOR = '#f00';
+   const PM_COLOR = '#00f';
+   const PO_COLOR = '#0f0';
+   const AH_COLOR = '#fa0'; // ArtifactHolder
+   const DB_COLOR = '#ff0'; // DatabaseXXX
+   
+   
    //private $level = 0; // Nivel en el que se esta actualmente, para el indice $currentIndex.
 
    public static function add( $index, $message = "" )
@@ -123,8 +136,6 @@ class Logger {
       {
          if ($log->file !== NULL)
          {
-            //$txt = (($tag!=NULL)?"<$tag>":"") . $msg . (($tag!=NULL)?"</$tag>":"");
-            
             $txt = $msg;
             FileSystem::appendLine($log->file, $txt);
             return;
@@ -199,7 +210,7 @@ class Logger {
             FileSystem::appendLine($this->file, $txt);
             return;
          }
-         echo '<div style="background: #f00; border: 1px solid #000; color: #fff;">';
+         echo '<div style="background: #f00; border: 1px solid #000; color: #fff;"> -- ';
          echo "\t\t" . $msg;
          echo '</div>';
       }
@@ -216,7 +227,7 @@ class Logger {
             FileSystem::appendLine($this->file, $txt);
             return;
          }
-         echo '<div style="background: #00f; border: 1px solid #000; color: #fff;">';
+         echo '<div style="background: #00f; border: 1px solid #000; color: #fff;"> - ';
          echo "\t" . $msg;
          echo '</div>';
       }
@@ -233,7 +244,7 @@ class Logger {
             FileSystem::appendLine($this->file, $txt);
             return;
          }
-         echo '<div style="background: #ff0; border: 1px solid #000; color: #000;">';
+         echo '<div style="background: #ff0; border: 1px solid #000; color: #000;"> --- ';
          echo "\t\t\t" . $msg;
          echo '</div>';
       }
@@ -265,7 +276,7 @@ class Logger {
             FileSystem::appendLine($this->file, $txt);
             return;
          }
-         echo '<div style="background: #fa0; border: 1px solid #000; color: #000;">';
+         echo '<div style="background: #fa0; border: 1px solid #000; color: #000;"> -- ';
          echo $msg;
          echo '</div>';
       }
