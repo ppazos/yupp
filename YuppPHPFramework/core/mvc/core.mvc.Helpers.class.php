@@ -279,7 +279,7 @@ function $func {
        
        $lm = LayoutManager::getInstance();
        $jslib = $lm->getJSLib();
-       if (is_null($jslib)) $jslib = 'prototype'; // Libreria por defecto.
+       if ($jslib === NULL) $jslib = 'prototype'; // Libreria por defecto.
        
        eval('$ret = self::ajax_link_'.$jslib.'($paramsMap, $body, $before, $callback);');
        
