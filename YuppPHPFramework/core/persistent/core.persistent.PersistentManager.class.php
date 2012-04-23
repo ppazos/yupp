@@ -4,7 +4,6 @@
  * La cual se encarga de comunicarse con las capas de persistencia inferiores (DAL) y generar objetos persistentes con los datos cargados.
  * 
  * Created on 15/12/2007
- * Modified on 13/06/2010
  * 
  * @name core.persistent.PersistentManager.class.php
  * @author Pablo Pazos Gutierrez <pablo.swp@gmail.com>
@@ -12,35 +11,14 @@
  * @package core.persistent
  * 
  */
-
 YuppLoader::load( "core.db.criteria2", "Condition" );
 YuppLoader::load( "core.db.criteria2", "ComplexCondition" );
 YuppLoader::load( "core.db.criteria2", "CompareCondition" );
 YuppLoader::load( "core.db.criteria2", "BinaryInfixCondition" );
 YuppLoader::load( "core.db.criteria2", "UnaryPrefixCondition" );
-
 YuppLoader::load( "core.utils",        "Callback" );
 YuppLoader::load( "core.persistent",   "ArtifactHolder" );
-
 YuppLoader::load( "core.persistent",   "MultipleTableInheritanceSupport" );
-
-/*
-TODOs GRANDEs
-
-1. Mantener las asociaciones:
-   Si salvo un objeto que ya esta guardado deberia:
-     - verificar que los objetos asociados, tanto por hasOne o hasMany, siguien ahi o no, si no:
-       es hasOne: el id del objeto deberia ponerse en null.
-       es hasMany: deberia eliminar las asociaciones en las tablas intermedias. (en lugar de preguntar/actualizar , podria eliminar todo y actualizar todo, hay que ver que es mas costoso en tiempo).
-
-2. PARA SOPORTE DE HERENCIA
-   - ES NECESARIO poner nullables los atributos de las clases que no son hijas de PO,
-     asi clases hermanas pueden agregarse a la tabla y no saltan restricciones de la
-     tabla porque tiene atributos en null.
-   - Solucion: todos los atributos menos los inyectados, como id, deleted y class, son nullables,
-     ya que si mando un null a un atributo no nulo va a saltar en la validacion de las constraints
-     en lugar de dejarlo pasar hasta la validacion de la db.
-*/
 
 /**
  * Esta clase implementa toda la logica necesaria para persistir objetos persistentes y 
@@ -60,6 +38,8 @@ class PersistentManager {
 
    public static function getInstance( $load_estragegy = NULL )
    {
+      Logger::getInstance()->pm_log("PM::getInstance");
+      
       if (!self::$instance)
       {
          // Definicion de estrategia de carga. Por defecto es Lazy.
@@ -96,7 +76,11 @@ class PersistentManager {
       $appName = $ctx->getApp();
       if ($ctx->isAnotherApp()) $appName = $ctx->getRealApp();
       
-      Logger::getInstance()->pm_log("PM::__construct appName: " . $appName);
+//      Logger::getInstance()->on();
+//      Logger::struct($ctx);
+//      Logger::getInstance()->pm_log("PM::__construct appName: " . $appName);
+//      Logger::getInstance()->pm_log("PM::__construct ctx.realApp: " . $ctx->getRealApp());
+//      Logger::getInstance()->off();
       
       $this->dal = new DAL($appName); // FIXME: de donde saco el nombre de la app actual???
    }
@@ -106,16 +90,19 @@ class PersistentManager {
     */
    public function withTransaction()
    {
+      Logger::getInstance()->pm_log("PM::withTransaction");
       $this->dal->withTransaction();
    }
    
    public function commitTransaction()
    {
+      Logger::getInstance()->pm_log("PM::commitTransaction");
       $this->dal->commitTransaction();
    }
    
    public function rollbackTransaction()
    {
+      Logger::getInstance()->pm_log("PM::rollbackTransaction");
       $this->dal->rollbackTransaction();
    }
 
@@ -130,20 +117,12 @@ class PersistentManager {
     */
    public function save_assoc( PersistentObject $owner, PersistentObject $child, $ownerAttr, $ord )
    {
+//Logger::getInstance()->on();
       Logger::getInstance()->pm_log("PM::save_assoc " . get_class($owner) . " -> " . get_class($child));
 
-      // Considera la direccion de la relacion del owner con el child.
-      // VERIFICAR: el owner de la relacion, como esta ahora, es la parte fuerte declarada o asumida,
-      //            pero la relacion podria ser bidireccional y sin restricciones estructurales,
-      //            instancias de child pueden tener varios owners sin que estos tengas asociados
-      //            a esos childs, o sea, las relaciones instanciadas son l2r.
-      //            Como esta ahora al pedir relaciones l2r, como ahora no tiene info en la base
-      //            q diga q son asi, se instancia la relacion como bidir, por lo que no queda
-      //            el mismo snapshot que fue el que se salvo.
+      // Determinar si la relacion es unidireccional o bidireccional
+      // =======================================================================
 
-      // En una relacion n-n bidireccional, es necesario verificar si la instancia de esa relacion
-      // es tambien bidireccional (si tengo visibilidad para ambos lados desde cada elemento de la relacion).
-      
       // Todavia no se si la relacion es bidireccional.
       $relType = ObjectReference::TYPE_ONEDIR;
 
@@ -151,27 +130,65 @@ class PersistentManager {
       // puede no haber    => owner ->(*)child y la relacion es de tipo 1
       // puede ser hasOne  => owner (1)<->(*)child tengo que ver si tengo linkeado owner en child, si lo tengo, es de tipo 2.
       // puede ser hasMany => owner (*)<->(*)child, con owner la parte fuerte, tengo que fijarme si child contains al owner, si es asi, es de tipo 2.
+      
+      // FIXME: si child tiene 2 relaciones con owner, por ejemplo una hasOne y otra hasMany,
+      // y el owner tiene tambien relaciones con child, si se le pide a child si tiene un
+      // hasOne con owner y se esta llamando con ownerAttr que es el rol para la otra asociacion
+      // va a retornar el nombre del atributo hasOne de la relacion hasOne que pertenece al otro rol no al ownerAttr.
+      
+      // Si es null no tengo un hasOne bidireccional desde el child, entonces es onedir
       $hoBidirChildAttr = $child->getHasOneAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
+      
       if ( $hoBidirChildAttr != NULL) // hasOne
       {
+         // Si es una relacion bidireccional hasOne desde el child
+         
+         //Logger::getInstance()->pm_log("PM::save_assoc hoBidirChildAttr=$hoBidirChildAttr no es null");
+         
          $assocObj = $child->aGet($hoBidirChildAttr);
 
          // Si hay objeto, si esta cargado, y si coincide el id.
-         if ($assocObj && $assocObj !== PersistentObject::NOT_LOADED_ASSOC && $assocObj->getId() === $owner->getId() )
+         if ($assocObj != NULL &&
+             $assocObj !== PersistentObject::NOT_LOADED_ASSOC &&
+             $assocObj->getId() === $owner->getId() ) // Verifica que el objeto owner es el que el objeto child tiene asociado en su rol $hoBidirChildAttr.
          {
             $relType = ObjectReference::TYPE_BIDIR;
          }
       }
       else // si el atributo no era de hasOne, es hasMany
       {
+         //Logger::getInstance()->pm_log("PM::save_assoc hoBidirChildAttr es null");
+         
          $hmBidirChildAttr = $child->getHasManyAttributeNameByAssocAttribute( get_class($owner), $ownerAttr );
-         if ( $hmBidirChildAttr != NULL && $child->aContains( $hmBidirChildAttr, $owner->getId() ) ) // FIXME: No se como se llama el atributo como para preguntar si child tiene a owner...
+         
+         
+         // Si hmBidirChildAttr es null, es porque no tengo bidireccionalidad
+         if ($hmBidirChildAttr != NULL)
          {
-            $relType = ObjectReference::TYPE_BIDIR;
+            // Si es una relacion bidireccional hasMany desde el child
+            //Logger::getInstance()->pm_log("PM::save_assoc hmBidirChildAttr $hmBidirChildAttr");
+         
+            // TEST
+            //if ($child->aContains( $hmBidirChildAttr, $owner->getId() ))
+            //   Logger::getInstance()->pm_log("PM::save_assoc child contains $hmBidirChildAttr ". $owner->getId());
+             
+            if ( $hmBidirChildAttr != NULL && $child->aContains( $hmBidirChildAttr, $owner->getId() ) ) // FIXME: No se como se llama el atributo como para preguntar si child tiene a owner...
+            {
+               //Logger::getInstance()->pm_log("PM::save_assoc hmBidirChildAttr no es null");
+                
+               $relType = ObjectReference::TYPE_BIDIR;
+            }
+            //else
+            //   Logger::getInstance()->pm_log("PM::save_assoc hmBidirChildAttr no es null");
          }
       }
       
-      // FIXME: si es hasOne, ¿esta bien que ejecute el codigo de abajo checkeando hasMany? Capaz es porque es bidireccional 1-* y lo esta mirando desde el otro lado de la relacion.
+      // FIN: Determinar si la relacion es unidireccional o bidireccional
+      // =======================================================================
+      
+      
+      // FIXME: si es hasOne, ¿esta bien que ejecute el codigo de abajo checkeando hasMany?
+      //        Capaz es porque es bidireccional 1-* y lo esta mirando desde el otro lado de la relacion.
 
       // FIXME: (owner_id, ref_id) debe ser clave, o sea, unique porque primary key es "id". 
       // (en varios lugares como aca abajo y en remove_assoc considero que la relacion entre 2 objetos es unica en la misma tabla.)
@@ -181,8 +198,7 @@ class PersistentManager {
       $ref_id = $child->getId();
       
       // El owner id debe ser el de la clase donde se declara la relacion hasmany
-      // De todas formas, los ids de todas las instancias parciales de la clase declarada
-      // van a ser los mismos
+      // De todas formas, los ids de todas las instancias parciales de la clase declarada van a ser los mismos
       $owner_id = $owner->getId();
       
       // ========================================================================
@@ -217,6 +233,9 @@ class PersistentManager {
 
          $this->dal->insert( $tableName, $refObj );
       }
+      
+//Logger::getInstance()->off();
+      
    } // save_assoc
 
    /**
@@ -224,16 +243,7 @@ class PersistentManager {
     */
    public function save_object( PersistentObject $obj, $sessId )
    {
-      Logger::getInstance()->pm_log("PersistentManager::save_object " . get_class($obj) );
-
-      // ===========================================================================================
-      // FIX: faltaba validar clases relacionadas
-      // http://code.google.com/p/yupp/issues/detail?id=50
-      // FIXME: Para la instancia ppal, si pasa el validate de PO.save, viene y
-      //        lo ejecuta de nuevo aca. Subir alguna bandera para que no lo haga.
-      //if (!$obj->validate()) return false;
-      // El validate ahora se hace en el save_cascade
-      // ===========================================================================================
+      Logger::getInstance()->pm_log("PM:save_object ". get_class($obj) );
 
       $tableName = YuppConventions::tableName( $obj );
 
@@ -299,7 +309,7 @@ class PersistentManager {
     */
    public function save_cascade( PersistentObject $obj, $sessId )
    {
-      Logger::getInstance()->pm_log("PersistentManager::save_cascade " . get_class($obj) . " SESSIONID: " . $sessId );
+      Logger::getInstance()->pm_log("PM::save_cascade " . get_class($obj) . " SESSIONID: " . $sessId );
 
       // Para detectar loops en el salvado del modelo
       $obj->setLoopDetectorSessId( $sessId );
@@ -456,164 +466,10 @@ class PersistentManager {
    */
    public function save( PersistentObject $obj )
    {
-      Logger::getInstance()->pm_log("PersistentManager::save " . get_class($obj));
+      Logger::getInstance()->pm_log("PM:save " . get_class($obj));
       $sessId = time()."_". rand()."_". rand(); // se genera una vez y se mantiene por todo el save. Se agregaron rands porque para saves consecutivos se hacia muy rapido y la sessId quedaba exactamente igual.
       $this->save_cascade( $obj, $sessId );
    }
-
-/*
-   // Hace el insert, si no existe, o updatea si existe.
-   public static function _save( PersistentObject &$obj )
-   {
-      Logger::log("PersistentManager::save");
-
-     // FIXME 1: Si tengo asociado 1 objeto persistente, y tengo la instancia cargada (no solo el id),
-     // tengo q ver si tengo que persistirla o no, o sea si es en cascada. Si tengo que persistir,
-     // hago una cola de objetos a persistir, y cada vez que encuentro uno nuevo lo meto en la cola
-     // con su instancia y cuando termino con el objeto actual, vuelvo a ese y repito el procedimiento
-     // hasta tener la cola vacia.
-
-     // Salva en cascada los objetos simples relacionados...
-     // FIXME: El problema de hacerlo asi es que cuando salvo el objeto asociado se le asigna un id,
-     // y ese id no lo puedo salvar en el objeto que lo tiene asociado porque ya lo salve antes.
-     // Par resolver est ose deberia hacer lo siguiente:
-     // 1. Manejar la estrcutura como stack. Y Salvar el ultimo primero, asi el id generado queda disponible para el padre,
-     //    el problema es como darse cuenta quien es el padre en el stack...
-     // A -> B -> C,D
-     // 1: Salvo D, quiero ponerle el id a B
-     // 2: Salvo C, quiero ponerle el id a B
-     // 3: Salvo B, quiero ponerle el id a A
-     // 4: Salvo A.
-
-     // 1: identifico la relacion mediante la clase padre B, el nombre del atributo "unD_id", y el nomnbre de la clase D. "b_un_d_id_d",
-     // esto lo guardo aparte (asociado a esa instancia de D) y antes de salvar D.
-     // Cuando salvo D, con su id y la key de la relacion, busco la clase en el stack que
-     // tenga esa relacion (el tema es que puede haber otra B con la misma relacion, pero es otra instancia!),
-     // lo mejor es pasarle tambien la B o crear un back-ref temporal para poder saber a quien setearle el id.
-     //
-     // SOL!!!!!!!!
-     // O si capaz, hago la recorrida BFS, salvo primero todas las clases directamente asociadas con la actual,
-     // pero la hago recursiva y en la vuelta de la recurcion seteo los ids!!!!
-
-
-     // Este id identifica el momento de la operacion de salvado y se usa para marcar todos los elementos que se salvaron en la misma operacion.
-     // Sirve tembien para saber cuales objetos fueron salvados en la operacion actual, de modo de cortar posibles loops de salvado
-     // por haber loops en las asociaciones del modelo.
-     $sessId = time();
-
-
-     $dal = DAL::getInstance();
-     $objTableName = PersistentManager::tableName( get_class($obj) );
-
-     // ======================
-     // TODO: Deberia generar FK para cada elemento asociado!!!!!
-     // ======================
-
-      $assocObjectsQueue = array(); // Cola de objetos simples asociados.
-      $assocObjectsQueue[] = $obj; // Inicializo con el objeto que quiero guardar.
-
-      // Estructura para saber cuales son los "padres" (origen de la relacion) de cada objeto.
-      $assocOwners = array(); // VERIFY: ESTO ALCANZA???
-
-      // Salva cada objeto y los que se tienen asociados
-      while ( sizeof($assocObjectsQueue) > 0 )
-      {
-         $objToSave = array_pop( $assocObjectsQueue );
-
-         //
-         //echo "QUEUE: <br>";
-         //print_r( $assocObjectsQueue );
-         //echo "OBJ TO SAVE: <br>";
-         //print_r( $objToSave );
-         //
-
-         // Si el objeto no fue salvado en la operacion actual...
-         if (!$objToSave->isSaved( $sessId ))
-         {
-            $tableName = PersistentManager::tableName( get_class($objToSave) );
-
-            if ( !$dal->exists( $tableName, $obj->getId() ) ) // Si no tiene id, hago insert, si no update.
-            {
-               // Solo se deberian mandar atributos simples!!!!!!!!!!!!!!!!
-               $dal->insert( $tableName, $objToSave ); // Salva los objetos, con sus datos simples.
-            }
-            else
-            {
-               $dal->update( $tableName, $objToSave );
-            }
-
-            // Marco como salvado
-            $objToSave->setSessId( $sessId );
-
-
-            // Encolo demas objetos relacionados...
-            $assocObjects = $objToSave->getSimpleAssocValues(); // Podria chekear si debe o no salvarse en cascada...
-            // TODO: si es null algun objeto asociado, tengo que poner el atributo en NULL en la base!!!!!
-
-            //echo "XXXXXXXXXXXXX<br>";
-            //print_r( $assocObjects );
-            //echo "YYYYYYYYYYYYY<br>";
-
-            // TODO: La solucion seria salvar el objeto padre y los hijos en la misma vuelta,
-           //       asi poder salvar las referencias, con lo que hay que tener cuidado es
-           //       cuando se salvan los hijos tambien se debe hacer en 2 niveles pero no
-           //       se deben salvar xq ya se salvaron. Podria hacerse recursivo!
-           //
-            // Si quiero salvar los ObjectReference aca me hacen falta los ids de los objetos asociados... los cuales deberia salvarlos antes...
-            //foreach ( $assocObjects as $aobj )
-            //{
-            //}
-
-            $assocObjectsQueue = array_merge($assocObjectsQueue, $assocObjects);
-
-            // =======================================================================================================================
-            // ESTO ES NECESARIO PARA HACER EL LOAD !!!!!!!!!!!!!!!!!!!
-            //
-            // TODO: para los objetos asociados por has many tengo que generar tablas intermedias a mano para mantener las relaciones.
-            // Deberia poder crear e insertar usando DAL.
-            // La idea que tengo es hacer una operacion para crear tablas (ya esta) con el nombre de
-            // los 2 objetos concatenados (el padre primero y luego el hijo).
-            // Luego, quiero poder hacer insert en esa tabla, de objetos dinamicos, en su representacion de
-            // array asociativo, nombreCampo=>valor, y los campos serian los ids del padre y del hijo.
-            //
-            //$refTableName = NO TENGO EL NOMBRE DE LA CLASE PADRE! CON LA COLA PIERDO LA REFERENCIA AL PADRE!!! ME FALTA ALGUNA ESTRUCTURA...
-            //$dal->createTable( $refTableName, new ObjectReference() ); // Esto deberia hacerse en el generate, no aca...
-
-            // =======================================================================================================================
-            // TODO: para las relaciones 1..* deberia borrar los objetos asociados actualmente y agregar los objetos con los que viene.
-            // 1. Esto se podira hacer borrando todos los asociados actualmente en la base y guardando los que trae.
-            // 2. La solucion mas sofisticada es ver que objetos fueron modificados, cuando detecto una modificacion guardo ese objeto.
-            //    (se podria usar un atributo "version" o simplemente una bandera de modificado)
-            //
-            // =======================================================================================================================
-            // TODO: Agregarle los objetos del hasMany. Puedo tener varios declarados en hasMany, cada valor es una lista de objetos.
-            //
-            $manyAssocObjects = $objToSave->getManyAssocValues(); // Es una lista de listas de objetos.
-
-            foreach ($manyAssocObjects as $objList)
-            {
-               // TODO: La solucion seria salvar el objeto padre y los hijos en la misma vuelta,
-               //       asi poder salvar las referencias, con lo que hay que tener cuidado es
-               //       cuando se salvan los hijos tambien se debe hacer en 2 niveles pero no
-               //       se deben salvar xq ya se salvaron. Podria hacerse recursivo!
-               //
-               // Si quiero salvar los ObjectReference aca me hacen falta los ids de los objetos asociados... los cuales deberia salvarlos antes...
-               //foreach ( $objList as $aobj )
-               //{
-               //}
-               $assocObjectsQueue = array_merge($assocObjectsQueue, $objList);
-            }
-
-            // (FIXED) uso el sessId para saber si salve o no, marcando los salvados.
-            // FIXME: No puedo caer en problemas de loops, o sea si tengo A->B->C->A que A se salve de nuevo porque
-            // lo tiene aosciado C y C se salve porque lo tiene A.
-            // Tengo que introducir algun algoritmo que me permita saber que objetos ya fueron salvados y cuales no.
-            // (por lo menos un atributo de marca para cada objeto asi voy marcando los salvados)
-         }
-      }
-   } // save
-*/
-
 
    /**
     * Se utiliza en get_object y en listAll.
@@ -703,17 +559,8 @@ class PersistentManager {
 
       // 1: Cargar la instancia que me piden.
 
-      //$dal = DAL::getInstance();
       $obj = new $persistentClass(array(), true); // Intancia para hallar nombre de tabla (solo para eso, no se usa luego).
       $tableName = YuppConventions::tableName( $obj );
-
-      // HERENCIA EN MULTIPLE TABLA
-      // Cargo el registro de la clase que me mandan por su id, esto es para verificar si la clase que me mandan 
-      // es realmente la clase de la instancia que me piden. Si $persistentClass no esta mapeada en la misma 
-      // tabla que el atributo "class" del registro, cargo el registro
-      // de la clase que diga la columna "class", ya que ese registro es el que tiene todos los ids inyectados por
-      // MTI y es la que me deja cargar todos los registros de instancias parciales para luego unirlos y generar
-      // una unica instanca, que es la que me piden.
       $attrValues = $this->dal->get( $tableName, $id );
       
 /*
@@ -727,7 +574,6 @@ class PersistentManager {
       // http://code.google.com/p/yupp/issues/detail?id=132
       if (count($attrValues) == 0) return NULL;
       
- 
       // 2: Verificar si es una instancia parcial y cargar las demas instancias parciales, mergear, y generar la instancia final.
       
       return $this->get_mti_object_byData( $persistentClass, $attrValues );
@@ -740,7 +586,7 @@ class PersistentManager {
     */
    private function createObjectFromData( $class, $data )
    {
-      Logger::getInstance()->pm_log("PersistentManager.createObjectFromData " . $class );
+      Logger::getInstance()->pm_log("PM.createObjectFromData " . $class );
       
       // $data son $attrValues.
       
@@ -784,7 +630,7 @@ class PersistentManager {
     */
    private function getDataFromObject( $obj )
    {
-      Logger::getInstance()->pm_log("PersistentManager.getDataFromObject");
+      Logger::getInstance()->pm_log("PM.getDataFromObject");
       
       $data = array();
       $attrs = $obj->getAttributeTypes();
@@ -801,7 +647,7 @@ class PersistentManager {
     */
    public function get_many_assoc_lazy( PersistentObject $obj, $hmattr )
    {
-      Logger::getInstance()->pm_log("PersistentManager.get_many_assoc_lazy " . get_class( $obj ) . " " . $hmattr);
+      Logger::getInstance()->pm_log("PM.get_many_assoc_lazy " . get_class( $obj ) . " " . $hmattr);
 
       // TODO: tengo que cargar solo si tiene deleted en false en la tabla de join.
 
@@ -810,30 +656,25 @@ class PersistentManager {
       $hmattrClazz = $obj->getType( $hmattr );
             
       // (***)
-      $_obj = new $hmattrClazz(); // Intancia para hallar nombre de tabla.
-      $relObjTableName = YuppConventions::tableName( $_obj );
+      $relObjIns = new $hmattrClazz(); // Intancia para hallar nombre de tabla.
+      $relObjTableName = YuppConventions::tableName($relObjIns);
 
-      // FIXME: el problema de hacer el fetch con una consulta es que no puedo saver
-      // si el/los objetos ya estan cargados en el ArtifactHolder, no se si esto
-      // sea un problema... tal vez si lo cargo aunque ya este cargado lo unico que
-      // hago es agregarlo de nuevo en el ArtifactHolder y lsito... hay que ver.
-
-      // Por cada atributo tengo una lista de objetos de ese tipo para traer.
-      // TODO: ver quien es el duenio de la relacion!
-      // VERIFY!!!: Como la relacion existe, si uno no es el duenio, DEBE ser el otro.
-      //
       $relTableName = "";
-      $obj_is_owner = false;
-      if( $obj->isOwnerOf( $hmattr ) )
+      $obj_is_owner = $obj->isOwnerOf( $hmattr );
+      if($obj_is_owner)
       {
-         $relTableName = YuppConventions::relTableName( $obj, $hmattr, new $hmattrClazz() );
-         $obj_is_owner = true;
+         $relTableName = YuppConventions::relTableName($obj, $hmattr, $relObjIns);
       }
       else
       {
          // Si no soy owner tengo que pedir el atributo...
-         $ownerInstance = new $hmattrClazz();
+         $ownerInstance = $relObjIns;
+         
+         // FIXME: si ownerInstance tiene 2 relaciones HM con la class del $obj, este metodo retorna NULL.
          $ownerAttrNameOfSameAssoc = $ownerInstance->getHasManyAttributeNameByAssocAttribute( get_class($obj), $hmattr );
+         
+         //echo "Call to relTableName hmattr=$hmattr ownerAttr=$ownerAttrNameOfSameAssoc ".__FILE__.__LINE__."<br/>";
+         
          $relTableName = YuppConventions::relTableName( $ownerInstance, $ownerAttrNameOfSameAssoc, $obj );
       }
 
@@ -849,10 +690,10 @@ class PersistentManager {
       // QIERO PEDIR SOLO LOS ELEMENTOS DE ObjectReference, para poder recorrerlo y ver si ya tengo objetos cargados,
       // y cargo solo los que no estan cargados. Seteo todos los objetos al atributo hasMany del objeto.
 
-      YuppLoader::load( "core.db.criteria2", "Query" );
+      YuppLoader::load('core.db.criteria2', 'Query');
       $q = new Query();
-      $q->addFrom( $relTableName, 'ref' );  // person_phone ref // FIXME: ESTO ES addFrom.
-      $q->addFrom( $relObjTableName, 'obj' );
+      $q->addFrom($relTableName, 'ref'); // person_phone ref // FIXME: ESTO ES addFrom.
+      $q->addFrom($relObjTableName, 'obj');
       
       
       // FIXME: quiero todos los atributos...
@@ -940,7 +781,7 @@ class PersistentManager {
          // (***)
          //$rel_obj = $this->createObjectFromData( $hmattrClazz, $many_attrValues );
          
-         if ( $many_attrValues['class']===$hmattrClazz )
+         if ($many_attrValues['class'] === $hmattrClazz)
          {
             // FIXME: si el rel_obj tiene hasOne, y hereda de otra clase, no se cargan los hasOne.
             //Logger::getInstance()->pm_log("Caso1: $hmattrClazz ". __FILE__ ." ". __LINE__);
@@ -967,8 +808,6 @@ class PersistentManager {
 
    } // get_many_assocs_lazy
 
-// =========================
-
    /*
     * Get con soporte para herencia:
     * A <- B <- C1, C2 estructura de herencia.
@@ -992,7 +831,7 @@ class PersistentManager {
    // Hace select por el id y devuelve null si no encuentra.
    public function get( $persistentClass, $id )
    {
-      Logger::getInstance()->pm_log("PM.get " . $persistentClass . " " . $id);
+      Logger::getInstance()->pm_log("PM:get ". $persistentClass .":". $id);
 
       //////////////////////////////////////////////////////////
       //
@@ -1044,7 +883,7 @@ class PersistentManager {
    // Si max == -1 traigo todos los items.
    public function listAll( $ins, ArrayObject $params )
    {
-      Logger::getInstance()->pm_log("PM::listAll ". $ins->getClass() ." : " . __FILE__."@". __LINE__);
+      Logger::getInstance()->pm_log("PM::listAll ". $ins->getClass());
 
       $objTableName = YuppConventions::tableName( $ins ); // ins se usa solo para sacar el nombre de la tabla y para sacar los nombres de las subclases.
 
@@ -1142,7 +981,7 @@ class PersistentManager {
     */
    private function findByAttributeMatrix( PersistentObject $instance, Condition $condition, ArrayObject $params )
    {
-      Logger::getInstance()->pm_log("PM::findByAttributeMatrix ". $instance->getClass() ." : " . __FILE__."@". __LINE__);
+      //Logger::getInstance()->pm_log("PM::findByAttributeMatrix ". $instance->getClass() ." : " . __FILE__."@". __LINE__);
 
       // FIXME: misma logica que en listAll, reutilizar codigo.      
       $tableName = YuppConventions::tableName( $instance );
@@ -1198,7 +1037,7 @@ class PersistentManager {
     */
    public function findBy( PersistentObject $instance, Condition $condition, ArrayObject $params )
    {
-      Logger::getInstance()->pm_log("PM::findBy ". $instance->getClass() ." : " . __FILE__."@". __LINE__);
+      //Logger::getInstance()->pm_log("PM::findBy ". $instance->getClass() ." : " . __FILE__."@". __LINE__);
       
       // Consulta para saber la clase real (subclase concreta) del objeto que se está pidiendo
       $allAttrValues = $this->findByAttributeMatrix( $instance, $condition, $params ); //$dal->listAll( $tableName, $params ); // FIXME: AHORA TIRA TODOS LOS ATRIBUTOS Y NECESITO SOLO CLASS e ID.
@@ -1232,6 +1071,7 @@ class PersistentManager {
 
    public static function findByQuery( Query $q )
    {
+      Logger::getInstance()->pm_log("PM::findByQuery");
       return $this->dal->query( $q );
    }
 
@@ -1249,6 +1089,7 @@ class PersistentManager {
     */
    public function count( $ins )
    {
+      Logger::getInstance()->pm_log("PM::count");
       return $this->countBy($ins, NULL);
    }
 
@@ -1258,6 +1099,8 @@ class PersistentManager {
     */
    public function countBy( $ins, $condition )
    {
+      Logger::getInstance()->pm_log("PM::countBy");
+      
       $objTableName = YuppConventions::tableName( $ins );
       $params = array();
 
@@ -1303,20 +1146,8 @@ class PersistentManager {
    //public function delete( &$persistentInstance, $id, $logical )
    public function delete( $persistentInstance, $id, $logical )
    {
-      Logger::add( Logger::LEVEL_PM, "PM::delete ". __FILE__."@". __LINE__ );
-      
-      // TODO: setear deleted a la instancia si se pudo hacer el delete en la tabla!
-      /*
-      TODO: Que pasa si una instancia tiene belongsTo esta instancia, pero tambien tiene belongsTo
-            otra instancia de otra cosa? Lo mas logico seria no eliminarla. ???
-      */
-      // TODO: Esto borra solo un objeto, falta ver el tema de los objetos asociados y el borrado en cascada...
-      /*
-         TODO: Si es MTI se que se va a llamar varias veces seguidas a DAL.delete, porque 
-               no dejar que las consultas se acumulen en un buffer (string) en DAL y luego
-               se ejecuten todas juntas, es mas, podria rodear con BEGIN y COMMIT para 
-               hacerla transaccional.
-      */
+      Logger::getInstance()->pm_log("PM::delete");
+      //Logger::add( Logger::LEVEL_PM, "PM::delete ". __FILE__."@". __LINE__ );
       
       // Se asume que la instancia ya es la ultima porque esta cargada con "get" 
       // o con "listAll" que garantiza que carga la instancia completa.
@@ -1337,7 +1168,6 @@ class PersistentManager {
       }
    } // delete
 
-
    /**
     * generate
     * Genera la tabla para una clase y todas las tablas intermedias 
@@ -1347,7 +1177,7 @@ class PersistentManager {
     */
    private function generate( $ins, $dalForApp = NULL )
    {
-      Logger::getInstance()->pm_log("PersistentManager::generate");
+      Logger::getInstance()->pm_log("PM::generate");
       
       // La DAL que se va a usar
       $dal = $this->dal;
@@ -1497,6 +1327,8 @@ class PersistentManager {
    
    private function generateHasManyJoinTable($ins, $attr, $assocClassName, $dal)
    {
+      Logger::getInstance()->pm_log("PM::generateHasManyJoinTable");
+      
       $tableName = YuppConventions::relTableName( $ins, $attr, new $assocClassName() );
 
       //Logger::struct($this->getDataFromObject( new ObjectReference() ), "ObjRef ===");
@@ -1575,7 +1407,7 @@ class PersistentManager {
     */
    public function generateAll()
    {
-      Logger::getInstance()->pm_log("PersistentManager::generateAll ======");
+      Logger::getInstance()->pm_log("PM::generateAll ======");
       
       $yupp = new Yupp();
       $appNames = $yupp->getAppNames();
@@ -1760,15 +1592,15 @@ class PersistentManager {
                    // ===============================================================================
                    
                    $hm_fks[] = array(
-                             'name'    => "owner_id",
+                             'name'    => 'owner_id',
                              'table'   => YuppConventions::tableName( $instConElAtributoHasMany->getClass() ), // FIXME: Genera link a gs (tabla de G1) aunque el atributo sea declarado en cs (tabla de C1). Esto puede generar problemas al cargar (NO PASA NADA AL CARGAR, ANDA FENOMENO!), aunque la instancia es la misma, deberia hacer la referencia a la tabla correspondiente a la instancia que declara el atributo, solo por consistencia y correctitud.
-                             'refName' => 'id' // Se que esta referencia es al atributo "id".
+                             'refName' => 'id' // Se que esta referencia es al atributo 'id'.
                             );
        
                    $hm_fks[] = array(
-                             'name'    => "ref_id",
+                             'name'    => 'ref_id',
                              'table'   => YuppConventions::tableName( $assocClassName ),
-                             'refName' => 'id' // Se que esta referencia es al atributo "id".
+                             'refName' => 'id' // Se que esta referencia es al atributo 'id'.
                             );
                             
                    // Genera FKs
@@ -1783,13 +1615,6 @@ class PersistentManager {
       } // foreach app
    } // generateAll
    
-   
-   // para getMultipleTableInheritance que filtre la solucion.
-//   function filter_not_null( $array )
-//   {
-//      return $array !== NULL;
-//   }
-
    /**
     * Se usa solo desde PO::aRemoveFrom y PO::aRemoveAllFrom.
     * 
@@ -1803,6 +1628,8 @@ class PersistentManager {
     */
    public function remove_assoc( $obj1, $obj2, $attr1, $attr2, $logical = false )
    {
+      Logger::getInstance()->pm_log("PM::remove_assoc");
+      
       // TODO: Si la relacion es A(1)<->(*)B (bidireccional) deberia setear en NULL el atributo A y A_id de B.
 
       // Veo cual es el owner:
@@ -1810,10 +1637,6 @@ class PersistentManager {
       $ownerAttr = &$attr1;
       $child     = &$obj2;
       
-      // FIXME: si obj1 y obj2 son el mismo objeto, y se tiene relacion 1<->*
-      //        con ese objeto, siempre va a decir que obj2 es owner del obj1,
-      //        porque la relacion es identica (va a dar que obj1 es owner de
-      //        obj2, porque se hace por definicion de la clase no de la instancia).
       if ( $obj1->getClass() != $obj2->getClass() && $obj2->isOwnerOf( $attr1 ) ) // Si la asoc al obj1 es duenia de obj2
       {
          $owner     = &$obj2;
@@ -1865,6 +1688,8 @@ class PersistentManager {
     */
    public static function isMappedOnSameTable( $class1, $class2 )
    {
+      Logger::getInstance()->pm_log("PM::isMappedOnSameTable $class1, $class2");
+      
       // TODO
       // el caso superclase subclase lo handlea isMappedOnSameTableSubclass.
 
@@ -1875,38 +1700,6 @@ class PersistentManager {
       //Logger::getInstance()->log( "isMappedOnSameTable: table2 $table2" );
       
       return ($table1 === $table2);
-      
-      /*
-      // Chekeo ambos casos de subclass primero...
-      if ( is_subclass_of($class1, $class2) )
-      {
-         return self::isMappedOnSameTableSubclass( $class1, $class2 );
-      }
-      else if ( is_subclass_of($class2, $class1) )
-      {
-         return self::isMappedOnSameTableSubclass( $class2, $class1 );
-      }
-      else
-      {
-         $c1_ins = new $class1();
-         $c2_ins = new $class1();
-      
-         // SOLUCION COMPLICADA PERO CORRECTA.
-         // Me tengo que fijar si pertenecen a la misma estructura de herencia (si son primas o hermanas).
-         // Luego me fijo en alguna superclase comun y desde ahi busco en que tabla se mapean.
-         // ...
-         
-         // No lo podria hacer simplemente comparando withTable? se que si tiene y son distintos se mapean en distintas tablas,
-         // y si una no tiene ya se que la que tiene va en otra tabla aunque pertenezca a la misma estructura de herencia.
-         // Pero si ninguna tiene withTable, tengo que encontrar quien define la tabla para cada clase y ver si son la misma...
-         // Para este caso (que incluye a los otros tengo) la funcion tableName que deberia dar el nombre de la tabla para 
-         // cualquier instancia, tenga o no withTable declarado en la instancia.
-         $table1 = YuppConventions::tableName( $c1_ins );
-         $table2 = YuppConventions::tableName( $c2_ins );
-         
-         return ($table1 === $table2);
-      }
-      */
    }
    
 } // PersistentManager
