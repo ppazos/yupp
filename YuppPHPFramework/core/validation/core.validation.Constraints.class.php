@@ -44,7 +44,7 @@ class MaxLengthConstraint extends Constraint {
 
    public function evaluate( $value )
    {
-      if ( is_null($value) ) return true; // Si es null no supera el valor maximo.
+      if ($value === NULL) return true; // Si es null no supera el valor maximo.
       if (!is_string($value)) throw new Exception("La restriccion MaxLength no se aplica al valor: " . $value);
 
       return (strlen($value) <= $this->max);
@@ -74,7 +74,7 @@ class MinLengthConstraint extends Constraint {
 
    public function evaluate( $value )
    {
-      if ( is_null($value) ) return false; // FIXME: si es null, y min es 0, no deberia tirar true?
+      if ($value === NULL ) return false; // FIXME: si es null, y min es 0, no deberia tirar true?
       if (!is_string($value)) throw new Exception("La restriccion MinLength no se aplica al valor: " . $value);
 
       return (strlen($value) >= $this->min);
@@ -296,6 +296,8 @@ class Matches extends Constraint {
 
    public function evaluate( $value )
    {
+      if ($value == NULL) return false; // Si es NULL ni siquiera le puedo aplicar la restriccion porque es para strings
+      
       if (!is_string($value)) throw new Exception("La restriccion ". get_class($this) ." no se aplica al valor: " . $value);
 
       return preg_match ( $this->regexp, $value );
@@ -342,7 +344,7 @@ class BlankConstraint extends Constraint {
 
    public function evaluate( $value )
    {
-      if (is_null($value)) return true; //blank o no blank no dice nada de si es null o no null, ese chekeo se debe hacer en otro lado.
+      if ($value === NULL) return true; // blank o no blank no dice nada de si es null o no null, ese chekeo se debe hacer en otro lado.
       if (!is_string($value)) throw new Exception("BlankConstraint.evaluate: el tipo de ($value) debe ser string");
       if ($this->blank) return true; // Si lleog aca es que es string y no es null, asi que cualquier string debe cumplir, hasta el vacio.
       return ( strcmp($value, "") != 0 ); // Not blank, cumplen todos menos el vacio....
