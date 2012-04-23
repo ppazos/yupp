@@ -275,3 +275,79 @@ Método validate:
       }
       */
 }}}
+
+=== Comentario en método isOwnerOf ===
+
+Dentro del bloque: else if ( array_key_exists ( $attr, $this->hasMany ) )
+
+Si tengo una relacion hasMany con migo mismo, tengo 1->* o *->*, para ambos casos debería devolver true.
+
+FIXME: Esto no se cumple completamente si tengo multiples relaciones entre las clases. Porque si tengo bidireccionalidad y cardinalidad *, deberia pedir un belongsTo declarado.
+       El problema es que si A hasMany A, y le pregunto al hijo si hasMany el padre, me va a decir siempre true, lo que deberia hacer es linkear los roles de las relaciones en ambas clases (en este caso solo A), para saber cual es la contraparte de la relacion en la otra clase, por ejemplo: A->*(sub_as)A, cuando le pregunto a A si tiene una relacion reversa con A, a traves de sub_as, deberia decir false.
+       En este caso, deberia decir true: A(parent)*<->*(sub_as)A, y la relacion inversa por el rol "sub_as" tiene el rol "parent". Para poder hacerlo, falta un constructor que me permita declarar una relacion con sus 2 roles en la clase origen y en la clase destino.
+
+
+=== Comentario en método getHasManyAttributeNameByAssocAttribute ===
+
+{{{
+      /* Esto esta mal porque no solo tengo que preguntar si tengo un atributo de esta clase,
+       * sino que si ese atributo es de esa clase y es de la misma relacion que el atributo
+       * assocAttribute.
+       * Tener en cuenta que attributesOfSameRelationship devuelve true si ninguno de los 2
+       * tiene el nombre de la relacion codificado en el nombre. O sea, no verifica que los
+       * atributos pertenezcan a las clases ni que esas clases tengan relaciones declaradas
+       * entre ellas. Esa verificacion deberia hacerse en algun lado.
+       * 
+      // Se ejecuta sobre A y se pasa el atributo de B y quiero el nombre del atributo de A corespondiente a ese atributo de B en la relacion.
+      // Es para salvar relaciones n-n bidireccionales y saber el tipo de la instancia, si es uni o bi direccional.
+      $hmattrs = $this->hasManyAttributesOfClass( $assocClass );
+
+      $tam = sizeof($hmattrs);
+      if ( $tam == 0 ) return NULL; // throw new Exception("PO.getHasManyAttributeNameByAssocAttribute: no tiene un atributo hasMany a " . $assocClass);
+      if ( $tam == 1 ) return $hmattrs[0]; // Si hay uno, es ese!
+
+      // Si tengo declarada mas de un hasMany a la clase assocClass
+      // Tengo que ver por el nombre de asociacion codificado en el nombre de los atributos
+      // Si el rol de ambos lados de la relacion no tiene declarado el nombre de la relacion,
+      // tengo que tirar una except porque lo debe declarar para no tener ambiguedad.
+      foreach ($hmattrs as $attrName)
+      {
+         // attrName es un atributo hasMany que apunta a assocClass desde la clase de la instancia actual ($this)
+         if ( self::attributesOfSameRelationship( $attrName, $assocAttribute ) )
+         {
+            //echo "<h1>OK attributesOfSameRelationship( $attrName $assocAttribute )</h1>";
+            return $attrName;
+         }
+      }
+      */
+}}}
+
+
+=== Comentario en el método nullable ===
+
+{{{
+      // TODO: Si el atributo es una FK generada para relaciones hasOne o hasMany,
+      // deberia verificar si la relacion puede ser nullable o no para saber si ese atributo puede ser null.
+      // Por ejemplo el atributo "email" es nullable, aqui pregunto si el atrivuto "email_id" es nullable,
+      // me tengo que fijar si hay un atributo "email" (me doy cuenta del nombre porque le saco el "_id"),
+      // luego me fijo si ese atributo tiene una contraint nullable, y hago el resto como siempre...
+      //
+      // OJO! es "email_id" cuando es un hasOne, todavia no se como se va a llamar la FK a
+      // hasMany o en que direccion van a ir las relaciones.
+
+      //Logger::getInstance()->log("Nullable ATTR1? $attr");
+
+      // Si el que me pasan es un atributo de referencia hasOne (inyectado) si es nullable o 
+      // no depende de si el atributo hasOne correspondiente es nullable o no.
+      // TODO:? Si es un atributo de referencia hasOne, hacerlo siempre nullable 
+      // podria hacer mas faciles las cosas para PM.generateAll y PM.generate.
+      // Y al resto del funcionamiento no le afectaria en nada.
+}}}
+
+
+=== Comentario en clase ObjectReference ===
+
+Campo attributeTypes, clave 'ord':
+
+FIXME: si lo declaro aqui, y el tipo de la relacion no es lista, me genera la consulta con ORD y la consulta me tira el error de que el atributo no existe, en realidad se deberia enchufar dinamicamente el atributo si es que la coleccion es una lista o se genera siempre la tabla con el atributo ORD y se pone en null si no es lista.
+
