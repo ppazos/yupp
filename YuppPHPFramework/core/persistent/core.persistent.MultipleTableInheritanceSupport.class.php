@@ -31,7 +31,7 @@ class MultipleTableInheritanceSupport {
       // tendria que tener un construct simple que no haga nada, solo instanciar la clase y que esa instancia levante una bandera de que es
       // simple y que si se intenta hacer algo como un setXXX tire un warning de que es para proceso interno no para usar el objeto.
       
-      if ( count( $superClasses ) > 0 )
+      if (count($superClasses) > 0)
       {
          //Logger::getInstance()->log( "LEVEL 1 ($level1SuperClass) WITH TABLE: " . $level1WithTable );
       
@@ -118,7 +118,6 @@ class MultipleTableInheritanceSupport {
    {  
       $C = ModelUtils::getAllSubclassesOf( $levelOneClass );
       $C[] = $levelOneClass;
-       
       $struct = self::getMultipleTableInheritance( $C );
       return $struct;
    }
@@ -133,6 +132,8 @@ class MultipleTableInheritanceSupport {
     */
    public static function getMultipleTableInheritance( $inheritanceClasses )
    {
+      Logger::getInstance()->dal_log("MTI::getMultipleTableInheritance");
+      
       // Ahora depende de una aplicacion.
       // La estructura de MTI no pueden establecerse entre clases del modelo de distintas aplicaciones.
       $ctx = YuppContext::getInstance();
@@ -170,10 +171,6 @@ class MultipleTableInheritanceSupport {
                $e1[$class][] = $subclass;
                
                //Logger::getInstance()->dal_log("isMapperOnSameTable: $class , $subclass " . __FILE__ . " " . __LINE__ );
-            }
-            else
-            {
-               //Logger::getInstance()->dal_log("no isMapperOnSameTable: $class , $subclass " . __FILE__ . " " . __LINE__ );
             }
          }
       }
@@ -310,14 +307,20 @@ Array
     */
    public static function getPartialInstancesToSave( $po_ins )
    {
-      Logger::add( Logger::LEVEL_PM, "MTI.getPartialInstancesToSave" );
-      
+      Logger::getInstance()->dal_log("MTI::getPartialInstancesToSave ". $po_ins->getClass());
       //Logger::struct( $po_ins, __FILE__ . ".getPartialInstancesToSave " . __LINE__ );
       
       // TODO: (performance) si el objeto no representa un MTI no deberia hacerse todo el trabajo de copiar cada atributo del objeto,
       //       eso deberia verificarse antes, y de no ser un MTI, devolver nomas un array con el objeto entrante.
 
-      $superclasses = ModelUtils::getAllAncestorsOf( $po_ins->getClass() ); // puede ser en cualquier orden!
+
+      // Para simplificar y no tener que hacer aGet sobre po_ins
+      $values = $po_ins->getAttributeValues();
+
+
+      //$superclasses = ModelUtils::getAllAncestorsOf( $po_ins->getClass() ); // puede ser en cualquier orden!
+      $superclasses = ModelUtils::getAllAncestorsOf( $values['class'] ); // puede ser en cualquier orden!
+      
       
       /*
       // Quiero la clase de nivel 1
@@ -336,7 +339,8 @@ Array
       // Lo anterior es lo mismo que hacer esto: 
       // NO! SERIA LO MISMO SI LA INSTANCIA QUE ME PASAN ES DE LA ULTIMA CLASE DE LA ESTRUCTURA DE HERENCIA.
       // CORRECCION, esta bien porque hace getClass, y obtiene la clase real que es la ultima de la estructura!!!!
-      $superclasses[] = $po_ins->getClass();
+      //$superclasses[] = $po_ins->getClass();
+      $superclasses[] = $values['class'];
       
       // Mapa de clases y subclases que se mapean en la misma tabla.
       $struct = self::getMultipleTableInheritance( $superclasses );
@@ -347,32 +351,28 @@ Array
       // TODO: Partial Instances no considera valores, tengo que setear los valores a mano a partir de los valores de po_ins.
       $partialInstances = self::getPartialInstantes( $struct ); // Instancias de las clases en $superclasses que solo tienen los atributos que van en cada tabla. Cada clase de estas se mapea directamente con una tabla.
       
-      foreach ( $partialInstances as $partialInstance )
+      foreach ($partialInstances as $partialInstance)
       {
          $attrs_values = $partialInstance->getAttributeTypes(); // El tipo no lo uso para nada, solo necesito la declaracion de atributos.
-         foreach ( $attrs_values as $attr => $type )
+         foreach ($attrs_values as $attr => $type)
          {
             //echo $partialInstance->getClass() . " " . $po_ins->getClass() . " $attr<br />";
             
-            if ( $partialInstance->getClass() === $po_ins->getClass() ) // Seteo atributos inyectados tambien, xq son de esta instancia!
+            //if ( $partialInstance->getClass() === $po_ins->getClass() || // Seteo atributos inyectados tambien, xq son de esta instancia!
+            if ( $partialInstance->getClass() === $values['class'] || // Seteo atributos inyectados tambien, xq son de esta instancia!
+                 !PersistentObject::isInyectedAttribute($attr) // Solo setea valores de atributos no inyectados
+               ) 
             {
-//               echo "po_ins->aGet($attr) = " . $po_ins->aGet($attr) . "<br/>";
-               //Logger::getInstance()->log( "SET ATTR OF SAME CLASS: " . $attr . " VALOR: " . $po_ins->aGet($attr) );
-               $partialInstance->aSet($attr, $po_ins->aGet($attr));
-            }
-            else
-            {
-               // Solo setea valores de atributos no inyectados
-               if (!PersistentObject::isInyectedAttribute( $attr )) // TODO: luego veo como setear los atributos inyectados... El valor de "class" se inyecta solo! 
-               {
-                  //Logger::getInstance()->log( "SET NOT INYECTED ATTR: " . $attr . " VALOR: " . $po_ins->aGet($attr) );
-                  $partialInstance->aSet($attr, $po_ins->aGet($attr));
-               }
+               // ===============================================================================
+               // aGet tiene cierta complejidad pidiendo values directamente es mas rapido
+               //$partialInstance->aSet($attr, $po_ins->aGet($attr));
+               $partialInstance->aSet($attr, $values[$attr]); // PO garantiza que vienen valores para todos los indices, aunque sean NULL, por eso no es necesario hacer un isset($values[$attr])
             }
          }
          
          // El deleted, si la instancia a salvar esta deleted, todos los registros deben estarlo!
-         $partialInstance->setDeleted( $po_ins->getDeleted() );
+         //$partialInstance->setDeleted( $po_ins->getDeleted() );
+         $partialInstance->setDeleted($values['deleted']);
          
       } // getPartialInstancesToSave
       
