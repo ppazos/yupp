@@ -8,7 +8,7 @@ class LayoutManager {
    
    public static function getInstance()
    {
-      if (is_null(self::$instance)) self::$instance = new LayoutManager();
+      if (self::$instance === NULL) self::$instance = new LayoutManager();
       return self::$instance;
    }
    

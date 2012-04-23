@@ -24,6 +24,11 @@ class YuppConventions {
    public static function tableName( $instance_or_class )
    {
       $ins = $instance_or_class;
+      
+      // TEST
+      if (empty($instance_or_class)) debug_print_backtrace();
+      //echo '<pre> tableName '. print_r($instance_or_class, true) .__FILE__.__LINE__.'</pre>';
+      
       if ( !is_object($ins) ) $ins = new $instance_or_class(array(), true); // Si no es instancia, es clase, creo una instancia de esa clase.
       if ( !($ins instanceof PersistentObject) ) throw new Exception("La instancia debe ser de PO y es " . gettype($ins));
       
@@ -100,7 +105,6 @@ class YuppConventions {
       $instConElAtributoHasMany = $ins1; // En ppio pienso que la instancia es la que tiene el atributo masMany.
       foreach ( $classes as $aclass )
       {
-         //$ins = new $aclass();
          $ins = new $aclass(NULL, true);
          //if ( $ins->hasManyOfThis( $ins2->getClass() ) ) // la clase no es la que tenga el atributo, debe ser en la que se declara el atributo
          if ( $ins->attributeDeclaredOnThisClass($inst1Attr) )

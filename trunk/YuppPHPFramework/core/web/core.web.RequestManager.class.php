@@ -192,15 +192,7 @@ class RequestManager {
           
          $executer = new Executer( $router->getParams() );
          $command = $executer->execute( $controllerFiltersInstance ); // $controllerFiltersInstance puede ser null!
-          
-         // ==============
-         // TEST: ver si guarda el estado en la sesion
-         //$test = CurrentFlows::getInstance()->getFlow( 'createUser' );
-         //Logger::show( "Flow en sesion luego de execute: " . print_r($test->getCurrentState(), true) . ", " . __FILE__ . " " . __LINE__ );
-         // ================
       }
-      
-      //Logger::getInstance()->po_log("RM: ".__FILE__ .' '.__LINE__);
       
       // /ROUTING
       // ====================================================
@@ -212,7 +204,7 @@ class RequestManager {
       // Si no vienen las cosas seteadas puedo adivinar por ejemplo que view mostrar en funcion de la accion y contorller, como en grails.
       // TODO: Verificar si no es null, si tiene todos los atributos necesarios para hacer o que dice el comando, etc.
       // FIXME: SI EL COMANDO ES NULL QUIERO HACER ACCIONES POR DEFECTO! como mostrar la view correspondiente al controller, y la action ejecutadas.
-      if (is_null($command) || empty($command))
+      if ($command === NULL || empty($command))
       {
          // O le falta el command o es que la accion es de pedir un recurso estatico el que se devuelve como stream.
          // Error 500: Internal Server Error

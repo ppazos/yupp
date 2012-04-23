@@ -51,7 +51,7 @@ class XMLPO {
          $currentNode = NULL;
          
          // El nombre de la tag es el nombre del atributo, a no ser que sea el nodo raiz.
-         if ( is_null($attrName) )
+         if ($attrName === NULL)
          {
             $currentNode = $xml_dom_doc->createElement( get_class($obj) );
          }
@@ -83,7 +83,7 @@ class XMLPO {
             foreach ($obj->getHasOne() as $attr => $clazz)
             {
                $relObj = $obj->aGet($attr);
-               if (!is_null($relObj))
+               if ($relObj !== NULL)
                {
                   if(!in_array(get_class($relObj).'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                   {
