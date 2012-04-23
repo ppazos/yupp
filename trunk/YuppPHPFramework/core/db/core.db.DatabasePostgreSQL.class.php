@@ -613,7 +613,7 @@ class DatabasePostgreSQL {
    private function evaluateReferenceValue( $refVal )
    {
       // Si es 0 me devuelve null...
-      if ( is_null($refVal) ) return 'NULL';
+      if ( $refVal === NULL ) return 'NULL';
       if ( is_bool($refVal) ) return (($refVal)?'TRUE':'FALSE');
       if ( $refVal === 0 ) return "'0'";
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;

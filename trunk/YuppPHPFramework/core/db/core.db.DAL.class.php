@@ -638,7 +638,7 @@ class DAL {
          if ( strcmp($attr, "id") != 0 ) // No updateo el id...
          {
             $tableAttrs .= DatabaseNormalization::col( $attr ) ."=";
-            if ( is_null($value) ) $tableAttrs .= "NULL ,"; // Si no se pone esto ponia '' y se guardaba 0, mientras necesito que se guarde NULL.
+            if ( $value === NULL ) $tableAttrs .= "NULL ,"; // Si no se pone esto ponia '' y se guardaba 0, mientras necesito que se guarde NULL.
             else if ( is_string($value) ) $tableAttrs .= "'". addslashes($value) ."' ,"; // Debe agregar slashes solo si el valor es string, esto es por si guardo "'" dentro del propio string donde mysql me da error.
             else if ( is_bool($value) ) $tableAttrs .= "'". (($value===true)?"1":"0")  ."' ,"; // Pone '1' si es true, '0' si no.
             else $tableAttrs .= "'". $value ."' ,"; // FIXME: Ver si el value es literal...
@@ -683,7 +683,7 @@ class DAL {
       foreach ( $attrs as $attr => $type )
       {
          $value = $object->aGet( $attr ); // Valor del atributo simple.
-         if ( is_null($value) ) $tableVals .= "NULL ,";
+         if ( $value === NULL ) $tableVals .= "NULL ,";
          else if ( is_string($value) ) $tableVals .= "'". addslashes($value) ."' ,"; // Debe agregar slashes solo si el valor es string, esto es por si guardo "'" dentro del propio string donde mysql me da error.
          else if ( is_bool($value) ) $tableVals .= "'". (($value===true)?"1":"0")  ."' ,"; // Pone '1' si es true, '0' si no.
          else $tableVals .= "'". $value ."' ,"; // FIXME: OJO, si no es literal no deberia poner comillas !!!!  y si es null deberia guardar null
