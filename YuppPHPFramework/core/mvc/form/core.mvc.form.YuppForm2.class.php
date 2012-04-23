@@ -115,7 +115,7 @@ class YuppForm2
     */
    public function getUrl()
    {
-      if ( is_null($this->action_url) )
+      if ( $this->action_url === NULL )
       {
          return Helpers :: url(array (
             "app" => $this->app,
@@ -633,7 +633,7 @@ class YuppFormDisplay2
       $html .= '<script type="text/javascript">' .
                'Event.observe(window, "load", function() {'.
                '  Event.observe("'.$form->getId().'", "submit", function(event) {'.
-               ((!is_null($form->getAjaxBeforeSubmit())) ? '    '. $form->getAjaxBeforeSubmit() .'($("'.$form->getId().'"));' : '' ) .
+               (($form->getAjaxBeforeSubmit() !== NULL) ? '    '. $form->getAjaxBeforeSubmit() .'($("'.$form->getId().'"));' : '' ).
                '    $("'.$form->getId().'").request({'.
                '      onSuccess: '. $form->getAjaxCallback() .
                '    });'.
@@ -655,7 +655,7 @@ class YuppFormDisplay2
       $html .= '<script type="text/javascript">$(document).ready(function() { '.
                '  var options = {'.
                '    success: '. $form->getAjaxCallback() .
-               ((!is_null($form->getAjaxBeforeSubmit())) ? ', beforeSubmit: '. $form->getAjaxBeforeSubmit() : '' ) .
+               (($form->getAjaxBeforeSubmit() !== NULL) ? ', beforeSubmit: '. $form->getAjaxBeforeSubmit() : '' ).
                '  };'.
                '  $(\'#'. $form->getId() .'\').ajaxForm(options);'. 
                '  });' .
