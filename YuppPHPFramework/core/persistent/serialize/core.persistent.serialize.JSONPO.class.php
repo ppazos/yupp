@@ -17,7 +17,7 @@ class JSONPO {
    // TODO: test
    public static function toJSONArray( $list = array(), $recursive = false, $attr = '', $loopDetection = NULL, $currentPath = '' )
    {
-      if (is_null($loopDetection)) $loopDetection = new ArrayObject();
+      if ($loopDetection === NULL) $loopDetection = new ArrayObject();
       
       $json = '[';
       
@@ -54,7 +54,7 @@ class JSONPO {
     */
    public static function toJSON( PersistentObject $po, $recursive = false, $loopDetection = NULL, $currentPath = '' )
    {
-      if (is_null($loopDetection)) $loopDetection = new ArrayObject();
+      if ($loopDetection === NULL) $loopDetection = new ArrayObject();
       
       // Necesito hacer que cada nodo tenga una path para poder expresar las referencias por loops detectados.
       // La idea es simple: (ver http://goessner.net/articles/JsonPath/)
@@ -80,7 +80,7 @@ class JSONPO {
       
       // Agrega errores de validacion si los hay
       // http://code.google.com/p/yupp/issues/detail?id=86
-      if ($po->hasErrors())
+      if ($po->getErrors()->hasErrors())
       {
          $errors = $po->getErrors();
          $json .= ', "errors": {';
@@ -105,7 +105,7 @@ class JSONPO {
          foreach ($po->getHasOne() as $attr => $clazz)
          {
             $relObj = $po->aGet($attr);
-            if (!is_null($relObj))
+            if ($relObj !== NULL)
             {
                if(!in_array($relObj->getClass().'_'.$relObj->getId(), (array)$loopDetection)) // si no esta marcado como recorrido
                {
