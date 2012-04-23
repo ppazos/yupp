@@ -41,7 +41,7 @@ class DisplayHelper {
 
     public static function errors( $po )
     {
-       if ($po->hasErrors())
+       if ($po->getErrors()->hasErrors())
        {
           echo "<ul>";
           foreach ( $po->getErrors() as $attr => $errors )
@@ -63,9 +63,9 @@ class DisplayHelper {
     public static function fieldErrors($po, $attr)
     {
        $res = '';
-       if ($po->hasFieldErrors($attr))
+       if ($po->getErrors()->hasFieldErrors($attr))
        {
-          $errors = $po->getFieldErrors($attr);
+          $errors = $po->getErrors()->getFieldErrors($attr);
           $res .= '<ul>';
           foreach ( $errors as $error )
           {
@@ -200,7 +200,7 @@ class DisplayHelper {
               $res .= self::field_to_html_edit( $attr, $type, $po->aGet($attr), $maxStringLength );
               
               // Si el campo tiene errores, los muestro
-              if ($po->hasFieldErrors($attr))
+              if ($po->getErrors()->hasFieldErrors($attr))
               {
                  $res .= '<div class="errors">';
                  $res .= self::fieldErrors($po, $attr);
@@ -556,7 +556,8 @@ class DisplayHelper {
        // FIXME: el lenguaje podria parametrizarse.
        echo '<textarea name="'.$name.'" id="'.$name.'">'.$content.'</textarea>';
        
-       echo h('js', array('name'=>'tiny_mce/tiny_mce')); // js/tiny_mce/tiny_mce.js
+       //echo h('js', array('name'=>'tiny_mce/tiny_mce')); // js/tiny_mce/tiny_mce.js
+       echo h('js', array('name'=>'tiny_mce_35b3/tiny_mce')); // js/tiny_mce/tiny_mce.js
        echo '<script type="text/javascript">
                  if (!htmlinit) // Si el usuario no define la funcion
                  {
