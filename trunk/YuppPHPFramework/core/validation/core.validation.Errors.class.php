@@ -22,6 +22,9 @@ class Errors implements IteratorAggregate {
       return new ArrayIterator($this->errors);
    }
    
+   /**
+    * Agrega un error al campo $attr.
+    */
    public function add($attr, $error)
    {
       if (!isset($this->errors[$attr])) $this->errors[$attr] = array();
@@ -43,16 +46,27 @@ class Errors implements IteratorAggregate {
    }
    
    /**
-    * Devuelve true si la instancia de la clase tiene algun error de validacion.
+    * True si la instancia de la clase tiene algun error de validacion. False en otro caso.
     */
    public function hasErrors()
    {
       return count($this->errors) !== 0; // errors esta inicializado en un array
    }
    
+   /**
+    * True si el campo $attr tiene errores. False en otro caso.
+    */
    public function hasFieldErrors($attr)
    {
       return count($this->errors) !== 0 && (isset($this->errors[$attr]) || array_key_exists($attr, $this->errors));
+   }
+   
+   /**
+    * Cantidad total de erorres.
+    */
+   public function countErrors()
+   {
+      return count($this->errors);
    }
 }
 ?>
