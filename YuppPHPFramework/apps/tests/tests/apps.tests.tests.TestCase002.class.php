@@ -63,7 +63,7 @@ class TestCase002 extends TestCase {
       $this->assert( $cara->save(), 'Test guardar cara 2 '. print_r($cara->getErrors(), true));
       
       // La nariz NO debe tener errores
-      $this->assert( count($cara->getNariz()->getErrors()) == 0, 'Test errores en nariz 2');
+      $this->assert( $cara->getNariz()->getErrors()->countErrors() == 0, 'Test errores en nariz 2');
    }
    
    public function test3()
