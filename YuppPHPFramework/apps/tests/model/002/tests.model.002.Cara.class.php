@@ -4,6 +4,8 @@
  * Clase modelo para el test 002.
  */
 
+YuppLoader::load('tests.model.002', 'Nariz');
+
 class Cara extends PersistentObject
 {
    function __construct($args = array (), $isSimpleInstance = false)
