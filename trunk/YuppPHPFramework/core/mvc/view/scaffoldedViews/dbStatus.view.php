@@ -2,6 +2,9 @@
 
 $m = Model::getInstance();
 
+$createDatabaseForApps = $m->get('createDatabaseForApps');
+$cfg = YuppConfig::getInstance();
+
 global $_base_dir;
 
 ?>
@@ -133,6 +136,12 @@ global $_base_dir;
         border: 1px solid #D6E9C6;
         color: #468847;
       }
+      .createDbContainer {
+        margin-bottom: 15px;
+      }
+      .createDb {
+        padding: 2px 2px 2px 10px;
+      }
     </style>
   </head>
   <body>
@@ -175,6 +184,21 @@ global $_base_dir;
       Muestra que tablas fueron generadas para el modelo y que tablas falta generar, 
       y permite generar las tablas que falten.<br/><br/>
       <?php
+      
+        if (count($createDatabaseForApps) > 0)
+        {
+           echo '<h3>Las siguientes bases de datos deben crearse:</h3>';
+           echo '<div class="createDBContainer">';
+           foreach ($createDatabaseForApps as $app)
+           {
+              $datasource = $cfg->getDatasource($app);
+              echo '<div class="createDb">Base: ',$datasource['database'],' App:', $app, ' ';
+              echo h('link', array('body'=>'Crear base de datos', 'action'=>'createDb', 'params'=>array('app'=>$app))), '</div>';
+           }
+           echo '</div>';
+        }
+        
+      
         $allTablesCreated = $m->get('allTablesCreated');
         if ($allTablesCreated !== NULL)
         {
@@ -211,12 +235,15 @@ global $_base_dir;
             </div>
             <?php
               // Datasource
-              $cfg = YuppConfig::getInstance();
               $datasource = $cfg->getDatasource($appName);
            
               echo '<h3>Clases del modelo de "'. $appName .'":</h3>';
               echo '<div class="info">';
-              if ( count($classInfo) == 0 )
+              if (in_array($appName, $createDatabaseForApps))
+              {
+                echo 'Debe crear la base de datos <b>'.$datasource['database'].'</b> para esta aplicacion';
+              }
+              else if ( count($classInfo) == 0 )
               {
                 echo 'No hay clases definidas';
               }
