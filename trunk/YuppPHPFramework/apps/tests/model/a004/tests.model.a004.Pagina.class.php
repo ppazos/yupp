@@ -22,24 +22,15 @@ class Pagina extends PersistentObject
       $this->addHasMany('subpages', 'Pagina');
 
 
-      $this->addConstraints(
-         "titulo",
-         array (
-            Constraint :: maxLength(255)
-         )
-      );
-      $this->addConstraints(
-         "contenido",
-         array (
-            Constraint :: maxLength(100000)
-         )
-      );
-      $this->addConstraints(
-         "owner",
-         array (
-            Constraint :: nullable(true) // Las paginas del primer nivel no tienen padre.
-         )
-      );
+      $this->addConstraints("titulo", array (
+         Constraint :: maxLength(255)
+      ));
+      $this->addConstraints("contenido", array (
+         Constraint :: maxLength(100000)
+      ));
+      $this->addConstraints("owner", array (
+         Constraint :: nullable(true) // Las paginas del primer nivel no tienen padre.
+      ));
 
       parent :: __construct($args, $isSimpleInstance);
    }
