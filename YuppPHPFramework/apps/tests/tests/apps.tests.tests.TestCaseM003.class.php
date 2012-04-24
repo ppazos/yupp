@@ -39,7 +39,9 @@ class TestCaseM003 extends TestCase {
          $dedo->setMano($mano);
       }
       
-      $this->assert($mano->save(), 'TestCaseM003: Test salvar mano y dedos '. print_r($mano->getErrors(), true));
+      //Logger::getInstance()->on();
+      $this->assert($mano->save(), 'TestCaseM003: Test salvar mano y dedos '. print_r($mano->getErrors(), true), array('mano'=>print_r($mano, true)));
+      //Logger::getInstance()->off();
       
       // Debe fallar el save porque hay datos erroneos
       $this->assert( true, 'TestCaseM003: Test generar XML '. print_r(XMLPO::toXML($mano, true, true), true));

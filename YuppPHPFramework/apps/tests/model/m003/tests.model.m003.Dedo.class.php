@@ -4,7 +4,7 @@
  * Clase modelo para el test M003.
  */
 
-YuppLoader::load('tests.model.m003', 'Dedo');
+YuppLoader::load('tests.model.m003', 'Mano');
 
 class Dedo extends PersistentObject
 {
