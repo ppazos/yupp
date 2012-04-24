@@ -184,7 +184,11 @@ class CoreController extends YuppController {
       // ahora me muestra unas excepciones de las consultas 
       // a la DB para las tablas que ya existen que no se pueden crear.
       //echo "PM generateAll<br/>";
-      PersistentManager::getInstance()->generateAll();
+      
+      // http://code.google.com/p/yupp/issues/detail?id=143
+      //PersistentManager::getInstance()->generateAll();
+      YuppLoader::load('core.persistent', 'TableGen');
+      TableGen::generateAll();
       
       $this->flash['message'] = 'Generaci&oacute;n de tablas completada.';
       
