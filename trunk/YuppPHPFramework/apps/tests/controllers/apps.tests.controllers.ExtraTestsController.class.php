@@ -5,7 +5,86 @@ YuppLoader::load('tests.model.002', 'Nariz');
 YuppLoader::load('tests.model.a004', 'Pagina');
 YuppLoader::load('core.persistent.serialize', 'JSONPO');
 
+YuppLoader::load('tests.model.dobleHasManyB', 'AClass');
+
 class ExtraTestsController extends YuppController {
+
+   function dobleHasManyBGetAction()
+   {
+      Logger::getInstance()->on();
+      $a = AClass::get(1);
+      
+      // Para que cargue pro lazy
+      $bs1 = $a->getRolb1();
+      $bs2 = $a->getRolb2(); // Estos tienen un hasMany a2 a AClass, quiero que lo cargue
+      
+      //echo '<pre>'. print_r($bs2, true) .'</pre>';
+      
+      foreach ($bs1 as $b)
+      {
+         $b->getA1(); // carga lazy del ho a $a
+      }
+      
+      foreach ($bs2 as $b)
+      {
+         // FIXME: me dice que es un array vacio
+         // Puede tener algo que ver conque las relaciones desde B a A por a2 se estan guardando como unidireccionales y son bidir...
+         //$b->getA2(); // Carga lazy de hasMany 
+         echo ('<pre> b - getA2 '. print_r($b->getA2(), true) .'</pre>');
+      }
+      
+      echo "<h1>cascascscasdcad</h1>";
+      
+      return $this->renderString('<pre>'. print_r($a, true) .'</pre>');
+   }
+
+   function dobleHasManyBAction()
+   {
+      Logger::getInstance()->on();
+      
+      $a = new AClass(array('attrAClass'=>'un valor cualquiera'));
+      $bs = array(
+        new BClass(array('attrBClass'=>'asfasdfadfa')),
+        new BClass(array('attrBClass'=>'sdfgsdfgshh')),
+        //new BClass(array('attrBClass'=>'erterteeert')),
+        //new BClass(array('attrBClass'=>'hjkhjhjkjkk')),
+        //new BClass(array('attrBClass'=>'tyutytuyuyt')),
+        //new BClass(array('attrBClass'=>'ioioioiooii'))
+      );
+      
+      // Agrega algunos B a un hasMany y algunos al otro
+      foreach ($bs as $i=>$b)
+      {
+         if ($i % 2 == 0)
+         {
+            $a->addToRolb1($b); // hasMany A->B
+            $b->setA1($a); // hasOne B->A
+         }
+         else
+         {
+            $a->addToRolb2($b); // hasMany A->B
+            //$b->setA1($a);
+            $b->addToA2($a); // hasMany B->A
+         }
+      }
+      
+      if (!$a->save())
+      {
+         print_r($a->getErrors());
+      }
+      
+      print_r($a);
+      
+      Logger::show('fin addTo');
+      
+      //$a->removeFromRolb1($bs[0]);
+      
+      //Logger::show('fin removeFrom');
+      
+      Logger::getInstance()->off();
+      
+      return $this->renderString('-=-=-=-=---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=');
+   }
 
    function inListAction()
    {
