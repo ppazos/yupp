@@ -87,7 +87,8 @@ class YuppLoader {
       // Si estoy en una aplicacion que no es 'core', solo cargo el modelo de esa aplicacion.
       // Si estoy en la aplicacion 'core', carga el modelo de todas las aplicaciones.
       $ctx = YuppContext::getInstance();
-      $apps = array( $ctx->getApp() );
+      //$apps = array( $ctx->getApp() );
+      $apps = array( $ctx->getRealApp() );
       if ($apps[0] == 'core') $apps = FileSystem::getSubdirNames("./apps");
             
       $packs = new PackageNames();
