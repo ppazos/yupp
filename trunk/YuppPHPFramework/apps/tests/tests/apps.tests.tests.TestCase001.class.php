@@ -10,10 +10,39 @@ class TestCase001 extends TestCase {
 
    public function run()
    {
+      // Para ver logs y optimizar llamadas
+      $this->testSaveSimple();
+      
+      /*
       $this->test1();
       $this->test2();
       $this->test3();
       $this->reset();
+      */
+   }
+   
+   public function testSaveSimple()
+   {
+      //Logger::getInstance()->on();
+      
+      YuppLoader::load('core.support', 'Timer');
+      $timer = new Timer();
+      $timer->start();
+      
+      $bot = new Botella(
+        array(
+          "material" => "vidrio",
+          "capacidad" => 1.5, 
+          "tapaRosca" => true
+        )
+      );
+      
+      $this->assert( $bot->save(), 'Test guardar 1 '. print_r($bot->getErrors(), true));
+      
+      $timer->stop();
+      echo 'Time: '. $timer->getElapsedTime() .'<br/>';
+      
+      //Logger::getInstance()->off();
    }
    
    public function test1()
@@ -26,7 +55,7 @@ class TestCase001 extends TestCase {
         )
       );
       
-      $this->assert( is_bool($bot->getTapaRosca()), 'Test boolean 1');
+      $this->assert( is_bool($bot->getTapaRosca()), 'Test boolean 1', array('getTapaRosca'=>$bot->getTapaRosca()));
       
       $this->assert( $bot->save(), 'Test guardar 1 '. print_r($bot->getErrors(), true));
       
