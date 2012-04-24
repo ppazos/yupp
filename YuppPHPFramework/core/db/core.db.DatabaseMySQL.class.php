@@ -2,7 +2,6 @@
 
 include_once "core.db.Datatypes.class.php";
 
-// Conector a MySQL
 class DatabaseMySQL {
 
    // OJO cada vez que se incluya pone todo en NULL ! //
@@ -23,6 +22,13 @@ class DatabaseMySQL {
    public function getQueryCount()
    {
       return $this->queryCount;
+   }
+   
+   // http://code.google.com/p/yupp/issues/detail?id=123
+   public function createDatabase($dbname)
+   {
+      // http://dev.mysql.com/doc/refman/5.0/en/create-database.html
+      $this->execute("CREATE DATABASE $dbname");
    }
 
    public function connect( $dbhost, $dbuser, $dbpass, $dbName )
@@ -47,11 +53,9 @@ class DatabaseMySQL {
    {
       //Logger::getInstance()->log("DatabaseMySQL::selectDB");
 
-      //echo "<br />";
-      //echo "Select DB: " . $dbName . " " . $this->connection . "<br />";
       if ( ! mysql_select_db ($dbName, $this->connection) ) // Por si estoy trabajando con muchas conecciones
       {
-         throw new Exception("Error seleccionando la base de datos <b>$dbName</b>. Verificar que existe.");
+         throw new Exception("Error seleccionando la base de datos <b>$dbName</b>. Verificar que existe.", 666); // 666 es mi codigo de DB no existe...
       }
    }
 
@@ -119,7 +123,6 @@ class DatabaseMySQL {
 
       $this->queryCount++;
       $this->lastResult = $result;
-
       return $result;
    }
    
@@ -134,7 +137,6 @@ class DatabaseMySQL {
          throw new Exception('La consulta fall&oacute;: ' . mysql_error());
       
       $this->queryCount++;
-      
       return true;
    }
 
@@ -244,7 +246,7 @@ class DatabaseMySQL {
             {
                if ( get_class($constraint) === 'MaxLengthConstraint' )
                {
-               	$maxLengthConstraint = $constraint;
+                  $maxLengthConstraint = $constraint;
                   break; // rompe for
                }
             }
@@ -323,7 +325,7 @@ class DatabaseMySQL {
       //$q = "show tables like '$tableName'"; // FUNCIONA EN MySQL
       //$q = "show tables like $tableName"; // NO FUNCIONA EN MySQL
   
-      $res = $this->query( "show tables like '$tableName'" );
+      $res = $this->query("show tables like '$tableName'");
       
       //print_r(  mysql_num_rows($res) );
       //print_r( $res );
@@ -343,8 +345,7 @@ class DatabaseMySQL {
    
    public function tableNames() //: string[] // nombres de todas las tablas de la db seleccionada.
    {
-      $res = $this->query( "show tables" );
-      return $res;
+      return $this->query("show tables");
    }
    
    /**
@@ -698,7 +699,6 @@ class DatabaseMySQL {
    }
    //
    // /EVALUACION DE CONSULTAS ======================================================
-   
 }
 
 ?>

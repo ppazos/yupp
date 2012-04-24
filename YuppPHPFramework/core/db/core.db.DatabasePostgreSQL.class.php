@@ -2,7 +2,6 @@
 
 include_once "core.db.Datatypes.class.php";
 
-// Conector a PostgreSQL
 class DatabasePostgreSQL {
 
    // OJO cada vez que se incluya pone todo en NULL ! //
@@ -23,6 +22,13 @@ class DatabasePostgreSQL {
    {
       return $this->queryCount;
    }
+   
+   // http://code.google.com/p/yupp/issues/detail?id=123
+   public function createDatabase($dbname)
+   {
+      // http://bytes.com/topic/postgresql/answers/577571-create-database-test-if-not-exists
+      $this->execute("CREATE DATABASE $dbname");
+   }
 
    public function connect( $dbhost, $dbuser, $dbpass, $dbName )
    {
@@ -38,7 +44,7 @@ class DatabasePostgreSQL {
 
       if ( !$this->connection )
       {
-         throw new Exception( "No pudo conectarse a PostgreSQL: " . pg_last_error($this->connection) );
+         throw new Exception( "No pudo conectarse a PostgreSQL: " . pg_last_error($this->connection), 666 ); // 666 es mi codigo de DB no existe...
       }
 
       //$this->selectDB( $dbName );
@@ -230,7 +236,7 @@ class DatabasePostgreSQL {
    public function getDBType( $type, $constraints )
    {
       $dbms_type = NULL;
-   	  if ( Datatypes::isText( $type ) )
+        if ( Datatypes::isText( $type ) )
       {
          $maxLength = NULL; // TODO: Falta ver si tengo restricciones de maxlength!!!
          
@@ -242,7 +248,7 @@ class DatabasePostgreSQL {
             {
                if ( get_class($constraint) === 'MaxLengthConstraint' )
                {
-               	$maxLengthConstraint = $constraint;
+                  $maxLengthConstraint = $constraint;
                   break; // rompe for
                }
             }
@@ -359,8 +365,7 @@ class DatabasePostgreSQL {
    
    public function tableNames() //: string[] // nombres de todas las tablas de la db seleccionada.
    {
-      $res = $this->query( "select tablename from pg_tables" );
-      return $res;
+      return $this->query("select tablename from pg_tables");
    }
    
    /**

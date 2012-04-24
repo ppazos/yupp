@@ -38,6 +38,41 @@ class CoreController extends YuppController {
       return call_user_func_array('array_merge', $a);
    }
    
+   /**
+    * @param app nombre de la aplicacion para la que crear la DB.
+    */
+   public function createDbAction()
+   {
+      // http://code.google.com/p/yupp/issues/detail?id=123
+      $app = $this->params['app'];
+      try
+      {
+         $dal = new DAL($app); // Falla sino existe la base para la app $appName
+      }
+      catch (Exception $e)
+      {
+         if ($e->getCode()==666) // No existe la base
+         {
+            // Verifica que la DB no existe
+            
+            // Veo el nombre de la base para esta app
+            $cfg = YuppConfig::getInstance();
+            $datasource = $cfg->getDatasource($app);
+            $dbName = $datasource['database'];
+            
+            // Tuve que crear una instancia de DAL y pasarle 'core' como app
+            // porque no puedo declarar createDatabase como estatico por
+            // usar internamente el this->db para hacer la query CREATE DATABASE.
+            $dal = new DAL('core');
+            $dal->createDatabase($dbName);
+            
+            $this->flash['message'] = "La base de datos $dbName se ha creado con exito!";
+         }
+      }
+      
+      return $this->redirect(array('action'=>'dbStatus'));
+   }
+   
    // dbStatus2
    public function dbStatusAction()
    {
@@ -53,6 +88,9 @@ class CoreController extends YuppController {
       $allTablesCreated = true;
       
       $fn = new FileNames();
+      
+      // http://code.google.com/p/yupp/issues/detail?id=123
+      $createDatabaseForApps = array(); // Aplicaciones a las que se sugiere que se cree su base de datos
       
       foreach ($appNames as $appName)
       {
@@ -72,7 +110,21 @@ class CoreController extends YuppController {
          // Toda la informacion de las clases y tablas creadas para esta app
          $appModelClasses[$appName] = array();
          
-         $dal = new DAL($appName);
+         
+         // http://code.google.com/p/yupp/issues/detail?id=123
+         try
+         {
+            $dal = new DAL($appName); // Falla sino existe la base para la app $appName
+         }
+         catch (Exception $e)
+         {
+            if ($e->getCode()==666) // No existe la base
+            {
+               $createDatabaseForApps[] = $appName;
+            }
+            continue; // Para el for appNames
+         }
+         
          
          foreach ($modelClassFileNames as $classFileName)
          {
@@ -98,6 +150,7 @@ class CoreController extends YuppController {
       
       $this->params['allTablesCreated'] = $allTablesCreated;
       $this->params['appModelClasses'] = $appModelClasses;
+      $this->params['createDatabaseForApps'] = $createDatabaseForApps;
       
       return $this->render("dbStatus");
    }

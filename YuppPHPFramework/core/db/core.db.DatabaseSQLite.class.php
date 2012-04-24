@@ -36,8 +36,13 @@ class DatabaseSQLite {
    {
       return $this->queryCount;
    }
+   
+   // http://code.google.com/p/yupp/issues/detail?id=123
+   public function createDatabase($dbname)
+   {
+      throw new Exception('SQLite no acepta creacion de bases de datos mediante SQL');
+   }
 
-// SQLite
    public function connect( $dbhost, $dbuser, $dbpass, $dbName )
    {
       //Logger::getInstance()->log("DatabaseMySQL::connect " . $dbhost ." ". $dbuser ." ". $dbpass ." ". $dbName);
@@ -46,7 +51,7 @@ class DatabaseSQLite {
 
       if ( $this->connection === false )
       {
-         return; // No pudo conectarse
+         return; // No pudo conectarse, TODO: tirar exception?
       }
    }
 
@@ -82,7 +87,6 @@ class DatabaseSQLite {
    }
 
    // TODO: devolver true o false por si se pudo o no hacer la consulta...
-   // SQLite
    public function query( $query )
    {
       Logger::getInstance()->dbmysql_log("DatabaseSQLite::query : " . $query);
@@ -98,21 +102,19 @@ class DatabaseSQLite {
 
       return $result;
    }
-   
 
-// PARA SQLite necesito otra funcion para update e insert, execute. En MySQL hace update, insert y select con la misma query.
+   // PARA SQLite necesito otra funcion para update e insert, execute. En MySQL hace update, insert y select con la misma query.
    public function execute( $query )
    {
       Logger::getInstance()->dbmysql_log("DatabaseSQLite::execute : " . $query);
       
-   	$this->lastQuery = $query;
+      $this->lastQuery = $query;
       
       // Si hay excepciones, se tiran para la capa de arriba donde se agarran.
       $this->connection->queryExec($query);
 
       $this->queryCount++;
    }
-
 
    // Sirve para iterar por los resultados de la ultima consulta.
    public function nextRow()
@@ -171,9 +173,8 @@ class DatabaseSQLite {
    
    public function getLastError()
    {
-   	return sqlite_error_string($this->connection->lastError());
+      return sqlite_error_string($this->connection->lastError());
    }
-
 
    // MApeo tipos de SWP con tipos del dbms ===========================================
 
@@ -219,7 +220,6 @@ class DatabaseSQLite {
 
       // No puede llegar aca...
    }
-
 
    public function getDBType( $type, $constraints )
    {
@@ -311,7 +311,6 @@ class DatabaseSQLite {
    {
       return "";
    }
-
 
    // EVALUACION DE CONSULTAS ======================================================
    //
@@ -451,7 +450,6 @@ class DatabaseSQLite {
       if ( is_bool($refVal) ) return (($refVal)?'1':'0');
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
    }
-   
    public function evaluateEQCondition( Condition $condition )
    {
       $refVal = $condition->getReferenceValue();
@@ -466,7 +464,6 @@ class DatabaseSQLite {
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
-   
    public function evaluateEEQCondition( Condition $condition )
    {
       $refVal = $condition->getReferenceValue();
@@ -489,7 +486,6 @@ class DatabaseSQLite {
       */ 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
-   
    public function evaluateNEQCondition( Condition $condition )
    {
       $refVal = $condition->getReferenceValue();
@@ -504,7 +500,6 @@ class DatabaseSQLite {
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
-   
    public function evaluateENEQCondition( Condition $condition )
    {
       // TODO
@@ -524,7 +519,6 @@ class DatabaseSQLite {
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
-   
    public function evaluateILIKECondition( Condition $condition )
    {
       $refVal = $condition->getReferenceValue();

@@ -202,6 +202,14 @@ class DAL {
    }
 
 
+   // http://code.google.com/p/yupp/issues/detail?id=123
+   // Si recibiera la app podria verificar si existe o no la db, esto lo hace ahora CoreController.createDb que es desde el unico lugar que se invoca este metodo.
+   public function createDatabase($dbname)
+   {
+      $this->db->createDatabase($dbname);
+   }
+
+
    // FIXME: depende del DBMS
    /**
     * createTable
@@ -227,25 +235,14 @@ class DAL {
    public function createTable2($tableName, $pks, $cols, $constraints)
    {
       Logger::getInstance()->dal_log("DAL::createTable2 : " . $tableName);
-      // TODO:
-      // ESTA LLAMADA: $dbms_type = $this->db->getTextType( $type, $maxLength );
-      // Deberia cambiarse por: $this->db->getDBType( $attrType, $attrConstraints ); // Y todo el tema de ver el largo si es un string lo hace adentro.
-
-      // Obs: REFERENCES no me crea la FK, no se si porque no existe la tabla  la que hago referencia o porque se define de otra forma.
-      // Asi funca: ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
-
-      // VERIFY: posible problema, si estoy creando una tabla con referencias a otra y esa otra no esta creada, capaz salta la base.
-      // capaz deveria crear las tablas y luego todas las FKs.
       
-      $q_ini = "CREATE TABLE " . $tableName . " (";
-      //$q_end = ");";
-      $q_end = ")";
+      $q_ini = 'CREATE TABLE ' . $tableName . ' (';
+      $q_end = ')';
       
       // Keys obligatorias: name, type.
       // Keys opcionales: default.
       
       $q_pks = "";
-
       //$q_pks = "PRIMARY KEY ( id )";
       foreach ( $pks as $pk )
       {
@@ -261,15 +258,11 @@ class DAL {
       
       // Keys obligatorias: name, type.
       // Keys opcionales: default, nullable.
-      
       $q_cols = "";
       foreach ( $cols as $col )
       {
-         // $q .= DatabaseNormalization::col($attr) ." $dbms_type $nullable , ";
-  
-         // =============================================================================================================
          // FIXME: arreglo rapido porque no hay constraints para id, ver el sig. FIXME en PersistentManager en linea 2203
-         //    FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
+         // FIXME: c_ins no tiene las restricciones sobre los atributos inyectados.
          $constraintsOrNull = (isset($constraints[$col['name']])) ? $constraints[$col['name']] : NULL;
          $q_cols .= $col['name'] . " " . 
                     $this->db->getDBType($col['type'], $constraintsOrNull ) . " " .
@@ -280,32 +273,6 @@ class DAL {
       
       
       // Keys obligatorias: name, type, table, refName.
-      
-      // Esta forma no funciona para MYSQL
-      /*
-      $q_fks = "";
-      foreach ( $fks as $fk )
-      {
-         // colName INTEGER REFERENCES other_table(column_name),
-//         $q_fks .= $fk['name'] . " " . 
-//                   $this->db->getDBType($fk['type'], $constraints ) .
-//                   " REFERENCES " . $fk['table'] . "(". $fk['refName'] ."), ";
-      }
-      */
-      
-      /* ESTA FORMA FUNCIONA.
-      // Si la tabla de referencia no existe, tira un error.
-      // Las FKs se deben crear luego de las tablas y agregar mediante: 
-      //   ALTER TABLE `prueba` ADD FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`);
-      //
-      foreach ( $fks as $fk )
-      {
-         // FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`)
-         $q_fks .= "FOREIGN KEY (" . $fk['name'] . ") " .
-                   "REFERENCES " . $fk['table'] . "(". $fk['refName'] ."), ";
-      }
-      */
-      
       $q = $q_ini . $q_pks . substr($q_cols,0,-2) . $q_end; // substr para sacar ", " del final.
 
       // FIXME: para que funcione la transaccionalidad, el motor de la DB en MySQL debe ser InnoDB
@@ -341,32 +308,16 @@ class DAL {
    // FIXME: si la tabla se deriva del objeto no veo la necesidad de pasarle ambos, 
    // anque podria ser necesario para las tablas intermedias de relaciones 1-* y *-*
    // FIXME: no deberia pasarle obj, deberia ser un array de valores.
-   //public function update ( $tableName, &$obj )
-   //public function update ( $tableName, &$data )
    public function update ( $tableName, $data )
    {
       Logger::getInstance()->dal_log("DAL::update " . $tableName . " " . $data['class']);
 
-      // DBG
-      //FileSystem::appendLine("LOG.txt", "DAL_UPDATE: " . $tableName . " (" . $obj->getId() . ")");
-
-// TODO:
-// MTI
-// Si el objeto tiene id, tambien tendra los ids de sus ancestros en $multipleTableIds,
-// lo que hay que hacer es igual a insert, solo crear las instancias parciales,
-// luego setearle el id a cada una (este paso no estaba en el insert), y luego crear
-// la consulta como siempre y hacer el update.
-
-// =================================================================================================================================
-// FIXME: esto se deberia hacer en PM y en DAL no se deberian manejar ni POs ni temas de consistencia entre instancias parciales.
-// =================================================================================================================================
+      // FIXME: esto se deberia hacer en PM y en DAL no se deberian manejar
+      //        ni POs ni temas de consistencia entre instancias parciales.
+      // ===================================================================
 
       $this->update_query2( $data, $tableName );
-   
-      // UPDATE `carlitos`.`persona_linda` SET `nombre` = 'Pablsdf', `tel` = '709sd9217', `edad` = '3' WHERE `persona_linda`.`id` =1
-      // UPDATE `carlitos`.`persona_linda` SET `nombre` = 'Pablon' WHERE `persona_linda`.`id` =1
-      
-   } // update
+   }
 
    /**
     * @param $tableName nombre de la tabla donde buscar el objeto con identificador $id.
@@ -466,9 +417,7 @@ class DAL {
       
    } // listAll
 
-
    /**
-    * 
     * Elimina un solo registro, correspondiente con la clase e id.
     * No considera instancias parciales, de eso se encarga PM.
     * 
@@ -535,7 +484,6 @@ class DAL {
       $this->db->rollbackTransaction();
    }
    
-   
    // TODO: un exists que reciba un queryBuilder, seria algo como existsWhere...
 
    //public function insert($tableName, &$obj)
@@ -544,9 +492,6 @@ class DAL {
       // FIXME: obj deberia ser una matriz de valores, no un PO. A DAL no deverian llegar POs.
       //        Y todas las operaciones sobre el PO deberian hacerse tambien en PM.
       Logger::getInstance()->dal_log("DAL::insert ". $obj->getClass() ." in table=$tableName");
-
-      // DBG
-      //FileSystem::appendLine("LOG.txt", "DAL_INSERT: " . $tableName . " (" . $obj->getId() . ")");
 
       // =======================================================================
       // FIXME: deberia estar en PM
@@ -560,9 +505,8 @@ class DAL {
       
       // ======================================================================================================
       // http://code.google.com/p/yupp/issues/detail?id=111
-      // New: para simplificar el esquema de identificacion de instancias parciales de una instancia MTI,
-      //      todas las subclases tendran el mismo identificador que la superclase de nivel 1, asi hay que
-      //      generar un solo identificador, ahorrando multiples consultas.
+      // New: todas las subclases en MTI tienen el mismo identificador que la superclase de nivel 1,
+      //      asi hay que generar un solo identificador, ahorrando multiples consultas.
     
       // Necesito la tabla para la superclase, no la del objeto ($tableName)
       // Si viene un ObjectReference, no resuelve bien su nombre de tabla porque es calculado, entonces dejo el tableName que viene.
@@ -653,7 +597,6 @@ class DAL {
       
    } // update_query2
 
-
    /**
     * Se recibe un objecto a la que ya se ha verificado que debe insertarse en la base de datos.
     * @param $object POs a salvar.
@@ -726,63 +669,12 @@ class DAL {
    {
       //Logger::getInstance()->dal_log("DAL::generateNewId $tableName");
       
-      //return $this->db->generateNewId($tableName);
-
       $q = "SELECT MAX(id) AS max FROM ". $tableName;
       $this->db->query( $q );
       $row = $this->db->nextRow();
       return ($row['max']+1);
    }
 
-   /*
-   // Obtiene el id maximo
-   public function maxId( $tableName )
-   {
-      $q = "SELECT MAX(id) AS max FROM ". $tableName;
-
-
-      $result = $this->db->query( $q );
-
-
-      //$result = stand_alone_query ( $q );
-      //$row = mysql_fetch_assoc( $result ); // FIXME: Hay que ver que pasa cuando es null...
-      return $result['max'];
-   }
-   */
-
-   public function backup ( $tableName )
-   {
-      // TODO
-   }
-
-   public function deleteTable( $tableName )
-   {
-      // TODO
-   }
-
-   /* TODO: Respaldo de la base actual
-   public function dumpDatabase()
-   {
-      //include 'config.php';
-      //include 'opendb.php';
-
-      //$backupFile = $this->database . date("Y-m-d-H-i-s") . '.sql';
-      $backupFile = $this->database . '.sql';
-
-      echo "DUMP: " . $backupFile . "<br/>";
-      // ahora no estoy usando pass
-      $command = "mysqldump --opt -h $this->url -u $this->user $this->database > $backupFile";
-      //$command = "mysqldump --opt -h $this->url -u $this->user -p $this->pass $this->database | gzip > $backupFile";
-
-      echo $command;
-
-      system($command);
-      //include 'closedb.php';
-   }
-   */
-
-   // TODO: eliminacion del esquema actual (todas las tablas)
-   
    // DBInspector
    /**
     * Verifica si una tabla existe en la base de datos.
@@ -805,7 +697,6 @@ class DAL {
       {
          $ret[] = $colDesc['Field'];
       }
-       
       return $ret;
    }
    
@@ -817,23 +708,10 @@ class DAL {
    // FIXME: depende del DBMS...
    public function tableColInfo( $tableName, $col )
    {
-       $q = "show columns from `$tableName` LIKE `$col`"; // SOLO FUNCIONA CON ESTAS COMILLAS `, no con '.
-       $res = $this->query( $q );
-       return $res;
-       
-       // http://dev.mysql.com/doc/refman/5.0/en/show-columns.html
-       
-       /* Devuelve un array de descripciones de columnas:
-        * Array
-        * (
-        *    [Field] => id
-        *    [Type] => int(11)
-        *    [Null] => NO
-        *    [Key] => PRI
-        *    [Default] => 
-        *    [Extra] => 
-        * )
-        */
+      // http://dev.mysql.com/doc/refman/5.0/en/show-columns.html
+      $q = "show columns from `$tableName` LIKE `$col`"; // SOLO FUNCIONA CON ESTAS COMILLAS `, no con '.
+      $res = $this->query( $q );
+      return $res;
    }
 }
 
