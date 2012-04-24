@@ -188,6 +188,34 @@ class DisplayHelper {
               //$res .= $po->aGet($attr);
               $res .= self::field_to_html_show( $attr, $type, $po->aGet($attr) );
            }
+           else if (DatabaseNormalization::isSimpleAssocName($attr)) // http://code.google.com/p/yupp/issues/detail?id=105
+           {
+              // Si es un fk a un id de un hasOne, quiero mostrar una lista de los posibles ids
+              // de la clase de la relacion HO que le puedo asignar, y como esto es create o edit,
+              // si tiene un valor actual, deberia quedar seleccionado en el select.
+              
+              $currentValue = $po->aGet($attr); // Puede ser NULL
+              
+              $role = DatabaseNormalization::getSimpleAssocName($attr); // email_id -> email
+              $relClass = $po->getType($role); // Clase de la relacion HO
+              
+              // Objetos que puedo tener relacionadoss
+              // Se puede en PHP 5.3.0...
+              //$list = $relClass::listAll(new ArrayObject()); // Objetos que podria tener asociados
+              // ... pero por las dudas ...
+              $list = call_user_func_array (array($relClass, 'listAll'), array(new ArrayObject()));
+              
+              $select = '<select name="'.$attr.'"><option value=""></option>';
+              foreach ($list as $relObj)
+              {
+                 $sel = (($currentValue == $relObj->getId()) ? ' selected="true"' : '');
+                 $select .= '<option value="'. $relObj->getId() .'"'. $sel .'>'.
+                            $relClass.'['.$relObj->getId().']</option>'; // TODO: Si se tuviera un toString en la clase se mostraria mejor
+              }
+              $select .= '</select>';
+              
+              $res .= $select;
+           }
            else
            {
               $maxStringLength = NULL;
