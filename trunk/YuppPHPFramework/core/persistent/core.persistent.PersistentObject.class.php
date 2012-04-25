@@ -990,11 +990,11 @@ class PersistentObject {
 
    // Los params son para pasarle atributos de paginacion.
    //
-   public static function listAll( ArrayObject $params )
+   public static function listAll(ArrayObject $params)
    {
       // FIXME: PM no necesita una instancia, le puedo pasar la clase derecho.
-      $ins = new self::$thisClass();
-      return PersistentManager::getInstance()->listAll($ins, self::filtrarParams($params));
+      if ($params === NULL) $params = new ArrayObject();
+      return PersistentManager::getInstance()->listAll(new self::$thisClass(), self::filtrarParams($params));
    }
 
    /**
@@ -1002,10 +1002,10 @@ class PersistentObject {
     * @param $params son parametros extra como de paginacion y ordenamiento para armar el LIMIT y ORDER BY de la consulta.
     * @return devuelve todos los elementos de la clase actual que coincidan con el critero de busqueda.
     */
-   public static function findBy( Condition $condition, ArrayObject $params )
+   public static function findBy(Condition $condition, ArrayObject $params)
    {
-      $ins = new self::$thisClass();
-      return PersistentManager::getInstance()->findBy( $ins, $condition, self::filtrarParams($params) );
+      if ($params === NULL) $params = new ArrayObject();
+      return PersistentManager::getInstance()->findBy(new self::$thisClass(), $condition, self::filtrarParams($params));
    }
    
    /**
@@ -1271,7 +1271,7 @@ class PersistentObject {
 
       // Verifico si tengo el atributo y esta en una relacion (hasMany o hasOne).
       //
-      if ( array_key_exists ( $attr, $this->hasOne ) )
+      if (array_key_exists( $attr, $this->hasOne ))
       {
          $obj = new $this->hasOne[$attr]();
 
@@ -1286,7 +1286,7 @@ class PersistentObject {
             return $obj->belonsToClass( $_thisClass ); // Ahora se pide belongsTo obligatorio para 1..1 unidireccional (esto evita que se salven en cascada links que realmente son blandos)
          }
       }
-      else if ( array_key_exists ( $attr, $this->hasMany ) )
+      else if (array_key_exists( $attr, $this->hasMany ))
       {
          // Si tengo una relacion hasMany con migo mismo, tengo 1->* o *->*, para ambos casos debería devolver true.
          if ($this->hasMany[$attr] == $_thisClass) return true;
