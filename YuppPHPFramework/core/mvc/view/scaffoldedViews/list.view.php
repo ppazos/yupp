@@ -9,7 +9,7 @@ YuppLoader :: load('core.mvc', 'DisplayHelper');
 ?>
 <html>
   <head>
-    <?php echo h('js', array("name" => "jquery/jquery-1.6.1.min") ); ?>
+    <?php echo h('js', array("name" => "jquery/jquery-1.7.1.min") ); ?>
     <style>
       body {
          font-family: arial, verdana, tahoma;
