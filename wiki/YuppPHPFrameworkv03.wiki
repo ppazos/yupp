@@ -1,5 +1,5 @@
 #summary Notas de la versión v0.3 de Yupp PHP Framework
-#labels notas,version,yupp,v0.3,Featured
+#labels notas,version,yupp,v0.3
 
 =NOTAS DE LA VERSION:=
 
