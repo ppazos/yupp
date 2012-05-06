@@ -1,5 +1,5 @@
 #summary Notas de la liberación de la versión 0.2.5 de Yupp Framework
-#labels Featured,notas,version,Phase-Deploy,liberacion
+#labels notas,version,Phase-Deploy,liberacion
 
 =NOTAS DE LA VERSION:=
 
