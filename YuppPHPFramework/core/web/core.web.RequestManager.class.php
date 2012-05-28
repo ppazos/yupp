@@ -222,6 +222,8 @@ class RequestManager {
       // Siempre llega algun comando
       if ( $command->isDisplayCommand() )
       {
+         // Aqui llegan tambien los errores ej 500 o 404 para mostrar una vista linda.        
+
          // FIXME: mostrar o no el tiempo de procesamiento deberia ser configurable.
          //$tiempo_final = microtime(true);
          //$tiempo_proc = $tiempo_final - $tiempo_inicio;
@@ -341,9 +343,25 @@ class RequestManager {
       // Si la pagina es fisica
       $pagePath = 'apps/'.$logic_route['app'].'/views/'.$logic_route['controller'].'/'.$command->viewName().'.view.php';
       
+      //echo $pagePath . '<br/>';
+      
+      //$pagePath = realpath('./'.$pagePath); // Resuelve .. y .
+      // FIXME: en linux puede tener problemas resolviendo . y .. en la path, necesitaria resolverla a la canonica
+      //        realpath se desactiva en algunos hostings por temas de seguridad, habria que implementar una alternativa
+      //        http://php.net/manual/en/function.realpath.php
+      if (!file_exists($pagePath) ) // Si la pagina NO es fisica
+      {
+         // Intento resolver path con .. en linux
+         $pagePath = preg_replace('/\w+\/\.\.\//', '', $pagePath); // Saca .. pero no saca . y deberia
+      }
+      
+      //echo $pagePath . '<br/>';
+      //apps/cms2/views/page/../cms/displayPageRO.view.php
+      //apps/cms2/views/cms/displayPageRO.view.php
+      
       // Si la ruta referenciada no existe, intento mostrar la vista de scafolding correspondiente
       // a la accion, pero las acciones con vistas dinamicas son solo para acciones: 'show','list','edit','create'.
-      if ( !file_exists($pagePath) ) // Si la pagina NO es fisica
+      if (!file_exists($pagePath)) // Si la pagina NO es fisica
       {
          // Si puedo mostrar la vista dinamica:
          if ( in_array($command->viewName(),
