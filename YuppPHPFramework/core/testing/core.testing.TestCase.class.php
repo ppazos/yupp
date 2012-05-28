@@ -15,7 +15,7 @@ abstract class TestCase {
       // TODO: obtener un mensaje que diga mas, linea, clase y
       //       metodo donde se intenta verificar la condicion
       //if (!$cond) $this->suite->report('error');
-      
+
       if (!$cond)
       {
          // http://php.net/manual/en/function.debug-backtrace.php
@@ -43,12 +43,12 @@ abstract class TestCase {
 
           */
          
-         $this->suite->report('ERROR', $msg, $trace, $moreInfo, $params);
+         $this->suite->report(get_class($this), 'ERROR', $msg, $trace, $moreInfo, $params);
       }
       else
       {
          // tengo que mostrar los tests correctos
-         $this->suite->report('OK', $msg);
+         $this->suite->report(get_class($this), 'OK', $msg);
       }
    }
    
