@@ -16,11 +16,24 @@ class ValidationMessage {
    const MSG_MAXLENGTH = "validation.error.maxLengthConstraint";
    const MSG_EMAIL     = "validation.error.email";
    const MSG_DATE      = "validation.error.date";
+   const MSG_MATCHES   = "validation.error.matches";
 
    public static function getMessage( $constraint, $attr, $value )
    {
       eval ('$msg = self::'.get_class($constraint).'( $constraint, $attr, $value );');
       return $msg;
+   }
+   
+   private static function matches( $constraint, $attr, $value)
+   {
+      // 0=value
+      // 1=attr
+      // 2=regex
+      $msg = DisplayHelper::message( self::MSG_MATCHES );
+      
+      $msg = str_replace('{0}', $value, $msg);
+      $msg = str_replace('{1}', $attr, $msg);
+      return str_replace('{2}', $constraint->getValue(), $msg);
    }
    
    private static function nullable( $constraint, $attr, $value)
