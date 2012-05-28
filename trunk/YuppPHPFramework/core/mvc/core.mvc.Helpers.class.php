@@ -346,11 +346,14 @@ function $func {
           $url = './apps/'. $app .'/views/'. $controller;
           
        } // template
-
+       
        $params_url = "";
-       foreach ($params['args'] as $argname => $argvalue)
+       if (isset($params['args'])) // si viene un array vacio, array_filter lo saca.
        {
-          $$argname = $argvalue; // Declaro variables con los nombres pasados en los args.
+          foreach ($params['args'] as $argname => $argvalue)
+          {
+             $$argname = $argvalue; // Declaro variables con los nombres pasados en los args.
+          }
        }
        
        include($url .'/'. $path . $params['name'] .'.template.php');
@@ -450,17 +453,25 @@ function $func {
        return $res;
     }
     
-    public static function locale_chooser( $params )
+    public static function locale_chooser($params = array())
     {
        $ctx = YuppContext::getInstance();
        
-       $config = YuppConfig::getInstance();
-      
-       $url = self::url( array('app' => 'core', 'controller' => 'core', 'action' => 'changeLocale') );
-       $res = '<form action="'. $url .'" style="width:270px; margin:0px; padding:0px;">';
+       $url = self::url( array('app'=>'core', 'controller'=>'core', 'action'=>'changeLocale') );
+       $res = '<form action="'. $url .'" class="locale_chooser">';
        $res .= '<select name="locale">';
        
-       foreach ( $config->getAvailableLocales() as $locale )
+       if (isset($params['langs']))
+       {
+          $langs = $params['langs'];
+       }
+       else
+       {
+          $config = YuppConfig::getInstance();
+          $langs = $config->getAvailableLocales();
+       }
+       
+       foreach ($langs as $locale)
        {
           $res .= '<option value="' . $locale . '" '. (($locale === $ctx->getLocale())?'selected="true"':'') .'>'. $locale . '</option>';
        }
@@ -469,7 +480,7 @@ function $func {
        $res .= '<input type="hidden" name="back_app" value="'. $ctx->getApp() .'" />';
        $res .= '<input type="hidden" name="back_controller" value="'. $ctx->getController() .'" />';
        $res .= '<input type="hidden" name="back_action" value="'. $ctx->getAction() .'" />';
-       $res .= '<input type="submit" value="Cambiar" />';
+       $res .= '<input type="submit" value="Cambiar" />'; // FIXME: i18n
        $res .= '</form>';
        
        return $res;
