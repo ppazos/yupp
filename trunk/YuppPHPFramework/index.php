@@ -90,7 +90,8 @@ catch (Exception $e)
        echo '</pre></div>';
      echo '</div>';
    echo '</body></html>';
-   exit();
 }
+
+exit(); // Fuerza que no haya mas salida
 
 ?>
