@@ -302,6 +302,11 @@ class Matches extends Constraint {
 
       return preg_match ( $this->regexp, $value );
    }
+   
+   public function getValue()
+   {
+      return $this->regexp;
+   }
 }
 
 // No es una restriccion de verdad... ya que si es null o si no es null tiene q dar siempre true.
