@@ -21,6 +21,7 @@ class I18nMessage
    }
    // /Singleton
    
+   // add
    public function a( $key, $lang, $message )
    {
       $a1 = &$this->messages[ $key ];
@@ -31,6 +32,7 @@ class I18nMessage
       $a1[ $lang ] = $message;
    }
 
+   // get
    public function g( $key, $lang, $default = NULL )
    {
       $a1 = &$this->messages[$key];
