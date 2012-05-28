@@ -2,56 +2,75 @@
 
 $m = Model::getInstance();
 
-$results = $m->get('results');
+$testResults = $m->get('results');
 $app = $m->get('app');
 
 ?>
 <html>
-   <head>
-      <style>
+  <head>
+    <style>
       .ERROR {
-         border: 1px solid #cc0000;
-         padding: 5px;
-         background-color: #ffcccc;
-         margin-bottom: 2px;
+        border: 1px solid #cc0000;
+        padding: 5px;
+        background-color: #ffcccc;
+        margin-bottom: 2px;
       }
       .EXCEPTION {
-         border: 1px solid #cccc00;
-         padding: 5px;
-         background-color: #ffffcc;
-         margin-bottom: 2px;
+        border: 1px solid #cccc00;
+        padding: 5px;
+        background-color: #ffffcc;
+        margin-bottom: 2px;
       }
       .OK {
-         border: 1px solid #00cc00;
-         padding: 5px;
-         background-color: #ccffcc;
-         margin-bottom: 2px;
+        border: 1px solid #00cc00;
+        padding: 5px;
+        background-color: #ccffcc;
+        margin-bottom: 2px;
       }
       textarea {
-         width: 100%;
-         height: 100px;
+        width: 100%;
+        height: 100px;
       }
       .modeInfo {
-         background-color: #ccccff;
+        background-color: #ccccff;
       }
-      </style>
-   </head>
-   <body>
-      <h1>Resultado del testing de <?php echo $app->getName(); ?></h1>
+      .test {
+        background-color: #EEF;
+        padding: 10px;
+        border: 1px solid #669;
+        margin-bottom: 5px;
+      }
+      .test h2 {
+        margin: 0 0 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Resultado del testing de <?php echo $app->getName(); ?></h1>
       
-      <div align="center"><?php echo $m->flash('message'); ?></div>
+    <div align="center"><?php echo $m->flash('message'); ?></div>
       
-      <?php foreach ($results as $result) : ?>
-        <div class="<?php echo $result['type']; ?>">
-          <b><?php echo $result['msg']; ?></b><br/>
-          <?php if (!empty($result['trace'])) : ?>
-            <textarea><?php echo $result['trace']; ?></textarea>
-          <?php endif; ?>
-          <textarea><?php echo $result['params']; ?></textarea>
-           <?php /*if (!empty($result['moreInfo'])) : ?>
-            <div class="moreInfo"><?php echo $result['moreInfo']; ?></div>
-          <?php endif;*/ ?>
-        </div>
-      <?php endforeach; ?>
-   </body>
+    <?php foreach ($testResults as $test=>$results) : ?>
+      <div class="test">
+        <h2><?php echo $test, ' (', count($results), ')'; ?></h2>
+        <?php foreach ($results as $result) : ?>
+          <div class="<?php echo $result['type']; ?>">
+            <b><?php echo $result['msg']; ?></b><br/>
+            
+            <?php if (!empty($result['trace'])) : ?>
+              <textarea><?php echo $result['trace']; ?></textarea>
+            <?php endif; ?>
+            
+            <?php if (!empty($result['params'])) : ?>
+              <textarea><?php echo $result['params']; ?></textarea>
+            <?php endif; ?>
+            
+            <?php /*if (!empty($result['moreInfo'])) : ?>
+                <div class="moreInfo"><?php echo $result['moreInfo']; ?></div>
+            <?php endif;*/ ?>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endforeach; ?>
+  </body>
 </html>

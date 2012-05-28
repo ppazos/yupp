@@ -50,12 +50,12 @@ class TestSuite {
 #8  RequestManager::doRequest() called at [C:\wamp\www\YuppPHPFramework\index.php:94]
             */
           
-           $this->report('EXCEPTION', $e->getMessage(), $trace, $moreInfo);
+           $this->report(get_class($testCase), 'EXCEPTION', $e->getMessage(), $trace, $moreInfo);
          }
       }
    }
    
-   public function report($type, $msg, $trace = '', $moreInfo = '', $params = array())
+   public function report($test, $type, $msg, $trace = '', $moreInfo = '', $params = array())
    {
       // Esto se podria poner en la vista
       // Muestra variables con valor y tipo
@@ -64,7 +64,10 @@ class TestSuite {
       {
          $_params .= $key.'='.$value.'('.gettype($value).')'."\n";
       }
-      $this->reports[] = array('type'=>$type, 'msg'=>$msg, 'trace'=>$trace, 'moreInfo'=>$moreInfo, 'params'=>$_params);
+      
+      //$this->reports[] = array('type'=>$type, 'msg'=>$msg, 'trace'=>$trace, 'moreInfo'=>$moreInfo, 'params'=>$_params);
+      if (!isset($this->reports[$test])) $this->reports[$test] = array();
+      $this->reports[$test][] = array('type'=>$type, 'msg'=>$msg, 'trace'=>$trace, 'moreInfo'=>$moreInfo, 'params'=>$_params);
    }
    
    public function getReports()
