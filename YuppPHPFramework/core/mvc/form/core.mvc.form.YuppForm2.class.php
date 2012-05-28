@@ -196,8 +196,13 @@ class YuppFormField2Group
    public $fieldNumber; // Auxiliar para mostrar los campos del grupo
    private $name;
    private $fields = array ();
+   private $args;
 
-   public function __construct($name) { $this->name = $name; }
+   public function __construct($name, $args = array())
+   {
+      $this->name = $name;
+      $this->args = $args;
+   }
    
    public function getName() { return $this->name; }
 
@@ -212,6 +217,14 @@ class YuppFormField2Group
    
    // Este metodo se necesita para el add de Form que pregunta al campo si es file (para que group tenga la misma interfaz que field)
    public function isFile() { return false; }
+   
+   // Arma un string para poner en la tag los params que faltan tipo: par1="val1" par2="val2" ...
+   public function getTagParams()
+   {
+      $r = " ";
+      foreach ($this->args as $name => $value) $r .= $name .'="'. $value .'" ';
+      return $r;
+   }
 }
 
 /**
@@ -523,13 +536,35 @@ class YuppFormDisplay2
                
             $fieldHTML .= '<div class="label select"><label for="'.$name.'">' . $field->getLabel() . '</label></div>';
             $fieldHTML .= '<div class="field select"><select name="'. $name .'"'. $field->getTagParams() .'>';
-            foreach ( $options as $opt_value => $text )
+            
+            // Las opciones del select vienen en un array de 3 niveles: group->optionkey->optionvalue
+            if ($field->get('hasGroups'))
             {
-               if ( $opt_value === $value )
-                  $fieldHTML .= '<option value="'. $opt_value .'" selected="true">'. $text .'</option>';
-               else
-                  $fieldHTML .= '<option value="'. $opt_value .'">'. $text .'</option>';
+               $fieldHTML .= '<option value=""></option>'; // por defecto no hay seleccionado
+               foreach ($options as $opt_group => $key_value)
+               {
+                  $fieldHTML .= '<optgroup label="'.$opt_group.'">';
+                  foreach ($key_value as $opt_value => $text)
+                  {
+                     if ( $opt_value === $value )
+                        $fieldHTML .= '<option value="'. $opt_value .'" selected="true">'. $text .'</option>';
+                     else
+                        $fieldHTML .= '<option value="'. $opt_value .'">'. $text .'</option>';
+                  }
+                  $fieldHTML .= '</optgroup>';
+               }
             }
+            else // Las opciones del select vienen en un array de 2 niveles: optionkey->optionvalue
+            {
+               foreach ( $options as $opt_value => $text )
+               {
+                  if ( $opt_value === $value )
+                     $fieldHTML .= '<option value="'. $opt_value .'" selected="true">'. $text .'</option>';
+                  else
+                     $fieldHTML .= '<option value="'. $opt_value .'">'. $text .'</option>';
+               }
+            }
+            
             $fieldHTML .= '</select></div>';
          
          break;
@@ -609,8 +644,10 @@ class YuppFormDisplay2
    private static function displayGroup(YuppFormField2Group $group)//, &$fieldNumber)
    {
       $fieldNumber = $group->fieldNumber;
-      $groupHTML = '<div class="group">';
-      $groupHTML .= '<div class="label">' . $group->getName() . '</label></div>';
+      //$groupHTML = '<div class="group">';
+      //$groupHTML .= '<div class="label">' . $group->getName() . '</div>';
+      $groupHTML = '<fieldset'. $group->getTagParams() .'>';
+      $groupHTML .= '<legend>' . $group->getName() . '</legend>';
       
       $fields = $group->get();
       foreach ( $fields as $field )
@@ -624,7 +661,8 @@ class YuppFormDisplay2
       // No necesario?
       $fieldNumber--; // por que en el metodo de afuera hace otra suma, asi no suma 2 veces.
 
-      return $groupHTML . '</div>';
+      //return $groupHTML . '</div>';
+      return $groupHTML . '</fieldset>';
    }
 
    private static function display_ajax_form_prototype($form)
