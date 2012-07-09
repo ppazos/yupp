@@ -481,7 +481,7 @@ class PersistentObject {
    
    private function executeBeforeSave()
    {
-      //Logger::getInstance()->po_log("Excecute before save ". get_class($this));
+      Logger::getInstance()->po_log("Excecute before save ". get_class($this));
 
       foreach ( $this->beforeSave as $cb ) $cb->execute();
 
@@ -1541,7 +1541,7 @@ class PersistentObject {
    // Devuelve valores de atributos, mas estructurado que OO, pero es para uso interno desde DAL por ejemplo.
    public function aGet( $attr ) // Cambie el nombre de get xq se choca con el get que quiero poner de wrapper del PM.
    {
-      Logger::getInstance()->po_log("PO:aGet $attr");
+      //Logger::getInstance()->po_log("PO:aGet $attr");
 
       // Si no es un atributo simple tengo que ver si hago lazy load...
       if ( !array_key_exists($attr, $this->attributeTypes) )
