@@ -42,7 +42,7 @@ YuppLoader::load("core.mvc.form", "YuppForm2");
       
     <?php else : ?>
     
-      <?php echo h('js', array('name'=>'jquery/jquery-1.5.1.min')); ?>
+      <?php echo h('js', array('name'=>'jquery/jquery-1.7.1.min')); ?>
       <script type="text/javascript">
         
         // Handler para jquery
