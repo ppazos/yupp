@@ -161,7 +161,9 @@ class Logger {
       {
          if ($this->file !== NULL)
          {
-            $txt = "[" . $msg . "]";
+            $trace = debug_backtrace();
+            $caller = $trace[1]['class'];
+            $txt = "$caller: [" . $msg . "]";
             FileSystem::appendLine($this->file, $txt);
             return;
          }
@@ -223,7 +225,9 @@ class Logger {
       {
          if ($this->file !== NULL)
          {
-            $txt = "[" . $msg . "]";
+            $trace = debug_backtrace();
+            $caller = $trace[1]['class'];
+            $txt = "$caller: [" . $msg . "]";
             FileSystem::appendLine($this->file, $txt);
             return;
          }
@@ -256,7 +260,9 @@ class Logger {
       {
          if ($this->file !== NULL)
          {
-            $txt = "[" . $msg . "]";
+            $trace = debug_backtrace();
+            $caller = $trace[1]['class'];
+            $txt = "$caller: [" . $msg . "]";
             FileSystem::appendLine($this->file, $txt);
             return;
          }
