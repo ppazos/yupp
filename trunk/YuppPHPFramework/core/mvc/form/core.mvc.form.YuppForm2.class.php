@@ -208,7 +208,9 @@ class YuppFormField2Group
 
    public function add(YuppFormField2 $field)
    {
-      $field->add("group", $this->name);
+      // Esto agrega un atributo group a los campos del grupo, y el atributo group no existe...
+      // No se porque se agregaba, lo saco.
+      //$field->add("group", $this->name);
       $this->fields[] = $field;
       return $this;
    }
@@ -269,13 +271,15 @@ class YuppFormField2
    
    public function get($name)
    {
+      $val = NULL;
       if (isset($this->args[$name]))
       {
          $val = $this->args[$name];
-         unset($this->args[$name]); // Para que al final queden solo los que no se pidieron.
-         return $val;
       }
-      return NULL;
+
+      unset($this->args[$name]); // Para que al final queden solo los que no se pidieron.
+      
+      return $val;
    }
    
    // Devuelve todos los params que haya en args, si se hizo get de algunos params, esos no van a estar!
@@ -427,7 +431,7 @@ class YuppFormDisplay2
             $day = $field->get("value_day");
             for ( $d=1; $d<32; $d++ )
             {
-               if ( $d === $day ) $fieldHTML .= '<option value="'. $d .'" selected="true">'. $d .'</option>';
+               if ( $d === $day ) $fieldHTML .= '<option value="'. $d .'" selected="selected">'. $d .'</option>';
                else $fieldHTML .= '<option value="'. $d .'">'. $d .'</option>';
             }
             $fieldHTML .= '</select>';
@@ -437,7 +441,7 @@ class YuppFormDisplay2
             $month = $field->get("value_month");
             for ( $m=1; $m<13; $m++ )
             {
-               if ( $m === $month ) $fieldHTML .= '<option value="'. $m .'" selected="true">'. $m .'</option>';
+               if ( $m === $month ) $fieldHTML .= '<option value="'. $m .'" selected="selected">'. $m .'</option>';
                else $fieldHTML .= '<option value="'. $m .'">'. $m .'</option>';
             }
             $fieldHTML .= '</select>';
@@ -447,7 +451,7 @@ class YuppFormDisplay2
             $year = $field->get("value_year");
             for ( $y=1930; $y<2010; $y++ )
             {
-               if ( $y === $year ) $fieldHTML .= '<option value="'. $y .'" selected="true">'. $y .'</option>';
+               if ( $y === $year ) $fieldHTML .= '<option value="'. $y .'" selected="selected">'. $y .'</option>';
                else $fieldHTML .= '<option value="'. $y .'">'. $y .'</option>';
             }
             $fieldHTML .= '</select>';
@@ -471,8 +475,13 @@ class YuppFormDisplay2
                $readOnly = ' readonly="true" ';
             }
             
-            $fieldHTML .= '<div class="label text"><label for="'.$name.'">' . $field->getLabel() . '</label></div>';
-            $fieldHTML .= '<div class="field text"><input type="text" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $readOnly . $field->getTagParams() .' /></div>';
+            //Logger::getInstance()->log($field->getTagParams() .' INPUT TEXT PARAMS');
+            
+            $fieldHTML .= '<div class="label text"><label>'. $field->getLabel() .'</label></div>';
+            // El for del label debe ser para un id no para un nombre...
+            //$fieldHTML .= '<div class="label text"><label for="'.$name.'">' . $field->getLabel() . '</label></div>';
+            $fieldHTML .= '<div class="field text"><input type="text" name="'. $name .'" value="'. $value .'" '. $readOnly . $field->getTagParams() .' /></div>';
+            //$fieldHTML .= '<div class="field text"><input type="text" name="'. $name .'" '. (($value)?'value="'. $value .'"':'') . $readOnly . $field->getTagParams() .' /></div>';
 
          break;
          case YuppFormField2 :: HIDDEN :
@@ -524,7 +533,8 @@ class YuppFormDisplay2
          case YuppFormField2 :: SELECT :
          
             // OJO, al hacer get de los params, estos se borran!.
-            $name = $field->get("name");
+            $name = $field->get('name');
+            $hasGroups = $field->get('hasGroups');
             
             if ($name === NULL)
                throw new Exception("El argumento 'name' es obligatorio para el campo SELECT." . __FILE__ . " " . __LINE__);
@@ -538,7 +548,7 @@ class YuppFormDisplay2
             $fieldHTML .= '<div class="field select"><select name="'. $name .'"'. $field->getTagParams() .'>';
             
             // Las opciones del select vienen en un array de 3 niveles: group->optionkey->optionvalue
-            if ($field->get('hasGroups'))
+            if ($hasGroups)
             {
                $fieldHTML .= '<option value=""></option>'; // por defecto no hay seleccionado
                foreach ($options as $opt_group => $key_value)
@@ -547,7 +557,7 @@ class YuppFormDisplay2
                   foreach ($key_value as $opt_value => $text)
                   {
                      if ( $opt_value === $value )
-                        $fieldHTML .= '<option value="'. $opt_value .'" selected="true">'. $text .'</option>';
+                        $fieldHTML .= '<option value="'. $opt_value .'" selected="selected">'. $text .'</option>';
                      else
                         $fieldHTML .= '<option value="'. $opt_value .'">'. $text .'</option>';
                   }
@@ -559,7 +569,7 @@ class YuppFormDisplay2
                foreach ( $options as $opt_value => $text )
                {
                   if ( $opt_value === $value )
-                     $fieldHTML .= '<option value="'. $opt_value .'" selected="true">'. $text .'</option>';
+                     $fieldHTML .= '<option value="'. $opt_value .'" selected="selected">'. $text .'</option>';
                   else
                      $fieldHTML .= '<option value="'. $opt_value .'">'. $text .'</option>';
                }
@@ -687,7 +697,9 @@ class YuppFormDisplay2
    {
       $html = '';
       $html .= h('js', array('name'=>'jquery/jquery-1.7.1.min'));
-      $html .= h('js', array('name'=>'jquery/jquery.form.2_43'));
+      $html .= h('js', array('name'=>'jquery/jquery.form-2.94'));
+      
+      // FIXME: agregar el callback para error
       
       // http://jquery.malsup.com/form/#ajaxForm
       $html .= '<script type="text/javascript">$(document).ready(function() { '.
