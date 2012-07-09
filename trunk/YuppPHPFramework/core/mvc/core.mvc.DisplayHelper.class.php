@@ -41,10 +41,10 @@ class DisplayHelper {
    public static function errors( $po )
    {
       if ($po === NULL) return;
-      if ($po->getErrors()->hasErrors())
+      if (($ers = $po->getErrors()) != NULL && $ers->hasErrors())
       {
          echo "<ul>";
-         foreach ( $po->getErrors() as $attr => $errors )
+         foreach ( $ers as $attr => $errors )
          {
             echo "<li>";
             echo $attr;
