@@ -33,6 +33,21 @@ http://localhost/Yupp_Framework_PHP_v0.1.6.3/core/core/executeBootstrap?componen
 
   * Lo que puede pasar es que no tengas el MOD_REWRITE (o REWRITE MODULE) de Apache activado. Verifica si está activado, y si no, actívalo. Si al activarlo sigues con el error por favor publica un comentario en esta página o abre una discusión nueva en el grupo: [http://groups.google.com/group/yuppframeworkphp]
 
+  * Verifica que tienes AllowOverride All en el httpd.conf de tu Apache:
+    * Lee: http://www.jarrodoberto.com/articles/2011/11/enabling-mod-rewrite-on-ubuntu
+    * Lee: http://stackoverflow.com/questions/7816429/apache-mod-rewrite-is-not-working-or-not-enable
+{{{
+<Directory "path/to/www">
+
+    Options Indexes FollowSymLinks
+
+    AllowOverride All
+
+    Order allow,deny
+    Allow from all
+</Directory>
+}}}
+
 
 == Pregunta 3 ==
 
