@@ -624,6 +624,9 @@ class PersistentManager {
          }
       }
       
+      // El tipo del id que se carga desde la base es un string php
+      $obj->aSet( 'id', (int)$obj->getId() );
+      
       // Apaga las banderas que se prendieron en la carga
       $obj->resetDirty();
 
