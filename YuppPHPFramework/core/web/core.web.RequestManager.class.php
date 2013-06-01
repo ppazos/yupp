@@ -80,7 +80,7 @@ class RequestManager {
          else
          {
          */
-            Logger::getInstance()->po_log("RM: ".__FILE__ .' '.__LINE__);
+            //Logger::getInstance()->po_log("RM: ".__FILE__ .' '.__LINE__);
             
             $router->addCustomParams( array('app'=>$lr['app']) );
             $lr['app'] = "core"; // Le dice a core/core que muestre los controllers de la app $lr['app']
@@ -155,6 +155,8 @@ class RequestManager {
       // Verifico que lo que pide existe...
       if ( !file_exists($appPath) ) // FIXME: yupp::appExists
       {
+         Logger::getInstance()->log("Path1 '$appPath' no existe");
+        
          // Tira 404: Not Found
          $command = ViewCommand::display( '404',
                                           new ArrayObject(array('message'=>'La aplicaci&oacute;n <b>'.$lr['app'].'</b> no existe')),
@@ -162,6 +164,8 @@ class RequestManager {
       }
       else if (!file_exists($controllerPath))
       {
+         Logger::getInstance()->log("Path2 '$controllerPath' no existe");
+        
          // Tira 404: Not Found
          $command = ViewCommand::display( '404',
                                           new ArrayObject(array('message'=>'El controlador <b>'.$lr['controller'].'</b> no existe')),
@@ -189,6 +193,8 @@ class RequestManager {
          }
           
          //Logger::struct( $router->getParams(), "ROUTER PARAMS " .__FILE__.' '.__LINE__ );
+         //Logger::struct( $_POST, "POST " .__FILE__.' '.__LINE__ );
+         //Logger::struct( $_GET, "GET " .__FILE__.' '.__LINE__ );
           
          $executer = new Executer( $router->getParams() );
          $command = $executer->execute( $controllerFiltersInstance ); // $controllerFiltersInstance puede ser null!
@@ -345,6 +351,9 @@ class RequestManager {
       
       //echo $pagePath . '<br/>';
       
+      //Logger::struct($logic_route, 'render logic route');
+      //Logger::struct($command, 'render command');
+      
       //$pagePath = realpath('./'.$pagePath); // Resuelve .. y .
       // FIXME: en linux puede tener problemas resolviendo . y .. en la path, necesitaria resolverla a la canonica
       //        realpath se desactiva en algunos hostings por temas de seguridad, habria que implementar una alternativa
@@ -363,6 +372,9 @@ class RequestManager {
       // a la accion, pero las acciones con vistas dinamicas son solo para acciones: 'show','list','edit','create'.
       if (!file_exists($pagePath)) // Si la pagina NO es fisica
       {
+         //Logger::getInstance()->log("no existe pagePath $pagePath " . __FILE__);
+         //Logger::getInstance()->log("view name es " . $command->viewName());
+
          // Si puedo mostrar la vista dinamica:
          if ( in_array($command->viewName(),
                        array('show','list','edit','create','index','appControllers','dbStatus')) )
