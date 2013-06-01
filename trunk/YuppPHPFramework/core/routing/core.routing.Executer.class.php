@@ -39,6 +39,8 @@ class Executer {
 
       if ( $bf_res !== true )
       {
+         Logger::getInstance()->log("Resultado del filter NO ES TRUE!!!");
+        
          if ( !($bf_res instanceof ViewCommand) ) throw new Exception("After filter no retorna ViewCommand, retorna " . get_class($bf_res));
          $command = $bf_res;
       }
@@ -54,7 +56,7 @@ class Executer {
          // FIXME: para que pasarle el nombre del controller al mismo controller???
 
          $controllerInstance = new $controllerClassName( $this->params ); // Se usa abajo!!!
-
+         
          // FIXME: la instancia del controller se crea con la accion como parametro,
          //        si ya se sabe que accion se va a ejecutar,
          //        para que hacer esta llamada con la accion como variable ???.
