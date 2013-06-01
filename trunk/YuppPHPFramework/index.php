@@ -60,6 +60,11 @@ YuppLoader :: load('core.utils', 'Logger');
  */
 $_base_dir = substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], '/'));
 
+/*
+$lg = Logger::getInstance();
+$lg->setFile('log.log');
+$lg->on();
+*/
 
 // Hace el request y catchea por posibles errores.
 try
@@ -70,26 +75,40 @@ catch (Exception $e)
 {
    // FIXME: mostrar la vista de error 500
    // FIXME: en modo PROD NUNCA deberia mostrar paths ni el stacktrace.
-   echo '<html><body>';
-     echo '<h1>Ha ocurrido un error!</h1>'; // TODO: i18n
-     echo '<div style="border:1px solid #333; padding:10px; width:800px;">';
-     
-       echo '<div style="border:1px solid #333; background-color:#ffffaa; overflow:auto; padding:5px; margin-bottom:2px;">';
-         echo 'Mensaje:'; // TODO: i18n
-       echo '</div>';
-       echo '<div style="border:1px solid #333; background-color:#ffff80; overflow:auto; padding:10px;">';
-         echo $e->getMessage() . " [" . $e->getFile()." : ".$e->getLine() . "]";
-       echo '</div>';
-       
-       //print_r( $e->getTrace() );
-       echo '<div style="border:1px solid #333; background-color:#ffaaaa; overflow:auto; padding:5px; margin-bottom:2px; margin-top:10px;">';
-         echo 'Traza:'; // TODO: i18n
-       echo '</div>';
-       echo '<div style="border:1px solid #333; background-color:#ff8080; overflow:auto; padding:10px;"><pre>';
-         echo $e->getTraceAsString();
-       echo '</pre></div>';
-     echo '</div>';
-   echo '</body></html>';
+   
+   // http://code.google.com/p/yupp/issues/detail?id=147
+   if (YuppConfig::getInstance()->getCurrentMode() === YuppConfig::MODE_PROD)
+   {
+      echo 'Disculpe las molestias, verificaremos el error en breve.';
+      // Redirect a pagina de error por defecto?
+      if (file_exists('ylogs/500'))
+      {
+      	 FileSystem::write('ylogs/500/err_'.date("Ymd.his").'.log', getOutput($m, true));
+      }
+   }
+   else
+   {
+	  echo '<html><body>';
+	     echo '<h1>Ha ocurrido un error!</h1>'; // TODO: i18n
+	     echo '<div style="border:1px solid #333; padding:10px; width:800px;">';
+	     
+	       echo '<div style="border:1px solid #333; background-color:#ffffaa; overflow:auto; padding:5px; margin-bottom:2px;">';
+	         echo 'Mensaje:'; // TODO: i18n
+	       echo '</div>';
+	       echo '<div style="border:1px solid #333; background-color:#ffff80; overflow:auto; padding:10px;">';
+	         echo $e->getMessage() . " [" . $e->getFile()." : ".$e->getLine() . "]";
+	       echo '</div>';
+	       
+	       //print_r( $e->getTrace() );
+	       echo '<div style="border:1px solid #333; background-color:#ffaaaa; overflow:auto; padding:5px; margin-bottom:2px; margin-top:10px;">';
+	         echo 'Traza:'; // TODO: i18n
+	       echo '</div>';
+	       echo '<div style="border:1px solid #333; background-color:#ff8080; overflow:auto; padding:10px;"><pre>';
+	         echo $e->getTraceAsString();
+	       echo '</pre></div>';
+	     echo '</div>';
+	  echo '</body></html>';
+   }
 }
 
 exit(); // Fuerza que no haya mas salida
