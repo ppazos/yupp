@@ -531,10 +531,12 @@ class YuppFormDisplay2
             
          break;
          case YuppFormField2 :: SELECT :
-         
+            // name, hasGroups, value, options, addEmpty
+            
             // OJO, al hacer get de los params, estos se borran!.
-            $name = $field->get('name');
+            $name      = $field->get('name');
             $hasGroups = $field->get('hasGroups');
+            $addEmpty  = $field->get('addEmpty'); // Agrega un option vacio al ppio
             
             if ($name === NULL)
                throw new Exception("El argumento 'name' es obligatorio para el campo SELECT." . __FILE__ . " " . __LINE__);
@@ -547,10 +549,15 @@ class YuppFormDisplay2
             $fieldHTML .= '<div class="label select"><label for="'.$name.'">' . $field->getLabel() . '</label></div>';
             $fieldHTML .= '<div class="field select"><select name="'. $name .'"'. $field->getTagParams() .'>';
             
+            if ($addEmpty)
+            {
+               $fieldHTML .= '<option value=""></option>'; // por defecto no hay seleccionado
+            }
+            
             // Las opciones del select vienen en un array de 3 niveles: group->optionkey->optionvalue
             if ($hasGroups)
             {
-               $fieldHTML .= '<option value=""></option>'; // por defecto no hay seleccionado
+               
                foreach ($options as $opt_group => $key_value)
                {
                   $fieldHTML .= '<optgroup label="'.$opt_group.'">';
