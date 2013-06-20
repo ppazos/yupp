@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<app>
+  <name>twitter</name>
+  <description>twitter sample app</description>
+  <version>0.1</version>
+  <langs>en es</langs>
+  <code></code>
+  <tags></tags>
+  <site></site>
+  <docs></docs>
+  <update></update>
+  <entry_point>
+    <controller>user</controller>
+    <action>index</action>
+  </entry_point>
+</app>
