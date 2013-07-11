@@ -340,9 +340,9 @@ class DatabaseSQLite {
             //        recursiva porque param es SelectItem y
             //        puede ser que tenga una agg adentro, asi sucesivamente.
             if ($proj instanceof SelectAttribute)
-               $res .= $proj->getAlias() . "." . $proj->getAttrName() . ", "; // Projection
+               $res .= $proj->getTableAlias() . "." . $proj->getAttrName() . ", "; // Projection
             else if ($proj instanceof SelectAggregation)
-               $res .= $proj->getName() . "(". $proj->getParam()->getAlias() . "." . $proj->getParam()->getAttrName() ."), ";
+               $res .= $proj->getName() . "(". $proj->getParam()->getTableAlias() . "." . $proj->getParam()->getAttrName() ."), ";
          }
          return substr($res, 0, -2); // Saca ultimo "; "
       }
