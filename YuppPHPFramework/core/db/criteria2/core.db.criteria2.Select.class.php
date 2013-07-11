@@ -2,28 +2,11 @@
 
 // RNE: si Select tiene funciones agregadas como: AVG, MAX, MIN, SUM, COUNT,
 //      y atributos en la proyeccion, la consulta debe tener un group by los atributos.
+// TODO: COUNT DISTINCT x.y
 
 class Select {
 
     private $projections = array(); // Se inicializa esta sola porque es la mas comun.
-
-//    private $functionSetted = false; // Para saber si se seteo algo mas que proyecciones.
-
-    // Elige columnas distintas, sirve para sacar dupicados (como cuando se quieren listar todos los nombres distintos).
-//    private $distinct = NULL;
-    
-    // Sirve para contar los distintos, es como un distinc y un count juntos. 
-//    private $countDistinct = NULL;
-    
-    // Agregaciones
-//    private $count = NULL;
-//    private $avg = NULL;
-//    private $min = NULL;
-//    private $max = NULL;
-//    private $sum = NULL;
-//
-//    private $lower = NULL;
-//    private $upper = NULL;
 
     function __construct() {}
 
@@ -53,6 +36,17 @@ class Select {
 }
 
 class SelectItem {
+   private $itemAlias; // modela SELECT item AS itemAlias
+   
+   public function setAlias($alias)
+   {
+      $this->itemAlias = $alias;
+   }
+   
+   public function getAlias()
+   {
+      return $this->itemAlias;
+   }
 }
 class SelectAttribute extends SelectItem {
    private $tableAlias;
@@ -62,7 +56,7 @@ class SelectAttribute extends SelectItem {
       $this->tableAlias = $tableAlias;
       $this->attrName = $attrName;
    }
-   public function getAlias()
+   public function getTableAlias()
    {
       return $this->tableAlias;
    }
