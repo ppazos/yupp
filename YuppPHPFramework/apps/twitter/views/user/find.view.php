@@ -8,7 +8,7 @@ YuppLoader::load('apps.twitter.helpers', 'THelpers');
 
 ?>
 <html>
-    <layout name="twitter" />
+  <layout name="twitter" />
   <head>
     <style type="text/css">
       body {
