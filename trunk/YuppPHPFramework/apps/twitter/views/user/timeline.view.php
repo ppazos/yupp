@@ -1,5 +1,8 @@
 <?php
 
+YuppLoader::load('core.mvc', 'DisplayHelper');
+YuppLoader::loadScript('apps.twitter', 'Messages');
+
 $m = Model::getInstance();
 
 $messages = $m->get('messages');
