@@ -1077,7 +1077,7 @@ class PersistentManager {
    } // findBy
    
 
-   public static function findByQuery( Query $q )
+   public function findByQuery( Query $q )
    {
       Logger::getInstance()->pm_log("PM::findByQuery");
       return $this->dal->query( $q );
