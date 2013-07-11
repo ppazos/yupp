@@ -129,6 +129,10 @@ class DAL {
             YuppLoader::load( "core.db", "DatabasePostgreSQL" );
             $this->db = new DatabasePostgreSQL();
          break;
+		 case YuppConfig::DB_SQLSRV:
+            YuppLoader::load( "core.db", "DatabaseSQLServer" );
+            $this->db = new DatabaseSQLServer();
+         break;
          default:
             throw new Exception('datasource type no soportado: '.$datasource['type']);
       }
@@ -148,26 +152,6 @@ class DAL {
    public function query( Query $query )
    {
       return $this->sqlQuery( $this->db->evaluateQuery( $query ) );
-      /*
-      $res = array();
-      try
-      {
-         $q = $this->db->evaluateQuery( $query );
-         
-         if ( !$this->db->query( $q ) ) throw new Exception("ERROR");
-
-         //echo "RES SIZE: " . $this->db->resultCount() . "<br/>";
-
-         while ( $row = $this->db->nextRow() ) $res[] = $row;
-      }
-      catch (Exception $e)
-      {
-         echo $e->getMessage();
-         echo $this->db->getLastError(); // DBSTD
-      }
-      
-      return $res;
-      */
    }
    
    /**
@@ -369,6 +353,7 @@ class DAL {
     * - max: cantidad maxima de filas devueltas.
     * - offset: desfasaje desde el primer registro de la tabla.
     * - where: condiciones sobre los valores de las columnas de la tabla. Es una instancia de Condition.
+	* PO.filtrarParams se encarga de que siempre venga un max y offset validos, ademas de sort(atributo) y dir(asc/desc)
     */
    public function listAll( $tableName, ArrayObject $params )
    {
@@ -382,26 +367,55 @@ class DAL {
 
       if ($params === NULL ) throw new Exception('DAL.getAll: params es null');
 
-      // No puede tener offset sin limit! se chekea arriba.
-      // Si viene max siempre viene offset, se chekea arriba.
-      if (isset($params['max']) || array_key_exists('max', $params))
-      {
-         $limit = ' LIMIT ' . $params['max'];
-         if (isset($params['offset']) || array_key_exists('offset', $params)) $limit .= ' OFFSET ' . $params['offset'];
-      }
-
-      if (isset($params['sort']) || array_key_exists('sort', $params)) // && $params['sort'])
-      {
+	  // =======================================================================
+	  // FIXME:
+	  // LIMIT funciona en MySQL, PostgreSQL, SQLite, no en SQLSERVER.
+	  // =======================================================================
+	  
+	  // Si es SQLServer la consulta con LIMIT se arma distinta y con TOP
+	  // - http://stackoverflow.com/questions/971964/limit-10-20-in-sqlserver
+	  // - LIMIT 10 ~ SELECT TOP 10 * FROM stuff;
+	  if ($this->db instanceof DatabaseSQLServer)
+	  {
+	     // Siempre viene max y offset, PO.filterParams lo asegura
+         $max = $params['max'];	
+         $offset = $params['offset'];
          $orderBy = ' ORDER BY '. $params['sort'] .' '. $params['dir'];
+		 
+		   // La consulta interna es para hacer paginacion
+		   // WHERE: Las condiciones donde dice tableName pone T2 (no puede evaluar condiciones sobre atributos de tablas no mencionados en el FROM)
+		   //  - http://social.msdn.microsoft.com/Forums/sqlserver/en-US/3b2e0875-e98c-4931-bcb4-e9f449b637d7/the-multipart-identifier-aliasfield-could-not-be-bound
+		   $q = 'SELECT * '.
+              'FROM ( SELECT ROW_NUMBER() OVER (ORDER BY id) AS rowNum, * FROM '. $tableName .' ) AS T2 '.
+              'WHERE T2.rowNum-1 >= '. $offset .' AND T2.rowNum-1 < '.($offset+$max) .' AND '.
+         $this->db->evaluateAnyCondition( $params['where'], new ArrayObject(array($tableName => 'T2')) );
+       
+         if (isset($params['sort']) || array_key_exists('sort', $params)) // && $params['sort'])
+         {
+           $q .= ' ORDER BY '. $params['sort'] .' '. $params['dir'];
+         }
+	  }
+	  else // Arma consulta para MySQL, PostgreSQL y SQLite
+	  {
+         // No puede tener offset sin limit! se chekea arriba.
+         // Si viene max siempre viene offset, se chekea arriba.
+         if (isset($params['max']) || array_key_exists('max', $params))
+         {
+            $limit = ' LIMIT ' . $params['max'];
+            if (isset($params['offset']) || array_key_exists('offset', $params)) $limit .= ' OFFSET ' . $params['offset'];
+         }
+
+         if (isset($params['sort']) || array_key_exists('sort', $params)) // && $params['sort'])
+         {
+           $orderBy = ' ORDER BY '. $params['sort'] .' '. $params['dir'];
+         }
+
+         // Where siempre viene porque en PM se inyecta las condicioens sobre las subclases (soporte de herencia)
+         $q = 'SELECT * FROM ' . $tableName . ' WHERE ' .
+              $this->db->evaluateAnyCondition( $params['where'] ) .
+              $orderBy . $limit;
       }
-
-      // Logger::struct( $params, "PARAMS" );
-
-      // Where siempre viene porque en PM se inyecta las condicioens sobre las subclases (soporte de herencia)
-      $q = 'SELECT * FROM ' . $tableName . ' WHERE ' .
-           $this->db->evaluateAnyCondition( $params['where'] ) .
-           $orderBy . $limit;
-      
+	  
       $this->db->query( $q );
 
       // TODO: Como hago para devolver un array de objetos ya creados...
@@ -654,7 +668,14 @@ class DAL {
       $q = "SELECT count(id) as cant FROM " . $tableName;
       if (isset($params['where']))
       {
-         $q .= " WHERE " . ( $this->db->evaluateAnyCondition( $params['where'] ) );
+         if ($this->db instanceof DatabaseSQLServer)
+	      {
+            $q .= " WHERE " . $this->db->evaluateAnyCondition( $params['where'], new ArrayObject() );
+         }
+         else
+         {
+            $q .= " WHERE " . $this->db->evaluateAnyCondition( $params['where'] );
+         }
       }
 
       $this->db->query( $q );
