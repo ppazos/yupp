@@ -60,11 +60,11 @@ YuppLoader :: load('core.utils', 'Logger');
  */
 $_base_dir = substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], '/'));
 
-/*
+
 $lg = Logger::getInstance();
 $lg->setFile('log.log');
 $lg->on();
-*/
+
 
 // Hace el request y catchea por posibles errores.
 try
