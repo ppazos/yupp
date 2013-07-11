@@ -426,7 +426,6 @@ class RequestManager {
 
       $layoutManager = LayoutManager::getInstance();
       $layoutManager->renderWithLayout( $pagePath );
-      
    } // render
 }
 ?>
