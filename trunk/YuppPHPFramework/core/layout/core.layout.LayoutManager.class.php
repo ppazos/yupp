@@ -95,6 +95,14 @@ class LayoutManager {
       //  - ...
       //
       
+      // ================================================================
+	   // FIXME: include_once ya interpreta el php, si cargo una vista que usa un helper,
+	   //        y el helper esta incluido en el layout, va a dar un error de que no encuentra
+	   //        el helper.
+	   //        Se deberia hacer una inclusion funcional del layout desde la vista en lugar
+      //        de hacerlo con la tag layout.
+      // ================================================================
+	  
       ob_start();
       
       // Precondicion: la pagina con esta path existe.
@@ -103,14 +111,16 @@ class LayoutManager {
       
       $view = ob_get_clean();
       
-      //echo '<textarea style="width:600px;">';
-      //echo $view;
-      //echo '</textarea>';
+      /*
+      echo '<textarea style="width:600px;">';
+      echo $view;
+      echo '</textarea>';
+      */
       
    	//$coincidencias = explode("<head>", $view); // 0 -> html+layout, 1-> resto
       
       $layout = NULL;
-      
+	  
       // Busco tag de layout... muuuyyyy lentoooo!!!!! lento con stripos...
       $pos = strpos($view, '<layout name="'); // <layout name="papichulo" />
       if ( $pos !== false) // tengo layout
