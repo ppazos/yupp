@@ -15,6 +15,9 @@ class Query
 	// Arrays de cada cosa, puedo tener varios ordenamientos.
    // Order: alias, atributo, direccion (ASC,DESC)
    private $order = array();
+   
+   // Nombres de los elementos en groupBy
+   private $groupBy = array();
 
 	private $limit_max;
 	private $limit_offset;
@@ -78,10 +81,16 @@ class Query
 		return $this;
 	}
    
-   public function addAggregation($aggName, $alias, $attr)
+   public function addAggregation($aggName, $table, $attr, $alias = null)
    {
-      $selAttr = new SelectAttribute($alias, $attr);
+      $selAttr = new SelectAttribute($table, $attr);
       $aggregation= new SelectAggregation( $aggName, $selAttr );
+      
+      if (!is_null($alias))
+      {
+         $aggregation->setAlias($alias);
+      }
+      
       $this->select->add( $aggregation );
       
       return $this;
@@ -143,6 +152,8 @@ class Query
 	public function setCondition(Condition $cond)
 	{
 		$this->where = $cond;
+      
+      return $this;
 	}
 
    /**
@@ -152,6 +163,8 @@ class Query
 	{
 		$this->limit_max = $max;
 		$this->limit_offset = $offset;
+      
+      return $this;
 	}
 
    /**
@@ -174,76 +187,27 @@ class Query
 
       return $this;
 	}
-
-/* Este codigo va a db.DatabaseXXX
- * 
-	public function evaluate()
-	{
-		$select = $this->evaluateSelect() . " ";
-		$from   = $this->evaluateFrom() . " ";
-		$where  = $this->evaluateWhere() . " ";
-		$order  = $this->evaluateOrder() . " ";
-		$limit  = "";
-
-		return $select . $from . $where . $order . $limit;
-	}
-
-	private function evaluateSelect()
-	{
-		if (count($this->select) == 0)
-		{
-			return "SELECT *";
-		}
-		else
-		{
-			$res = "SELECT ";
-			foreach ($this->select as $proj)
-			{
-				$res .= $proj->alias . "." . $proj->attr . ", "; // Projection
-			}
-			return substr($res, 0, -2); // Saca ultimo "; "
-		}
-	}
-
-	private function evaluateFrom()
-	{
-		if (count($this->from) == 0)
-		{
-			// ERROR! es olbigatorio por lo menos una!
-			throw new Exception("FROM no puede ser vacio");
-		}
-		else
-		{
-			$res = "FROM ";
-			foreach ($this->from as $table)
-			{
-				$res .= $table->name . " " . $table->alias . ", ";
-			}
-			return substr($res, 0, -2); // Saca ultimo "; "
-		}
-	}
-
-	private function evaluateWhere()
-	{
-		if ($this->where !== NULL)
-		{
-			return "WHERE " . $this->where->evaluate();
-		}
-	}
    
-   private function evaluateOrder()
+   /**
+    * Genera
+    *   GROUP BY table.attr, table.attr, ...
+    *   GROUP BY funct(table.attr), ...
+    */
+   public function addGroupBy($table, $attr, $funct = null)
    {
-      if (count($this->order) > 0)
-      {
-         $res = "ORDER BY ";
-         foreach ($this->order as $order)
-         {
-            $res .= $order->alias . "." . $order->attr . " " . $order->dir . ", ";
-         }
-         return substr($res, 0, -2); // Saca ultimo "; "
-      }
+      $groupBy = new stdClass(); // Objeto anonimo.
+      $groupBy->attr = $attr;
+      $groupBy->table = $table;
+      $groupBy->funct = $funct;
+      
+      $this->groupBy[] = $groupBy;
+      
+      return $this;
    }
-   */
-
+   
+   public function getGroupBy()
+   {
+      return $this->groupBy;
+   }
 }
 ?>
