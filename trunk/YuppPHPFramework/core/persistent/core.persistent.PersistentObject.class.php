@@ -1373,6 +1373,14 @@ class PersistentObject {
       // CHECK 1: El atributo esta en la lista de atributos?
       if (isset($this->attributeTypes[$attribute]) || array_key_exists($attribute, $this->attributeTypes))
       {
+	     // https://code.google.com/p/yupp/issues/detail?id=172
+		 // Para DATES, SQLServer devuelve un DateTime object, por lo que no es escalar (integer, float, string, boolean) y tira excepcion.
+		 // DateTime > PHP 5.2
+		 if ( Datatypes::isDateTime($this->attributeTypes[$attribute]) && $value instanceof DateTime)
+		 {
+		    $value = $value->format('Y-m-d H:i:s'); // Saca el string de la fecha
+		 }
+	  
          // Si el valor es null o es un tipo simple (no una clase)
          //  - Dejo tambien setear NULL xq al setear email_id puede ser NULL 
          //    y un valor simple tambien puede ser NULL si se lo desea.
