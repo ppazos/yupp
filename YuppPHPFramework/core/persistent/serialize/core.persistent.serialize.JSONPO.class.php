@@ -19,6 +19,8 @@ class JSONPO {
    {
       if ($loopDetection === NULL) $loopDetection = new ArrayObject();
       
+      if (count($list) == 0) return '[]';
+      
       $json = '[';
       
       // Mismo codigo que en hasMany de toJSON
