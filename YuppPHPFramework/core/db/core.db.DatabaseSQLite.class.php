@@ -320,9 +320,10 @@ class DatabaseSQLite {
       $from   = $this->evaluateFrom( $query->getFrom() )   . " ";
       $where  = $this->evaluateWhere( $query->getWhere() )  . " ";
       $order  = $this->evaluateOrder( $query->getOrder() )  . " ";
+      $groupBy = $this->evaluateGroupBy( $query->getGroupBy() ) . " ";
       $limit  = ""; // TODO: no tengo limit??
 
-      return $select . $from . $where . $order . $limit;
+      return $select . $from . $where . $order . $limit . $groupBy;
    }
    
    private function evaluateSelect( Select $select )
@@ -340,12 +341,41 @@ class DatabaseSQLite {
             //        recursiva porque param es SelectItem y
             //        puede ser que tenga una agg adentro, asi sucesivamente.
             if ($proj instanceof SelectAttribute)
-               $res .= $proj->getTableAlias() . "." . $proj->getAttrName() . ", "; // Projection
+               $res .= $proj->getTableAlias() .'.'. $proj->getAttrName(); // Projection
             else if ($proj instanceof SelectAggregation)
-               $res .= $proj->getName() . "(". $proj->getParam()->getTableAlias() . "." . $proj->getParam()->getAttrName() ."), ";
+               $res .= $proj->getName() .'('. $proj->getParam()->getTableAlias() .'.'. $proj->getParam()->getAttrName() .')';
+            
+            if (($alias = $proj->getAlias()) !== null)
+            {
+               $res .= ' AS '. $alias;
+            }
+               
+            $res .= ', ';
          }
          return substr($res, 0, -2); // Saca ultimo "; "
       }
+   }
+   
+   private function evaluateGroupBy( $groupBy )
+   {
+      if (count($groupBy) != 0)
+      {
+         $res = "GROUP BY ";
+         foreach ($groupBy as $attr)
+         {
+            $ta = $attr->table .".". $attr->attr;
+            
+            // Se puede tener GROUP BY funct(table.attr)
+            if (!is_null($attr->funct))
+            {
+               $ta = $attr->funct .'( '. $ta .' )';
+            }
+            $res .= $ta .", ";
+         }
+         return substr($res, 0, -2); // Saca ultimo "; "
+      }
+      
+      return "";
    }
 
    private function evaluateFrom( $from )
