@@ -415,7 +415,7 @@ class DatabaseSQLServer {
                $res .= ' AS '. $alias;
             }
             
-            $res .= ", ";
+            $res .= ', ';
          }
          return substr($res, 0, -2); // Saca ultimo "; "
       }
