@@ -29,9 +29,10 @@ class YuppConfig {
    /**
     * Tipos de bases de datos que soporta Yupp PHP Framework.
     */
-   const DB_MYSQL  = "mysql";
-   const DB_SQLITE = "sqlite";
+   const DB_MYSQL    = "mysql";
+   const DB_SQLITE   = "sqlite";
    const DB_POSTGRES = "postgres";
+   const DB_SQLSRV   = "sqlserver";
    
    /**
     * Keys de bases de datos disponibles.
@@ -79,16 +80,16 @@ class YuppConfig {
                                      'type'     => self::DB_POSTGRES,
                                      'url'      => 'localhost',
                                      'user'     => 'postgres',
-                                     'pass'     => 'postgres',
+                                     'pass'     => 'nimda',
                                      'database' => 'yupp_dev'
                                    ),
                                    */
                                    self::MODE_DEV  => array(
-                                     'type'     => self::DB_MYSQL,
-                                     'url'      => 'localhost',
-                                     'user'     => 'root',
-                                     'pass'     => '',
-                                     'database' => 'yupp_dev'
+                                     'type'     => self::DB_SQLSRV,
+                                     'url'      => '(local)\sqlexpress',
+									'user'     => 'sa',
+									'pass'     => 'pab',
+									'database' => 'inter_active_tel'
                                    ),
                                    self::MODE_PROD => array(
                                      'type'     => self::DB_MYSQL,
@@ -182,10 +183,10 @@ class YuppConfig {
                                      ),
                                    self::MODE_PROD => // Modificar los valores al poner la aplucacion en produccion.
                                      array(
-                                      'app'        => 'portal',
-                                      'controller' => 'page',
-                                      'action'     => 'display',
-                                      'params'     => array('_param_1'=>'index')
+                                      'app'        => 'cms2',
+                                      'controller' => 'cms',
+                                      'action'     => 'displayPageRO',
+                                      'params'     => array('pageId'=>'1')
                                      ),
                                    self::MODE_TEST => // Todavia no utilizado.
                                      array(
