@@ -85,11 +85,11 @@ class YuppConfig {
                                    ),
                                    */
                                    self::MODE_DEV  => array(
-                                     'type'     => self::DB_SQLSRV,
-                                     'url'      => '(local)\sqlexpress',
-									'user'     => 'sa',
-									'pass'     => 'pab',
-									'database' => 'inter_active_tel'
+                                     'type'     => self::DB_MYSQL,
+                                     'url'      => 'localhost',
+                                     'user'     => 'root',
+                                     'pass'     => '',
+                                     'database' => 'yupp_dev'
                                    ),
                                    self::MODE_PROD => array(
                                      'type'     => self::DB_MYSQL,
