@@ -70,30 +70,10 @@ class Vaso extends Recipiente
       $this->setTieneTapa(false);
    }
    
-   public static function listAll( ArrayObject $params )
+   // Nueva para late static binding, usando solo esta se podrian borrar todas las otras operaciones
+   public static function sgetClass()
    {
-      self :: $thisClass = __CLASS__;
-      return PersistentObject :: listAll($params);
-   }
-   public static function count()
-   {
-      self :: $thisClass = __CLASS__;
-      return PersistentObject :: count();
-   }
-   public static function get($id)
-   {
-      self :: $thisClass = __CLASS__;
-      return PersistentObject :: get($id);
-   }
-   public static function findBy(Condition $condition, ArrayObject $params)
-   {
-      self :: $thisClass = __CLASS__;
-      return PersistentObject :: findBy($condition, $params);
-   }
-   public static function countBy(Condition $condition)
-   {
-      self :: $thisClass = __CLASS__;
-      return PersistentObject :: countBy($condition);
+      return __CLASS__;
    }
 }
 
@@ -125,9 +105,5 @@ class VerificarContenido extends Constraint
    {
       return "VerificarContenido: [Vaso: " . $this->vaso->getId() . "]";
    }
-
 }
-
-
-
 ?>

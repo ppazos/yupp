@@ -284,7 +284,6 @@ class ModelI006Test {
       
       echo "Fin test 3 'listAll'";
    }
-
 }
 
 // Corro el test
