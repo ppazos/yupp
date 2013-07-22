@@ -16,6 +16,8 @@ class DatabaseMySQL {
 
    public function __construct()
    {
+      if (!function_exists('mysql_connect')) throw new Exception("Se ha configurado una base de datos MySQL pero la extension para MySQL no esta habilitada o instalada");
+      
       $this->queryCount = 0;
    }
 

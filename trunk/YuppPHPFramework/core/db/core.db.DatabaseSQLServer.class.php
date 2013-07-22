@@ -16,6 +16,8 @@ class DatabaseSQLServer {
    
    public function __construct()
    {
+      if (!function_exists('sqlsrv_connect')) throw new Exception("Se ha configurado una base de datos SQLServer pero la extension para SQLServer no esta habilitada o instalada");
+      
       $this->queryCount = 0;
    }
 
