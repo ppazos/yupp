@@ -10,6 +10,23 @@ class UserController extends YuppController {
       return $this->redirect(array('action'=>'login'));
    }
    
+   // TEST: busca todos los usuarios que siguen a un usuario dado.
+   // Es una busqueda inversa entre manyToMany porque se tiene un
+   // hasMany con los usuarios seguidos por uno, pero no todos los
+   // que siguen a uno.
+   public function followedByAction()
+   {
+      if (!isset($this->params['id']))
+      {
+         return $this->renderString('id no presente');
+      }
+      
+      // Todos los que siguen a este
+      //$user = TUser::get($this->params['id']);
+      $users = TUser::findReverse('following', $this->params['id']);
+      return $this->renderString( print_r($users), true );
+   }
+   
    public function registerAction()
    {
       if (isset($this->params['doit']))
