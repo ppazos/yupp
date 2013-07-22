@@ -954,26 +954,14 @@ class PersistentManager {
 
          // Carga considerando estrategia... y se fija en el holder si ese objeto no esta ya cargado.
 
+         // Ya cargo toda la informacion, no necesito consultar ArtifactHolder de nuevo, uso createObjectFromData.
          //  (*) Soporte para MTI como en get_object (incluye a createObjectFromData).
          $obj = $this->get_mti_object_byData( $class, $row );
-         
-         /* Ya cargo toda la informacion, no necesito consultar de nuevo, uso createObjectFromData.
-         if ( ArtifactHolder::getInstance()->existsModel( $persistentClass, $row['id'] ) ) // Si ya esta cargado...
-         {
-            $obj = ArtifactHolder::getInstance()->getModel( $persistentClass, $row['id'] );
-         }
-         else
-         {
-            $obj = $this->po_loader->get($persistentClass, $row['id']); // Define la estrategia con la que se cargan los objetos...
-            ArtifactHolder::getInstance()->addModel( $obj ); // Lo pongo aca para que no se guarde luego de la recursion de las assocs...
-         }
-         */
-         
-         // Nuevo, proceso la informacion que ya traje en lugar de hacer otra consulta.
-         //$obj = $this->createObjectFromData( $persistentClass, $row );
 
          $res[] = $obj;
 
+         // TODO: ver si get_mti_object_byData considera la estrategia de carga: $this->po_loader
+         //       si es lazy esta bien que no cargue, pero si es eager deberia cargar.
          //$this->get_simple_assocs( $obj ); // OK
          //$this->get_many_assocs( $obj ); // TODO: falta crear los objetos y linkearlos
       }
@@ -1083,6 +1071,66 @@ class PersistentManager {
       return $this->dal->query( $q );
    }
 
+   
+   /**
+    * Devuelve una lista de $searchClass, tal que:
+    * 1. $searchClass tiene un atributo hasMany $hasManyAttr a la clase $byClass
+    * 2. $searchClass tiene una instancia de $byClass en $hasManyAttr con $byId
+    */
+   public function findHasManyReverse($searchClass, $hasManyAttr, $byClass, $byId)
+   {
+      $sins = new $searchClass(array(), true); // PHP 5.3
+      if (!$sins->hasAttribute( $hasManyAttr )) // FIXME: se debe fijar si existe y es hasMany, aqui solo se fija que exista.
+      {
+         throw new Exception("El atributo hasMany $hasManyAttr no existe");
+      }
+      
+      // tabla de join
+      $relins = new $byClass(array(), true);
+      $joinTableName = YuppConventions::relTableName( $sins, $hasManyAttr, $relins );
+      
+      // tabla de esta clase
+      $objTableName = YuppConventions::tableName( $sins );
+      
+      // quiero owner_id de la tabla de join, por byId
+      // luego hacer join con la tabla de $this
+      //$cond = Condition::EQ($joinTableName, "byId", $byId);
+      
+      // similar PM.get_many_assoc_lazy
+      YuppLoader::load('core.db.criteria2', 'Query');
+      $q = new Query();
+      $q->addFrom($joinTableName, 'ref')
+         ->addFrom($objTableName, 'obj')
+         ->addProjection( 'obj', '*' )
+         ->setCondition(
+            Condition::_AND()
+             ->add( Condition::EQA('obj', 'id', 'ref', 'owner_id') ) // JOIN
+             ->add( Condition::EQ('ref', 'ref_id', $byId) ) // Busca por la referencia
+         );
+      
+      $data = $this->findByQuery( $q ); // PM 760
+      
+      $result = array();
+      
+      foreach ( $data as $many_attrValues ) // $many_attrValues es un array asociativo de atributo/valor (que son los atributos simples de una instancia de la clase)
+      {
+         if ($many_attrValues['class'] === $byClass)
+         {
+            //echo "   la clase es la misma que la declarada<br/>";
+            $rel_obj = $this->createObjectFromData( $byClass, $many_attrValues );
+         }
+         else
+         {
+            //echo "   la clase NO es la misma que la declarada<br/>";
+            $rel_obj = $this->get_mti_object_byData( $byClass, $many_attrValues );
+         }
+
+         $result[] = $rel_obj;
+      }
+      
+      return $result;
+   }
+   
 
    // FIXME: El mundo seria mas sencillo si en lugar de pasarle la clase le paso la instancia...
    // ya que tengo que hacer un get_class para pasarle la clase y luego aca hago un new para crear una instancia...

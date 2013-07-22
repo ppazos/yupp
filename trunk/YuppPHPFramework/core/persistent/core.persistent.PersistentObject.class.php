@@ -41,7 +41,7 @@ class PersistentObject {
    const HASMANY_LIST       = 'list';
 
    // Necesario para poder llamar a las funciones CRUD de forma estatica.
-   protected static $thisClass; // auxiliar para metodos estaticos...
+   //protected static $thisClass; // auxiliar para metodos estaticos...
   
    // No se guarda la instancia de PM porque genera problemas con las aplicaciones que usan scaffolding dinamico, porque la app es core pero
    // la app real es distinta, esto se chequea en el constructor del PM, y necesito actualizar el contexto para que PM se de cuenta que es
@@ -197,6 +197,19 @@ class PersistentObject {
       }
    } // construct
 
+   
+   /**
+    * desde PHP 5.3 con late static bidings se puede obtener el nombre de la
+    * subclase real y no el de la clase a la que pertenece el metodo invocado.
+    * http://php.net/manual/en/language.oop5.late-static-bindings.php
+    * invocaccion: static::sgetClass();
+    */
+   public static function sgetClass()
+   {
+      return __CLASS__;
+   }
+   
+   
 
    /**
     * Apaga las banderas de dirty, se usa para luego de cargar de la base,
@@ -985,7 +998,8 @@ class PersistentObject {
    public static function get( $id )
    {
       //Logger::getInstance()->po_log("PersistentObject.get " . self::$thisClass . " " . $id);
-      return PersistentManager::getInstance()->get( self::$thisClass, $id );
+      $thisClass = static::sgetClass();
+      return PersistentManager::getInstance()->get( $thisClass, $id );
    }
 
    // Los params son para pasarle atributos de paginacion.
@@ -994,7 +1008,8 @@ class PersistentObject {
    {
       // FIXME: PM no necesita una instancia, le puedo pasar la clase derecho.
       if ($params === NULL) $params = new ArrayObject();
-      return PersistentManager::getInstance()->listAll(new self::$thisClass(), self::filtrarParams($params));
+      $thisClass = static::sgetClass();
+      return PersistentManager::getInstance()->listAll(new $thisClass(), self::filtrarParams($params));
    }
 
    /**
@@ -1005,7 +1020,23 @@ class PersistentObject {
    public static function findBy(Condition $condition, ArrayObject $params)
    {
       if ($params === NULL) $params = new ArrayObject();
-      return PersistentManager::getInstance()->findBy(new self::$thisClass(), $condition, self::filtrarParams($params));
+      $thisClass = static::sgetClass();
+      return PersistentManager::getInstance()->findBy(new $thisClass(), $condition, self::filtrarParams($params));
+   }
+   
+   /*
+    * Busca todos los $thisClass tal que $ref_id esta en la tabla de join del atributo hasMany de esta clase.
+    * https://code.google.com/p/yupp/issues/detail?id=177
+    */
+   public static function findReverse($hasManyAttr, $ref_id)
+   {
+      $searchClass = static::sgetClass();
+      $thisIns = new $searchClass(array(), true);
+      
+      //print_r($thisIns->hasMany);
+      Logger::getInstance()->po_log("PersistentObject.findReverse ".$searchClass." ".$hasManyAttr." ".$thisIns->hasMany[$hasManyAttr]." ".$ref_id);
+      
+      return PersistentManager::getInstance()->findHasManyReverse( $searchClass, $hasManyAttr, $thisIns->hasMany[$hasManyAttr], $ref_id );
    }
    
    /**
@@ -1038,13 +1069,15 @@ class PersistentObject {
 
    public static function countBy( Condition $condition )
    {
-      $ins = new self::$thisClass(); // FIXME: pasarle la clase no la instancia
+      $thisClass = static::sgetClass();
+      $ins = new $thisClass(); // FIXME: pasarle la clase no la instancia
       return PersistentManager::getInstance()->countBy( $ins, $condition );
    }
 
    public static function count()
    {
-      $ins = new self::$thisClass(); // FIXME: pasarle la clase no la instancia
+      $thisClass = static::sgetClass();
+      $ins = new $thisClass(); // FIXME: pasarle la clase no la instancia
       return PersistentManager::getInstance()->count( $ins );
    }
 

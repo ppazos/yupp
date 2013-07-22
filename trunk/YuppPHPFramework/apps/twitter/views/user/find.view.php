@@ -11,12 +11,6 @@ YuppLoader::load('apps.twitter.helpers', 'THelpers');
   <layout name="twitter" />
   <head>
     <style type="text/css">
-      body {
-        padding: 10px;
-      }
-      form {
-        padding: 10px;
-      }
       .user-result {
         width: 150px;
         display: inline-block;
