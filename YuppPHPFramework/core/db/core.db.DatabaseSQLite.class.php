@@ -29,6 +29,8 @@ class DatabaseSQLite {
 
    public function __construct()
    {
+      if (!class_exists('SQLiteDatabase')) throw new Exception("Se ha configurado una base de datos SQLite pero la extension para SQLite no esta habilitada o instalada");
+      
       $this->queryCount = 0;
    }
 

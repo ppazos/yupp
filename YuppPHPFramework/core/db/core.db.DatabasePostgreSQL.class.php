@@ -15,6 +15,8 @@ class DatabasePostgreSQL {
    
    public function __construct()
    {
+      if (!function_exists('pg_connect')) throw new Exception("Se ha configurado una base de datos PostgreSQL pero la extension para PostgreSQL no esta habilitada o instalada");
+      
       $this->queryCount = 0;
    }
 
