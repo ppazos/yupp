@@ -16,6 +16,7 @@ class ValidationMessage {
    const MSG_MAXLENGTH = "validation.error.maxLengthConstraint";
    const MSG_EMAIL     = "validation.error.email";
    const MSG_DATE      = "validation.error.date";
+   const MSG_DATETIME  = "validation.error.datetime";
    const MSG_MATCHES   = "validation.error.matches";
 
    public static function getMessage( $constraint, $attr, $value )
@@ -96,7 +97,7 @@ class ValidationMessage {
       return str_replace('{2}', $constraint->getValue(), $msg);
    }
    
-   private static function maxlengthconstraint( $constraint, $attr, $value)
+   private static function maxlengthconstraint($constraint, $attr, $value)
    {
       // 0=value
       // 1=attr
@@ -107,7 +108,7 @@ class ValidationMessage {
       return str_replace('{2}', $constraint->getValue(), $msg);
    }
    
-   private static function emailconstraint( $constraint, $attr, $value)
+   private static function emailconstraint($constraint, $attr, $value)
    {
       // 0=value
       // 1=attr
@@ -116,7 +117,7 @@ class ValidationMessage {
       return str_replace('{1}', $attr, $msg);
    }
    
-   private static function dateconstraint( $constraint, $attr, $value)
+   private static function dateconstraint($constraint, $attr, $value)
    {
       // 0=value
       // 1=attr
@@ -124,8 +125,16 @@ class ValidationMessage {
       $msg = str_replace('{0}', $value, $msg);
       return str_replace('{1}', $attr, $msg);
    }
+   private static function datetimeconstraint($constraint, $attr, $value)
+   {
+      // 0=value
+      // 1=attr
+      $msg = DisplayHelper::message( self::MSG_DATETIME );
+      $msg = str_replace('{0}', $value, $msg);
+      return str_replace('{1}', $attr, $msg);
+   }
    
-   private static function inlist( $constraint, $attr, $value)
+   private static function inlist($constraint, $attr, $value)
    {
       // 0=value
       // 1=attr
