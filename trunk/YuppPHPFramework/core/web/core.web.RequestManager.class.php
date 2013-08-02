@@ -46,7 +46,11 @@ class RequestManager {
       $ctx = YuppContext::getInstance();
       
       //Logger::struct( $lr, "LOGICAR ROUTE 1 " .__FILE__.' '.__LINE__ );
-         
+     
+      // ====================================================================
+      // FIXME: esto lo deberia hacer el router
+      // ====================================================================
+     
       // Verifica salida del router y setea valores que no vienen seteados.
       // TODO: OJO, luego debe pasar el verificador de si el controller
       //       y action existen, y si no, ejecutar contra core.
@@ -69,7 +73,6 @@ class RequestManager {
       // se muestran los controladores de la app.
       if ( empty($lr['controller']) )
       {
-         /*
          if (!Yupp::appExists($lr['app']))
          {
             // Tira 404: Not Found
@@ -79,16 +82,13 @@ class RequestManager {
          }
          else
          {
-         */
             //Logger::getInstance()->po_log("RM: ".__FILE__ .' '.__LINE__);
             
             $router->addCustomParams( array('app'=>$lr['app']) );
             $lr['app'] = "core"; // Le dice a core/core que muestre los controllers de la app $lr['app']
             $lr['controller'] = "core";
             $lr['action'] = "appControllers";
-         /*
          }
-         */
       }
       else // si viene la app y el controller en la url
       {
