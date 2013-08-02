@@ -1131,6 +1131,35 @@ class PersistentManager {
       return $result;
    }
    
+      
+   /**
+    * Ejecuta la query, e intenta crear instancias de $class con los registros obtenidos.
+    * FIXME: Para poder hacer esto, la proyeccion de la query debe tene * y en from debe estar
+    *        la tabla asociada a $class.
+    */
+   public function queryObjects($query, $class)
+   {
+      $data = $this->findByQuery( $query );
+      
+      $result = array();
+      
+      foreach ( $data as $many_attrValues ) // $many_attrValues es un array asociativo de atributo/valor (que son los atributos simples de una instancia de la clase)
+      {
+         if ($many_attrValues['class'] === $class)
+         {
+            $rel_obj = $this->createObjectFromData( $class, $many_attrValues );
+         }
+         else
+         {
+            $rel_obj = $this->get_mti_object_byData( $class, $many_attrValues );
+         }
+
+         $result[] = $rel_obj;
+      }
+      
+      return $result;
+   }
+
 
    // FIXME: El mundo seria mas sencillo si en lugar de pasarle la clase le paso la instancia...
    // ya que tengo que hacer un get_class para pasarle la clase y luego aca hago un new para crear una instancia...
