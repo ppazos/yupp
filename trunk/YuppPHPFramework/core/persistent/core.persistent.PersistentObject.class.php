@@ -956,10 +956,10 @@ class PersistentObject {
       $this->executeBeforeSave();
 
       //Logger::getInstance()->on();
+      $pm = PersistentManager::getInstance();
       try
       {
          //Logger::getInstance()->po_log("PO:save BEGIN");
-         $pm = PersistentManager::getInstance();
          $pm->withTransaction();
          $pm->save($this);
          $pm->commitTransaction();
