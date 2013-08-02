@@ -21,7 +21,27 @@ class ValidationMessage {
 
    public static function getMessage( $constraint, $attr, $value )
    {
-      eval ('$msg = self::'.get_class($constraint).'( $constraint, $attr, $value );');
+      // Si es un custom validator creado en la clase de dominio, el self::clase va a fallar,
+      // en su lugar, deberia pedirle al validador el codigo del mensaje, y la app deberia
+      // definir su Messages para sacar el valor final de ahi.
+    
+      //eval ('$msg = self::'.get_class($constraint).'( $constraint, $attr, $value );');
+      
+      $method = get_class($constraint);
+         
+      if (method_exists('ValidationMessage', $method))
+      {
+         $msg = self::$method($constraint, $attr, $value);
+      }
+      else
+      {
+         // Custom validator class
+         // FIXME: por ahora la key del mensaje es el nombre de la clase
+         $msg = DisplayHelper::message( get_class($constraint) );
+         
+         // TODO: poder customizarlo con el atributo y el valor.
+      }
+      
       return $msg;
    }
    
