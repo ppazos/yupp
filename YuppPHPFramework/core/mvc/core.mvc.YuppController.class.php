@@ -238,6 +238,14 @@ class YuppController {
       $this->flash['message'] = "Objeto [$id] eliminado."; // FIXME: i18n
       return $this->redirect( array("action" => "list") ); // FIXME: el redirect mata el flash!
    }
+   
+   /**
+    * Accion para testear los parametros.
+    */
+   public function echoAction()
+   {
+      return $this->renderString( print_r($this->params, true) );
+   }
 }
 
 ?>
