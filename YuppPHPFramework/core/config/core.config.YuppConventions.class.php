@@ -119,11 +119,11 @@ class YuppConventions {
       
       $tableName1 = self::tableName( $instConElAtributoHasMany );
       
-      //echo "=== "  .  $ins1->getType( $inst1Attr ) . " ==== <br/>";
+      //echo "=== "  .  $ins1->getAttributeType( $inst1Attr ) . " ==== <br/>";
       
       // La tabla de join considera la tabla en la que se guardan las instancias del tipo 
       // declarado en el hasMany, NO A LOS DE SUS SUBCLASES!!! (como podia ser ins2)
-      $tableName2 = self::tableName( $ins1->getType( $inst1Attr ) );
+      $tableName2 = self::tableName( $ins1->getAttributeType( $inst1Attr ) );
       // $tableName2 = self::tableName( $ins2 );
 
       // TODO: Normalizar $inst1Attr ?

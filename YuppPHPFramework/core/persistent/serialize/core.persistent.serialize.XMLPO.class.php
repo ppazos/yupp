@@ -111,7 +111,7 @@ class XMLPO {
             {
                $hm_node = $xml_dom_doc->createElement( $attr );
                $hm_node->setAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
-               $hm_node->setAttribute( 'of', $obj->getType($attr) ); // clase de las instancias que contiene la coleccion
+               $hm_node->setAttribute( 'of', $obj->getAttributeType($attr) ); // clase de las instancias que contiene la coleccion
                
                $relObjs = $obj->aGet($attr);
                

@@ -148,7 +148,6 @@ class DAL {
    }
 
    // Ejecuta una consulta y devuelve el resultado como una matriz asociativa.
-   // FIXME: Devolver referencia para que no copie ?
    public function query( Query $query )
    {
       return $this->sqlQuery( $this->db->evaluateQuery( $query ) );
@@ -382,14 +381,19 @@ class DAL {
          $offset = $params['offset'];
          $orderBy = ' ORDER BY '. $params['sort'] .' '. $params['dir'];
 		 
+         // FIXME: los filtros que no sean por rowNum DEBEN estar en la query interna.
+       
 		   // La consulta interna es para hacer paginacion
 		   // WHERE: Las condiciones donde dice tableName pone T2 (no puede evaluar condiciones sobre atributos de tablas no mencionados en el FROM)
 		   //  - http://social.msdn.microsoft.com/Forums/sqlserver/en-US/3b2e0875-e98c-4931-bcb4-e9f449b637d7/the-multipart-identifier-aliasfield-could-not-be-bound
-		   $q = 'SELECT * '.
-              'FROM ( SELECT ROW_NUMBER() OVER (ORDER BY id) AS rowNum, * FROM '. $tableName .' ) AS T2 '.
-              'WHERE T2.rowNum-1 >= '. $offset .' AND T2.rowNum-1 < '.($offset+$max) .' AND '.
-         $this->db->evaluateAnyCondition( $params['where'], new ArrayObject(array($tableName => 'T2')) );
-       
+		   
+         
+         // Puedo hacer SELECT * porque hay un solo FROM
+         $q = 'SELECT * FROM ( '.
+               'SELECT ROW_NUMBER() OVER (ORDER BY id) AS rowNum, * FROM '. $tableName .' WHERE '. $this->db->evaluateAnyCondition( $params['where'] ) .
+              ' ) AS T2 '.
+              'WHERE T2.rowNum-1 >= '. $offset .' AND T2.rowNum-1 < '.($offset+$max);
+         
          if (isset($params['sort']) || array_key_exists('sort', $params)) // && $params['sort'])
          {
            $q .= ' ORDER BY '. $params['sort'] .' '. $params['dir'];

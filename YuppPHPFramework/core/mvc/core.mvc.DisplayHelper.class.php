@@ -195,7 +195,7 @@ class DisplayHelper {
             $currentValue = $po->aGet($attr); // Puede ser NULL
 
             $role = DatabaseNormalization::getSimpleAssocName($attr); // email_id -> email
-            $relClass = $po->getType($role); // Clase de la relacion HO
+            $relClass = $po->getAttributeType($role); // Clase de la relacion HO
 
             // Objetos que puedo tener relacionadoss
             // Se puede en PHP 5.3.0...

@@ -130,7 +130,7 @@ class JSONPO {
          {
             // TODO: type de la coleccion, en el de XML tengo:
             //$hm_node->setAttribute( 'type', $obj->getHasManyType($attr) ); // list, colection, set
-            //$hm_node->setAttribute( 'of', $obj->getType($attr) ); // clase de las instancias que contiene la coleccion
+            //$hm_node->setAttribute( 'of', $obj->getAttributeType($attr) ); // clase de las instancias que contiene la coleccion
                
             $relObjs = $po->aGet($attr);
             

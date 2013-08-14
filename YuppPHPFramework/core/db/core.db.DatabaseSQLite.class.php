@@ -318,12 +318,17 @@ class DatabaseSQLite {
    //
    public function evaluateQuery( Query $query )
    {
-      $select = $this->evaluateSelect( $query->getSelect() ) . " ";
-      $from   = $this->evaluateFrom( $query->getFrom() )   . " ";
-      $where  = $this->evaluateWhere( $query->getWhere() )  . " ";
-      $order  = $this->evaluateOrder( $query->getOrder() )  . " ";
-      $groupBy = $this->evaluateGroupBy( $query->getGroupBy() ) . " ";
-      $limit  = ""; // TODO: no tengo limit??
+      $select  = $this->evaluateSelect( $query->getSelect() ) .' ';
+      $from    = $this->evaluateFrom( $query->getFrom() ) .' ';
+      $where   = $this->evaluateWhere( $query->getWhere() ) .' ';
+      $order   = $this->evaluateOrder( $query->getOrder() ) .' ';
+      $groupBy = $this->evaluateGroupBy( $query->getGroupBy() ) .' ';
+      $limit   = '';
+      
+      if ($query->hasLimit())
+      {
+         $limit = 'LIMIT '. $query->getLimitOffset() .', '. $query->getLimitMax() .' '; // http://www.sqlite.org/lang_select.html
+      }
 
       return $select . $from . $where . $order . $limit . $groupBy;
    }
@@ -401,7 +406,7 @@ class DatabaseSQLite {
    public function evaluateWhere( Condition $condition )
    {
       $where = "";
-      if ($where !== NULL)
+      if ($condition !== NULL)
       {
          $where = "WHERE " . $this->evaluateAnyCondition( $condition );
       }

@@ -488,12 +488,17 @@ class DatabasePostgreSQL {
    //
    public function evaluateQuery( Query $query )
    {
-      $select = $this->evaluateSelect( $query->getSelect() ) . " ";
-      $from   = $this->evaluateFrom( $query->getFrom() )   . " ";
-      $where  = $this->evaluateWhere( $query->getWhere() )  . " ";
-      $order  = $this->evaluateOrder( $query->getOrder() )  . " ";
+      $select  = $this->evaluateSelect( $query->getSelect() ) . " ";
+      $from    = $this->evaluateFrom( $query->getFrom() )   . " ";
+      $where   = $this->evaluateWhere( $query->getWhere() )  . " ";
+      $order   = $this->evaluateOrder( $query->getOrder() )  . " ";
       $groupBy = $this->evaluateGroupBy( $query->getGroupBy() ) . " ";
-      $limit  = ""; // TODO: no tengo limit??
+      $limit   = '';
+      
+      if ($query->hasLimit())
+      {
+         $limit = 'LIMIT '. $query->getLimitMax() .' '. $query->getLimitOffset() .' '; // http://www.postgresql.org/docs/8.1/static/queries-limit.html
+      }
 
       return $select . $from . $where . $order . $limit . $groupBy;
    }
@@ -571,7 +576,7 @@ class DatabasePostgreSQL {
    public function evaluateWhere( Condition $condition )
    {
       $where = "";
-      if ($where !== NULL)
+      if ($condition !== NULL)
       {
          $where = "WHERE " . $this->evaluateAnyCondition( $condition );
       }

@@ -41,7 +41,9 @@ class DatabaseSQLServer {
 	  // MARS false para que no de errores en las transacciones del save()
 	  // - http://msdn.microsoft.com/en-us/library/ee376925(v=sql.105).aspx
 	  // - http://blogs.msdn.com/b/cbiyikoglu/archive/2006/11/21/mars-transactions-and-sql-error-3997-3988-or-3983.aspx
-      $connectionOptions = array("Database"=>$dbName); //, 'MultipleActiveResultSets'=>false);
+      $connectionOptions = array("Database"=>$dbName,
+                                 "UID"=>$dbuser,
+                                 "PWD"=>$dbpass); //, 'MultipleActiveResultSets'=>false);
 
       /* Connect using Windows Authentication. */
       $this->connection = sqlsrv_connect( $dbhost, $connectionOptions);
@@ -361,14 +363,96 @@ class DatabaseSQLServer {
    //
    public function evaluateQuery( Query $query )
    {
-      $select  = $this->evaluateSelect( $query->getSelect() ) . " ";
-      $from    = $this->evaluateFrom( $query->getFrom() )   . " ";
-      $where   = $this->evaluateWhere( $query->getWhere() )  . " ";
-      $order   = $this->evaluateOrder( $query->getOrder() )  . " ";
-      $groupBy = $this->evaluateGroupBy( $query->getGroupBy() ) . " ";
-      $limit   = ""; // TODO: no tengo limit??
-
-      return $select . $from . $where . $order . $limit . $groupBy;
+      $select  = $this->evaluateSelect( $query->getSelect() ) .' ';
+      $from = '';
+      $order   = $this->evaluateOrder( $query->getOrder() ) .' ';
+      $groupBy = $this->evaluateGroupBy( $query->getGroupBy() ) .' ';
+      
+      // SQLServer 2008 no tiene LIMIT, hay que hacerlo con una subquery usando ROWNUM
+      // Soluciona problema de paginacion en SQLServer, como esta en DAL::listAll()
+      // 
+      if ($query->hasLimit())
+      {
+         // FIXME:
+         // El filtro del where que no es el filtro por rowNum
+         // debe hacerse en la consulta interna, sino se toman
+         // rowNums en la consulta interna que luego no estan
+         // en la consulta final, eso afecta al resultado paginado,
+         // porque se pagina por rowNum de rows que no matchean el where, ej:
+         //  - consulta interna devuelve 1,2,3,4,5,6,7,8
+         //  - consulta externa tiene max=3, offset=0
+         //  - where matchea solo 2,4,5,7
+         //  - el resultado es solo 2, en lugar de 2,4,5 (son los primeros 3 que matchean)
+         //
+         // problema, el where incluye condiciones que no son sobre la tabla utilizada
+         // en la consulta interna, esto afecta?
+         
+      
+         $tableName = $query->getLimitTable();
+         $offset = $query->getLimitOffset();
+         $max = $query->getLimitMax();
+         
+         // La consulta interna es para hacer paginacion
+		   // WHERE: Las condiciones donde dice tableName pone T2 (no puede evaluar condiciones sobre atributos de tablas no mencionados en el FROM)
+		   //  - http://social.msdn.microsoft.com/Forums/sqlserver/en-US/3b2e0875-e98c-4931-bcb4-e9f449b637d7/the-multipart-identifier-aliasfield-could-not-be-bound         
+         
+         // Hago el evaluate del from aca porque tengo que cambiar el FROM de tableName por la subconsulta necesaria para el limit
+         $queryFrom = $query->getFrom();
+         
+         $alias;
+         
+         if (count($queryFrom) == 0)
+         {
+            // ERROR! es obligatorio por lo menos una!
+            throw new Exception("FROM no puede ser vacio");
+         }
+         else
+         {
+            /*
+            $res = "FROM ";
+            foreach ($queryFrom as $table)
+            {
+               if ( $table->name == $tableName )
+               {
+                  $alias = $table->alias;
+                  
+                  $res .= '( SELECT ROW_NUMBER() OVER (ORDER BY id) AS rowNum, * '.
+                          'FROM '. $tableName .
+                          $this->evaluateWhere( $query->getWhere() ) .
+                          ' ) '. $alias .', ';
+               }
+               else
+               {
+                  $res .= $table->name .' '. $table->alias .', ';
+               }
+            }
+            $from = substr($res, 0, -2) .' ';
+            */
+            
+            
+            $alias = 'subq';
+            // * selecciona multiples columnas con mismo nombre en distintas tablas
+            $subquery = '( '. $select .', ROW_NUMBER() OVER (ORDER BY '. $tableName .'.id) AS rowNum '.
+                        $this->evaluateFrom( $query->getFrom() ) .' '.
+                        $this->evaluateWhere( $query->getWhere() ) .' '.
+                        $order . $groupBy .
+                        ' ) '. $alias .' ';
+            $from = 'FROM '. $subquery;
+            
+            
+            $select = 'SELECT * '; // Select para la query ppal. agregaciones y group se harian en la subquery
+         }
+         
+         $where = 'WHERE '. $alias .'.rowNum-1 >= '. $offset .' AND '. $alias .'.rowNum-1 < '.($offset+$max);
+         
+         return $select . $from . $where;
+         
+      } // hasLimit
+      
+      // !hasLimit
+      $from  = $this->evaluateFrom( $query->getFrom() ) .' ';
+      $where = $this->evaluateWhere( $query->getWhere() ) .' ';
+      return $select . $from . $where . $order . $groupBy;
    }
    
    private function evaluateGroupBy( $groupBy )
@@ -435,18 +519,19 @@ class DatabaseSQLServer {
          $res = "FROM ";
          foreach ($from as $table)
          {
-            $res .= $table->name . " " . $table->alias . ", ";
+            $res .= $table->name .' '. $table->alias .', ';
          }
          return substr($res, 0, -2); // Saca ultimo "; "
       }
    }
 
-   public function evaluateWhere( Condition $condition )
+   public function evaluateWhere( Condition $condition, $rewrites = null )
    {
       $where = "";
-      if ($where !== NULL)
+      if ($condition !== NULL)
       {
-         $where = "WHERE " . $this->evaluateAnyCondition( $condition, new ArrayObject() );
+         if (is_null($rewrites)) $rewrites = new ArrayObject();
+         $where = "WHERE " . $this->evaluateAnyCondition( $condition, $rewrites );
       }
       return $where;
    }
@@ -456,7 +541,7 @@ class DatabaseSQLServer {
     * Necesito pasarle rewrites por la consulta interna necesaria para hacer la paginacion.
 	* Ver DAL.listAll
 	*/
-   public function evaluateAnyCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateAnyCondition( Condition $condition, $rewrites = null )
    {
       //Logger::struct($condition, "DatabaseSQLServer::evaluateAnyCondition");
       
@@ -534,7 +619,7 @@ class DatabaseSQLServer {
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
    }
    
-   public function evaluateEQCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateEQCondition( Condition $condition, $rewrites )
    {
       $refVal = $condition->getReferenceValue();
       $refAtr = $condition->getReferenceAttribute();
@@ -560,7 +645,7 @@ class DatabaseSQLServer {
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
-   public function evaluateEEQCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateEEQCondition( Condition $condition, $rewrites )
    {
       return $this->evaluateEQCondition( $condition, $rewrites );
       
@@ -579,7 +664,7 @@ class DatabaseSQLServer {
       */
    }
    
-   public function evaluateNEQCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateNEQCondition( Condition $condition, $rewrites )
    {
       $refVal = $condition->getReferenceValue();
       $refAtr = $condition->getReferenceAttribute();
@@ -602,12 +687,12 @@ class DatabaseSQLServer {
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
-   public function evaluateENEQCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateENEQCondition( Condition $condition, $rewrites )
    {
       // TODO
       throw new Exception("evaluateENEQCondition no implementada " . __FILE__ . " " . __LINE__);
    }
-   public function evaluateLIKECondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateLIKECondition( Condition $condition, $rewrites )
    {
       $refVal = $condition->getReferenceValue();
       $refAtr = $condition->getReferenceAttribute();
@@ -630,13 +715,13 @@ class DatabaseSQLServer {
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
-   public function evaluateILIKECondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateILIKECondition( Condition $condition, $rewrites )
    {
        // FIXME?: parece que en PostgreSQL por defecto las busquedas no son case sensitive.
        return $this->evaluateLIKECondition( $condition, $rewrites );
    }
    
-   public function evaluateGTCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateGTCondition( Condition $condition, $rewrites )
    {
       $refVal = $condition->getReferenceValue();
       $refAtr = $condition->getReferenceAttribute();
@@ -659,7 +744,7 @@ class DatabaseSQLServer {
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
-   public function evaluateLTCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateLTCondition( Condition $condition, $rewrites )
    {
       $refVal = $condition->getReferenceValue();
       $refAtr = $condition->getReferenceAttribute();
@@ -683,7 +768,7 @@ class DatabaseSQLServer {
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
-   public function evaluateGTEQCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateGTEQCondition( Condition $condition, $rewrites )
    {
       $refVal = $condition->getReferenceValue();
       $refAtr = $condition->getReferenceAttribute();
@@ -707,7 +792,7 @@ class DatabaseSQLServer {
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
-   public function evaluateLTEQCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateLTEQCondition( Condition $condition, $rewrites )
    {
       $refVal = $condition->getReferenceValue();
       $refAtr = $condition->getReferenceAttribute();
@@ -731,7 +816,7 @@ class DatabaseSQLServer {
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
-   public function evaluateNOTCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateNOTCondition( Condition $condition, $rewrites )
    {
       $conds = $condition->getSubconditions();
       if ( count($conds) !== 1 ) throw new Exception("Not debe tener exactamente una condicion para evaluarse. ".__FILE__." ".__LINE__);
@@ -739,7 +824,7 @@ class DatabaseSQLServer {
       return "NOT (" . $this->evaluateAnyCondition( $conds[0], $rewrites ) . ") ";
    }
    
-   public function evaluateANDCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateANDCondition( Condition $condition, $rewrites )
    {
       $conds = $condition->getSubconditions();
       $res = "(";
@@ -756,7 +841,7 @@ class DatabaseSQLServer {
       return $res . ")";
    }
    
-   public function evaluateORCondition( Condition $condition, ArrayObject $rewrites )
+   public function evaluateORCondition( Condition $condition, $rewrites )
    {
       $conds = $condition->getSubconditions();
       $res = "(";
