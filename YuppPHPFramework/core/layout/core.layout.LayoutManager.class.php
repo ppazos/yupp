@@ -199,7 +199,8 @@ class LayoutManager {
 //         echo $layout;
 //         echo '</textarea>';
 
-         $coincidencias = explode("<body>", $coincidencias[1]); // 0-> nada, 1-> body, /body /html
+         // FIXME: si body tiene atributos, esto se rompe
+         $coincidencias = explode("<body>", $coincidencias[1]); // 0-> nada, 1-> body, /body /html         
          $coincidencias = explode("</body>", $coincidencias[1]); // 0-> body, 1-> /html
          $body = $coincidencias[0];
          
