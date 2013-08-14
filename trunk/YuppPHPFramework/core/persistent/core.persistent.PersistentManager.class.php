@@ -661,7 +661,7 @@ class PersistentManager {
 
       // FIXME: esta clase podria ser superclase de la subclase que quiero cargar.
       //        tengo que ver en la tabla de que tipo es realmente y cargar una instancia de eso. 
-      $hmattrClazz = $obj->getType( $hmattr );
+      $hmattrClazz = $obj->getAttributeType( $hmattr );
             
       // (***)
       $relObjIns = new $hmattrClazz(); // Intancia para hallar nombre de tabla.
@@ -1067,7 +1067,7 @@ class PersistentManager {
 
    public function findByQuery( Query $q )
    {
-      Logger::getInstance()->pm_log("PM::findByQuery");
+      //Logger::getInstance()->pm_log("PM::findByQuery");
       return $this->dal->query( $q );
    }
 
@@ -1125,6 +1125,67 @@ class PersistentManager {
             $rel_obj = $this->get_mti_object_byData( $byClass, $many_attrValues );
          }
 
+<<<<<<< .mine
+         $result[] = $rel_obj;
+      }
+      
+      return $result;
+   }
+   
+   
+   /**
+    * Ejecuta la query, e intenta crear instancias de $class con los registros obtenidos.
+    * FIXME: Para poder hacer esto, la proyeccion de la query debe tene * y en from debe estar
+    *        la tabla asociada a $class.
+    */
+   public function queryObjects($query, $class)
+   {
+      Logger::getInstance()->pm_log("PM::queryObjects ". $class ." : " . __FILE__."@". __LINE__);
+      
+      // ---------------------------------------------------------------------------------------------------------
+      // Cuando la query incluye un join con otra tabla (hay mas de un FROM), y no hay proyecciones (SELECT *),
+      // los atributos inyectados se pueden confundir: class, id y deleted se pueden tomar de una u otra 
+      // tabla, generando instancias erroneas.
+      
+      // Regla: si hay mas de un from, el select no puede ser vacio (select *), o sea: deben haber
+      //        proyecciones para todos los atributos de la clase a obtener.
+      
+      // TODO: probar como funciona esto con estructuras de herencia
+      
+      if (count($query->getFrom()) > 1 && $query->getSelect()->isEmpty())
+      {
+         throw new Exception('Esta consulta incluye mas de un elemento en FROM pero no tiene proyecciones definidas. En este caso, debe definir las proyecciones explicitamente sobre cada atributo de la clase '. $class); // TODO: i18n
+      }
+      // ---------------------------------------------------------------------------------------------------------
+      
+      $data = $this->findByQuery( $query );
+      
+      $result = array();
+      
+      foreach ( $data as $many_attrValues ) // $many_attrValues es un array asociativo de atributo/valor (que son los atributos simples de una instancia de la clase)
+      {
+         //echo 'row ';
+         //eprint_r($many_attrValues);
+         //echo '----------------------';
+         
+         // Esto se debe resolver en query, cuando hay mas de un from, agregando proyecciones y alias.
+      
+         if ($many_attrValues['class'] === $class)
+         {
+            $rel_obj = $this->createObjectFromData( $class, $many_attrValues );
+         }
+         else
+         {
+            $rel_obj = $this->get_mti_object_byData( $class, $many_attrValues );
+         }
+
+         $result[] = $rel_obj;
+      }
+      
+      return $result;
+   }
+
+=======
          $result[] = $rel_obj;
       }
       
@@ -1161,6 +1222,7 @@ class PersistentManager {
    }
 
 
+>>>>>>> .r897
    // FIXME: El mundo seria mas sencillo si en lugar de pasarle la clase le paso la instancia...
    // ya que tengo que hacer un get_class para pasarle la clase y luego aca hago un new para crear una instancia...
    // para eso le paso la instancia que ya tengo y listo...
