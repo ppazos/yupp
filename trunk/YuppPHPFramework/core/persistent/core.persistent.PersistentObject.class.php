@@ -300,7 +300,7 @@ class PersistentObject {
    public function attributeDeclaredOnThisClass( $attr )
    {
       // Si la instancia ni siquiera tiene el atributo, retorna false.
-      if ( $this->getType( $attr ) === NULL ) return false;
+      if ( $this->getAttributeType( $attr ) === NULL ) return false;
       
       $_super = get_parent_class( $this );
       
@@ -311,7 +311,7 @@ class PersistentObject {
       $_superInstance = new $_super(NULL, true);
       
       // Si el padre NO tiene el atributo, esta declarado en 'esta' clase.
-      if ( $_superInstance->getType( $attr ) === NULL ) return true;
+      if ( $_superInstance->getAttributeType( $attr ) === NULL ) return true;
       
       return false;
    }
@@ -404,7 +404,7 @@ class PersistentObject {
    
    /**
     * Devuelve el tipo de la relacion hasMany de nombre attr. El tipo puede ser LIST, COLECTION o SET.
-    * Para obtener la clase de la coleccion hasMany se hace con getType(attr)
+    * Para obtener la clase de la coleccion hasMany se hace con getAttributeType(attr)
     * @param String attr nombre del atributo hasMany
     */
    public function getHasManyType( $attr )
@@ -591,7 +591,7 @@ class PersistentObject {
     * 
     * @param String attr nombre del atributo para el que se quiere obtener su tipo.
     */
-   public function getType($attr)
+   public function getAttributeType($attr)
    {
       if (isset($this->hasOne[$attr]) || array_key_exists($attr, $this->hasOne))
       {
