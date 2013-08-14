@@ -31,7 +31,7 @@ class Select {
      */
     public function isEmpty()
     {
-       return sizeof($this->projections === 0);
+       return sizeof($this->projections) == 0;
     }
 }
 
