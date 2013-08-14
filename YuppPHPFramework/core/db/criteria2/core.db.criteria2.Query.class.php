@@ -20,7 +20,12 @@ class Query
    private $groupBy = array();
 
 	private $limit_max;
-	private $limit_offset;
+	private $limit_offset = 0;
+   
+   // Necesario para SQLServer, si una query pagina, necesito saber sobre que tabla se
+   // hace la paginacion, porque en el from de la query pueden haber tablas para varias
+   // clases, y para armar la query SQL se usa un nombre de tabla para una sola clase.
+   private $limit_table;
 
 	// http://www.1keydata.com/sql/sqldistinct.html
 
@@ -65,7 +70,7 @@ class Query
    /**
     * Agrega una proyeccion sobre las columnas de las tablas seleccionadas para la respuesta de la consulta.
     */
-	public function addProjection($alias, $attr)
+	public function addProjection($table, $attr, $alias = null)
 	{
 		// TODO:
 		// CHECK CORRECTITUD: proyeccion debe tener aliases presentes en el from. Necesario agregar primero el FROM.
@@ -76,7 +81,12 @@ class Query
 //
 //		$this->select[] = $p;
 
-      $this->select->add( new SelectAttribute($alias, $attr) );
+      $projection = new SelectAttribute($table, $attr);
+      if ($alias != null)
+      {
+         $projection->setAlias($alias);
+      }
+      $this->select->add( $projection );
 
 		return $this;
 	}
@@ -152,7 +162,6 @@ class Query
 	public function setCondition(Condition $cond)
 	{
 		$this->where = $cond;
-      
       return $this;
 	}
 
@@ -163,10 +172,31 @@ class Query
 	{
 		$this->limit_max = $max;
 		$this->limit_offset = $offset;
-      
       return $this;
 	}
-
+   public function hasLimit()
+   {
+      return (!empty($this->limit_max));
+   }
+   public function getLimitMax()
+   {
+      return $this->limit_max;
+   }
+   
+   public function getLimitOffset()
+   {
+      return $this->limit_offset;
+   }
+   public function setLimitTable($table)
+   {
+      $this->limit_table = $table;
+      return $this;
+   }
+   public function getLimitTable()
+   {
+      return $this->limit_table;
+   }
+   
    /**
     * Agrega ordenamiento por alguna columna de una tabla.
     * 
