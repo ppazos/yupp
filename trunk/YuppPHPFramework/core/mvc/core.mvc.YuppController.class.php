@@ -58,14 +58,15 @@ class YuppController {
 
     public function getFlash($key = NULL)
     {
-       if ($key)
-          return ( (isset($this->flash[$key])) ?  $this->flash[$key]: NULL);
-       else
-          return $this->flash;
+       if ($key) return ( (isset($this->flash[$key])) ? $this->flash[$key] : NULL );
+       
+       return $this->flash;
     }
     
-    public function getParams()
+    public function getParams($key = NULL)
     {
+       if ($key) return ( (isset($this->params[$key])) ? $this->params[$key] : NULL );
+       
        return $this->params;
     }
     
