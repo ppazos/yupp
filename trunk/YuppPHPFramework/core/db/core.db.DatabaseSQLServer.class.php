@@ -16,8 +16,6 @@ class DatabaseSQLServer {
    
    public function __construct()
    {
-      if (!function_exists('sqlsrv_connect')) throw new Exception("Se ha configurado una base de datos SQLServer pero la extension para SQLServer no esta habilitada o instalada");
-      
       $this->queryCount = 0;
    }
 
@@ -29,7 +27,7 @@ class DatabaseSQLServer {
    // http://code.google.com/p/yupp/issues/detail?id=123
    public function createDatabase($dbname)
    {
-      // http://bytes.com/topic/postgresql/answers/577571-create-database-test-if-not-exists
+      // FIXME: create if not exists
       $this->execute("CREATE DATABASE $dbname");
    }
 
@@ -37,13 +35,14 @@ class DatabaseSQLServer {
    {
       //Logger::getInstance()->log("DatabaseSQLServer::connect " . $dbhost ." ". $dbuser ." ". $dbpass ." ". $dbName);
 
-	  //$dbhost = "(local)\sqlexpress";
-	  // MARS false para que no de errores en las transacciones del save()
-	  // - http://msdn.microsoft.com/en-us/library/ee376925(v=sql.105).aspx
-	  // - http://blogs.msdn.com/b/cbiyikoglu/archive/2006/11/21/mars-transactions-and-sql-error-3997-3988-or-3983.aspx
+	   //$dbhost = "(local)\sqlexpress";
+	   // MARS false para que no de errores en las transacciones del save()
+	   // - http://msdn.microsoft.com/en-us/library/ee376925(v=sql.105).aspx
+	   // - http://blogs.msdn.com/b/cbiyikoglu/archive/2006/11/21/mars-transactions-and-sql-error-3997-3988-or-3983.aspx
+      
       $connectionOptions = array("Database"=>$dbName,
                                  "UID"=>$dbuser,
-                                 "PWD"=>$dbpass); //, 'MultipleActiveResultSets'=>false);
+                                 "PWD"=>$dbpass);
 
       /* Connect using Windows Authentication. */
       $this->connection = sqlsrv_connect( $dbhost, $connectionOptions);
@@ -52,7 +51,7 @@ class DatabaseSQLServer {
 
       if ( $this->connection === false )
       {
-         throw new Exception( "No pudo conectarse a PostgreSQL: " . print_r(sqlsrv_errors(), true), 666 ); // 666 es mi codigo de DB no existe...
+         throw new Exception( "No pudo conectarse a SQLServer: " . print_r(sqlsrv_errors(), true), 666 ); // 666 es mi codigo de DB no existe...
       }
 	  
 	   $this->dbName = $dbName;
@@ -108,13 +107,18 @@ class DatabaseSQLServer {
 
       $this->lastQuery = $query;
 
+      // Sin Scrollable STATIC, sql_num_rows tira FALSE
+      //   - http://msdn.microsoft.com/en-us/library/hh487160.aspx
+      //   - http://php.net/manual/es/function.sqlsrv-num-rows.php
+      
       // Si hay excepciones, se tiran para la capa de arriba donde se agarran.
+      //if (!$result = sqlsrv_query($this->connection, $query, array(), array("Scrollable"=>SQLSRV_CURSOR_STATIC)))
       if (!$result = sqlsrv_query($this->connection, $query))
          throw new Exception('La consulta fall&oacute;: ' . print_r(sqlsrv_errors(), true));
 
       $this->queryCount++;
       $this->lastResult = $result;
-
+      
       return $result;
    }
    
@@ -140,7 +144,7 @@ class DatabaseSQLServer {
    public function nextRow()
    {
       if ( $this->lastResult )
-         return sqlsrv_fetch_array( $this->lastResult );
+         return sqlsrv_fetch_array( $this->lastResult, SQLSRV_FETCH_ASSOC );
       
       return false;
    }
@@ -153,9 +157,9 @@ class DatabaseSQLServer {
 
    public function showLastQuery()
    {
-      if (sqlsrv_num_rows($this->lastQuery) > 0)
+      if (sqlsrv_num_rows($this->lastResult) > 0)
       {
-         while ($row = sqlsrv_fetch_array($this->lastQuery))
+         while ($row = sqlsrv_fetch_array($this->lastResult, SQLSRV_FETCH_ASSOC))
          {
             echo "<pre>";
             foreach ($row as $key => $value)
@@ -326,22 +330,22 @@ class DatabaseSQLServer {
    public function tableExists( $tableName ) //: boolean
    {
       // http://stackoverflow.com/questions/167576/sql-server-check-if-table-exists
-	  /* lo que hay en INFORMATION_SCHEA.TABLES
+	   /* lo que hay en INFORMATION_SCHEA.TABLES
 	  Array ( 
 	  [TABLE_CATALOG] => inter_active_tel
 	  [TABLE_SCHEMA] => dbo 
 	  [TABLE_NAME] => test_002_cara
 	  [TABLE_TYPE] => BASE TABLE ) 
-	  */
+	   */
       $res = $this->query( "SELECT COUNT(TABLE_NAME) as num FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '$tableName'" );
 
-	  if ($res === false)
-	  {
-	     print_r(sqlsrv_errors(), true);
-	  }
+	   if ($res === false)
+	   {
+	      print_r(sqlsrv_errors(), true);
+	   }
       
-	  // Si hay resultado, siempre tiene una row
-	  $row = sqlsrv_fetch_array( $res, SQLSRV_FETCH_ASSOC );
+	   // Si hay resultado, siempre tiene una row
+	   $row = sqlsrv_fetch_array( $res, SQLSRV_FETCH_ASSOC );
 	  
       return $row['num'] > 0;
    }
@@ -614,7 +618,7 @@ class DatabaseSQLServer {
    {
       // Si es 0 me devuelve null...
       if ( $refVal === NULL ) return 'NULL';
-      if ( is_bool($refVal) ) return (($refVal)?'TRUE':'FALSE');
+      if ( is_bool($refVal) ) return (($refVal)?'1':'0');
       if ( $refVal === 0 ) return "'0'";
       return (is_string($refVal)) ? "'" . $refVal . "'" : $refVal;
    }
@@ -717,8 +721,8 @@ class DatabaseSQLServer {
    
    public function evaluateILIKECondition( Condition $condition, $rewrites )
    {
-       // FIXME?: parece que en PostgreSQL por defecto las busquedas no son case sensitive.
-       return $this->evaluateLIKECondition( $condition, $rewrites );
+      // LIKE es case sensitive en SQLServer?
+      return $this->evaluateLIKECondition( $condition, $rewrites );
    }
    
    public function evaluateGTCondition( Condition $condition, $rewrites )
