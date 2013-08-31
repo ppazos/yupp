@@ -166,12 +166,6 @@ class ModelUtils {
       {
          if ( get_parent_class( $loadedClass ) == $clazz ) $res[] = $loadedClass;
       }
-      
-      
-      // DEBUG
-      //$log->struct( $res, "Subclasses of $clazz para la app $appName" );
-      //$log->off();
-
 
       return $res;
    }
