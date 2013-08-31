@@ -90,7 +90,9 @@ class PersistentObject {
     *              utiliza solo cuando hay que crear una instancia para averiguar el nombre de la tabla.
     */
    public function __construct( $args = array(), $isSimpleInstance = false )
-   {      
+   {
+      Logger::getInstance()->po_log("PersistentObject.__construct " . static::sgetClass());
+      
       // Este atributo lo inyecto aunque la instancia sea simple, porque se utiliza en el YuppConventions::tableName.
       // 5: Nombre de la clase, para soporte de herencia.
       $this->attributeTypes["class"]  = Datatypes::TEXT; // Los tipos de los deleted son boolean.
@@ -167,18 +169,17 @@ class PersistentObject {
          // FIXME: hace lo mismo que setProperties pero distinto
          if (isset($this->attributeTypes[$attr]) || array_key_exists($attr, $this->attributeTypes))
          {
-            // Si es un valor simple y string, lo limpio por espacios extras.
-            // Sino es string, al hacerle trim lo transforma a string y genera errores de tipo.
-            //$this->attributeValues[$attr] = ((is_string($value))? trim($value) : $value); 
+            $this->aSet($attr, $value); // Hace el casteo de valores al tipo correcto
             
             // Si es una instancia nueva, siempre estara dirty si le pongo valores simples.
             $this->dirty = true;
+            
+            continue;
          }
-         else if (isset($this->hasOne[$attr]) || array_key_exists($attr, $this->hasOne))
+         
+         if (isset($this->hasOne[$attr]) || array_key_exists($attr, $this->hasOne))
          {
             if (!is_subclass_of($value, 'PersistentObject')) throw new Exception('Se espera un valor de tipo PersistentObject para el atributo '.$attr);
-            
-            //$this->attributeValues[$attr] = $value;
             
             // Si es una instancia nueva, siempre estara dirty si le pongo valores simples.
             $this->dirtyOne = true;
@@ -187,13 +188,16 @@ class PersistentObject {
          {
             if (!is_array($value)) throw new Exception('Se espera un valor de tipo array para el atributo '.$attr);
             
-            //$this->attributeValues[$attr] = $value;
-            
             // Si es una instancia nueva, siempre estara dirty si le pongo valores simples.
             $this->dirtyMany = true;
          }
          
-         $this->attributeValues[$attr] = ((is_string($value))? trim($value) : $value);
+         // Si es un valor simple y string, lo limpio por espacios extras.
+         // Sino es string, al hacerle trim lo transforma a string y genera un error de tipo.
+         
+         
+         // Setea el valor para hasOne o hasMany
+         $this->attributeValues[$attr] = $value;
       }
    } // construct
 
@@ -871,6 +875,8 @@ class PersistentObject {
     */
    public function __call( $method, $args )
    {
+      Logger::getInstance()->po_log("PersistentObject.__call " . $method);
+   
       // OJO, en verdad si tiene el metodo, ya lo llama y no pasa por __call... esto esta de mas.
       // Si tiene algun metodo transient, lo llama. Puede ser un metodo definido en alguna de las clases que extienden esta.
       if (method_exists($this, $method)) return $this->{$method}( $args );
@@ -997,7 +1003,7 @@ class PersistentObject {
     */
    public static function get( $id )
    {
-      //Logger::getInstance()->po_log("PersistentObject.get " . self::$thisClass . " " . $id);
+      Logger::getInstance()->po_log("PersistentObject.get " . static::sgetClass() . " " . $id);
       $thisClass = static::sgetClass();
       return PersistentManager::getInstance()->get( $thisClass, $id );
    }
@@ -1393,27 +1399,34 @@ class PersistentObject {
 
    public function aSet( $attribute, $value )
    {
-      Logger::getInstance()->po_log("PO:aSet $attribute=". print_r($value, true));
+      Logger::getInstance()->po_log("PO:aSet $attribute=". print_r($value, true) ." PHP Type: ". gettype($value));
 
-      
       // Chekeo is_scalar para seteo de atributos simples.
       // Se agregaron returns para los casos de seteo correcto.
       // Chekeo de is_null para hasOne.
       // Consideracion de valor null para hasOne.
 
+      // ====================================================================
+      // Si es una tributo simple
+      
       // VERIFY: CUal es la joda de discutir en que lista esta si al final hago lo mismo ???
       // SIRVE PARA VERIFICAR QUE LO QUE ESTOY SETEANDO ES VALIDO.
       // CHECK 1: El atributo esta en la lista de atributos?
       if (isset($this->attributeTypes[$attribute]) || array_key_exists($attribute, $this->attributeTypes))
       {
-	     // https://code.google.com/p/yupp/issues/detail?id=172
-		 // Para DATES, SQLServer devuelve un DateTime object, por lo que no es escalar (integer, float, string, boolean) y tira excepcion.
-		 // DateTime > PHP 5.2
-		 if ( Datatypes::isDateTime($this->attributeTypes[$attribute]) && $value instanceof DateTime)
-		 {
-		    $value = $value->format('Y-m-d H:i:s'); // Saca el string de la fecha
-		 }
-	  
+         // https://code.google.com/p/yupp/issues/detail?id=172
+         // Para DATES, SQLServer devuelve un DateTime object, por lo que no es escalar (integer, float, string, boolean) y tira excepcion.
+         // DateTime > PHP 5.2
+         if ( Datatypes::isDateTime($this->attributeTypes[$attribute]) && $value instanceof DateTime )
+         {
+            $value = $value->format('Y-m-d H:i:s'); // Saca el string de la fecha
+         }
+         
+         if ( Datatypes::isText($this->attributeTypes[$attribute]) && is_string($value) )
+         {
+            $value = trim($value);
+         }
+     
          // Si el valor es null o es un tipo simple (no una clase)
          //  - Dejo tambien setear NULL xq al setear email_id puede ser NULL 
          //    y un valor simple tambien puede ser NULL si se lo desea.
@@ -1425,41 +1438,37 @@ class PersistentObject {
          // TICKET: http://code.google.com/p/yupp/issues/detail?id=35
          // Resuelve el problema de que si es un booleano y carga de la base,
          // el tipo del valor pasa a ser string y debe mantener el tipo boolean de PHP.
-         if ( $this->attributeTypes[$attribute] == Datatypes :: BOOLEAN )
+         if ( $this->attributeTypes[$attribute] == Datatypes::BOOLEAN && !is_bool($value) )
          {
-            if ( is_bool($value) ) $this->attributeValues[$attribute] = $value;
-            else
+            // TODO: otro valor posible podria ser "true" o "false" como strings.
+            // TODO: ademas depende del DBMS
+            //  - "0"/"1" para MySQL funciona
+            //  - "f"/"t" para Postgres funciona
+            
+            $boolFalseValues = array(0, "0", "f", "F", "false", "FALSE");
+            $boolTrueValues = array(1, "1", "t", "T", "true", "TRUE");
+            
+            // Si es $value=null y attr es booleano, la validez del valor depende de que sea nullable(true)
+            if (!is_null($value))
             {
-               // TODO: otro valor posible podria ser "true" o "false" como strings.
-               // TODO: ademas depende del DBMS
-               //  - "0"/"1" para MySQL funciona
-               //  - "f"/"t" para Postgres funciona
-               
-               // TODO: implementar con in_array(needle, array)
-               $boolFalseValues = array(0, "0", "f", "F", "false", "FALSE");
-               $boolTrueValues = array(1, "1", "t", "T", "true", "TRUE");
-               
                // Si esta en trueValues es true, si esta en falseValues es false, otro caso no es soportado.
-               if (in_array($value, $boolTrueValues)) $this->attributeValues[$attribute] = true;
-               else if (in_array($value, $boolFalseValues)) $this->attributeValues[$attribute] = false;
+               if ($value === "") $value = null; // Sin esto da un error de que '' no es boolean al guardar en la db
+               else if (in_array($value, $boolTrueValues, true)) $value = true;
+               else if (in_array($value, $boolFalseValues, true)) $value = false;
                else throw new Exception("El valor '$value' para '$attribute' no es un valor booleano valido"); // Si es otro valor, no es soportado
-              
-               //if ( $value === "0" || $value === 0 || $value === "f" ) $this->attributeValues[ $attribute ] = false;
-               //else if ( $value === "1" || $value === 1 || $value === "t" ) $this->attributeValues[ $attribute ] = true;
             }
          }
-         else
-         {
-            // TODO: verificar que el tipo del dato corresponde con el tipo del campo.
-            $this->attributeValues[$attribute] = $value;
-         }
+         
+         
+         // TODO: verificar que el tipo del dato corresponde con el tipo del campo.
+         $this->attributeValues[$attribute] = $value;
 
          $this->dirty = true; // Marca como modificada
          return;
       }
       else // FIXME OPTIMIZACION: aqui deberia buscar por hasMany y hasOne, y recien cuando veo que no encuentro, hacer la busqueda por parecidos.
       {
-         // FIXME: esto en que casos se ejecuta?
+         // Esto es para buscar atributos generados ej. hoattr_id
         
          // Pruebo si el attribute no es el nombre de la columna que
          // corresponde con algun atributo de esta clase en el ORM.
@@ -1534,7 +1543,7 @@ class PersistentObject {
          }
       }
 
-      if ( array_key_exists($attribute, $this->hasMany) ) // El valor deberia ser una lista de objetos.
+      if ( isset($this->hasMany[$attribute]) || array_key_exists($attribute, $this->hasMany) ) // El valor deberia ser una lista de objetos.
       {
          // TODO: ademas deberia ser de objetos persistentes.
          // TODO: NULL es un valor valido para una lista de objetos ?
