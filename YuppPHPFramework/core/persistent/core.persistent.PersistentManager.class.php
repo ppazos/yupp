@@ -495,7 +495,7 @@ class PersistentManager {
       // O sea, si $persistentClass es A o A1 me dice que MTI es false aunque sea una instancia real de C, C1, G o G1.
       if ( MultipleTableInheritanceSupport::isMTISubclassInstance( $cins ) )
       {
-         //Logger::getInstance()->pm_log("ES MTI: " . __FILE__ . " " . __LINE__);
+         Logger::getInstance()->pm_log(" ---- ES MTI: " . __FILE__ . " " . __LINE__);
          
          // 2.1: Cargar la ultima instancia parcial en la estructura de herencia.
          //$superclases = ModelUtils::getAllAncestorsOf( $attrValues["class"] ); // $attrValues["class"] es la ultima en la estructura del carga de multiple tabla, puede tener subclases pero se guardan en la misma tabla que ella. Por eso necesito solo los padres xq son los que se pueden guardar en otras tablas.
@@ -568,13 +568,13 @@ class PersistentManager {
       $tableName = YuppConventions::tableName( $obj );
       $attrValues = $this->dal->get( $tableName, $id );
       
-/*
- * VER: Otra posible solucion para mti, es que cargue solo los atributos que tengo en esa tabla, 
- * y luego cargue lo demas lazy, o sea: 
- * si a PO le pido un getXX y me doy cuenta que XX no lo tengo (porque pude no haberlo cargado) 
- * verifico si esta en otra tabla de una instancia parcial y ahi cargo la instancia parcial. 
- * (o sea, lazy load para atributos simples)
- */
+      /*
+       * VER: Otra posible solucion para mti, es que cargue solo los atributos que tengo en esa tabla, 
+       * y luego cargue lo demas lazy, o sea: 
+       * si a PO le pido un getXX y me doy cuenta que XX no lo tengo (porque pude no haberlo cargado) 
+       * verifico si esta en otra tabla de una instancia parcial y ahi cargo la instancia parcial. 
+       * (o sea, lazy load para atributos simples)
+       */
  
       // http://code.google.com/p/yupp/issues/detail?id=132
       if (count($attrValues) == 0) return NULL;
@@ -593,11 +593,10 @@ class PersistentManager {
    {
       Logger::getInstance()->pm_log("PM.createObjectFromData " . $class );
       
-      // $data son $attrValues.
-      
       $obj = new $class(); // Instancia a devolver, instanciado en la clase correcta.
-
+      
       // Carga atributos simples
+      // $data son $attrValues
       foreach ($data as $colname => $value)
       {
          // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -618,7 +617,10 @@ class PersistentManager {
             
             // Deshace el addslashes del inser_query y update_query de DAL.
             // FIXME: esto deberia ser tambien responsabilidad de DAL.
-            if ( is_string( $value ) ) $value = stripslashes($value);
+            if ( is_string( $value ) )
+            {
+               $value = stripslashes($value);
+            }
             
             $obj->aSet( $attr, $value );
          }
@@ -629,7 +631,7 @@ class PersistentManager {
       
       // Apaga las banderas que se prendieron en la carga
       $obj->resetDirty();
-
+      
       return $obj;
    }
    
@@ -861,10 +863,10 @@ class PersistentManager {
       //////////////////////////////////////////////////////////
 
       $obj = NULL;
-
-      if ( ArtifactHolder::getInstance()->existsModel( $persistentClass, $id ) ) // Si ya esta cargado...
+      $ah = ArtifactHolder::getInstance();
+      if ( $ah->existsModel( $persistentClass, $id ) ) // Si ya esta cargado...
       {
-         $obj = ArtifactHolder::getInstance()->getModel( $persistentClass, $id );
+         $obj = $ah->getModel( $persistentClass, $id );
       }
       else
       {
@@ -877,7 +879,7 @@ class PersistentManager {
 
          // http://code.google.com/p/yupp/issues/detail?id=132
          if ($obj != NULL)
-            ArtifactHolder::getInstance()->addModel( $obj ); // Lo pongo aca para que no se guarde luego de la recursion de las assocs...
+            $ah->addModel( $obj ); // Lo pongo aca para que no se guarde luego de la recursion de las assocs...
       }
       
       return $obj;
@@ -1125,7 +1127,6 @@ class PersistentManager {
             $rel_obj = $this->get_mti_object_byData( $byClass, $many_attrValues );
          }
 
-<<<<<<< .mine
          $result[] = $rel_obj;
       }
       
@@ -1185,44 +1186,6 @@ class PersistentManager {
       return $result;
    }
 
-=======
-         $result[] = $rel_obj;
-      }
-      
-      return $result;
-   }
-   
-      
-   /**
-    * Ejecuta la query, e intenta crear instancias de $class con los registros obtenidos.
-    * FIXME: Para poder hacer esto, la proyeccion de la query debe tene * y en from debe estar
-    *        la tabla asociada a $class.
-    */
-   public function queryObjects($query, $class)
-   {
-      $data = $this->findByQuery( $query );
-      
-      $result = array();
-      
-      foreach ( $data as $many_attrValues ) // $many_attrValues es un array asociativo de atributo/valor (que son los atributos simples de una instancia de la clase)
-      {
-         if ($many_attrValues['class'] === $class)
-         {
-            $rel_obj = $this->createObjectFromData( $class, $many_attrValues );
-         }
-         else
-         {
-            $rel_obj = $this->get_mti_object_byData( $class, $many_attrValues );
-         }
-
-         $result[] = $rel_obj;
-      }
-      
-      return $result;
-   }
-
-
->>>>>>> .r897
    // FIXME: El mundo seria mas sencillo si en lugar de pasarle la clase le paso la instancia...
    // ya que tengo que hacer un get_class para pasarle la clase y luego aca hago un new para crear una instancia...
    // para eso le paso la instancia que ya tengo y listo...
