@@ -311,14 +311,13 @@ class DAL {
    {
       Logger::getInstance()->dal_log("DAL::exists " . $tableName . " (" . $id . ")");
 
-      if ( !$id ) return false;
+      if ( empty($id) ) return false;
 
-      $q = "SELECT id FROM $tableName WHERE id=$id";
-
+      $q = "SELECT COUNT(id) as count FROM $tableName WHERE id=$id";
       $this->db->query( $q );
+      $row = $this->db->nextRow();
 
-      if ( $this->db->resultCount() == 1 ) return true;
-      return false;
+      return $row['count'] == 1;
    }
 
 
@@ -327,9 +326,7 @@ class DAL {
    {
       if ( $id === NULL ) throw new Exception("DAL.get: id no puede ser null");
 
-      $q = "SELECT * FROM " . $tableName . " WHERE id=" . $id;
-
-      $this->db->query( $q );
+      $this->db->query( "SELECT * FROM " . $tableName . " WHERE id=" . $id );
 
       if ( $row = $this->db->nextRow() )
       {
