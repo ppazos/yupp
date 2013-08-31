@@ -162,7 +162,15 @@ class Logger {
          if ($this->file !== NULL)
          {
             $trace = debug_backtrace();
-            $caller = $trace[1]['class'];
+            
+            if (isset($trace[1]) && isset($trace[1]['class']))
+            {
+               $caller = $trace[1]['class'];
+            }
+            else
+            {
+               $caller = $trace[1]['file'] .' ('. $trace[1]['line'] .')';
+            }
             $txt = "$caller: [" . $msg . "]";
             FileSystem::appendLine($this->file, $txt);
             return;
