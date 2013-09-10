@@ -35,10 +35,10 @@ class DatabaseSQLServer {
    {
       //Logger::getInstance()->log("DatabaseSQLServer::connect " . $dbhost ." ". $dbuser ." ". $dbpass ." ". $dbName);
 
-	   //$dbhost = "(local)\sqlexpress";
-	   // MARS false para que no de errores en las transacciones del save()
-	   // - http://msdn.microsoft.com/en-us/library/ee376925(v=sql.105).aspx
-	   // - http://blogs.msdn.com/b/cbiyikoglu/archive/2006/11/21/mars-transactions-and-sql-error-3997-3988-or-3983.aspx
+      //$dbhost = "(local)\sqlexpress";
+      // MARS false para que no de errores en las transacciones del save()
+      // - http://msdn.microsoft.com/en-us/library/ee376925(v=sql.105).aspx
+      // - http://blogs.msdn.com/b/cbiyikoglu/archive/2006/11/21/mars-transactions-and-sql-error-3997-3988-or-3983.aspx
       
       $connectionOptions = array("Database"=>$dbName,
                                  "UID"=>$dbuser,
@@ -53,8 +53,8 @@ class DatabaseSQLServer {
       {
          throw new Exception( "No pudo conectarse a SQLServer: " . print_r(sqlsrv_errors(), true), 666 ); // 666 es mi codigo de DB no existe...
       }
-	  
-	   $this->dbName = $dbName;
+     
+      $this->dbName = $dbName;
    }
 
    private function selectDB( $dbName )
@@ -67,7 +67,7 @@ class DatabaseSQLServer {
    {
       Logger::getInstance()->log("DatabaseSQLServer::disconnect ". $this->connection);
       
-	   sqlsrv_close( $this->connection );
+      sqlsrv_close( $this->connection );
       $this->connection = NULL;
    }
 
@@ -199,7 +199,7 @@ class DatabaseSQLServer {
       }
 
       //return "TEXT"; // No tengo restriccion de tamanio, text por defecto.
-	  return "VARCHAR(MAX)"; // http://stackoverflow.com/questions/564755/sql-server-text-type-vs-varchar-data-type
+     return "VARCHAR(MAX)"; // http://stackoverflow.com/questions/564755/sql-server-text-type-vs-varchar-data-type
    }
 
    //http://msdn.microsoft.com/en-us/library/ms187752.aspx
@@ -330,23 +330,23 @@ class DatabaseSQLServer {
    public function tableExists( $tableName ) //: boolean
    {
       // http://stackoverflow.com/questions/167576/sql-server-check-if-table-exists
-	   /* lo que hay en INFORMATION_SCHEA.TABLES
-	  Array ( 
-	  [TABLE_CATALOG] => inter_active_tel
-	  [TABLE_SCHEMA] => dbo 
-	  [TABLE_NAME] => test_002_cara
-	  [TABLE_TYPE] => BASE TABLE ) 
-	   */
+      /* lo que hay en INFORMATION_SCHEA.TABLES
+     Array ( 
+     [TABLE_CATALOG] => inter_active_tel
+     [TABLE_SCHEMA] => dbo 
+     [TABLE_NAME] => test_002_cara
+     [TABLE_TYPE] => BASE TABLE ) 
+      */
       $res = $this->query( "SELECT COUNT(TABLE_NAME) as num FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '$tableName'" );
 
-	   if ($res === false)
-	   {
-	      print_r(sqlsrv_errors(), true);
-	   }
+      if ($res === false)
+      {
+         print_r(sqlsrv_errors(), true);
+      }
       
-	   // Si hay resultado, siempre tiene una row
-	   $row = sqlsrv_fetch_array( $res, SQLSRV_FETCH_ASSOC );
-	  
+      // Si hay resultado, siempre tiene una row
+      $row = sqlsrv_fetch_array( $res, SQLSRV_FETCH_ASSOC );
+     
       return $row['num'] > 0;
    }
    
@@ -397,8 +397,8 @@ class DatabaseSQLServer {
          $max = $query->getLimitMax();
          
          // La consulta interna es para hacer paginacion
-		   // WHERE: Las condiciones donde dice tableName pone T2 (no puede evaluar condiciones sobre atributos de tablas no mencionados en el FROM)
-		   //  - http://social.msdn.microsoft.com/Forums/sqlserver/en-US/3b2e0875-e98c-4931-bcb4-e9f449b637d7/the-multipart-identifier-aliasfield-could-not-be-bound         
+         // WHERE: Las condiciones donde dice tableName pone T2 (no puede evaluar condiciones sobre atributos de tablas no mencionados en el FROM)
+         //  - http://social.msdn.microsoft.com/Forums/sqlserver/en-US/3b2e0875-e98c-4931-bcb4-e9f449b637d7/the-multipart-identifier-aliasfield-could-not-be-bound         
          
          // Hago el evaluate del from aca porque tengo que cambiar el FROM de tableName por la subconsulta necesaria para el limit
          $queryFrom = $query->getFrom();
@@ -543,8 +543,8 @@ class DatabaseSQLServer {
    /**
     * Metodo especifico de SQLServer.
     * Necesito pasarle rewrites por la consulta interna necesaria para hacer la paginacion.
-	* Ver DAL.listAll
-	*/
+   * Ver DAL.listAll
+   */
    public function evaluateAnyCondition( Condition $condition, $rewrites = null )
    {
       //Logger::struct($condition, "DatabaseSQLServer::evaluateAnyCondition");
@@ -629,21 +629,23 @@ class DatabaseSQLServer {
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-	  $aalias = $atr->alias;
-	  if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
-	  
+      $aalias = $atr->alias;
+      if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
+     
       if ( $refAtr !== NULL )
-	  {
-	     $ralias = $refAtr->alias;
-		 if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
-		 
+      {
+         $ralias = $refAtr->alias;
+         if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
+       
          return $aalias.".".$atr->attr ."=". $ralias.".".$refAtr->attr; // a.b = c.d
       }
-	  else
+      else
       {
          // El valor puede ser null porque puedo querer buscar por atributos nulos.
-         //if ( $refVal !== NULL )
-            return $aalias.".".$atr->attr ."=". $this->evaluateReferenceValue( $refVal ); // a.b = 666
+         if ( $refVal === NULL )
+            return $aalias.".".$atr->attr ." IS NULL";
+         
+         return $aalias.".".$atr->attr ."=". $this->evaluateReferenceValue( $refVal ); // a.b = 666
       }
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
@@ -674,19 +676,24 @@ class DatabaseSQLServer {
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-	  $aalias = $atr->alias;
-	  if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
-	  
-      if ( $refVal !== NULL )
-         return $aalias.".".$atr->attr ."<>". $this->evaluateReferenceValue( $refVal ); // a.b <> 666
-      
+      $aalias = $atr->alias;
+      if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
+     
       if ( $refAtr !== NULL )
-	  {
-	     $ralias = $refAtr->alias;
-	     if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
-		 
+      {
+         $ralias = $refAtr->alias;
+         if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
+       
          return $aalias.".".$atr->attr ."<>". $ralias.".".$refAtr->attr; // a.b <> c.d
       }
+      else
+      {
+         if ( $refVal === NULL )
+            return $aalias.".".$atr->attr ." IS NOT NULL";
+         
+         return $aalias.".".$atr->attr ."<>". $this->evaluateReferenceValue( $refVal ); // a.b <> 666
+      }
+      
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
@@ -702,20 +709,20 @@ class DatabaseSQLServer {
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-	  $aalias = $atr->alias;
-	  if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
-	  
+      $aalias = $atr->alias;
+      if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
+     
       if ( $refVal !== NULL )
          return $aalias.".".$atr->attr ." LIKE ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
       
       if ( $refAtr !== NULL )
-	  {
-	     $ralias = $refAtr->alias;
-		 if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
+      {
+         $ralias = $refAtr->alias;
+         if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
          
-		 return $aalias.".".$atr->attr ." LIKE ". $ralias.".".$refAtr->attr; // a.b LIKE c.d
+         return $aalias.".".$atr->attr ." LIKE ". $ralias.".".$refAtr->attr; // a.b LIKE c.d
       }
-	  
+     
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
    
@@ -731,19 +738,19 @@ class DatabaseSQLServer {
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-	  $aalias = $atr->alias;
-	  if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
-	  
+     $aalias = $atr->alias;
+     if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
+     
       if ( $refVal !== NULL )
          return $aalias.".".$atr->attr ." > ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
       
       if ( $refAtr !== NULL )
-	  {
-	     $ralias = $refAtr->alias;
-		 if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
-		 
+     {
+        $ralias = $refAtr->alias;
+       if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
+       
          return $aalias.".".$atr->attr ." > ". $ralias.".".$refAtr->attr; // a.b LIKE c.d
-	  }
+     }
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
@@ -754,20 +761,20 @@ class DatabaseSQLServer {
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-	  $aalias = $atr->alias;
-	  if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
-	  
-	  
+     $aalias = $atr->alias;
+     if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
+     
+     
       if ( $refVal !== NULL )
          return $aalias.".".$atr->attr ." < ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
       
       if ( $refAtr !== NULL )
-	  {
-	     $ralias = $refAtr->alias;
-		 if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
-		 
+     {
+        $ralias = $refAtr->alias;
+       if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
+       
          return $aalias.".".$atr->attr ." < ". $ralias.".".$refAtr->attr; // a.b LIKE c.d
-	  }
+     }
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
@@ -778,20 +785,20 @@ class DatabaseSQLServer {
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-	  $aalias = $atr->alias;
-	  if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
-	  
-	  
+     $aalias = $atr->alias;
+     if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
+     
+     
       if ( $refVal !== NULL )
          return $aalias.".".$atr->attr ." >= ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
       
       if ( $refAtr !== NULL )
-	  {
-	     $ralias = $refAtr->alias;
-		 if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
-		 
+     {
+        $ralias = $refAtr->alias;
+       if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
+       
          return $aalias.".".$atr->attr ." >= ". $ralias.".".$refAtr->attr; // a.b LIKE c.d
-	  }
+     }
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
@@ -802,20 +809,20 @@ class DatabaseSQLServer {
       $refAtr = $condition->getReferenceAttribute();
       $atr    = $condition->getAttribute();
       
-	  $aalias = $atr->alias;
-	  if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
-	  
-	  
+     $aalias = $atr->alias;
+     if (isset($rewrites[$aalias])) $aalias = $rewrites[$aalias];
+     
+     
       if ( $refVal !== NULL )
          return $aalias.".".$atr->attr ." <= ". $this->evaluateReferenceValue( $refVal ); // a.b LIKE %666%
       
       if ( $refAtr !== NULL )
-	  {
-	     $ralias = $refAtr->alias;
-		 if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
-		 
+     {
+        $ralias = $refAtr->alias;
+       if (isset($rewrites[$ralias])) $ralias = $rewrites[$ralias];
+       
          return $aalias.".".$atr->attr ." <= ". $ralias.".".$refAtr->attr; // a.b LIKE c.d
-	  }
+     }
 
       throw new Exception("Uno de valor o atributo de referencia debe estar presente. " . __FILE__ . " " . __LINE__);
    }
