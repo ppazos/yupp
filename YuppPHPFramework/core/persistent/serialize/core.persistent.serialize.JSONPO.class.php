@@ -40,7 +40,8 @@ class JSONPO {
             // Agrego un objeto referencia
             $keys = array_keys((array)$loopDetection, $obj->getClass().'_'.$obj->getId());
             $path = $keys[0];
-            $json .= '"'.$attr.'": "'. $path .'", ';
+            //$json .= '"'.$attr.'": "'. $path .'", '; // Con esto tiraba JSON invalido porque esperaba un objeto.
+            $json .= '{"path": "'. $path .'"}, '; // La path es un objeto en el array, si es hasMany, toJSON ya puso el nombre de key para el array.
          }
          $idx++;
       }
