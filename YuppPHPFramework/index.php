@@ -66,6 +66,10 @@ $lg->setFile('log.log');
 $lg->on();
 
 
+// TODO: considerar el language de la app
+$ctx = YuppContext::getInstance();
+$locale = $ctx->setLocale( 'en' );
+
 // Hace el request y catchea por posibles errores.
 try
 {
@@ -79,11 +83,12 @@ catch (Exception $e)
    // http://code.google.com/p/yupp/issues/detail?id=147
    if (YuppConfig::getInstance()->getCurrentMode() === YuppConfig::MODE_PROD)
    {
-      echo 'Disculpe las molestias, verificaremos el error en breve.';
+      echo 'Disculpe las molestias, verificaremos el error en breve.'; // FIXME: i18n
       // Redirect a pagina de error por defecto?
       if (file_exists('ylogs/500'))
       {
-      	 FileSystem::write('ylogs/500/err_'.date("Ymd.his").'.log', getOutput($m, true));
+          // FIXME: getOutput esta definido en 50.view.php, si se usa aca deberia definirse aca.
+      	 FileSystem::write('ylogs/500/err_'.date("Ymd.his").'.log', getOutput($ctx, true));
       }
    }
    else
