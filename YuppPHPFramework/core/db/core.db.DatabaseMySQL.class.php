@@ -290,7 +290,7 @@ class DatabaseMySQL {
     *                   "table" es la tabla referenciada por la FK y "refName" es la columna referenciada por la FK.
     * 
     */
-   public function addForeignKeys($tableName, $fks)
+   public function addForeignKeys($tableName, $fks, $isHasMany = true)
    {
       // TODO: Keys obligatorias: name, type, table, refName.
       

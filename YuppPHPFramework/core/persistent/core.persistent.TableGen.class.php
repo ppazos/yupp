@@ -215,7 +215,7 @@ class TableGen {
              } // foreach hasMany
              
              // Genera FKs
-             $dalForApp->addForeignKeys($tableName, $fks);
+             $dalForApp->addForeignKeys($tableName, $fks, false);
              
           } // foreach PO
       } // foreach app

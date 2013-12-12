@@ -280,10 +280,10 @@ class DAL {
     *                   tiene claves: requeridas(name(string), type(string), table(string), refName(string)),
     *                   "table" es la tabla referenciada por la FK y "refName" es la columna referenciada por la FK.
     */
-   public function addForeignKeys($tableName, $fks)
+   public function addForeignKeys($tableName, $fks, $isHasMany = true)
    {
       // Lo resuelve cada DBMS particular.
-      $this->db->addForeignKeys($tableName, $fks);  
+      $this->db->addForeignKeys($tableName, $fks, $isHasMany);  
    }
 
 
