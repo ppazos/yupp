@@ -281,7 +281,7 @@ class DatabaseSQLite {
     *                   "table" es la tabla referenciada por la FK y "refName" es la columna referenciada por la FK.
     * 
     */
-   public function addForeignKeys($tableName, $fks)
+   public function addForeignKeys($tableName, $fks, $isHasMany = true)
    {
       // TODO: SQLite no soporta FKs, se deberia implementar con triggers...
       return;

@@ -283,7 +283,7 @@ class DatabaseSQLServer {
     *                   "table" es la tabla referenciada por la FK y "refName" es la columna referenciada por la FK.
     * 
     */
-   public function addForeignKeys($tableName, $fks)
+   public function addForeignKeys($tableName, $fks, $isHasMany = true)
    {
       // TODO: Keys obligatorias: name, type, table, refName.
       
@@ -292,9 +292,20 @@ class DatabaseSQLServer {
       //$q_fks = ""; // Acumula consultas. ACUMULAR CONSULTAS ME TIRA ERROR, VOY A EJECUTARLAS INDEPENDIENTEMENTE, IGUAL PODRIAN ESTAR RODEADAS DE BEGIN Y COMMIT!
       foreach ( $fks as $fk )
       {
+         // owner_id es utilizado como nombre para referencias a tablas intermedias ne hasMany
+         // pero si la clase tiene una relacion hasOne llamada 'owner', cuando se crea la FK
+         // el nombre que se le asigna es owner_id y puede colisionar con el nombre de hasMany.
+         // Lo mismo pasa con ref_id.
+         // Aqui se modifica.
+         // FIXME: cambiar los nombres de owner_id y ref_id en las tablas intermedias de yupp
+         //        para bajar la probabilidad de colision, ej. poniendo jt_ref_id (jt por join table).
+         $namePart = $fk['name'];
+         if (!$isHasMany && $fk['name'] == 'owner_id') $namePart = 'modowner_id';
+         else if (!$isHasMany && $fk['name'] == 'ref_id') $namePart = 'modref_id';
+      
          // FOREIGN KEY ( `id` ) REFERENCES `carlitos`.`a` (`id`)
          $q_fks = "ALTER TABLE $tableName ".
-                  "ADD CONSTRAINT fk_".$fk['table']."_".$fk['name']."_".$fk['refName']." ". // En Postgre las FK tienen nombre, usando table, name(nombre del atributo) y refName me aseguro de que es unico.
+                  "ADD CONSTRAINT fk_".$fk['table']."_".$namePart."_".$fk['refName']." ". // En Postgre las FK tienen nombre, usando table, name(nombre del atributo) y refName me aseguro de que es unico.
                   "FOREIGN KEY (" . $fk['name'] . ") ".
                   "REFERENCES " . $fk['table'] . "(". $fk['refName'] .");";
          
