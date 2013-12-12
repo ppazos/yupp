@@ -87,8 +87,7 @@ catch (Exception $e)
       // Redirect a pagina de error por defecto?
       if (file_exists('ylogs/500'))
       {
-          // FIXME: getOutput esta definido en 50.view.php, si se usa aca deberia definirse aca.
-      	 FileSystem::write('ylogs/500/err_'.date("Ymd.his").'.log', getOutput($ctx, true));
+      	 FileSystem::write('ylogs/500/err_'.date("Ymd.his").'.log', print_r($ctx, true));
       }
    }
    else
