@@ -35,22 +35,6 @@ class YuppController {
        $this->isAjax         = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest');
     }
 
-    public function __call( $method, $args )
-    {
-       // Es una accion?
-       if (method_exists($this, $method . 'Action'))
-       {
-          return $this->{$method . 'Action'}( $args );
-       }
-       // Es una vista que no tiene acciones? http://code.google.com/p/yupp/issues/detail?id=61
-       else if (file_exists('apps/'.$this->appName.'/views/'.$this->controllerName.'/'.$this->actionName.'.view.php'))
-       {
-          return $this->render($this->actionName);
-       }
-
-       throw new Exception('La accion <b>' . $method . '</b> no existe.');
-    }
-
     public function addToFlash( $key, $value )
     {
         $this->flash[$key] = $value;
@@ -59,14 +43,12 @@ class YuppController {
     public function getFlash($key = NULL)
     {
        if ($key) return ( (isset($this->flash[$key])) ? $this->flash[$key] : NULL );
-       
        return $this->flash;
     }
     
     public function getParams($key = NULL)
     {
        if ($key) return ( (isset($this->params[$key])) ? $this->params[$key] : NULL );
-       
        return $this->params;
     }
     
