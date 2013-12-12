@@ -10,6 +10,7 @@ class App {
    private $name;
    private $path;
    private $descriptor; // App Descriptor
+   private $controller; // Se setea en el ultimo controller para el que se llamo a execAction, es usado en getExecActionParams
    
    static function getCurrent()
    {
@@ -167,10 +168,105 @@ class App {
 
       YuppLoader::load( 'apps.'. $this->name .'.controllers', $controllerClassName );
       
-      $cins = new $controllerClassName( $params );
-      $comm = $cins->{$action}();
-      return $comm;
+      // The controller action should have 'Action' suffix4
+      $actionMethod = $action;
+      if (!String::endsWith($actionMethod, 'Action')) $actionMethod .= 'Action';
+      
+      
+      $this->controller = new $controllerClassName( $params );
+      
+      // TODO: Can throw method doesnt exist exception, verify if class method exists
+      if (!method_exists($this->controller, $actionMethod))
+      {
+         // Si la accion no existe, se puede estar llamando al render de una vista
+         if (file_exists('apps/'.$this->appName.'/views/'.$this->controllerName.'/'.$this->actionName.'.view.php'))
+         {
+            // Render directo de la vista
+            return $this->render($actionMethod);
+         }
+         else // No existe la accion ni la vista, devuelve 404 not found
+         {
+            return ViewCommand::display( '404',
+                     new ArrayObject(array('message'=>"No se encuentra la accion '$action' en $controllerClassName")),
+                     new ArrayObject() );
+         }
+      }
+      
+      // La accion existe, pero puede dar errores en la
+      // ejecucion, devuelve 500 si da error.
+      try
+      {
+         $model_or_command = $this->controller->{$actionMethod}();
+      }
+      catch (Exception $e)
+      {
+         // No existe la accion o cualquier otra excepcion que pueda tirar
+         // Tira 500: Internal Server Error
+         $model_or_command = ViewCommand::display( '500',
+                               new ArrayObject(array('message'=>$e->getMessage(), 'traceString'=>$e->getTraceAsString(), 'trace'=>$e->getTrace(), 'exception'=>$e)),
+                               new ArrayObject() );
+      }
+      
+      //Logger::struct( $model_or_command, "MODEL OR COMMAND, " . __FILE__ . " " . __LINE__ );
+      
+      // ======================================================================================
+      // Procesa model_or_command para devolver siempre command
+      
+      // Si no verifico por null antes que por get_class, 
+      // get_class(NULL) me tira error en la ultima version de PHP.
+      if ( $model_or_command === NULL ) // No retorno nada
+      {
+         // Nombre de la vista es la accion.
+         $view = $action;
+
+         // El modelo que se devuelve es solo los params submiteados.
+         return ViewCommand::display( $view, $this->controller->getParams(), $this->controller->getFlash() );
+      }
+      
+      if ( is_array($model_or_command) ) // Si la accion del controller retorna los params en lugar de ponerlos en $this->params
+      {
+         // Nombre de la vista es la accion.
+         $view = $action;
+
+         $returnedParams = new ArrayObject( $model_or_command );
+
+         // Se juntan los params con el arrray devuelto
+         // Tengo que transformar getParams a array porque es ArrayObject
+         $allparams = array_merge( (array)$this->controller->getParams(), $model_or_command );
+         //$allparams = array_merge( (array)$app->getExecActionParams(), $model_or_command );
+
+         // El modelo que se devuelve es solo los params submiteados.
+         // Tengo que transformar allParams a ArrayObject porque es lo que espera el metodo display()
+         return ViewCommand::display( $view, new ArrayObject($allparams), $this->controller->getFlash() );
+      }
+      
+      if ( get_class( $model_or_command ) === 'ViewCommand' ) // Es comando (FIXME: no es lo mismo que instanceof?)
+      {
+         return $model_or_command;
+      }
+   
+      // El controlador devuelve otra cosa que no es null, ni array ni un comando,
+      // el programador cometio un error y no siguio las convensiones.
+      return ViewCommand::display( '500',
+               new ArrayObject( array('message'=>'Error: verifique lo que retorna de la accion: '. $controller.'::'.$action .'. Solo puede devolver null, array asociativo con modelo o un comando render/redirect/renderString/renderTemplate')),
+               new ArrayObject() );
    }
+   
+   /**
+    * Devuelve los params acumulados luego de llamar a execAction.
+    */
+   /*
+   public function getExecActionParams()
+   {
+      if ($this->controller != null) return $this->controller->getParams();
+      return array();
+   }
+   public function getExecActionFlash()
+   {
+      if ($this->controller != null) return $this->controller->getFlash();
+      return array();
+   }
+   */
    
    /**
     * Devuelve true si tiene bootstrap, false en caso contrario.
